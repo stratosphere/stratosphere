@@ -144,6 +144,7 @@ public abstract class ChannelAccess<T, R extends IORequest>
 		try {
 			File f = new File(this.id.getPath());
 			if (f.exists()) {
+				System.err.println("Deleting file="+f);
 				f.delete();
 			}
 		} catch (Throwable t) {}

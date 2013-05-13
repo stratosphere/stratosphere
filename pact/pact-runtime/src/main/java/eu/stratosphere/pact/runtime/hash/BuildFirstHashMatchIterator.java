@@ -30,6 +30,7 @@ import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
 import eu.stratosphere.pact.runtime.task.util.MatchTaskIterator;
+import eu.stratosphere.pact.runtime.test.util.TestData.GeneratorIterator;
 
 
 /**
@@ -38,9 +39,9 @@ import eu.stratosphere.pact.runtime.task.util.MatchTaskIterator;
  *
  * @author Stephan Ewen
  */
-public final class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIterator<V1, V2, O>
+public class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIterator<V1, V2, O>
 {	
-	private final MutableHashTable<V1, V2> hashJoin;
+	protected final MutableHashTable<V1, V2> hashJoin;
 	
 	private final V1 nextBuildSideObject;
 	
@@ -48,7 +49,7 @@ public final class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIt
 	
 	private final V2 probeCopy;
 	
-	private final TypeSerializer<V2> probeSideSerializer;
+	protected final TypeSerializer<V2> probeSideSerializer;
 	
 	private final MemoryManager memManager;
 	
@@ -90,6 +91,7 @@ public final class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIt
 	{
 		this.hashJoin.open(this.firstInput, this.secondInput);
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see eu.stratosphere.pact.runtime.task.util.MatchTaskIterator#close()
@@ -172,7 +174,7 @@ public final class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIt
 	
 	// --------------------------------------------------------------------------------------------
 	
-	public static <BT, PT> MutableHashTable<BT, PT> getHashJoin(TypeSerializer<BT> buildSideSerializer, TypeComparator<BT> buildSideComparator,
+	public <BT, PT> MutableHashTable<BT, PT> getHashJoin(TypeSerializer<BT> buildSideSerializer, TypeComparator<BT> buildSideComparator,
 			TypeSerializer<PT> probeSideSerializer, TypeComparator<PT> probeSideComparator,
 			TypePairComparator<PT, BT> pairComparator,
 			MemoryManager memManager, IOManager ioManager, AbstractInvokable ownerTask, long totalMemory)
@@ -183,4 +185,6 @@ public final class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIt
 		final List<MemorySegment> memorySegments = memManager.allocatePages(ownerTask, numPages);
 		return new MutableHashTable<BT, PT>(buildSideSerializer, probeSideSerializer, buildSideComparator, probeSideComparator, pairComparator, memorySegments, ioManager);
 	}
+	
+	
 }

@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import eu.stratosphere.nephele.services.iomanager.BlockChannelWriter;
+import eu.stratosphere.nephele.services.iomanager.BulkBlockChannelReader;
 import eu.stratosphere.nephele.services.iomanager.Channel;
+import eu.stratosphere.nephele.services.iomanager.Channel.ID;
 import eu.stratosphere.nephele.services.iomanager.ChannelWriterOutputView;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
@@ -88,7 +90,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	
 	private final int partitionNumber;					// the number of the partition
 	
-	private final int recursionLevel;					// the recursion level on which this partition lives
+	int recursionLevel;									// the recursion level on which this partition lives
 	
 	// ------------------------------------------ Spilling ----------------------------------------------
 	
@@ -96,7 +98,24 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	
 	private BlockChannelWriter probeSideChannel;		// the channel writer from the probe side, if partition is spilled
 	
+	// ------------------------------------------ Restoring ----------------------------------------------
+	
+	int initialPartitionBuffersCount = -1; 						// stores the number of buffers used for an in-memory partition after the build phase has finished.
+
+	private Channel.ID initialBuildSideChannel = null;			// path to initial build side contents (only for in-memory partitions)
+	
+	private BlockChannelWriter initialBuildSideWriter = null;
+
+	private boolean isRestored = false;							// marks a restored partition
+	
 	// --------------------------------------------------------------------------------------------------
+	
+	int getInitialPartitionBuffersCount() {
+		if(initialPartitionBuffersCount == -1) {
+			throw new RuntimeException("Hash Join: Bug: This partition is most likely a spilled partition that is not restorable");
+		}
+		return initialPartitionBuffersCount;
+	}
 	
 	/**
 	 * Creates a new partition, initially in memory, with one buffer for the build side. The partition is
@@ -212,6 +231,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	public BlockChannelWriter getBuildSideChannel() {
 		return this.buildSideChannel;
 	}
+	
 	
 	public BlockChannelWriter getProbeSideChannel() {
 		return this.probeSideChannel;
@@ -345,22 +365,22 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			this.overflowSegments = null;
 			this.numOverflowSegments = 0;
 			this.nextOverflowBucket = 0;
-			
 			// return the partition buffers
+			if(initialBuildSideChannel != null && !isRestored) return 0; // we already returned the partitionBuffers via the returnQueue.
 			for (int i = 0; i < this.partitionBuffers.length; i++) {
 				freeMemory.add(this.partitionBuffers[i]);
 			}
 			this.partitionBuffers = null;
 			return 0;
 		}
-		else if (this.probeSideRecordCounter == 0) {
+		else if (this.probeSideRecordCounter == 0) { 
 			// partition is empty, no spilled buffers
 			// return the memory buffer
 			freeMemory.add(this.probeSideBuffer.getCurrentSegment());
 			
 			// delete the spill files
 			this.probeSideChannel.close();
-			this.buildSideChannel.deleteChannel();
+			this.buildSideChannel.deleteChannel(); System.err.println("DELETING p="+getPartitionNumber());
 			this.probeSideChannel.deleteChannel();
 			
 			return 0;
@@ -368,11 +388,84 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 		else {
 			// flush the last probe side buffer and register this partition as pending
 			this.probeSideBuffer.close();
+			probeSideChannel.checkErroneous(); // throw some exception
+			
 			this.probeSideChannel.close();
 			spilledPartitions.add(this);
 			return 1;
 		}
 	}
+	
+	/**
+	 * This method prepares the partition for rebuilding it, i.e., inserting its contents again.
+	 */
+	public void prepareRebuild(List<MemorySegment> buffers) {
+		this.recursionLevel = 0;
+		
+		this.partitionBuffers = (MemorySegment[]) buffers.toArray(new MemorySegment[buffers.size()]);
+		
+		this.overflowSegments = new MemorySegment[2];
+		this.numOverflowSegments = 0;
+		this.nextOverflowBucket = 0;
+		
+//		this.buildSideRecordCounter = 0;
+//		this.overflowSegments = new MemorySegment[2];
+//		this.numOverflowSegments = 0;
+//		this.nextOverflowBucket = 0;
+//		this.buildSideWriteBuffer = new BuildSideBuffer<BT>(initialBuffer, memSource);
+	}
+	
+	public void prepareProbePhase(IOManager ioAccess, Channel.Enumerator probeChannelEnumerator,
+                       LinkedBlockingQueue<MemorySegment> bufferReturnQueue, List<Channel.ID> spilledPartitions) throws IOException {
+       System.err.println("Prepare Probe phase");
+       if(isInMemory()) {
+           assert spilledPartitions == null;
+           return;
+       }
+       // ATTENTION: The following lines are duplicated code from finalizeBuildPhase
+       // create the channel for the probe side and claim one buffer for it
+       this.probeSideChannel = ioAccess.createBlockChannelWriter(probeChannelEnumerator.next(), bufferReturnQueue);
+       // creating the ChannelWriterOutputView without memory will cause it to draw one segment from the
+       // write behind queue, which is the spare segment we had above.
+       System.err.println("opening new probeSideBuffer. bufferReturnQueue="+bufferReturnQueue.size());
+       this.probeSideBuffer = new ChannelWriterOutputView(this.probeSideChannel, this.memorySegmentSize);
+}
+
+	/**
+	 * This method is used if the HashTable is setup for multiple probe phases.
+	 * We can drop probe related files but not build files (or memory)
+	 * @param furtherPartitioning Set to true if additional partitioning steps are required -> release as much memory as possible! (Memory contents are stored on disk)
+	 * @throws IOException 
+	 */
+	public int dropProbe(boolean furtherPartitioning, List<MemorySegment> freeMemory,List<HashPartition<BT, PT>> spilledPartitions) throws IOException {
+		if(furtherPartitioning || recursionLevel != 0 || isRestored) {
+			System.err.println(".. well, actuall, I'm finalizing the Probe phase regularly!");
+			return finalizeProbePhase(freeMemory, spilledPartitions);
+		}
+		if (!isInMemory() && this.probeSideRecordCounter == 0) { // this is a special corner case. The partition has been
+			// spilled, but nothing has been added to it since (build forced spill, but no probe tuple matched)
+			// Copied from finalizedProbePhase
+			// partition is empty, no spilled buffers
+			// return the memory buffer
+			freeMemory.add(this.probeSideBuffer.getCurrentSegment());
+			
+			// delete the spill files
+			this.probeSideChannel.close();
+			this.probeSideChannel.deleteChannel();
+			return 0;
+		}
+		
+		if(isInMemory()) {
+			System.err.println("[dropPartition] In-memory partition. do nothing");
+			return 0;
+		}
+		this.probeSideBuffer.close();
+		this.probeSideChannel.close(); // finish pending write requests.
+		spilledPartitions.add(this);
+		return 1;
+		
+	}
+	
 	
 	public void clearAllMemory(List<MemorySegment> target)
 	{
@@ -410,10 +503,14 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			if (this.buildSideChannel != null) {
 				this.buildSideChannel.close();
 				this.buildSideChannel.deleteChannel();
+				System.err.println("DELETING CHannel p="+getPartitionNumber());
 			}
 			if (this.probeSideChannel != null) {
 				this.probeSideChannel.close();
 				this.probeSideChannel.deleteChannel();
+			}
+			if(initialBuildSideChannel != null) {
+				this.initialBuildSideWriter.closeAndDelete();
 			}
 		}
 		catch (IOException ioex) {
@@ -435,6 +532,56 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			this.overwriteBuffer = new RandomAccessOutputView(this.partitionBuffers, this.memorySegmentSize);
 		}
 		return this.overwriteBuffer;
+	}
+	
+	// --------------------------------------------------------------------------------------------------
+	//                   MultiMatchHashTable related methods
+	// --------------------------------------------------------------------------------------------------
+	
+	/**
+	 * Spills this partition to disk. This method is invoked once after the initial open() method
+	 * 
+	 * @return Number of memorySegments in the writeBehindBuffers!
+	 */
+	int spillInMemoryPartition(Channel.ID targetChannel, IOManager ioManager, LinkedBlockingQueue<MemorySegment> writeBehindBuffers) throws IOException {
+		assert isInMemory();
+		assert this.initialPartitionBuffersCount == -1;
+		
+		this.initialPartitionBuffersCount = partitionBuffers.length; // for MultiMatchHashMap
+		this.initialBuildSideChannel = targetChannel;
+		
+		initialBuildSideWriter = ioManager.createBlockChannelWriter(targetChannel, writeBehindBuffers);
+		
+		final int numSegments = this.partitionBuffers.length;
+		for (int i = 0; i < numSegments; i++) {
+			initialBuildSideWriter.writeBlock(partitionBuffers[i]);
+		}
+		this.partitionBuffers = null;
+		initialBuildSideWriter.close();
+		System.err.println("Spilling partition "+getPartitionNumber()+" with "+numSegments+" blocks overflowSegs="+numOverflowSegments);
+		// num partitions are now in the writeBehindBuffers. We propagate this information back
+		return numSegments;
+		
+	}
+	
+	/**
+	 * This method is called every time a multi-match hash map is opened again for a new probe input.
+	 * @param ioManager 
+	 * @param availableMemory 
+	 * @throws IOException 
+	 */
+	void restorePartitionBuffers(IOManager ioManager, List<MemorySegment> availableMemory) throws IOException {
+		final BulkBlockChannelReader reader = ioManager.createBulkBlockChannelReader(this.initialBuildSideChannel, 
+			availableMemory, this.initialPartitionBuffersCount);
+		reader.close();
+		final List<MemorySegment> partitionBuffersFromDisk = reader.getFullSegments();
+		System.err.println("Restoring partition "+getPartitionNumber()+" with "+partitionBuffersFromDisk.size()+" segments as partitBuffers");
+		this.partitionBuffers = (MemorySegment[]) partitionBuffersFromDisk.toArray(new MemorySegment[partitionBuffersFromDisk.size()]);
+		
+		this.overflowSegments = new MemorySegment[2];
+		this.numOverflowSegments = 0;
+		this.nextOverflowBucket = 0;
+		this.isRestored = true;
 	}
 	
 	// --------------------------------------------------------------------------------------------------
@@ -476,7 +623,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	
 	// ============================================================================================
 	
-	private static final class BuildSideBuffer<BT> extends AbstractPagedOutputView
+	static final class BuildSideBuffer<BT> extends AbstractPagedOutputView
 	{
 		private final ArrayList<MemorySegment> targetList;
 		
@@ -609,4 +756,8 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			return this.currentHashCode;
 		}
 	}
+
+	
+
+	
 }
