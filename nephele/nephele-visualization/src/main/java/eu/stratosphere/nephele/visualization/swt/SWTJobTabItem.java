@@ -41,6 +41,10 @@ public class SWTJobTabItem extends Composite implements Listener {
 	private final ChartComposite memoryChart;
 
 	private final ChartComposite networkChart;
+	// chart of iteration status
+	private ChartComposite iterChart;
+	// TODO @micha remove
+	private ChartComposite iterChart2;    
 
 	private final TabFolder tabFolder;
 
@@ -52,6 +56,8 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 	private final SWTVisualizationGUI visualizationGUI;
 
+    
+
 	public SWTJobTabItem(SWTVisualizationGUI visualizationGUI, GraphVisualizationData visualizationData,
 			Composite parent, int style, boolean detectBottlenecks) {
 		super(parent, style);
@@ -60,11 +66,29 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 		this.visualizationGUI = visualizationGUI;
 		this.visualizationData = visualizationData;
+		//TODO  @micha create horizontal sash to split graph panel into graph and iteration time series		
+		// micha add graphs
 
+		final SashForm horizontailSash = new SashForm(this, SWT.HORIZONTAL);
+		
+        final Composite iterStatComposite = new Composite(horizontailSash, SWT.RIGHT);
+        iterStatComposite.setLayout(new FillLayout(SWT.VERTICAL));
+// new        
+        final NetworkTopology networkTopology = visualizationData.getNetworkTopology();
+        final InstanceVisualizationData summaryDataset = (InstanceVisualizationData) networkTopology
+            .getAttachment();
+
+        this.iterChart = initializeIterChart(iterStatComposite, summaryDataset.getIterationDataSet(),"IterStatus");
+        this.iterChart2 = initializeIterChart(iterStatComposite, summaryDataset.getIterationDataSet(),"IterStatus2");
+		
 		// Layout of GUI depends on availability of profiling data
 		if (visualizationData.isProfilingAvailableForJob()) {
 
-			final SashForm verticalSash = new SashForm(this, SWT.VERTICAL);
+		    // old
+//		    final SashForm verticalSash = new SashForm(this, SWT.VERTICAL);
+
+		    // new
+		    final SashForm verticalSash = new SashForm(horizontailSash, SWT.NONE);
 
 			// Create the tabs
 			this.tabFolder = new TabFolder(verticalSash, SWT.BOTTOM);
@@ -80,14 +104,14 @@ public class SWTJobTabItem extends Composite implements Listener {
 			topologyItem.setControl(this.topologyCanvas);
 			topologyItem.setText("Allocated Instances");
 
-			final Composite statisticsComposite = new Composite(verticalSash, SWT.NONE);
-			statisticsComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
+            final Composite statisticsComposite = new Composite(verticalSash, SWT.NONE);
+            statisticsComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-			final NetworkTopology networkTopology = visualizationData.getNetworkTopology();
-			final InstanceVisualizationData summaryDataset = (InstanceVisualizationData) networkTopology
-				.getAttachment();
+//            final NetworkTopology networkTopology = visualizationData.getNetworkTopology();
+//            final InstanceVisualizationData summaryDataset = (InstanceVisualizationData) networkTopology
+//                .getAttachment();
 
-			this.cpuChart = initializeCPUChart(statisticsComposite, summaryDataset.getCpuDataSet());
+            this.cpuChart = initializeCPUChart(statisticsComposite, summaryDataset.getCpuDataSet());
 			this.memoryChart = initializeMemoryChart(statisticsComposite, summaryDataset.getMemoryDataSet());
 			this.networkChart = initializeNetworkChart(statisticsComposite, summaryDataset.getNetworkDataSet());
 
@@ -114,21 +138,22 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 	}
 
-	private ChartComposite initializeCPUChart(Composite parentComposite, TableXYDataset dataset) {
+	
+    private ChartComposite initializeCPUChart(Composite parentComposite, TableXYDataset dataset) {
 
-		final JFreeChart chart = ChartFactory.createStackedXYAreaChart("CPU", "Time [sec.]",
-			"Average CPU utilization [%]", dataset, PlotOrientation.VERTICAL, true, true, false);
+        final JFreeChart chart = ChartFactory.createStackedXYAreaChart("CPU", "Time [sec.]",
+            "Average CPU utilization [%]", dataset, PlotOrientation.VERTICAL, true, true, false);
 
-		// Set axis properly
-		final XYPlot xyPlot = chart.getXYPlot();
-		xyPlot.getDomainAxis().setAutoRange(true);
-		xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
+        // Set axis properly
+        final XYPlot xyPlot = chart.getXYPlot();
+        xyPlot.getDomainAxis().setAutoRange(true);
+        xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
 
-		xyPlot.getRangeAxis().setAutoRange(false);
-		xyPlot.getRangeAxis().setRange(0, 100);
+        xyPlot.getRangeAxis().setAutoRange(false);
+        xyPlot.getRangeAxis().setRange(0, 100);
 
-		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
-	}
+        return new ChartComposite(parentComposite, SWT.NONE, chart, true);
+    }
 
 	private ChartComposite initializeMemoryChart(Composite parentComposite, TableXYDataset dataset) {
 
@@ -165,6 +190,25 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
 	}
+	
+    private ChartComposite initializeIterChart(Composite parentComposite, TableXYDataset dataset, String statName) {
+
+        final JFreeChart chart = ChartFactory.createStackedXYAreaChart(statName, "Timestep",
+            "statName", dataset, PlotOrientation.VERTICAL, true, true, false);
+
+        // Set axis properly
+        final XYPlot xyPlot = chart.getXYPlot();
+        xyPlot.getDomainAxis().setAutoRange(true);
+        xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
+
+        // TODO @micha add max range or something else
+//        
+//        xyPlot.getRangeAxis().setAutoRange(false);
+//        xyPlot.getRangeAxis().setRange(0, 100);
+
+        return new ChartComposite(parentComposite, SWT.NONE, chart, true);
+    }
+	
 
 	public void updateView() {
 

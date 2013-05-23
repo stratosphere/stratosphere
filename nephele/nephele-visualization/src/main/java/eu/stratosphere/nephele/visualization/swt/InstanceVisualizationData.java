@@ -23,6 +23,7 @@ import org.jfree.data.xy.TableXYDataset;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 
+import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.profiling.types.InstanceProfilingEvent;
 
 public class InstanceVisualizationData {
@@ -36,6 +37,9 @@ public class InstanceVisualizationData {
 	private final DefaultTableXYDataset memoryDataSet;
 
 	private final DefaultTableXYDataset networkDataSet;
+	
+	// data of iteration status
+	private final DefaultTableXYDataset iterationDataSet;
 
 	// Series for CPU data
 	private final XYSeries cpuUsrSeries;
@@ -60,6 +64,11 @@ public class InstanceVisualizationData {
 
 	private final XYSeries cachedMemorySeries;
 
+	// Series for iteration status data
+	private final XYSeries iterationStatusSeries;
+	//TODO  @micha add the XY series for the iteration time series
+	// add the tableXYthing
+	
 	private final boolean isProfilingAvailable;
 
 	private long totalMemoryinMB = 1024;
@@ -72,8 +81,8 @@ public class InstanceVisualizationData {
 		this.memoryDataSet = new DefaultTableXYDataset();
 		this.networkDataSet = new DefaultTableXYDataset();
 
-		this.cpuUsrSeries = new XYSeries("USR", false, false);
-		this.cpuUsrSeries.setNotify(false);
+        this.cpuUsrSeries = new XYSeries("USR", false, false);
+        this.cpuUsrSeries.setNotify(false);
 		this.cpuSysSeries = new XYSeries("SYS", false, false);
 		this.cpuSysSeries.setNotify(false);
 		this.cpuWaitSeries = new XYSeries("WAIT", false, false);
@@ -105,14 +114,24 @@ public class InstanceVisualizationData {
 		this.cachedMemorySeries = new XYSeries("Cached", false, false);
 		this.cachedMemorySeries.setNotify(false);
 
-		// We do not add the total memory to the collection
+		// We do not add the total memory to the collection				
 		this.memoryDataSet.addSeries(this.cachedMemorySeries);
 		this.memoryDataSet.addSeries(this.usedMemorySeries);
+	
+		// initialize iteration status data sets
+		this.iterationDataSet = new DefaultTableXYDataset();
+		
+        this.iterationStatusSeries = new XYSeries("ITER", false, false);
+        this.iterationStatusSeries.setNotify(false);
+        
+        this.iterationDataSet.addSeries(this.iterationStatusSeries);
+		
+	
 	}
 
 	public TableXYDataset getCpuDataSet() {
-		return this.cpuDataSet;
-	}
+        return this.cpuDataSet;
+    }
 
 	public TableXYDataset getMemoryDataSet() {
 		return this.memoryDataSet;
@@ -121,6 +140,10 @@ public class InstanceVisualizationData {
 	public TableXYDataset getNetworkDataSet() {
 		return this.networkDataSet;
 	}
+	
+	public TableXYDataset getIterationDataSet() {
+        return this.iterationDataSet;
+    }
 
 	public double getUpperBoundForMemoryChart() {
 		return ((double) this.totalMemoryinMB) * 1.05;
@@ -154,6 +177,11 @@ public class InstanceVisualizationData {
 		this.networkTransmittedSeries.addOrUpdate(timestamp, toMBitPerSec(instanceProfilingEvent.getTransmittedBytes(),
 			instanceProfilingEvent.getProfilingInterval()));
 	}
+	
+    //  TODO @micha add data to right series by name
+	public void processIterationTimeSeriesEvent(IterationTimeSeriesEvent iterationEvent) {
+        this.iterationStatusSeries.addOrUpdate(iterationEvent.getTimeStep(), iterationEvent.getValue());
+    }
 
 	@SuppressWarnings("unchecked")
 	public double getAverageUserTime() {
@@ -187,4 +215,6 @@ public class InstanceVisualizationData {
 	public boolean isProfilingEnabledForJob() {
 		return this.isProfilingAvailable;
 	}
+
+
 }

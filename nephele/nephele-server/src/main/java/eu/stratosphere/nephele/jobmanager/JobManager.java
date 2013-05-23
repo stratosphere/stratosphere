@@ -69,6 +69,7 @@ import eu.stratosphere.nephele.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.deployment.TaskDeploymentDescriptor;
 import eu.stratosphere.nephele.discovery.DiscoveryException;
 import eu.stratosphere.nephele.discovery.DiscoveryService;
+import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.RecentJobEvent;
 import eu.stratosphere.nephele.execution.ExecutionState;
@@ -174,6 +175,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final AtomicBoolean isShutdownInProgress = new AtomicBoolean(false);
 
 	private volatile boolean isShutDown = false;
+
+	// TODO @micha remove
+    private int mockTimeStep = 0;
 
 	
 	public JobManager(ExecutionMode executionMode) {
@@ -970,7 +974,13 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 
 		this.eventCollector.getEventsForJob(jobID, eventList, true);
+		//TODO @micha: add mock events here
+        
+        IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "iter1", this.mockTimeStep++, this.mockTimeStep / 3.0);
+	    eventList.add(iterationEvent);
+	    System.out.println("######################" + this.mockTimeStep + "mock");
 
+		System.out.println("events" + eventList.size() + " "+ eventList);
 		return eventList;
 	}
 

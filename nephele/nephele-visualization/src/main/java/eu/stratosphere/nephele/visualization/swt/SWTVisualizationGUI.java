@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.Widget;
 import eu.stratosphere.nephele.client.AbstractJobResult;
 import eu.stratosphere.nephele.client.JobCancelResult;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.CheckpointStateChangeEvent;
 import eu.stratosphere.nephele.event.job.ExecutionStateChangeEvent;
@@ -734,6 +735,16 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 			// Ignore this type of event
 		} else if (event instanceof VertexEvent) {
 			// Ignore this type of event
+		} else if (event instanceof IterationTimeSeriesEvent) {
+		    //TODO @micha find out to which graph it belongs
+		    // find out to which graph it belongs
+		    // update graph
+		    System.out.println("************************ Iter EVENT" + event);
+	     
+//		    final NetworkTopology networkTopology = graphVisualizationData.getNetworkTopology();
+//            final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) networkTopology
+//                    .getAttachment();
+//            instanceVisualizationData.processIterationTimeSeriesEvent((IterationTimeSeriesEvent) event);		    
 		} else {
 			System.out.println("Unknown event: " + event);
 		}
