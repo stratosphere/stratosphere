@@ -48,14 +48,10 @@ public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashM
 	
 	/**
 	 * Set new input for probe side
+	 * @throws IOException 
 	 */
-	public void reopenProbe(MutableObjectIterator<V2> probeInput) {
-		try {
-			// FIXME: Not sure if this is the right place to catch the exception.
-			multiHashTable.reopenProbe(probeInput);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void reopenProbe(MutableObjectIterator<V2> probeInput) throws IOException {
+		multiHashTable.reopenProbe(probeInput);
 	}
 
 }

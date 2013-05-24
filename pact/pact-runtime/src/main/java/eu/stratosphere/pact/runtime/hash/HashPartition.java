@@ -388,8 +388,6 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 		else {
 			// flush the last probe side buffer and register this partition as pending
 			this.probeSideBuffer.close();
-			probeSideChannel.checkErroneous(); // throw some exception
-			
 			this.probeSideChannel.close();
 			spilledPartitions.add(this);
 			return 1;

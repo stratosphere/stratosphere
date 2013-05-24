@@ -239,9 +239,6 @@ public abstract class AbstractPagedOutputView implements DataOutputView
 	public void writeByte(int v) throws IOException
 	{
 		if (this.positionInSegment < this.segmentSize) {
-			if(this.currentSegment == null) {
-				System.err.println("CURRENT SEGMENT IS NULL!!!");
-			}
 			this.currentSegment.put(this.positionInSegment++, (byte) v);
 		}
 		else {
