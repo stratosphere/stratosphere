@@ -60,17 +60,13 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 	@Override
 	public void open(MutableObjectIterator<BT> buildSide,
 			MutableObjectIterator<PT> probeSide) throws IOException {
-		memstats("Before open call");
 		super.open(buildSide, probeSide);
 		initialPartitions = new ArrayList<HashPartition<BT, PT>>( partitionsBeingBuilt );
 		initialPartitionFanOut = (byte) partitionsBeingBuilt.size();
 		initialBucketCount = this.numBuckets;
-		memstats("after open call");
 	}
 
 	public void reopenProbe(MutableObjectIterator<PT> probeInput) throws IOException {
-		System.err.println("Opening new probe Input");
-		memstats("new input");
 		if(closed) {
 			throw new IllegalStateException("Cannot open probe input because hash join has already been closed");
 		}
@@ -80,12 +76,10 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 		partitionsBeingBuilt.addAll(initialPartitions);
 		
 		if(spilled) {
-			System.err.println("build side is spilled -> init and restore table");
 			this.currentRecursionDepth = 0;
 			initTable(initialBucketCount, initialPartitionFanOut);
 			
 			//setup partitions for insertion:
-			int cnt = 0;
 			for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
 				HashPartition<BT, PT> part = this.partitionsBeingBuilt.get(i);
 				if(part.isInMemory()) {
@@ -105,7 +99,6 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 						final int bucketArrayPos = posHashCode >> this.bucketsPerSegmentBits;
 						final int bucketInSegmentPos = (posHashCode & this.bucketsPerSegmentMask) << NUM_INTRA_BUCKET_BITS;
 						final MemorySegment bucket = this.buckets[bucketArrayPos];
-						cnt++;
 						insertBucketEntry(part, bucket, bucketInSegmentPos, hashCode, pointer);
 					}
 				} else {
@@ -117,7 +110,6 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 					part.prepareProbePhase(ioManager,currentEnumerator,writeBehindBuffers, null);
 				}
 			}
-			System.err.println("Restored "+cnt+" in memory tuples");
 			// spilled partitions are automatically added as pending partitions after in-memory has been handled
 		} else {
 			// the build input completely fits into memory, hence everything is still in memory.
@@ -130,7 +122,6 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 				}
 			}
 		}
-		memstats("After openSecondInput");
 	}
 	
 
@@ -145,13 +136,9 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 	 */
 	void storeInitialHashTable() throws IOException {
 		if(spilled) {
-			System.err.println("The initial table has already been spilled!");
 			return; // we create the initialHashTable only once. Later calls are caused by deeper recursion lvls
 		}
 		spilled = true;
-		// Stephan suggested to use spillPartition here.
-		// - downside: it will force all partitions on disk
-		System.err.println("Spilling in-memory partitions to disk");
 		
 		for (int partIdx = 0; partIdx < initialPartitions.size(); partIdx++) {
 			final HashPartition<BT, PT> p = initialPartitions.get(partIdx);
@@ -159,7 +146,6 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 				this.writeBehindBuffersAvailable += p.spillInMemoryPartition(spilledInMemoryPartitions.next(), ioManager, writeBehindBuffers);
 			}
 		}
-		memstats("Return memory from write behind (spilling done)");
 	}
 	
 	@Override
@@ -169,6 +155,5 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 			this.partitionsBeingBuilt.addAll(initialPartitions);
 		}
 		super.close();
-		memstats("after close");
 	}
 }

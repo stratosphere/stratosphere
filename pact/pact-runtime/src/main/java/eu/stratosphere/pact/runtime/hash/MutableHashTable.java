@@ -107,7 +107,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 * The maximum number of partitions, which defines the spilling granularity. Each recursion, the
 	 * data is divided maximally into that many partitions, which are processed in one chuck.
 	 */
-	static final int MAX_NUM_PARTITIONS = Byte.MAX_VALUE;
+	private static final int MAX_NUM_PARTITIONS = Byte.MAX_VALUE;
 	
 	/**
 	 * The default record width that is used when no width is given. The record width is
@@ -135,14 +135,14 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 * The number of bytes that the entry in the hash structure occupies, in bytes.
 	 * It corresponds to a 4 byte hash value and an 8 byte pointer.
 	 */
-	static final int RECORD_TABLE_BYTES = HASH_CODE_LEN + POINTER_LEN;
+	private static final int RECORD_TABLE_BYTES = HASH_CODE_LEN + POINTER_LEN;
 	
 	/**
 	 * The total storage overhead per record, in bytes. This corresponds to the space in the
 	 * actual hash table buckets, consisting of a 4 byte hash value and an 8 byte
 	 * pointer, plus the overhead for the stored length field.
 	 */
-	static final int RECORD_OVERHEAD_BYTES = RECORD_TABLE_BYTES + SERIALIZED_LENGTH_FIELD_BYTES;
+	private static final int RECORD_OVERHEAD_BYTES = RECORD_TABLE_BYTES + SERIALIZED_LENGTH_FIELD_BYTES;
 	
 	// -------------------------- Bucket Size and Structure -------------------------------------
 	
@@ -267,19 +267,19 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	/**
 	 * An estimate for the average record length.
 	 */
-	final int avgRecordLen;
+	private final int avgRecordLen;
 	
 	// ------------------------------------------------------------------------
 	
 	/**
 	 * The partitions that are built by processing the current partition.
 	 */
-	protected final ArrayList<HashPartition<BT, PT>> partitionsBeingBuilt;
+	final ArrayList<HashPartition<BT, PT>> partitionsBeingBuilt;
 	
 	/**
 	 * The partitions that have been spilled previously and are pending to be processed.
 	 */
-	final ArrayList<HashPartition<BT, PT>> partitionsPending;
+	private final ArrayList<HashPartition<BT, PT>> partitionsPending;
 	
 	/**
 	 * Iterator over the elements in the hash table.
@@ -302,7 +302,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 * The channel enumerator that is used while processing the current partition to create
 	 * channels for the spill partitions it requires.
 	 */
-	protected Channel.Enumerator currentEnumerator;
+	Channel.Enumerator currentEnumerator;
 	
 	/**
 	 * The array of memory segments that contain the buckets which form the actual hash-table
@@ -333,42 +333,13 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	/**
 	 * Flag indicating that the closing logic has been invoked.
 	 */
-	protected volatile boolean closed;
+	volatile boolean closed;
 	
 	/**
 	 * If true, build side partitions are kept for multiple probe steps.
 	 */
 	protected boolean isMultiHashTable = false;
 
-	void memstats(String msg) {
-//		String a = "";
-//		if(this.writeBehindBuffers != null) {
-//			a ="(actual:"+this.writeBehindBuffers.size()+")";
-//		}
-//		System.err.println("[memstat] aM="+this.availableMemory.size()+" wbA="+writeBehindBuffersAvailable+" "+a+" : "+msg);
-	}
-	
-	int segsInPartition(HashPartition<BT, PT> hp) {
-		int bs = 0;
-		if(!hp.isInMemory()) bs= hp.getBuildSideBlockCount();
-		int ps = 0;
-		ps = hp.getProbeSideBlockCount();
-		if(ps == -1) ps = 0;
-		return bs+ps;
-	}
-	void memSurvey() {
-		int built = 0;
-		for(HashPartition<BT, PT> p : partitionsBeingBuilt) {
-			built += segsInPartition(p);
-		}
-		int pend = 0;
-		for(HashPartition<BT, PT> p : partitionsPending) {
-			pend += segsInPartition(p);
-		}
-		int bl = 0;
-		if(this.buckets != null)  bl = buckets.length;
-		memstats("Survey: built ("+partitionsBeingBuilt.size()+")-mem="+built+" pending("+partitionsPending.size()+")="+pend+" buckets="+bl);
-	}
 	// ------------------------------------------------------------------------
 	//                         Construction and Teardown
 	// ------------------------------------------------------------------------
@@ -402,7 +373,6 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		this.probeSideComparator = probeSideComparator;
 		this.recordComparator = comparator;
 		this.availableMemory = memorySegments;
-		memstats("Constructor");
 		this.ioManager = ioManager;
 		
 		this.avgRecordLen = avgRecordLen > 0 ? avgRecordLen : 
@@ -458,7 +428,6 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		{
 			this.writeBehindBuffers.add(this.availableMemory.remove(this.availableMemory.size() - 1));
 		}
-		memstats("Write behind buffer took some mem");
 		// open builds the initial table by consuming the build-side input
 		this.currentRecursionDepth = 0;
 		buildInitialTable(buildSide);
@@ -470,7 +439,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		this.bucketIterator = new HashBucketIterator<BT, PT>(this.buildSideSerializer, this.recordComparator);
 //		this.lazyBucketIterator = new LazyHashBucketIterator<BT, PT>(this.recordComparator);
 	}
-static long fromMem = 0;
+	
 	/**
 	 * @return
 	 * @throws IOException
@@ -498,7 +467,6 @@ static long fromMem = 0;
 			if (p.isInMemory()) {
 				this.recordComparator.setReference(next);
 				this.bucketIterator.set(bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
-				fromMem++;
 				return true;
 			}
 			else {
@@ -506,10 +474,7 @@ static long fromMem = 0;
 			}
 		}
 		
-		System.err.println("Partitioning done. FromMemory="+fromMem);
-		fromMem = 0;
 		// -------------- partition done ---------------
-		memSurvey();
 		MultiMatchMutableHashTable<BT,PT> mmht = null;
 		boolean furtherPartitioning = false;
 		if(isMultiHashTable) {
@@ -523,7 +488,6 @@ static long fromMem = 0;
 				}
 			}
 			if(furtherPartitioning) {
-				System.err.println("[nextRecord] further partitioning is required. storing initial table on disk!");
 				mmht.storeInitialHashTable();
 			}
 		}
@@ -534,30 +498,21 @@ static long fromMem = 0;
 		for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
 			final HashPartition<BT, PT> p = this.partitionsBeingBuilt.get(i);
 			if(isMultiHashTable) {
-				System.err.println("Dropping probe");
 				buffersAvailable += p.dropProbe(furtherPartitioning, this.availableMemory,this.partitionsPending);
-				memstats("Drop Probe probably returned some memory");
 			} else { 
 				buffersAvailable += p.finalizeProbePhase(this.availableMemory, this.partitionsPending);
-				memstats("finalizeProbePhase returned some mem");
 			}
 		}
-		memSurvey();
 		
 		this.partitionsBeingBuilt.clear();
-		//if(this.currentRecursionDepth == 0) {
-			// OFFENDING CODE!!! INVESTIGATE THIS!
-			this.writeBehindBuffersAvailable += buffersAvailable;
-			memstats("adding "+buffersAvailable+" to the write behind buffers");
-		//}
+		this.writeBehindBuffersAvailable += buffersAvailable;
 		
-		if(!isMultiHashTable || furtherPartitioning || this.currentRecursionDepth > 0) { // if we are in an higher rec lvl, hashjoin is operates regularly
+		if(!isMultiHashTable || furtherPartitioning || this.currentRecursionDepth > 0) { // if we are in an higher rec lvl, hashjoin is operating regularly
 			// release the table memory
 			releaseTable();
 		}
 
 		if (this.currentSpilledProbeSide != null) {
-			System.err.println("Deleting current Spilled Probe Side!"); // which should always be okay, because we care only about build side
 			this.currentSpilledProbeSide.closeAndDelete();
 			this.currentSpilledProbeSide = null;
 		}
@@ -565,7 +520,6 @@ static long fromMem = 0;
 		// check if there are pending partitions
 		if (!this.partitionsPending.isEmpty())
 		{
-			System.err.println("Processing pending partition pendingCount="+partitionsPending.size());
 			final HashPartition<BT, PT> p = this.partitionsPending.get(0);
 
 			// build the next table
@@ -581,7 +535,6 @@ static long fromMem = 0;
 
 			ChannelReaderInputViewIterator<PT> probeReader = new ChannelReaderInputViewIterator<PT>(this.currentSpilledProbeSide,
 				returnQueue, memory, this.availableMemory, this.probeSideSerializer, p.getProbeSideBlockCount());
-			memstats("Probe reader took some memory");
 			this.probeIterator.set(probeReader);
 
 			// unregister the pending partition
@@ -706,7 +659,6 @@ static long fromMem = 0;
 		for (int i = 0; i < this.partitionsPending.size(); i++) {
 			final HashPartition<BT, PT> p = this.partitionsPending.get(i);
 			p.clearAllMemory(this.availableMemory);
-			memstats("partition returned memory");
 		}
 		
 		// return the write-behind buffers
@@ -718,7 +670,6 @@ static long fromMem = 0;
 				throw new RuntimeException("Hashtable closing was interrupted");
 			}
 		}
-		memstats("write behind buffers from partitions");
 	}
 	
 	public List<MemorySegment> getFreedMemory()
@@ -763,7 +714,6 @@ static long fromMem = 0;
 			insertIntoTable(record, hashCode);
 			buildElements++;
 		}
-		System.err.println("There are "+buildElements+" records from the build side");
 
 		// finalize the partitions
 		for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
@@ -791,11 +741,8 @@ static long fromMem = 0;
 		//        that single partition.
 		// 2) We can not guarantee that enough memory segments are available and read the partition
 		//    in, distributing its data among newly created partitions.
-		memSurvey();
 		final int totalBuffersAvailable = this.availableMemory.size() + this.writeBehindBuffersAvailable;
 		if (totalBuffersAvailable != this.totalNumBuffers - this.numWriteBehindBuffers) {
-			System.err.println("totalBuffersAvailable="+totalBuffersAvailable+
-					" totalNumBuffers="+totalNumBuffers+" numWriteBehindBuffers="+numWriteBehindBuffers);
 			throw new RuntimeException("Hash Join bug in memory management: Memory buffers leaked.");
 		}
 		
@@ -812,12 +759,10 @@ static long fromMem = 0;
 			// first read the partition in
 			final BulkBlockChannelReader reader = this.ioManager.createBulkBlockChannelReader(p.getBuildSideChannel().getChannelID(), 
 				this.availableMemory, p.getBuildSideBlockCount());
-			memstats("buildTableFromSpilled-reader took memory");
 			// call waits until all is read
 			if(isMultiHashTable && p.recursionLevel == 0) {
 				reader.close(); // keep the partitions
 			} else {
-				System.err.println("Deleting here some files = "+p.getBuildSideChannel().getChannelID());
 				reader.closeAndDelete();
 			}
 			
@@ -875,7 +820,6 @@ static long fromMem = 0;
 						p.getBuildSideBlockCount(), p.getLastSegmentLimit(), false);
 			final ChannelReaderInputViewIterator<BT> inIter = new ChannelReaderInputViewIterator<BT>(inView, 
 					this.availableMemory, this.buildSideSerializer);
-			memstats("Build From spilled took memory");
 			final TypeComparator<BT> btComparator = this.buildSideComparator;
 			final BT rec = this.buildSideSerializer.createInstance();
 			while (inIter.next(rec))
@@ -1010,8 +954,6 @@ static long fromMem = 0;
 				}
 				p.overflowSegments[p.numOverflowSegments] = overflowSeg;
 				p.numOverflowSegments++;
-				System.err.println("Increasing Overflow seg count for p="+p.getPartitionNumber());
-				memstats("insertBucketEntry inserted into overflow bucket, which probably took mem");
 			}
 			else {
 				// there is space in the last overflow bucket
@@ -1060,7 +1002,6 @@ static long fromMem = 0;
 				this, this.segmentSize);
 			this.partitionsBeingBuilt.add(p);
 		}
-		memstats("createPartions took memory");
 	}
 	
 	/**
@@ -1079,7 +1020,6 @@ static long fromMem = 0;
 			}
 		}
 		this.partitionsBeingBuilt.clear();
-		memstats("clearPartitions released memory");
 	}
 	
 	/**
@@ -1114,7 +1054,6 @@ static long fromMem = 0;
 			
 			table[i] = seg;
 		}
-		memstats("After Table initialization numSegs="+numSegs);
 		this.buckets = table;
 		this.numBuckets = numBuckets;
 	}
@@ -1132,7 +1071,6 @@ static long fromMem = 0;
 			}
 			this.buckets = null;
 		}
-		memstats("Released table");
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -1163,14 +1101,12 @@ static long fromMem = 0;
 		int numBuffersFreed = p.spillPartition(this.availableMemory, this.ioManager, 
 										this.currentEnumerator.next(), this.writeBehindBuffers);
 		this.writeBehindBuffersAvailable += numBuffersFreed;
-		memstats("added overflow buffers from spilled partition");
 		// grab as many buffers as are available directly
 		MemorySegment currBuff = null;
 		while (this.writeBehindBuffersAvailable > 0 && (currBuff = this.writeBehindBuffers.poll()) != null) {
 			this.availableMemory.add(currBuff);
 			this.writeBehindBuffersAvailable--;
 		}
-		memstats("spillPartition: Grabbed some writeBehind buffers");
 		return largestPartNum;
 	}
 	
@@ -1183,7 +1119,6 @@ static long fromMem = 0;
 	 * @param minRequiredAvailable The minimum number of buffers that needs to be reclaimed.
 	 */
 	final void ensureNumBuffersReturned(final int minRequiredAvailable) {
-		memstats("Ensuring min="+minRequiredAvailable);
 		if (minRequiredAvailable > this.availableMemory.size() + this.writeBehindBuffersAvailable) {
 			throw new IllegalArgumentException("More buffers requested available than totally available.");
 		}
@@ -1197,7 +1132,6 @@ static long fromMem = 0;
 		catch (InterruptedException iex) {
 			throw new RuntimeException("Hash Join was interrupted.");
 		}
-		memstats("Ensuring done");
 	}
 	
 	/**
@@ -1235,7 +1169,6 @@ static long fromMem = 0;
 				this.availableMemory.add(currBuff);
 				this.writeBehindBuffersAvailable--;
 			}
-			memstats("getNextBuffer(): grabbed some writeBehindBuffers wBBA="+writeBehindBuffersAvailable);
 			return toReturn;
 		} else {
 			// no memory available

@@ -202,10 +202,8 @@ public class HashMatchMultiProbeTest {
 					this.memoryManager, ioManager, this.parentTask, MEMORY_SIZE);
 		
 		iterator.open();
-		System.err.println("TESTCASE: starting to callWithNextKey");
 		// do first join with both inputs
 		while (iterator.callWithNextKey(firstMatcher, collector));
-		System.err.println("TESTCASE: Iterator done .. verifying");
 
 		// assert that each expected match was seen for the first input
 		for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedFirstMatchesMap.entrySet()) {
@@ -214,7 +212,6 @@ public class HashMatchMultiProbeTest {
 		}
 		
 		for(int i = 0; i < NUM_PROBES; i++) {
-			System.out.println("Testing "+i+":");
 			pgen.reset();
 			probeInput.reset();
 			// prepare ..
@@ -222,8 +219,6 @@ public class HashMatchMultiProbeTest {
 			// .. and do second join
 			while (iterator.callWithNextKey(nMatcher[i], collector));
 			
-			System.err.println("TESTCASE: Iterator done for "+i+" time .. verifying");
-	
 			// assert that each expected match was seen for the second input
 			for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedNMatchesMapList.get(i).entrySet()) {
 				if (!entry.getValue().isEmpty())

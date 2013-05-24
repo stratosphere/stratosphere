@@ -40,7 +40,6 @@ public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashM
 			MemoryManager memManager, IOManager ioManager, AbstractInvokable ownerTask, long totalMemory)
 	throws MemoryAllocationException
 	{
-		System.err.println("Using MultiMatchHT");
 		totalMemory = memManager.roundDownToPageSizeMultiple(totalMemory);
 		final int numPages = (int) (totalMemory / memManager.getPageSize());
 		final List<MemorySegment> memorySegments = memManager.allocatePages(ownerTask, numPages);
