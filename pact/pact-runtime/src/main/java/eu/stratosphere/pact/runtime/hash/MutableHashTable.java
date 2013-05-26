@@ -477,17 +477,17 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		// -------------- partition done ---------------
 		MultiMatchMutableHashTable<BT,PT> mmht = null;
 		boolean furtherPartitioning = false;
-		if(isMultiHashTable) {
+		if (isMultiHashTable) {
 			mmht = (MultiMatchMutableHashTable<BT,PT>) this; // we can guarantee this if it is a multiHT
 			// check if there will be further partition processing.
 			for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
 				final HashPartition<BT, PT> p = this.partitionsBeingBuilt.get(i);
-				if(!p.isInMemory() && p.getProbeSideRecordCount() != 0) {
+				if (!p.isInMemory() && p.getProbeSideRecordCount() != 0) {
 					furtherPartitioning = true;
 					break;
 				}
 			}
-			if(furtherPartitioning) {
+			if (furtherPartitioning) {
 				mmht.storeInitialHashTable();
 			}
 		}
@@ -497,7 +497,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		int buffersAvailable = 0;
 		for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
 			final HashPartition<BT, PT> p = this.partitionsBeingBuilt.get(i);
-			if(isMultiHashTable) {
+			if (isMultiHashTable) {
 				buffersAvailable += p.dropProbe(furtherPartitioning, this.availableMemory,this.partitionsPending);
 			} else { 
 				buffersAvailable += p.finalizeProbePhase(this.availableMemory, this.partitionsPending);
@@ -507,7 +507,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		this.partitionsBeingBuilt.clear();
 		this.writeBehindBuffersAvailable += buffersAvailable;
 		
-		if(!isMultiHashTable || furtherPartitioning || this.currentRecursionDepth > 0) { // if we are in an higher rec lvl, hashjoin is operating regularly
+		if (!isMultiHashTable || furtherPartitioning || this.currentRecursionDepth > 0) { // if we are in an higher rec lvl, hashjoin is operating regularly
 			// release the table memory
 			releaseTable();
 		}
@@ -708,11 +708,9 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		final BT record = this.buildSideSerializer.createInstance();
 		
 		// go over the complete input and insert every element into the hash table
-		long buildElements = 0;
 		while (input.next(record)) {
 			final int hashCode = hash(buildTypeComparator.hash(record), 0);
 			insertIntoTable(record, hashCode);
-			buildElements++;
 		}
 
 		// finalize the partitions
@@ -760,7 +758,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 			final BulkBlockChannelReader reader = this.ioManager.createBulkBlockChannelReader(p.getBuildSideChannel().getChannelID(), 
 				this.availableMemory, p.getBuildSideBlockCount());
 			// call waits until all is read
-			if(isMultiHashTable && p.recursionLevel == 0) {
+			if (isMultiHashTable && p.recursionLevel == 0) {
 				reader.close(); // keep the partitions
 			} else {
 				reader.closeAndDelete();

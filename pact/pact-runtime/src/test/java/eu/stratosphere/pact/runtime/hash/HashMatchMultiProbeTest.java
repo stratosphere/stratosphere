@@ -207,8 +207,9 @@ public class HashMatchMultiProbeTest {
 
 		// assert that each expected match was seen for the first input
 		for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedFirstMatchesMap.entrySet()) {
-			if (!entry.getValue().isEmpty())
+			if (!entry.getValue().isEmpty()) {
 				Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+			}
 		}
 		
 		for(int i = 0; i < NUM_PROBES; i++) {
@@ -221,8 +222,9 @@ public class HashMatchMultiProbeTest {
 			
 			// assert that each expected match was seen for the second input
 			for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedNMatchesMapList.get(i).entrySet()) {
-				if (!entry.getValue().isEmpty())
+				if (!entry.getValue().isEmpty()) {
 					Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+				}
 			}
 		}
 		

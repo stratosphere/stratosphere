@@ -1,7 +1,6 @@
 package eu.stratosphere.pact.runtime.hash;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import eu.stratosphere.nephele.services.iomanager.IOManager;

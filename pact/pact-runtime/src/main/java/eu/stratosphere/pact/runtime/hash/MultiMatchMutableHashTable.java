@@ -4,22 +4,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sound.midi.SysexMessage;
-
-
-import eu.stratosphere.nephele.services.iomanager.BlockChannelReader;
-import eu.stratosphere.nephele.services.iomanager.BlockChannelWriter;
-import eu.stratosphere.nephele.services.iomanager.BulkBlockChannelReader;
 import eu.stratosphere.nephele.services.iomanager.Channel;
-import eu.stratosphere.nephele.services.iomanager.ChannelReaderInputView;
-import eu.stratosphere.nephele.services.iomanager.ChannelWriterOutputView;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
-import eu.stratosphere.pact.runtime.io.ChannelReaderInputViewIterator;
 
 public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT> {
 
@@ -67,7 +58,7 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 	}
 
 	public void reopenProbe(MutableObjectIterator<PT> probeInput) throws IOException {
-		if(closed) {
+		if (closed) {
 			throw new IllegalStateException("Cannot open probe input because hash join has already been closed");
 		}
 		partitionsBeingBuilt.clear();
@@ -75,14 +66,14 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 		// We restore the same "partitionsBeingBuild" state as after the initial open call.
 		partitionsBeingBuilt.addAll(initialPartitions);
 		
-		if(spilled) {
+		if (spilled) {
 			this.currentRecursionDepth = 0;
 			initTable(initialBucketCount, initialPartitionFanOut);
 			
 			//setup partitions for insertion:
 			for (int i = 0; i < this.partitionsBeingBuilt.size(); i++) {
 				HashPartition<BT, PT> part = this.partitionsBeingBuilt.get(i);
-				if(part.isInMemory()) {
+				if (part.isInMemory()) {
 					ensureNumBuffersReturned(part.initialPartitionBuffersCount);
 					part.restorePartitionBuffers(ioManager, availableMemory);
 					// CODE FROM buildTableFromSpilledPartition()
@@ -103,11 +94,11 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 					}
 				} else {
 					this.writeBehindBuffersAvailable--; // we are not in-memory, thus the probe side buffer will grab one wbb.
-					if(this.writeBehindBuffers.size() == 0) { // prepareProbePhase always requires one buffer in the writeBehindBuffers-Queue.
+					if (this.writeBehindBuffers.size() == 0) { // prepareProbePhase always requires one buffer in the writeBehindBuffers-Queue.
 						this.writeBehindBuffers.add(getNextBuffer());
 						this.writeBehindBuffersAvailable++;
 					}
-					part.prepareProbePhase(ioManager,currentEnumerator,writeBehindBuffers, null);
+					part.prepareProbePhase(ioManager,currentEnumerator,writeBehindBuffers);
 				}
 			}
 			// spilled partitions are automatically added as pending partitions after in-memory has been handled
@@ -115,11 +106,7 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 			// the build input completely fits into memory, hence everything is still in memory.
 			for (int partIdx = 0; partIdx < partitionsBeingBuilt.size(); partIdx++) {
 				final HashPartition<BT, PT> p = partitionsBeingBuilt.get(partIdx);
-				try {
-					p.prepareProbePhase(ioManager,currentEnumerator,writeBehindBuffers, null);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				p.prepareProbePhase(ioManager,currentEnumerator,writeBehindBuffers);
 			}
 		}
 	}
@@ -135,14 +122,14 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 	 * @throws IOException 
 	 */
 	void storeInitialHashTable() throws IOException {
-		if(spilled) {
+		if (spilled) {
 			return; // we create the initialHashTable only once. Later calls are caused by deeper recursion lvls
 		}
 		spilled = true;
 		
 		for (int partIdx = 0; partIdx < initialPartitions.size(); partIdx++) {
 			final HashPartition<BT, PT> p = initialPartitions.get(partIdx);
-			if( p.isInMemory()) { // write memory resident partitions to disk
+			if (p.isInMemory()) { // write memory resident partitions to disk
 				this.writeBehindBuffersAvailable += p.spillInMemoryPartition(spilledInMemoryPartitions.next(), ioManager, writeBehindBuffers);
 			}
 		}
@@ -150,7 +137,7 @@ public class MultiMatchMutableHashTable<BT, PT> extends MutableHashTable<BT, PT>
 	
 	@Override
 	public void close() {
-		if(partitionsBeingBuilt.size() == 0) { // partitions are cleared after the build phase. But we need to drop
+		if (partitionsBeingBuilt.size() == 0) { // partitions are cleared after the build phase. But we need to drop
 			// memory with them.
 			this.partitionsBeingBuilt.addAll(initialPartitions);
 		}

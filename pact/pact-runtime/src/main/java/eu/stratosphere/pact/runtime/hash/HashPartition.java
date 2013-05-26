@@ -24,19 +24,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import eu.stratosphere.nephele.services.iomanager.BlockChannelWriter;
 import eu.stratosphere.nephele.services.iomanager.BulkBlockChannelReader;
 import eu.stratosphere.nephele.services.iomanager.Channel;
-import eu.stratosphere.nephele.services.iomanager.Channel.ID;
 import eu.stratosphere.nephele.services.iomanager.ChannelWriterOutputView;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
+import eu.stratosphere.nephele.services.memorymanager.AbstractPagedInputView;
+import eu.stratosphere.nephele.services.memorymanager.AbstractPagedOutputView;
 import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegmentSource;
 import eu.stratosphere.nephele.services.memorymanager.SeekableDataInputView;
 import eu.stratosphere.nephele.services.memorymanager.SeekableDataOutputView;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
-import eu.stratosphere.nephele.services.memorymanager.AbstractPagedInputView;
-import eu.stratosphere.nephele.services.memorymanager.AbstractPagedOutputView;
 import eu.stratosphere.pact.runtime.io.RandomAccessOutputView;
-import eu.stratosphere.nephele.services.memorymanager.MemorySegmentSource;
 import eu.stratosphere.pact.runtime.util.MathUtils;
 
 
@@ -111,7 +110,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	// --------------------------------------------------------------------------------------------------
 	
 	int getInitialPartitionBuffersCount() {
-		if(initialPartitionBuffersCount == -1) {
+		if (initialPartitionBuffersCount == -1) {
 			throw new RuntimeException("Hash Join: Bug: This partition is most likely a spilled partition that is not restorable");
 		}
 		return initialPartitionBuffersCount;
@@ -366,7 +365,10 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			this.numOverflowSegments = 0;
 			this.nextOverflowBucket = 0;
 			// return the partition buffers
-			if(initialBuildSideChannel != null && !isRestored) return 0; // we already returned the partitionBuffers via the returnQueue.
+			if (initialBuildSideChannel != null && !isRestored) {
+				// we already returned the partitionBuffers via the returnQueue.
+				return 0; 
+			}
 			for (int i = 0; i < this.partitionBuffers.length; i++) {
 				freeMemory.add(this.partitionBuffers[i]);
 			}
@@ -437,7 +439,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 				this.probeSideChannel.close();
 				this.probeSideChannel.deleteChannel();
 			}
-			if(initialBuildSideChannel != null) {
+			if (initialBuildSideChannel != null) {
 				this.initialBuildSideWriter.closeAndDelete();
 			}
 		}
@@ -467,9 +469,8 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	// --------------------------------------------------------------------------------------------------
 	
 	public void prepareProbePhase(IOManager ioAccess, Channel.Enumerator probeChannelEnumerator,
-            LinkedBlockingQueue<MemorySegment> bufferReturnQueue, List<Channel.ID> spilledPartitions) throws IOException {
-		if(isInMemory()) {
-			assert spilledPartitions == null;
+            LinkedBlockingQueue<MemorySegment> bufferReturnQueue) throws IOException {
+		if (isInMemory()) {
 			return;
 		}
 		// ATTENTION: The following lines are duplicated code from finalizeBuildPhase
@@ -484,7 +485,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	* @throws IOException 
 	*/
 	public int dropProbe(boolean furtherPartitioning, List<MemorySegment> freeMemory,List<HashPartition<BT, PT>> spilledPartitions) throws IOException {
-		if(furtherPartitioning || recursionLevel != 0 || isRestored) {
+		if (furtherPartitioning || recursionLevel != 0 || isRestored) {
 			return finalizeProbePhase(freeMemory, spilledPartitions);
 		}
 		if (!isInMemory() && this.probeSideRecordCounter == 0) { // this is a special corner case. The partition has been
@@ -500,7 +501,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			return 0;
 		}
 		
-		if(isInMemory()) {
+		if (isInMemory()) {
 			return 0;
 		}
 		this.probeSideBuffer.close();
