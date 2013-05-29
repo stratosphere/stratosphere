@@ -38,14 +38,9 @@ import eu.stratosphere.pact.runtime.test.util.TestData.Generator.ValueMode;
 /**
  * Test specialized hash join that keeps the build side data (in memory and on hard disk)
  * This is used for iterative tasks.
- * 
- * Notes:
- * 	- See AbstractCachedBuildSideMatchDriver
- * 
- * @author Robert Metzger
  */
 
-public class HashMatchMultiProbeTest {
+public class ReOpenableHashTableTest {
 	
 	private static final int PAGE_SIZE = 8 * 1024;
 	private static final long MEMORY_SIZE = PAGE_SIZE * 100; // 100 Pages.
@@ -195,8 +190,8 @@ public class HashMatchMultiProbeTest {
 		probeInput.reset();
 
 		// compare with iterator values
-		BuildFirstHashMultiMatchIterator<PactRecord, PactRecord, PactRecord> iterator = 
-				new BuildFirstHashMultiMatchIterator<PactRecord, PactRecord, PactRecord>(
+		BuildFirstReOpenableHashMatchIterator<PactRecord, PactRecord, PactRecord> iterator = 
+				new BuildFirstReOpenableHashMatchIterator<PactRecord, PactRecord, PactRecord>(
 						buildInput, probeInput, this.recordSerializer, this.record1Comparator, 
 					this.recordSerializer, this.record2Comparator, this.recordPairComparator,
 					this.memoryManager, ioManager, this.parentTask, MEMORY_SIZE);

@@ -30,7 +30,6 @@ import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
 import eu.stratosphere.pact.runtime.task.util.MatchTaskIterator;
-import eu.stratosphere.pact.runtime.test.util.TestData.GeneratorIterator;
 
 
 /**
@@ -111,7 +110,7 @@ public class BuildFirstHashMatchIterator<V1, V2, O> implements MatchTaskIterator
 	 * @see eu.stratosphere.pact.runtime.task.util.MatchTaskIterator#callWithNextKey(eu.stratosphere.pact.common.stub.MatchStub, eu.stratosphere.pact.common.stub.Collector)
 	 */
 	@Override
-	public boolean callWithNextKey(GenericMatcher<V1, V2, O> matchFunction, Collector<O> collector)
+	public final boolean callWithNextKey(GenericMatcher<V1, V2, O> matchFunction, Collector<O> collector)
 	throws Exception
 	{
 		if (this.hashJoin.nextRecord())

@@ -13,12 +13,12 @@ import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
 
-public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashMatchIterator<V1, V2, O> {
+public class BuildFirstReOpenableHashMatchIterator<V1, V2, O> extends BuildFirstHashMatchIterator<V1, V2, O> {
 
 	
-	final private MultiMatchMutableHashTable<V1, V2> multiHashTable;
+	private final ReOpenableMutableHashTable<V1, V2> reopenHashTable;
 	
-	public BuildFirstHashMultiMatchIterator(
+	public BuildFirstReOpenableHashMatchIterator(
 			MutableObjectIterator<V1> firstInput,
 			MutableObjectIterator<V2> secondInput,
 			TypeSerializer<V1> serializer1, TypeComparator<V1> comparator1,
@@ -30,7 +30,7 @@ public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashM
 		super(firstInput, secondInput, serializer1, comparator1, serializer2,
 				comparator2, pairComparator, memManager, ioManager, ownerTask,
 				totalMemory);
-		multiHashTable = (MultiMatchMutableHashTable<V1, V2>) hashJoin;
+		reopenHashTable = (ReOpenableMutableHashTable<V1, V2>) hashJoin;
 	}
 
 	public <BT, PT> MutableHashTable<BT, PT> getHashJoin(TypeSerializer<BT> buildSideSerializer, TypeComparator<BT> buildSideComparator,
@@ -42,7 +42,7 @@ public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashM
 		totalMemory = memManager.roundDownToPageSizeMultiple(totalMemory);
 		final int numPages = (int) (totalMemory / memManager.getPageSize());
 		final List<MemorySegment> memorySegments = memManager.allocatePages(ownerTask, numPages);
-		return new MultiMatchMutableHashTable<BT, PT>(buildSideSerializer, probeSideSerializer, buildSideComparator, probeSideComparator, pairComparator, memorySegments, ioManager);
+		return new ReOpenableMutableHashTable<BT, PT>(buildSideSerializer, probeSideSerializer, buildSideComparator, probeSideComparator, pairComparator, memorySegments, ioManager);
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class BuildFirstHashMultiMatchIterator<V1, V2, O> extends BuildFirstHashM
 	 * @throws IOException 
 	 */
 	public void reopenProbe(MutableObjectIterator<V2> probeInput) throws IOException {
-		multiHashTable.reopenProbe(probeInput);
+		reopenHashTable.reopenProbe(probeInput);
 	}
 
 }

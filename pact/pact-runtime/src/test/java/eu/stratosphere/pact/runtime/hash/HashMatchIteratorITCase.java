@@ -125,9 +125,6 @@ public class HashMatchIteratorITCase
 		}
 	}
 
-	
-	
-	
 
 	@Test
 	public void testBuildFirst() {
