@@ -581,9 +581,6 @@ public final class ManagementGraph extends ManagementAttachment implements IORea
 	}
 	
     public List<StringRecord> getIterationMetrics() {
-        for(StringRecord iterationMetric : this.iterationMetrics)
-            this.iterationMetrics.add(new StringRecord(iterationMetric));
-
         return this.iterationMetrics;
    }
 
