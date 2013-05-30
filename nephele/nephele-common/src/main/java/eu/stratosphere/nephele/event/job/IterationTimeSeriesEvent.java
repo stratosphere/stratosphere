@@ -15,12 +15,26 @@ public class IterationTimeSeriesEvent extends AbstractEvent {
     
     private double value;
     
+    
+    
     public IterationTimeSeriesEvent(long timestamp, String seriesName,
             int timeStep, double value) {
         super(timestamp);
         this.seriesName = seriesName;
         this.timeStep = timeStep;
         this.value = value;
+    }
+    
+    /**
+     * Constructs a new IterationTimeSeriesEvent object. This constructor
+     * is required for the deserialization process and is not
+     * supposed to be called directly.
+     */
+    public IterationTimeSeriesEvent() {
+        super();
+        this.seriesName = null;
+        this.timeStep = -1;
+        this.value = -1;
     }
     
     public String getSeriesName() {
@@ -54,13 +68,11 @@ public class IterationTimeSeriesEvent extends AbstractEvent {
      */
     @Override
     public void read(final DataInput in) throws IOException {
-        System.out.println("Read tse");
         super.read(in);
 
         this.seriesName = StringRecord.readString(in);
         this.timeStep =in.readInt();
         this.value = in.readDouble();
-        System.out.println("Done Read tse");
     }
     
 
@@ -69,15 +81,21 @@ public class IterationTimeSeriesEvent extends AbstractEvent {
      */
     @Override
     public void write(final DataOutput out) throws IOException {
-        System.out.println("Write tse");
         super.write(out);
 
         StringRecord.writeString(out, this.seriesName);
         out.writeInt(this.timeStep);
         out.writeDouble(this.value);
-        System.out.println("Done Write tse");
     }
 
+    
+    /**
+     * {@inheritDoc}
+     */
+    public String toString() {
+
+        return timestampToString(getTimestamp()) + "\t" + this.seriesName + " " + this.timeStep + " " + this.value;
+    }
 
 
 }

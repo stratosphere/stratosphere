@@ -175,10 +175,15 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final AtomicBoolean isShutdownInProgress = new AtomicBoolean(false);
 
 	private volatile boolean isShutDown = false;
+	
 
 	// TODO @micha remove
     private int mockTimeStep = 0;
 
+//    // names of the metrics for iteration status display by jobid
+//    private Map<JobID,List<String>> iterMetricsByJobs= new HashMap<JobID, List<String>>(); 
+    
+    
 	
 	public JobManager(ExecutionMode executionMode) {
 		this(executionMode, null);
@@ -918,7 +923,13 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		if (mg == null) {
 			throw new IOException("Cannot find job with ID " + jobID);
 		}
-
+       
+		// TODO remove mock code
+		SerializableArrayList<StringRecord>	iterationMetrics = new SerializableArrayList<StringRecord>();
+		iterationMetrics.add(new StringRecord("Mockstat1"));
+		iterationMetrics.add(new StringRecord("Mockstat2"));
+		iterationMetrics.add(new StringRecord("Mockstat3"));
+		mg.setIterationMetrics(iterationMetrics);
 		return mg;
 	}
 
@@ -976,11 +987,23 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		this.eventCollector.getEventsForJob(jobID, eventList, true);
 		//TODO @micha: add mock events here
         
-        IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "iter1", this.mockTimeStep++, this.mockTimeStep / 3.0);
-	    eventList.add(iterationEvent);
-	    System.out.println("######################" + this.mockTimeStep + "mock");
+        IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "Mockstat1", this.mockTimeStep++, this.mockTimeStep / 3.0);
+        eventList.add(iterationEvent);
+        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 3.0);
 
-		System.out.println("events" + eventList.size() + " "+ eventList);
+        System.out.println("events" + eventList.size() + " "+ eventList);
+        
+        IterationTimeSeriesEvent iterationEvent2 = new IterationTimeSeriesEvent(0, "Mockstat2", this.mockTimeStep++, this.mockTimeStep / 2.0);
+        eventList.add(iterationEvent2);
+        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 2.0);
+
+        System.out.println("events" + eventList.size() + " "+ eventList);
+        
+        IterationTimeSeriesEvent iterationEvent3 = new IterationTimeSeriesEvent(0, "Mockstat3", this.mockTimeStep++, this.mockTimeStep * 2.0);
+        eventList.add(iterationEvent3);
+        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep * 2.0);
+
+        System.out.println("events" + eventList.size() + " "+ eventList);
 		return eventList;
 	}
 
@@ -1397,4 +1420,5 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		return jmp.requestData(data);
 	}
+	
 }
