@@ -25,7 +25,6 @@ import eu.stratosphere.nephele.io.AbstractID;
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.ChannelID;
-import eu.stratosphere.nephele.io.channels.FileBufferManager;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferProvider;
 
@@ -340,63 +339,6 @@ final class SpillingQueueElement {
 
 	SpillingQueueElement getNextElement() {
 		return this.nextElement;
-	}
-
-	int spill(final AbstractID ownerID, final FileBufferManager fileBufferManager) throws IOException {
-
-		if (this.headSequenceNumber == -1) {
-			return 0;
-		}
-
-		if (this.headSequenceNumber == this.tailSequenceNumber) {
-
-			final Buffer buffer = (Buffer) this.bufferRef;
-			if (buffer == null) {
-				return 0;
-			}
-
-			if (!buffer.isBackedByMemory()) {
-				return 0;
-			}
-
-			final int size = buffer.size();
-			final Buffer fileBuffer = BufferFactory.createFromFile(size, ownerID, fileBufferManager, false, true);
-			buffer.copyToBuffer(fileBuffer);
-			this.bufferRef = fileBuffer;
-			buffer.recycleBuffer();
-
-			return size;
-		}
-
-		@SuppressWarnings("unchecked")
-		final Queue<Object> bufferQueue = (Queue<Object>) this.bufferRef;
-		final int queueSize = bufferQueue.size();
-		int reclaimedMemory = 0;
-		int count = 0;
-
-		while (count++ < queueSize) {
-
-			final Object obj = bufferQueue.poll();
-			if (obj == NULL_OBJECT) {
-				bufferQueue.offer(obj);
-				continue;
-			}
-
-			final Buffer buffer = (Buffer) obj;
-			if (!buffer.isBackedByMemory()) {
-				bufferQueue.offer(buffer);
-				continue;
-			}
-
-			final int size = buffer.size();
-			final Buffer fileBuffer = BufferFactory.createFromFile(size, ownerID, fileBufferManager, false, true);
-			buffer.copyToBuffer(fileBuffer);
-			bufferQueue.offer(fileBuffer);
-			buffer.recycleBuffer();
-			reclaimedMemory += size;
-		}
-
-		return reclaimedMemory;
 	}
 
 	int unspill(final BufferProvider bufferProvider) throws IOException {

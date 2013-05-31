@@ -34,11 +34,6 @@ import eu.stratosphere.nephele.util.ManagementTestUtils;
 public class ManagementGraphTest {
 
 	/**
-	 * The state of the checkpoint for these tests.
-	 */
-	private static final String CHECKPOINT_STATE = "NONE";
-
-	/**
 	 * This test checks the serialization/deserilization of a management graph.
 	 */
 	@Test
@@ -259,33 +254,29 @@ public class ManagementGraphTest {
 
 		// Vertices
 		final ManagementVertex vertex1_1 = new ManagementVertex(groupVertex1, new ManagementVertexID(), "Host 1",
-			"small", CHECKPOINT_STATE, 0);
+			"small", 0);
 		final ManagementVertex vertex2_1 = new ManagementVertex(groupVertex2, new ManagementVertexID(), "Host 2",
-			"medium", CHECKPOINT_STATE, 0);
+			"medium",0);
 		final ManagementVertex vertex2_2 = new ManagementVertex(groupVertex2, new ManagementVertexID(), "Host 2",
-			"medium", CHECKPOINT_STATE, 1);
+			"medium", 1);
 		final ManagementVertex vertex3_1 = new ManagementVertex(groupVertex3, new ManagementVertexID(), "Host 2",
-			"medium", CHECKPOINT_STATE, 0);
+			"medium",  0);
 		final ManagementVertex vertex4_1 = new ManagementVertex(groupVertex4, new ManagementVertexID(), "Host 2",
-			"medium", CHECKPOINT_STATE, 0);
+			"medium", 0);
 
 		// Input/output gates
 		final ManagementGate outputGate1_1 = new ManagementGate(vertex1_1, new ManagementGateID(), 0, false);
 
 		final ManagementGate inputGate2_1 = new ManagementGate(vertex2_1, new ManagementGateID(), 0, true);
-		final ManagementGate outputGate2_1 = new ManagementGate(vertex2_1, new ManagementGateID(), 0, false);
 
 		final ManagementGate inputGate2_2 = new ManagementGate(vertex2_2, new ManagementGateID(), 0, true);
-		final ManagementGate outputGate2_2 = new ManagementGate(vertex2_2, new ManagementGateID(), 0, false);
 
-		final ManagementGate inputGate3_1 = new ManagementGate(vertex3_1, new ManagementGateID(), 0, true);
 		final ManagementGate outputGate3_1 = new ManagementGate(vertex3_1, new ManagementGateID(), 0, false);
 
 		final ManagementGate inputGate4_1 = new ManagementGate(vertex4_1, new ManagementGateID(), 0, true);
 
 		// Group Edges
 		new ManagementGroupEdge(groupVertex1, 0, groupVertex2, 0, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-		new ManagementGroupEdge(groupVertex2, 0, groupVertex3, 0, ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
 		new ManagementGroupEdge(groupVertex3, 0, groupVertex4, 0, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
 
 		// Edges
@@ -293,10 +284,6 @@ public class ManagementGraphTest {
 			ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
 		new ManagementEdge(new ManagementEdgeID(), new ManagementEdgeID(), outputGate1_1, 1, inputGate2_2, 0,
 			ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-		new ManagementEdge(new ManagementEdgeID(), new ManagementEdgeID(), outputGate2_1, 0, inputGate3_1, 0,
-			ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
-		new ManagementEdge(new ManagementEdgeID(), new ManagementEdgeID(), outputGate2_2, 0, inputGate3_1, 1,
-			ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
 		new ManagementEdge(new ManagementEdgeID(), new ManagementEdgeID(), outputGate3_1, 0, inputGate4_1, 0,
 			ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
 

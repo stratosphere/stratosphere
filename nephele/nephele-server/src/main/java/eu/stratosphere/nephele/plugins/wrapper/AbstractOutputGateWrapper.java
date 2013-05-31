@@ -26,7 +26,6 @@ import eu.stratosphere.nephele.io.OutputGate;
 import eu.stratosphere.nephele.io.channels.AbstractOutputChannel;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.channels.bytebuffered.FileOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.InMemoryOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkOutputChannel;
 import eu.stratosphere.nephele.io.compression.CompressionLevel;
@@ -304,16 +303,6 @@ public abstract class AbstractOutputGateWrapper<T extends Record> implements Out
 			compressionLevel);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public FileOutputChannel<T> createFileOutputChannel(final OutputGate<T> outputGate, final ChannelID channelID,
-			final ChannelID connectedChannelID, final CompressionLevel compressionLevel) {
-
-		return this.wrappedOutputGate.createFileOutputChannel(outputGate, channelID, connectedChannelID,
-			compressionLevel);
-	}
 
 	/**
 	 * {@inheritDoc}

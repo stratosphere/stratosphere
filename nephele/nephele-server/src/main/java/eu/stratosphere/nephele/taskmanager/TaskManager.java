@@ -43,8 +43,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.nephele.checkpointing.ReplayTask;
-import eu.stratosphere.nephele.checkpointing.CheckpointUtils;
 import eu.stratosphere.nephele.configuration.ConfigConstants;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
@@ -58,7 +56,6 @@ import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
-import eu.stratosphere.nephele.executiongraph.CheckpointState;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.instance.HardwareDescription;
 import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
@@ -505,13 +502,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 
 		final RuntimeTask runtimeTask = (RuntimeTask) task;
 
-		// Request a checkpoint decision and return
-		if (!runtimeTask.requestCheckpointDecision()) {
-			final TaskCheckpointResult taskCheckpointResult = new TaskCheckpointResult(id,
-				AbstractTaskResult.ReturnCode.TASK_NOT_FOUND);
-			taskCheckpointResult.setDescription("No task with ID + " + id + " has not yet created a checkpoint");
-		}
-
 		reportAsyncronousEvent(id);
 
 		return new TaskCheckpointResult(id, AbstractTaskResult.ReturnCode.SUCCESS);
@@ -550,13 +540,12 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 			}
 
 			final Configuration jobConfiguration = tdd.getJobConfiguration();
-			final CheckpointState initialCheckpointState = tdd.getInitialCheckpointState();
 			final Set<ChannelID> activeOutputChannels = null; // TODO: Fix me
 
 			// Register the task
 			Task task;
 			try {
-				task = createAndRegisterTask(vertexID, jobConfiguration, re, initialCheckpointState,
+				task = createAndRegisterTask(vertexID, jobConfiguration, re,
 					activeOutputChannels);
 			} catch (InsufficientResourcesException e) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
@@ -604,8 +593,8 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 	 * @return the task to be started or <code>null</code> if a task with the same ID was already running
 	 */
 	private Task createAndRegisterTask(final ExecutionVertexID id, final Configuration jobConfiguration,
-			final RuntimeEnvironment environment, final CheckpointState initialCheckpointState,
-			final Set<ChannelID> activeOutputChannels) throws InsufficientResourcesException, IOException {
+			final RuntimeEnvironment environment, final Set<ChannelID> activeOutputChannels)
+					throws InsufficientResourcesException, IOException {
 
 		if (id == null) {
 			throw new IllegalArgumentException("Argument id is null");
@@ -613,10 +602,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 
 		if (environment == null) {
 			throw new IllegalArgumentException("Argument environment is null");
-		}
-
-		if (initialCheckpointState == null) {
-			throw new IllegalArgumentException("Argument initialCheckpointState is null");
 		}
 
 		// Task creation and registration must be atomic
@@ -627,24 +612,12 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 			final Task runningTask = this.runningTasks.get(id);
 			boolean registerTask = true;
 			if (runningTask == null) {
-
-				// Is there a complete checkpoint for this task
-				if (CheckpointUtils.hasCompleteCheckpointAvailable(id)) {
-					task = new ReplayTask(id, environment, this);
-				} else {
-					task = new RuntimeTask(id, environment, initialCheckpointState, this);
-				}
+				task = new RuntimeTask(id, environment, this);
 			} else {
 
 				if (runningTask instanceof RuntimeTask) {
-
-					// Check if there at least a partial checkpoint available
-					if (CheckpointUtils.hasPartialCheckpointAvailable(id)) {
-						task = new ReplayTask((RuntimeTask) runningTask, this);
-					} else {
-						// Task is already running
-						return null;
-					}
+					// Task is already running
+					return null;
 				} else {
 					// There is already a replay task running, we will simply restart it
 					task = runningTask;
@@ -654,9 +627,7 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 			}
 
 			final Environment ee = task.getEnvironment();
-
 			if (registerTask) {
-
 				// Register the task with the byte buffered channel manager
 				this.byteBufferedChannelManager.register(task, activeOutputChannels);
 
@@ -783,18 +754,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 		}
 	}
 
-	public void checkpointStateChanged(final JobID jobID, final ExecutionVertexID id,
-			final CheckpointState newCheckpointState) {
-
-		synchronized (this.jobManager) {
-			try {
-				this.jobManager.updateCheckpointState(new TaskCheckpointState(jobID, id, newCheckpointState));
-			} catch (IOException e) {
-				LOG.error(StringUtils.stringifyException(e));
-			}
-		}
-	}
-
 	/**
 	 * Shuts the task manager down.
 	 */
@@ -909,8 +868,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 
 					// Try to remove the envelope consumption log first
 					EnvelopeConsumptionLog.removeLog(vertexID);
-
-					CheckpointUtils.removeCheckpoint(vertexID);
 				}
 			}
 		};

@@ -23,7 +23,6 @@ import eu.stratosphere.nephele.io.channels.AbstractInputChannel;
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.ChannelID;
-import eu.stratosphere.nephele.io.channels.FileBufferManager;
 import eu.stratosphere.nephele.io.channels.bytebuffered.AbstractByteBufferedInputChannel;
 import eu.stratosphere.nephele.io.compression.CompressionBufferProvider;
 import eu.stratosphere.nephele.io.compression.CompressionException;
@@ -50,8 +49,6 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 
 	private final EnvelopeConsumptionLog envelopeConsumptionLog;
 
-	private final FileBufferManager fileBufferManager;
-
 	private Decompressor decompressor = null;
 
 	RuntimeInputGateContext(final String taskName, final TransferEnvelopeDispatcher transferEnvelopeDispatcher,
@@ -63,10 +60,7 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 		this.transferEnvelopeDispatcher = transferEnvelopeDispatcher;
 		this.inputGate = inputGate;
 		this.envelopeConsumptionLog = envelopeConsumptionLog;
-
-		this.fileBufferManager = FileBufferManager.getInstance();
 	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -88,8 +82,9 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 		}
 
 		if (this.envelopeConsumptionLog.followsLog()) {
-			return BufferFactory.createFromFile(minimumSizeOfBuffer, this.inputGate.getGateID(),
-				this.fileBufferManager, false, true);
+			throw new RuntimeException("There is no such thing as files for nephele anymore!");
+		//	return BufferFactory.createFromFile(minimumSizeOfBuffer, this.inputGate.getGateID(),
+		//		null, false, true);
 		}
 
 		return this.localBufferPool.requestEmptyBufferBlocking(minimumSizeOfBuffer);
