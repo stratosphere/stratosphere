@@ -20,7 +20,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Queue;
@@ -31,6 +30,7 @@ import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.nephele.util.BufferPoolConnector;
 
 public class SpillingQueueElementTest {
@@ -41,10 +41,10 @@ public class SpillingQueueElementTest {
 	public void testSpillingQueueElement() {
 
 		// Create basic data structures for the test
-		final ByteBuffer byteBuf1 = ByteBuffer.allocate(BUFFER_SIZE);
-		final ByteBuffer byteBuf2 = ByteBuffer.allocate(BUFFER_SIZE);
+		final MemorySegment byteBuf1 = new MemorySegment(new byte[BUFFER_SIZE], 0, BUFFER_SIZE);
+		final MemorySegment byteBuf2 = new MemorySegment(new byte[BUFFER_SIZE], 0, BUFFER_SIZE);
 
-		final Queue<ByteBuffer> queue = new ArrayDeque<ByteBuffer>();
+		final Queue<MemorySegment> queue = new ArrayDeque<MemorySegment>();
 
 		final JobID jobID = new JobID();
 		final ChannelID source = new ChannelID();

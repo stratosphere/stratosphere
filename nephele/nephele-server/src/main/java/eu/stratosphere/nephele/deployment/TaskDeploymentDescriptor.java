@@ -106,8 +106,6 @@ public final class TaskDeploymentDescriptor implements IOReadableWritable {
 	 *        the configuration of the job the task belongs to
 	 * @param taskConfiguration
 	 *        the task's configuration object
-	 * @param initialCheckpointState
-	 *        the task's initial checkpoint state
 	 * @param invokableClass
 	 *        the class containing the task code to be executed
 	 * @param outputGates

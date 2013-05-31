@@ -16,7 +16,6 @@
 package eu.stratosphere.nephele.taskmanager.bufferprovider;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -26,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.MemoryBufferPoolConnector;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 
 public final class LocalBufferPool implements BufferProvider {
 
@@ -41,7 +41,7 @@ public final class LocalBufferPool implements BufferProvider {
 		 * {@inheritDoc}
 		 */
 		@Override
-		public void recycle(final ByteBuffer byteBuffer) {
+		public void recycle(final MemorySegment byteBuffer) {
 
 			this.localBufferPool.recycleBuffer(byteBuffer);
 		}
@@ -64,7 +64,7 @@ public final class LocalBufferPool implements BufferProvider {
 
 	private boolean isDestroyed = false;
 
-	private final Queue<ByteBuffer> buffers = new ArrayDeque<ByteBuffer>();
+	private final Queue<MemorySegment> buffers = new ArrayDeque<MemorySegment>();
 
 	private final LocalBufferPoolConnector bufferPoolConnector;
 
@@ -120,12 +120,12 @@ public final class LocalBufferPool implements BufferProvider {
 				// Make sure we return excess buffers immediately
 				while (this.requestedNumberOfBuffers > this.designatedNumberOfBuffers) {
 
-					final ByteBuffer buffer = this.buffers.poll();
-					if (buffer == null) {
+					final MemorySegment seg = this.buffers.poll();
+					if (seg == null) {
 						break;
 					}
 
-					this.globalBufferPool.releaseGlobalBuffer(buffer);
+					this.globalBufferPool.releaseGlobalBuffer(seg);
 					this.requestedNumberOfBuffers--;
 				}
 
@@ -134,10 +134,9 @@ public final class LocalBufferPool implements BufferProvider {
 					// Check if the number of cached buffers matches the number of designated buffers
 					if (this.requestedNumberOfBuffers < this.designatedNumberOfBuffers) {
 
-						final ByteBuffer buffer = this.globalBufferPool.lockGlobalBuffer();
-						if (buffer != null) {
-
-							this.buffers.add(buffer);
+						final MemorySegment memSeg = this.globalBufferPool.lockGlobalBuffer();
+						if (memSeg != null) {
+							this.buffers.add(memSeg);
 							this.requestedNumberOfBuffers++;
 							continue;
 						}
@@ -157,8 +156,8 @@ public final class LocalBufferPool implements BufferProvider {
 				}
 
 				if (!async) {
-					final ByteBuffer byteBuffer = this.buffers.poll();
-					return BufferFactory.createFromMemory(minimumSizeOfBuffer, byteBuffer, this.bufferPoolConnector);
+					final MemorySegment memSeg = this.buffers.poll();
+					return BufferFactory.createFromMemory(minimumSizeOfBuffer, memSeg, this.bufferPoolConnector);
 				}
 			}
 		}
@@ -249,15 +248,15 @@ public final class LocalBufferPool implements BufferProvider {
 		}
 	}
 
-	private void recycleBuffer(final ByteBuffer byteBuffer) {
+	private void recycleBuffer(final MemorySegment memSeg) {
 
 		synchronized (this.buffers) {
 
 			if (this.isDestroyed) {
-				this.globalBufferPool.releaseGlobalBuffer(byteBuffer);
+				this.globalBufferPool.releaseGlobalBuffer(memSeg);
 				this.requestedNumberOfBuffers--;
 			} else {
-				this.buffers.add(byteBuffer);
+				this.buffers.add(memSeg);
 				this.buffers.notify();
 			}
 

@@ -166,7 +166,6 @@ public final class RecoveryLogic {
 				final ExecutionVertex predecessor = vertex.getPredecessor(j);
 
 				if (hasInstanceAssigned(predecessor)) {
-					// TODO: Not sure about that
 					verticesToBeCanceled.add(predecessor);
 				}
 

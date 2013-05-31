@@ -88,7 +88,6 @@ public class TaskDeploymentDescriptorTest {
 		final int currentNumberOfSubtasks = 1;
 		final Configuration jobConfiguration = new Configuration();
 		final Configuration taskConfiguration = new Configuration();
-		final Object initialCheckpointState = null;
 		final Class<? extends AbstractInvokable> invokableClass = FileLineReader.class;
 		final SerializableArrayList<GateDeploymentDescriptor> outputGates = new SerializableArrayList<GateDeploymentDescriptor>(
 			0);
@@ -105,7 +104,6 @@ public class TaskDeploymentDescriptorTest {
 		boolean eighthExceptionCaught = false;
 		boolean ninethExeceptionCaught = false;
 		boolean tenthExceptionCaught = false;
-		boolean eleventhExceptionCaught = false;
 
 		try {
 			new TaskDeploymentDescriptor(null, vertexID, taskName,
@@ -166,17 +164,10 @@ public class TaskDeploymentDescriptorTest {
 		try {
 			new TaskDeploymentDescriptor(jobID, vertexID, taskName,
 				indexInSubtaskGroup, currentNumberOfSubtasks, jobConfiguration, taskConfiguration,
-				invokableClass, outputGates, inputGates);
-		} catch (IllegalArgumentException e) {
-			eighthExceptionCaught = true;
-		}
-
-		try {
-			new TaskDeploymentDescriptor(jobID, vertexID, taskName,
-				indexInSubtaskGroup, currentNumberOfSubtasks, jobConfiguration, taskConfiguration,
 				 null, outputGates, inputGates);
 		} catch (IllegalArgumentException e) {
-			ninethExeceptionCaught = true;
+			eighthExceptionCaught = true;
+			
 		}
 
 		try {
@@ -184,7 +175,8 @@ public class TaskDeploymentDescriptorTest {
 				indexInSubtaskGroup, currentNumberOfSubtasks, jobConfiguration, taskConfiguration,
 				invokableClass, null, inputGates);
 		} catch (IllegalArgumentException e) {
-			tenthExceptionCaught = true;
+			ninethExeceptionCaught = true;
+			
 		}
 
 		try {
@@ -192,7 +184,7 @@ public class TaskDeploymentDescriptorTest {
 				indexInSubtaskGroup, currentNumberOfSubtasks, jobConfiguration, taskConfiguration,
 				invokableClass, outputGates, null);
 		} catch (IllegalArgumentException e) {
-			eleventhExceptionCaught = true;
+			tenthExceptionCaught = true;
 		}
 
 		if (!firstExceptionCaught) {
@@ -235,9 +227,6 @@ public class TaskDeploymentDescriptorTest {
 			fail("Tenth argument was illegal but not detected");
 		}
 
-		if (!eleventhExceptionCaught) {
-			fail("Eleventh argument was illegal but not detected");
-		}
 	}
 
 	/**

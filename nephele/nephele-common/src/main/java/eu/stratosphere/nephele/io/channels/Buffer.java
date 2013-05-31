@@ -16,10 +16,10 @@
 package eu.stratosphere.nephele.io.channels;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 
 /**
  * This class represents the general buffer abstraction that is used by Nephele
@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * This class is in general not thread-safe.
  * 
- * @author warneke
  */
 public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 {
@@ -51,12 +50,6 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	{}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public abstract int read(ByteBuffer destination) throws IOException;
-
-	/**
 	 * Reads data from the buffer and writes it to the
 	 * given {@link WritableByteChannel} object.
 	 * 
@@ -65,12 +58,7 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	 *         end of the stream.
 	 * @throws IOException Thrown if an error occurs while writing to the {@link WritableByteChannel} object.
 	 */
-	public abstract int read(WritableByteChannel destination) throws IOException;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public abstract boolean isOpen();
 	
 	
@@ -81,13 +69,7 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	 */
 	@Override
 	public abstract void close() throws IOException;
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public abstract int write(ByteBuffer data) throws IOException;
-
+	
 	/**
 	 * Reads data from the given {@link ReadableByteChannel} object and
 	 * writes it to the buffer.
@@ -97,6 +79,7 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	 * @throws IOException Thrown if an error occurs while writing data to the buffer.
 	 */
 	public abstract int write(ReadableByteChannel source) throws IOException;
+	
 
 	/**
 	 * Returns the number of bytes which can be either still written to or read from
@@ -180,4 +163,17 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	 * @return the duplicated buffer
 	 */
 	public abstract Buffer duplicate() throws IOException, InterruptedException;
+
+	/**
+	 * Reads data from the buffer and writes it to the
+	 * given {@link WritableByteChannel} object.
+	 * 
+	 * @param destination The {@link WritableByteChannel} object to write the data to
+	 * @return The number of bytes read from the buffer, potentially <code>0</code> or <code>-1</code to indicate the
+	 *         end of the stream.
+	 * @throws IOException Thrown if an error occurs while writing to the {@link WritableByteChannel} object.
+	 */
+	public abstract int read(WritableByteChannel writableByteChannel) throws IOException;
+
+
 }

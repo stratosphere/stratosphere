@@ -24,7 +24,6 @@ import eu.stratosphere.nephele.io.channels.Buffer;
  * This class is the default implementation to serialize a {@link TransferEnvelope} into a byte stream. In case the
  * transfer envelope contains a buffer, this implementation copies the buffer's data into the byte stream.
  * 
- * @author warneke
  */
 public class DefaultSerializer extends AbstractSerializer {
 

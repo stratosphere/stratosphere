@@ -18,6 +18,7 @@ package eu.stratosphere.pact.test.iterative;
 import java.io.BufferedReader;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -28,6 +29,7 @@ import eu.stratosphere.pact.example.connectedcomponents.WorksetConnectedComponen
 import eu.stratosphere.pact.test.iterative.nephele.ConnectedComponentsNepheleITCase;
 import eu.stratosphere.pact.test.util.TestBase2;
 
+@Ignore
 @RunWith(Parameterized.class)
 public class CoGroupConnectedComponentsITCase extends TestBase2 {
 	

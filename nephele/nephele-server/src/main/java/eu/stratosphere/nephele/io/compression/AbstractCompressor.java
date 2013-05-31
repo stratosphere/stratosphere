@@ -16,10 +16,10 @@
 package eu.stratosphere.nephele.io.compression;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.MemoryBuffer;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 
 public abstract class AbstractCompressor implements Compressor {
 
@@ -29,9 +29,9 @@ public abstract class AbstractCompressor implements Compressor {
 
 	private MemoryBuffer compressedBuffer;
 
-	protected ByteBuffer uncompressedDataBuffer;
+	protected MemorySegment uncompressedMemorySegment;
 
-	protected ByteBuffer compressedDataBuffer;
+	protected MemorySegment compressedMemorySegment;
 
 	protected int uncompressedDataBufferLength;
 
@@ -58,11 +58,11 @@ public abstract class AbstractCompressor implements Compressor {
 
 		if (buffer == null) {
 			this.compressedBuffer = null;
-			this.compressedDataBuffer = null;
+			this.compressedMemorySegment = null;
 			this.compressedDataBufferLength = 0;
 		} else {
-			this.compressedDataBuffer = buffer.getByteBuffer();
-			this.compressedDataBufferLength = this.compressedDataBuffer.limit();
+			this.compressedMemorySegment = buffer.getMemorySegment();
+			this.compressedDataBufferLength = this.compressedMemorySegment.size();
 			this.compressedBuffer = buffer;
 		}
 	}
@@ -71,11 +71,11 @@ public abstract class AbstractCompressor implements Compressor {
 
 		if (buffer == null) {
 			this.uncompressedBuffer = null;
-			this.uncompressedDataBuffer = null;
+			this.uncompressedMemorySegment = null;
 			this.uncompressedDataBufferLength = 0;
 		} else {
-			this.uncompressedDataBuffer = buffer.getByteBuffer();
-			this.uncompressedDataBufferLength = this.uncompressedDataBuffer.limit();
+			this.uncompressedMemorySegment = buffer.getMemorySegment();
+			this.uncompressedDataBufferLength = this.uncompressedMemorySegment.size();
 			this.uncompressedBuffer = buffer;
 		}
 	}
@@ -92,16 +92,16 @@ public abstract class AbstractCompressor implements Compressor {
 
 		setUncompressedDataBuffer((MemoryBuffer) uncompressedData);
 		setCompressedDataBuffer(this.bufferProvider.lockCompressionBuffer());
-		this.compressedDataBuffer.clear();
-		this.uncompressedDataBufferLength = this.uncompressedDataBuffer.position();
+		this.uncompressedDataBufferLength = this.uncompressedBuffer.position();
+		this.uncompressedBuffer.clear();
 
 		final int numberOfCompressedBytes = compressBytesDirect(0);
 
 		// System.out.println("Compression library " + this.uncompressedDataBuffer.position() + " to " +
 		// numberOfCompressedBytes + " bytes");
 
-		this.compressedDataBuffer.position(numberOfCompressedBytes + SIZE_LENGTH);
-
+		this.compressedBuffer.position(numberOfCompressedBytes + SIZE_LENGTH);
+		
 		final Buffer compressedBuffer = this.compressedBuffer;
 		this.bufferProvider.releaseCompressionBuffer(this.uncompressedBuffer);
 		setUncompressedDataBuffer(null);

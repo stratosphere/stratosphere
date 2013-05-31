@@ -117,7 +117,7 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 			return null;
 		}
 
-		// Moved event processing to releaseConsumedReadBuffer method // copy anything
+		// Moved event processing to releaseConsumedReadBuffer method // copy anything 
 
 		return transferEnvelope.getBuffer();
 	}
