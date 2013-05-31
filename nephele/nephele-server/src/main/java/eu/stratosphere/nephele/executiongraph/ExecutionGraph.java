@@ -240,13 +240,6 @@ public class ExecutionGraph implements ExecutionListener {
 				// Create edges between execution vertices
 				createExecutionEdgesForGroupEdge(edge);
 			}
-
-			// Update initial checkpoint state for all group members
-			final CheckpointState ics = groupVertex.checkInitialCheckpointState();
-			final int currentNumberOfGroupMembers = groupVertex.getCurrentNumberOfGroupMembers();
-			for (int i = 0; i < currentNumberOfGroupMembers; ++i) {
-				groupVertex.getGroupMember(i).updateCheckpointState(ics);
-			}
 		}
 
 		// Repair the instance assignment after having changed the channel types
@@ -909,24 +902,12 @@ public class ExecutionGraph implements ExecutionListener {
 				final ExecutionGroupEdge edge = groupVertex.getForwardEdge(i);
 				if (!stageNumbers.containsKey(edge.getTargetVertex())) {
 					// Target vertex has not yet been discovered
-					if (edge.getChannelType() != ChannelType.FILE) {
-						// Same stage as preceding vertex
-						stageNumbers.put(edge.getTargetVertex(), Integer.valueOf(precedingNumber));
-					} else {
-						// File channel, increase stage of target vertex by one
-						stageNumbers.put(edge.getTargetVertex(), Integer.valueOf(precedingNumber + 1));
-					}
+					// Same stage as preceding vertex
+					stageNumbers.put(edge.getTargetVertex(), Integer.valueOf(precedingNumber));
 				} else {
 					final int stageNumber = stageNumbers.get(edge.getTargetVertex()).intValue();
-					if (edge.getChannelType() != ChannelType.FILE) {
-						if (stageNumber != precedingNumber) {
-							stageNumbers.put(edge.getTargetVertex(), (int) Math.max(precedingNumber, stageNumber));
-						}
-					} else {
-						// File channel, increase stage of target vertex by one
-						if (stageNumber != (precedingNumber + 1)) {
-							stageNumbers.put(edge.getTargetVertex(), (int) Math.max(precedingNumber + 1, stageNumber));
-						}
+					if (stageNumber != precedingNumber) {
+						stageNumbers.put(edge.getTargetVertex(), (int) Math.max(precedingNumber, stageNumber));
 					}
 				}
 			}
@@ -945,15 +926,9 @@ public class ExecutionGraph implements ExecutionListener {
 
 				final ExecutionGroupEdge edge = groupVertex.getBackwardEdge(i);
 				final int stageNumber = stageNumbers.get(edge.getSourceVertex());
-				if (edge.getChannelType() == ChannelType.FILE) {
-					if (stageNumber < (succeedingNumber - 1)) {
-						stageNumbers.put(edge.getSourceVertex(), Integer.valueOf(succeedingNumber - 1));
-					}
-				} else {
-					if (stageNumber != succeedingNumber) {
-						LOG.error(edge.getSourceVertex() + " and " + edge.getTargetVertex()
-							+ " are assigned to different stages although not connected by a file channel");
-					}
+				if (stageNumber != succeedingNumber) {
+					LOG.error(edge.getSourceVertex() + " and " + edge.getTargetVertex()
+						+ " are assigned to different stages although not connected by a file channel");
 				}
 			}
 		}
@@ -1007,7 +982,7 @@ public class ExecutionGraph implements ExecutionListener {
 
 				final ExecutionGate outputGate = sourceVertex.getOutputGate(i);
 				final ChannelType channelType = outputGate.getChannelType();
-				if (channelType == ChannelType.FILE || channelType == ChannelType.INMEMORY) {
+				if (channelType == ChannelType.INMEMORY) {
 					final int numberOfOutputChannels = outputGate.getNumberOfEdges();
 					for (int j = 0; j < numberOfOutputChannels; ++j) {
 						final ExecutionEdge outputChannel = outputGate.getEdge(j);
@@ -1027,7 +1002,7 @@ public class ExecutionGraph implements ExecutionListener {
 
 				final ExecutionGate inputGate = targetVertex.getInputGate(i);
 				final ChannelType channelType = inputGate.getChannelType();
-				if (channelType == ChannelType.FILE || channelType == ChannelType.INMEMORY) {
+				if (channelType == ChannelType.INMEMORY) {
 					final int numberOfInputChannels = inputGate.getNumberOfEdges();
 					for (int j = 0; j < numberOfInputChannels; ++j) {
 						final ExecutionEdge inputChannel = inputGate.getEdge(j);

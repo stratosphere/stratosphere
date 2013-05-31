@@ -95,11 +95,6 @@ final class RuntimeOutputChannelBroker extends AbstractOutputChannelForwarder im
 	@Override
 	public boolean hasDataLeft() throws IOException, InterruptedException {
 
-		// Don't wait for an acknowledgment in case of a file channel, receiver is not running anyway
-		if (this.byteBufferedOutputChannel.getType() == ChannelType.FILE) {
-			return getNext().hasDataLeft();
-		}
-
 		if (this.closeAcknowledgmentReceived) {
 			return getNext().hasDataLeft();
 		}

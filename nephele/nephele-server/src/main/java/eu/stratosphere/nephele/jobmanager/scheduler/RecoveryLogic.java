@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.execution.ExecutionState;
-import eu.stratosphere.nephele.executiongraph.CheckpointState;
 import eu.stratosphere.nephele.executiongraph.ExecutionEdge;
 import eu.stratosphere.nephele.executiongraph.ExecutionGate;
 import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
@@ -167,32 +166,8 @@ public final class RecoveryLogic {
 				final ExecutionVertex predecessor = vertex.getPredecessor(j);
 
 				if (hasInstanceAssigned(predecessor)) {
-
-					// At the moment, there no checkpoint decision for this vertex
-					if (predecessor.getCheckpointState() == CheckpointState.UNDECIDED) {
-						final TaskCheckpointResult result = predecessor.requestCheckpointDecision();
-						if (result.getReturnCode() != ReturnCode.SUCCESS) {
-							// Assume we do not have a checkpoint in this case
-							predecessor.updateCheckpointState(CheckpointState.NONE);
-						} else {
-
-							try {
-								predecessor.waitForCheckpointStateChange(CheckpointState.UNDECIDED, 100L);
-							} catch (InterruptedException e) {
-							}
-
-							if (predecessor.getCheckpointState() == CheckpointState.UNDECIDED) {
-								predecessor.updateCheckpointState(CheckpointState.NONE);
-							}
-						}
-					}
-
-					if (predecessor.getCheckpointState() == CheckpointState.NONE) {
-						verticesToBeCanceled.add(predecessor);
-					} else {
-						checkpointsToBeReplayed.add(predecessor);
-						continue;
-					}
+					// TODO: Not sure about that
+					verticesToBeCanceled.add(predecessor);
 				}
 
 				if (!visited.contains(predecessor)) {
@@ -241,10 +216,6 @@ public final class RecoveryLogic {
 			for (int j = 0; j < outputGate.getNumberOfEdges(); ++j) {
 
 				final ExecutionEdge outputChannel = outputGate.getEdge(j);
-				if (outputChannel.getChannelType() == ChannelType.FILE) {
-					// Connected vertex is not yet running
-					continue;
-				}
 
 				final ExecutionVertex connectedVertex = outputChannel.getInputGate().getVertex();
 				if (connectedVertex == null) {
@@ -273,10 +244,6 @@ public final class RecoveryLogic {
 			for (int j = 0; j < inputGate.getNumberOfEdges(); ++j) {
 
 				final ExecutionEdge inputChannel = inputGate.getEdge(j);
-				if (inputChannel.getChannelType() == ChannelType.FILE) {
-					// Connected vertex is not running anymore
-					continue;
-				}
 
 				final ExecutionVertex connectedVertex = inputChannel.getOutputGate().getVertex();
 				if (connectedVertex == null) {

@@ -54,14 +54,4 @@ public interface JobManagerProtocol extends VersionedProtocol {
 	 *         thrown if an error occurs during this remote procedure call
 	 */
 	void updateTaskExecutionState(TaskExecutionState taskExecutionState) throws IOException;
-
-	/**
-	 * Reports an update of a task's checkpoint state to the job manager.
-	 * 
-	 * @param taskCheckpointState
-	 *        the new checkpoint state of the task
-	 * @throws IOException
-	 *         thrown if an error occurs during this remote procedure call
-	 */
-	void updateCheckpointState(TaskCheckpointState taskCheckpointState) throws IOException;
 }

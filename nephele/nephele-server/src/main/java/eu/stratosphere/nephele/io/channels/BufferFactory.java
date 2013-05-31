@@ -15,26 +15,10 @@
 
 package eu.stratosphere.nephele.io.channels;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import eu.stratosphere.nephele.io.AbstractID;
 
 public final class BufferFactory {
-
-	public static FileBuffer createFromFile(final int bufferSize, final AbstractID ownerID,
-			final FileBufferManager fileBufferManager, final boolean distributed, final boolean deleteOnClose)
-			throws IOException {
-
-		return new FileBuffer(bufferSize, ownerID, fileBufferManager, distributed, deleteOnClose);
-	}
-
-	public static FileBuffer createFromCheckpoint(final int bufferSize, final long offset,
-			final AbstractID ownerID, final FileBufferManager fileBufferManager, final boolean distributed)
-			throws IOException {
-
-		return new FileBuffer(bufferSize, offset, ownerID, fileBufferManager, distributed, false);
-	}
 
 	public static Buffer createFromMemory(final int bufferSize, final ByteBuffer byteBuffer,
 			final MemoryBufferPoolConnector bufferPoolConnector) {

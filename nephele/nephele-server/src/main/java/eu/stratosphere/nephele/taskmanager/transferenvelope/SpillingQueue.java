@@ -15,23 +15,15 @@
 
 package eu.stratosphere.nephele.taskmanager.transferenvelope;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import eu.stratosphere.nephele.io.AbstractID;
-
 import eu.stratosphere.nephele.io.channels.Buffer;
-import eu.stratosphere.nephele.io.channels.FileBufferManager;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferProvider;
 
 public final class SpillingQueue implements Queue<TransferEnvelope> {
-
-	private final FileBufferManager fileBufferManager;
-
-	private final AbstractID ownerID;
 
 	private final BufferProvider bufferProvider;
 
@@ -45,17 +37,13 @@ public final class SpillingQueue implements Queue<TransferEnvelope> {
 
 	private boolean allowAsynchronousUnspilling = true;
 
-	private static final class SpillingQueueID extends AbstractID {
-	}
 
 	public SpillingQueue() {
-		this(new SpillingQueueID(), null);
+		this(null);
 	}
 
-	public SpillingQueue(final AbstractID ownerID, final BufferProvider bufferProvider) {
+	public SpillingQueue(final BufferProvider bufferProvider) {
 
-		this.ownerID = ownerID;
-		this.fileBufferManager = FileBufferManager.getInstance();
 		this.bufferProvider = bufferProvider;
 	}
 
@@ -306,35 +294,6 @@ public final class SpillingQueue implements Queue<TransferEnvelope> {
 		throw new UnsupportedOperationException("remove is not supported on this type of queue");
 	}
 
-	private long spill(final boolean includeHead) throws IOException {
-
-		SpillingQueueElement elem = this.head;
-		if (!includeHead) {
-			if (elem == null) {
-				return 0L;
-			}
-
-			// Skip the head;
-			elem = elem.getNextElement();
-		}
-
-		int reclaimedMemory = 0;
-
-		while (elem != null) {
-
-			reclaimedMemory += elem.spill(this.ownerID, this.fileBufferManager);
-			elem = elem.getNextElement();
-		}
-
-		this.sizeOfMemoryBuffers.addAndGet(-reclaimedMemory);
-
-		return reclaimedMemory;
-	}
-
-	public synchronized long spillSynchronouslyIncludingHead() throws IOException {
-
-		return spill(true);
-	}
 
 	/**
 	 * Prints out the current spilling state of this queue, i.e. how many buffers that are encapsulated inside the

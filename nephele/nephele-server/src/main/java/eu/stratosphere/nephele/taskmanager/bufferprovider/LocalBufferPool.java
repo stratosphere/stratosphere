@@ -64,27 +64,19 @@ public final class LocalBufferPool implements BufferProvider {
 
 	private boolean isDestroyed = false;
 
-	private final AsynchronousEventListener eventListener;
-
 	private final Queue<ByteBuffer> buffers = new ArrayDeque<ByteBuffer>();
 
 	private final LocalBufferPoolConnector bufferPoolConnector;
 
 	private final Queue<BufferAvailabilityListener> bufferAvailabilityListenerQueue = new ArrayDeque<BufferAvailabilityListener>();
 
-	public LocalBufferPool(final int designatedNumberOfBuffers, final boolean isShared,
-			final AsynchronousEventListener eventListener) {
+	public LocalBufferPool(final int designatedNumberOfBuffers, final boolean isShared) {
 
 		this.globalBufferPool = GlobalBufferPool.getInstance();
 		this.maximumBufferSize = this.globalBufferPool.getMaximumBufferSize();
 		this.designatedNumberOfBuffers = designatedNumberOfBuffers;
 		this.isShared = isShared;
-		this.eventListener = eventListener;
 		this.bufferPoolConnector = new LocalBufferPoolConnector(this);
-	}
-
-	public LocalBufferPool(final int designatedNumberOfBuffers, final boolean isShared) {
-		this(designatedNumberOfBuffers, isShared, null);
 	}
 
 	/**
@@ -168,10 +160,6 @@ public final class LocalBufferPool implements BufferProvider {
 					final ByteBuffer byteBuffer = this.buffers.poll();
 					return BufferFactory.createFromMemory(minimumSizeOfBuffer, byteBuffer, this.bufferPoolConnector);
 				}
-			}
-
-			if (this.eventListener != null) {
-				this.eventListener.asynchronousEventOccurred();
 			}
 		}
 	}
