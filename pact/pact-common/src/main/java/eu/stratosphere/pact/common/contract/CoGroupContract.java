@@ -73,10 +73,10 @@ public class CoGroupContract extends GenericCoGroupContract<CoGroupStub> impleme
 	}
 	
 	/**
-	 * The private constructor that only gets invoked from the Builder.
+	 * Create co group contract with information from the builder.
 	 * @param builder
 	 */
-	protected CoGroupContract(Builder builder) {
+	public CoGroupContract(Builder builder) {
 		super(builder.udf, builder.getKeyColumnsArray1(), builder.getKeyColumnsArray2(), builder.name);
 		this.keyTypes = builder.getKeyClassesArray();
 		setFirstInputs(builder.inputs1);

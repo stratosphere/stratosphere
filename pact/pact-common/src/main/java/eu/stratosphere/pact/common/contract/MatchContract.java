@@ -59,10 +59,10 @@ public class MatchContract extends GenericMatchContract<MatchStub> implements Re
 	}
 	
 	/**
-	 * The private constructor that only gets invoked from the Builder.
+	 * Create match contract with information from the builder.
 	 * @param builder
 	 */
-	protected MatchContract(Builder builder) {
+	public MatchContract(Builder builder) {
 		super(builder.udf, builder.getKeyColumnsArray1(),
 				builder.getKeyColumnsArray2(), builder.name);
 		this.keyTypes = builder.getKeyClassesArray();

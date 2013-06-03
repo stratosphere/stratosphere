@@ -50,10 +50,10 @@ public class CrossContract extends GenericCrossContract<CrossStub> implements Re
 	}
 	
 	/**
-	 * The private constructor that only gets invoked from the Builder.
+	 * Create cross contract with information from the builder.
 	 * @param builder
 	 */
-	protected CrossContract(Builder builder) {
+	public CrossContract(Builder builder) {
 		super(builder.udf, builder.name);
 		setFirstInputs(builder.inputs1);
 		setSecondInputs(builder.inputs2);
