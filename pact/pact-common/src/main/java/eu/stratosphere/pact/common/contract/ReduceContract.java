@@ -74,10 +74,10 @@ public class ReduceContract extends GenericReduceContract<ReduceStub> implements
 	}
 	
 	/**
-	 * The private constructor that only gets invoked from the Builder.
+	 * Create reduce contract with information from the builder.
 	 * @param builder
 	 */
-	protected ReduceContract(Builder builder) {
+	public ReduceContract(Builder builder) {
 		super(builder.udf, builder.getKeyColumnsArray(), builder.name);
 		this.keyTypes = builder.getKeyClassesArray();
 		setInputs(builder.inputs);

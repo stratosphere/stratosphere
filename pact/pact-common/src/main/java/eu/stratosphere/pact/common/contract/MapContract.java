@@ -49,10 +49,10 @@ public class MapContract extends GenericMapContract<MapStub> implements RecordCo
 	}
 	
 	/**
-	 * The private constructor that only gets invoked from the Builder.
+	 * Create map contract with information from the builder.
 	 * @param builder
 	 */
-	protected MapContract(Builder builder) {
+	public MapContract(Builder builder) {
 		super(builder.udf, builder.name);
 		setInputs(builder.inputs);
 	}
