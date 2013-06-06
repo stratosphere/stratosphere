@@ -22,11 +22,11 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,11 +48,6 @@ import eu.stratosphere.pact.compiler.plantranslate.NepheleJobGraphGenerator;
 
 public abstract class TestBase2 {
 	
-	/* Make sure there is a valid log4j appender */
-	static {
-		BasicConfigurator.configure();
-	}
-	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
 
 	protected final Configuration config;
@@ -61,7 +56,7 @@ public abstract class TestBase2 {
 	
 	private NepheleMiniCluster executer;
 	
-	protected boolean printPlan = true;
+	protected boolean printPlan = false;
 	
 
 
@@ -408,5 +403,28 @@ public abstract class TestBase2 {
 			configs.add(c);
 		}
 		return configs;
+	}
+	
+	public void readAllResultLines(List<String> target, String resultPath) throws IOException {
+		for (BufferedReader reader : getResultReader(resultPath)) {
+			String s = null;
+			while ((s = reader.readLine()) != null) {
+				target.add(s);
+			}
+		}
+	}
+	
+	public void compareResultsByLinesInMemory(String expectedResultStr, String resultPath) throws Exception {
+		ArrayList<String> list = new ArrayList<String>();
+		readAllResultLines(list, resultPath);
+		
+		String[] result = (String[]) list.toArray(new String[list.size()]);
+		Arrays.sort(result);
+		
+		String[] expected = expectedResultStr.split("\n");
+		Arrays.sort(expected);
+		
+		Assert.assertEquals("Different number of lines in expected and obtained result.", expected.length, result.length);
+		Assert.assertArrayEquals(expected, result);
 	}
 }
