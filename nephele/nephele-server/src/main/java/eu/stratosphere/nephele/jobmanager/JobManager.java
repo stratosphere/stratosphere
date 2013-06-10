@@ -178,12 +178,12 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	
 
 	// TODO @micha remove
-    private int mockTimeStep = 0;
+	private int mockTimeStep = 0;
 
-//    // names of the metrics for iteration status display by jobid
-//    private Map<JobID,List<String>> iterMetricsByJobs= new HashMap<JobID, List<String>>(); 
-    
-    
+//	// names of the metrics for iteration status display by jobid
+//	private Map<JobID,List<String>> iterMetricsByJobs= new HashMap<JobID, List<String>>(); 
+	
+	
 	
 	public JobManager(ExecutionMode executionMode) {
 		this(executionMode, null);
@@ -383,7 +383,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * Entry point for the program
 	 * 
 	 * @param args
-	 *        arguments from the command line
+	 *		arguments from the command line
 	 */
 	@SuppressWarnings("static-access")
 	public static void main(final String[] args) {
@@ -622,7 +622,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * Currently, it is only being used to unregister from profiling (if activated).
 	 * 
 	 * @param executionGraph
-	 *        the execution graph to remove from the job manager
+	 *		the execution graph to remove from the job manager
 	 */
 	private void unregisterJob(final ExecutionGraph executionGraph) {
 
@@ -747,9 +747,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * given execution graph.
 	 * 
 	 * @param eg
-	 *        the execution graph representing the job to cancel.
+	 *		the execution graph representing the job to cancel.
 	 * @return <code>null</code> if no error occurred during the cancel attempt,
-	 *         otherwise the returned object will describe the error
+	 *		 otherwise the returned object will describe the error
 	 */
 	private TaskCancelResult cancelJob(final ExecutionGraph eg) {
 
@@ -923,7 +923,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		if (mg == null) {
 			throw new IOException("Cannot find job with ID " + jobID);
 		}
-       
+
 		// TODO remove mock code
 		SerializableArrayList<StringRecord>	iterationMetrics = new SerializableArrayList<StringRecord>();
 		iterationMetrics.add(new StringRecord("Mockstat1"));
@@ -986,24 +986,24 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		this.eventCollector.getEventsForJob(jobID, eventList, true);
 		//TODO @micha: add mock events here
-        
-        IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "Mockstat1", this.mockTimeStep++, this.mockTimeStep / 3.0);
-        eventList.add(iterationEvent);
-        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 3.0);
+		
+		IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "Mockstat1", this.mockTimeStep++, this.mockTimeStep / 3.0);
+		eventList.add(iterationEvent);
+		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 3.0);
 
-        System.out.println("events" + eventList.size() + " "+ eventList);
-        
-        IterationTimeSeriesEvent iterationEvent2 = new IterationTimeSeriesEvent(0, "Mockstat2", this.mockTimeStep++, this.mockTimeStep / 2.0);
-        eventList.add(iterationEvent2);
-        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 2.0);
+		System.out.println("events" + eventList.size() + " "+ eventList);
+		
+		IterationTimeSeriesEvent iterationEvent2 = new IterationTimeSeriesEvent(0, "Mockstat2", this.mockTimeStep++, this.mockTimeStep / 2.0);
+		eventList.add(iterationEvent2);
+		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 2.0);
 
-        System.out.println("events" + eventList.size() + " "+ eventList);
-        
-        IterationTimeSeriesEvent iterationEvent3 = new IterationTimeSeriesEvent(0, "Mockstat3", this.mockTimeStep++, this.mockTimeStep * 2.0);
-        eventList.add(iterationEvent3);
-        System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep * 2.0);
+		System.out.println("events" + eventList.size() + " "+ eventList);
+		
+		IterationTimeSeriesEvent iterationEvent3 = new IterationTimeSeriesEvent(0, "Mockstat3", this.mockTimeStep++, this.mockTimeStep * 2.0);
+		eventList.add(iterationEvent3);
+		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep * 2.0);
 
-        System.out.println("events" + eventList.size() + " "+ eventList);
+		System.out.println("events" + eventList.size() + " "+ eventList);
 		return eventList;
 	}
 
@@ -1077,7 +1077,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * to remove those checkpoints.
 	 * 
 	 * @param executionGraph
-	 *        the execution graph from which the checkpoints shall be removed
+	 *		the execution graph from which the checkpoints shall be removed
 	 */
 	private void removeAllCheckpoints(final ExecutionGraph executionGraph) {
 

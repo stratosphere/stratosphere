@@ -580,11 +580,11 @@ public final class ManagementGraph extends ManagementAttachment implements IORea
 		
 	}
 	
-    public List<StringRecord> getIterationMetrics() {
-        return this.iterationMetrics;
-   }
+	public List<StringRecord> getIterationMetrics() {
+		return this.iterationMetrics;
+	}
 
-   public void setIterationMetrics(SerializableArrayList<StringRecord> iterationMetrics) {
-       this.iterationMetrics = iterationMetrics;
-   }
+	public void setIterationMetrics(SerializableArrayList<StringRecord> iterationMetrics) {
+		this.iterationMetrics = iterationMetrics;
+	}
 }
