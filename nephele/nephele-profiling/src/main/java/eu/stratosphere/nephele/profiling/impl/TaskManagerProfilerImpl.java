@@ -42,6 +42,7 @@ import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
 import eu.stratosphere.nephele.profiling.impl.types.InternalExecutionVertexThreadProfilingData;
 import eu.stratosphere.nephele.profiling.impl.types.InternalInstanceProfilingData;
 import eu.stratosphere.nephele.profiling.impl.types.ProfilingDataContainer;
+import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 import eu.stratosphere.nephele.util.StringUtils;
 
@@ -222,7 +223,6 @@ public class TaskManagerProfilerImpl extends TimerTask implements TaskManagerPro
 	}
 
 	public void unregisterUserThreadFromCPUProfiling(Environment environment, Thread userThread) {
-
 		synchronized (this.monitoredThreads) {
 
 			final EnvironmentThreadSet environmentThreadSet = this.monitoredThreads.get(environment);
@@ -233,6 +233,11 @@ public class TaskManagerProfilerImpl extends TimerTask implements TaskManagerPro
 
 			environmentThreadSet.removeUserThread(userThread);
 		}
-
+	}
+	
+	public void publishCustomEvent(ProfilingEvent event) {
+		synchronized(this.profilingDataContainer) {
+			this.profilingDataContainer.addCustomEvent(event);
+		}
 	}
 }

@@ -26,7 +26,12 @@ import org.apache.commons.logging.LogFactory;
 import com.google.common.base.Preconditions;
 
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
+import eu.stratosphere.nephele.execution.RuntimeEnvironment;
 import eu.stratosphere.nephele.io.MutableRecordReader;
+import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
+import eu.stratosphere.nephele.profiling.impl.TaskManagerProfilerImpl;
+import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
 import eu.stratosphere.nephele.template.AbstractOutputTask;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.pact.common.stubs.aggregators.Aggregator;
@@ -103,6 +108,17 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 
 		IntegerRecord dummy = new IntegerRecord();
 		
+		// temp hack: get a hold of the taskmanagerprofiler so we can publish events with the
+		// aggregates for visualization
+		JobID jobId = getEnvironment().getJobID();
+		TaskManagerProfilerImpl profiler = null;
+		if (getEnvironment() instanceof RuntimeEnvironment) {
+			TaskManagerProfiler p = ((RuntimeEnvironment) getEnvironment()).getTaskManagerProfiler();
+			if (p instanceof TaskManagerProfilerImpl) {
+				profiler = (TaskManagerProfilerImpl) p;
+			}
+		}
+		
 		while (!terminationRequested()) {
 
 //			notifyMonitor(IterationMonitoring.Event.SYNC_STARTING, currentIteration);
@@ -115,6 +131,15 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 
 			if (log.isInfoEnabled()) {
 				log.info(formatLogString("finishing iteration [" + currentIteration + "]"));
+			}
+			
+			// at this time, all aggregators have the global aggregate.
+			// send forward it to the profiler
+			if (profiler != null) {
+				// forward the aggregates, add event wrapping code here
+//				long timestamp = System.currentTimeMillis();
+//				ProfilingEvent evt = new ProfilingEvent(jobId, timestamp, timestamp) {};
+//				profiler.publishCustomEvent(evt);
 			}
 
 			if (checkForConvergence()) {
