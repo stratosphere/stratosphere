@@ -539,7 +539,7 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 			RuntimeEnvironment re;
 			try {
 				re = new RuntimeEnvironment(tdd, this.memoryManager, this.ioManager, new TaskInputSplitProvider(jobID,
-					vertexID, this.globalInputSplitProvider));
+					vertexID, this.globalInputSplitProvider), this.profiler);
 			} catch (Throwable t) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);

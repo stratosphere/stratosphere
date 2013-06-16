@@ -44,6 +44,7 @@ import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.compression.CompressionException;
 import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
@@ -158,6 +159,8 @@ public class RuntimeEnvironment implements Environment, Runnable {
 	 * The name of the task running in this environment.
 	 */
 	private final String taskName;
+	
+	private final TaskManagerProfiler profiler;
 
 	/**
 	 * Creates a new runtime environment object which contains the runtime information for the encapsulated Nephele
@@ -190,6 +193,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 		this.memoryManager = null;
 		this.ioManager = null;
 		this.inputSplitProvider = null;
+		this.profiler = null;
 
 		this.invokable = this.invokableClass.newInstance();
 		this.invokable.setEnvironment(this);
@@ -212,7 +216,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public RuntimeEnvironment(final TaskDeploymentDescriptor tdd, final MemoryManager memoryManager,
-			final IOManager ioManager, final InputSplitProvider inputSplitProvider) throws Exception {
+			final IOManager ioManager, final InputSplitProvider inputSplitProvider, TaskManagerProfiler profiler) throws Exception {
 
 		this.jobID = tdd.getJobID();
 		this.taskName = tdd.getTaskName();
@@ -224,6 +228,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 		this.memoryManager = memoryManager;
 		this.ioManager = ioManager;
 		this.inputSplitProvider = inputSplitProvider;
+		this.profiler = profiler;
 
 		this.invokable = this.invokableClass.newInstance();
 		this.invokable.setEnvironment(this);
@@ -941,5 +946,9 @@ public class RuntimeEnvironment implements Environment, Runnable {
 		}
 
 		return Collections.unmodifiableSet(inputChannelIDs);
+	}
+	
+	public TaskManagerProfiler getTaskManagerProfiler() {
+		return this.profiler;
 	}
 }
