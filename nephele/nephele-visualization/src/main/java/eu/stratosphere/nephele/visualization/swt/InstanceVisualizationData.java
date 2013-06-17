@@ -20,12 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.jfree.data.xy.DefaultTableXYDataset;
 import org.jfree.data.xy.TableXYDataset;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 
-import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.profiling.types.InstanceProfilingEvent;
 
 public class InstanceVisualizationData {
@@ -235,14 +235,14 @@ public class InstanceVisualizationData {
 		this.networkTransmittedSeries.addOrUpdate(timestamp, toMBitPerSec(instanceProfilingEvent.getTransmittedBytes(),
 			instanceProfilingEvent.getProfilingInterval()));
 	}
-	
-	//  TODO @micha add data to right series by name
+
 	public void processIterationTimeSeriesEvent(IterationTimeSeriesEvent iterationEvent) {
 		// add data to right series by name
-		this.iterationStatusSeries.get(iterationEvent.getSeriesName()).addOrUpdate(iterationEvent.getTimeStep(), iterationEvent.getValue());
+		this.iterationStatusSeries.get(iterationEvent.getSeriesName()).addOrUpdate(iterationEvent.getTimeStep(),
+        iterationEvent.getValue());
 		// update upper bound for chart if necessary
 		if (iterationEvent.getValue() > this.upperBoundsForIterCharts.get(iterationEvent.getSeriesName())){
-			this.upperBoundsForIterCharts.put(iterationEvent.getSeriesName(),iterationEvent.getValue());
+			this.upperBoundsForIterCharts.put(iterationEvent.getSeriesName(), iterationEvent.getValue());
 		}
 	}
 

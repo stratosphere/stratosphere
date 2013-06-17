@@ -1,9 +1,12 @@
 package eu.stratosphere.pact.example.pagerank;
 
+import com.google.common.collect.Maps;
 import eu.stratosphere.pact.common.stubs.aggregators.ConvergenceCriterion;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.Map;
 
 public class DiffL1NormConvergenceCriterion implements ConvergenceCriterion<PageRankStats> {
 
@@ -22,4 +25,17 @@ public class DiffL1NormConvergenceCriterion implements ConvergenceCriterion<Page
 
 		return diff < EPSILON;
 	}
+
+  @Override
+  public String[] getVisualizationSeriesNames() {
+    return new String[] { "L1 Norm of diff", "Dangling Rank" };
+  }
+
+  @Override
+  public Map<String, Double> getVisualizationData(int iteration, PageRankStats stats) {
+    Map<String,Double> data = Maps.newHashMap();
+    data.put("L1 Norm of diff", Double.valueOf(stats.diff()));
+    data.put("Dangling Rank", Double.valueOf(stats.danglingRank()));
+    return data;
+  }
 }

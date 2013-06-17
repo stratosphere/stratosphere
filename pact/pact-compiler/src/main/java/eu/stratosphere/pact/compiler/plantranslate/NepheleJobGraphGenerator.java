@@ -1160,6 +1160,14 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			}
 			
 			syncConfig.setConvergenceCriterion(convAggName, convCriterion);
+
+      try {
+        String[] visualizationSeriesNames = convCriterion.newInstance().getVisualizationSeriesNames();
+        jobGraph.setVisualizationSeriesNames(visualizationSeriesNames);
+      } catch (Exception e) {
+        throw new CompilerException("Unable to instantiate convergence criterion", e);
+      }
+
 		}
 	}
 	

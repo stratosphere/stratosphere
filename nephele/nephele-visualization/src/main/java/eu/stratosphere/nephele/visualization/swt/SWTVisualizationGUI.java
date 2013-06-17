@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
@@ -55,7 +56,6 @@ import org.eclipse.swt.widgets.Widget;
 import eu.stratosphere.nephele.client.AbstractJobResult;
 import eu.stratosphere.nephele.client.JobCancelResult;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
-import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.CheckpointStateChangeEvent;
 import eu.stratosphere.nephele.event.job.ExecutionStateChangeEvent;
@@ -556,13 +556,14 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 							final AbstractEvent event = eventIt.next();
 
 							// Did we already process this event?
-							if (this.lastProcessedEventSequenceNumber >= event.getSequenceNumber()) {
+							if (!(event instanceof IterationTimeSeriesEvent) && this.lastProcessedEventSequenceNumber >= event.getSequenceNumber()) {
 								continue;
 							}
 
 							dispatchEvent(event, graphVisualizationData);
 
-							this.lastProcessedEventSequenceNumber = event.getSequenceNumber();
+							this.lastProcessedEventSequenceNumber =
+                  Math.max(lastProcessedEventSequenceNumber, event.getSequenceNumber());
 						}
 
 					}
@@ -670,6 +671,8 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 
 	private void dispatchEvent(AbstractEvent event, GraphVisualizationData graphVisualizationData) {
 
+    System.out.println("DISPATCHING " + event.getClass().getName());
+
 		if (event instanceof VertexProfilingEvent) {
 
 			final VertexProfilingEvent vertexProfilingEvent = (VertexProfilingEvent) event;
@@ -752,7 +755,7 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 		    final NetworkTopology networkTopology = graphVisualizationData.getNetworkTopology();
             final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) networkTopology
                     .getAttachment();
-            instanceVisualizationData.processIterationTimeSeriesEvent((IterationTimeSeriesEvent) event);		    
+            instanceVisualizationData.processIterationTimeSeriesEvent((IterationTimeSeriesEvent) event);
 		} else {
 			System.out.println("Unknown event: " + event);
 		}

@@ -31,6 +31,9 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.fs.FSDataInputStream;
@@ -628,7 +631,7 @@ public class JobGraph implements IOReadableWritable {
 
 		// Read the task manager configuration
 		this.taskManagerConfiguration.read(in);
-	}
+  }
 
 	/**
 	 * {@inheritDoc}
@@ -844,4 +847,11 @@ public class JobGraph implements IOReadableWritable {
 
 		return true;
 	}
+
+  public void setVisualizationSeriesNames(String[] names) {
+    if (names != null && names.length > 0) {
+      jobConfiguration.setString("VisualizationSeriesNames", Joiner.on(";").join(names));
+    }
+  }
+
 }

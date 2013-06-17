@@ -1,13 +1,14 @@
-package eu.stratosphere.nephele.event.job;
+package eu.stratosphere.nephele.profiling.types;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import eu.stratosphere.nephele.event.job.AbstractEvent;
+import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.types.StringRecord;
 
-public class IterationTimeSeriesEvent extends AbstractEvent {
+public class IterationTimeSeriesEvent extends ProfilingEvent {
 	
 	// name of the iteration status metric
 	private String seriesName;
@@ -20,9 +21,9 @@ public class IterationTimeSeriesEvent extends AbstractEvent {
 	
 	
 	
-	public IterationTimeSeriesEvent(long timestamp, String seriesName,
-			int timeStep, double value) {
-		super(timestamp);
+	public IterationTimeSeriesEvent(JobID jobID, long timestamp, long profilingTimestamp, String seriesName,
+			                            int timeStep, double value) {
+		super(jobID, timestamp, profilingTimestamp);
 		this.seriesName = seriesName;
 		this.timeStep = timeStep;
 		this.value = value;

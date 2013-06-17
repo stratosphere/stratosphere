@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -69,7 +70,6 @@ import eu.stratosphere.nephele.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.deployment.TaskDeploymentDescriptor;
 import eu.stratosphere.nephele.discovery.DiscoveryException;
 import eu.stratosphere.nephele.discovery.DiscoveryService;
-import eu.stratosphere.nephele.event.job.IterationTimeSeriesEvent;
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.RecentJobEvent;
 import eu.stratosphere.nephele.execution.ExecutionState;
@@ -924,12 +924,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			throw new IOException("Cannot find job with ID " + jobID);
 		}
 
-		// TODO remove mock code
-		SerializableArrayList<StringRecord>	iterationMetrics = new SerializableArrayList<StringRecord>();
-		iterationMetrics.add(new StringRecord("Mockstat1"));
-		iterationMetrics.add(new StringRecord("Mockstat2"));
-		iterationMetrics.add(new StringRecord("Mockstat3"));
-		mg.setIterationMetrics(iterationMetrics);
 		return mg;
 	}
 
@@ -985,25 +979,14 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 
 		this.eventCollector.getEventsForJob(jobID, eventList, true);
-		//TODO @micha: add mock events here
-		
-		IterationTimeSeriesEvent iterationEvent = new IterationTimeSeriesEvent(0, "Mockstat1", this.mockTimeStep++, this.mockTimeStep / 3.0);
-		eventList.add(iterationEvent);
-		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 3.0);
 
-		System.out.println("events" + eventList.size() + " "+ eventList);
-		
-		IterationTimeSeriesEvent iterationEvent2 = new IterationTimeSeriesEvent(0, "Mockstat2", this.mockTimeStep++, this.mockTimeStep / 2.0);
-		eventList.add(iterationEvent2);
-		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep / 2.0);
+    /*StringBuilder d = new StringBuilder();
+    for (AbstractEvent e : eventList) {
+       d.append(e.getClass().getName() + " " + e.getSequenceNumber() + "\n");
+    }
+    d.append("-----\n");
+    System.out.println(d.toString());    */
 
-		System.out.println("events" + eventList.size() + " "+ eventList);
-		
-		IterationTimeSeriesEvent iterationEvent3 = new IterationTimeSeriesEvent(0, "Mockstat3", this.mockTimeStep++, this.mockTimeStep * 2.0);
-		eventList.add(iterationEvent3);
-		System.out.println("######################" + this.mockTimeStep + " mock value: " + this.mockTimeStep * 2.0);
-
-		System.out.println("events" + eventList.size() + " "+ eventList);
 		return eventList;
 	}
 

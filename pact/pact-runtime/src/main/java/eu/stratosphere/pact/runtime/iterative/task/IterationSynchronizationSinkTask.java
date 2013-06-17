@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -110,7 +111,7 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 		
 		// temp hack: get a hold of the taskmanagerprofiler so we can publish events with the
 		// aggregates for visualization
-		JobID jobId = getEnvironment().getJobID();
+		JobID jobID = getEnvironment().getJobID();
 		TaskManagerProfilerImpl profiler = null;
 		if (getEnvironment() instanceof RuntimeEnvironment) {
 			TaskManagerProfiler p = ((RuntimeEnvironment) getEnvironment()).getTaskManagerProfiler();
@@ -135,11 +136,8 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 			
 			// at this time, all aggregators have the global aggregate.
 			// send forward it to the profiler
-			if (profiler != null) {
-				// forward the aggregates, add event wrapping code here
-//				long timestamp = System.currentTimeMillis();
-//				ProfilingEvent evt = new ProfilingEvent(jobId, timestamp, timestamp) {};
-//				profiler.publishCustomEvent(evt);
+			if (profiler != null && taskConfig.usesConvergenceCriterion()) {
+        collectCustomProfilingEvents(profiler, jobID);
 			}
 
 			if (checkForConvergence()) {
@@ -176,6 +174,37 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 //			log.info(IterationMonitoring.logLine(getEnvironment().getJobID(), event, currentIteration, 1));
 //		}
 //	}
+
+  private void collectCustomProfilingEvents(TaskManagerProfilerImpl profiler, JobID jobID) {
+
+    if (convergenceAggregatorName != null) {
+      @SuppressWarnings("unchecked")
+      Aggregator<Value> aggregator = (Aggregator<Value>) aggregators.get(convergenceAggregatorName);
+      if (aggregator == null) {
+        throw new RuntimeException("Error: Aggregator for convergence criterion was null.");
+      }
+
+      Value aggregate = aggregator.getAggregate();
+      Map<String, Double> visualizationData = convergenceCriterion.getVisualizationData(currentIteration, aggregate);
+
+      long timestamp = System.currentTimeMillis();
+
+      for (Map.Entry<String, Double> visualizationDataEntry : visualizationData.entrySet()) {
+
+        String series = visualizationDataEntry.getKey();
+        double value = visualizationDataEntry.getValue();
+
+        if (log.isInfoEnabled()) {
+          log.info(formatLogString("recording profiling value [" + value +"] for series [" + series + "] " +
+              "in iteration [" + currentIteration + "]"));
+        }
+
+        IterationTimeSeriesEvent event = new IterationTimeSeriesEvent(jobID, timestamp, timestamp, series,
+                                                                      currentIteration, value);
+        profiler.publishCustomEvent(event);
+      }
+    }
+  }
 
 	private boolean checkForConvergence() {
 		if (maxNumberOfIterations == currentIteration) {

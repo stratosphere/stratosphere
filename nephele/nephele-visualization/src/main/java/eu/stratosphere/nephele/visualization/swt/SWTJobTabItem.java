@@ -204,7 +204,8 @@ public class SWTJobTabItem extends Composite implements Listener {
 	 */
 	private ChartComposite initializeIterChart(Composite parentComposite, TableXYDataset dataset, String statName) {
 
-		final JFreeChart chart = ChartFactory.createXYLineChart(statName, "Timestep", statName, dataset, PlotOrientation.VERTICAL, false, false, false);
+		final JFreeChart chart = ChartFactory.createXYLineChart(statName, "Iteration", statName, dataset,
+        PlotOrientation.VERTICAL, false, false, false);
 
 		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
 	}
