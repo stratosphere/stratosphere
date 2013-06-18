@@ -167,7 +167,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-	private final static int SLEEPINTERVAL = 1000;
+	private final static int SLEEPINTERVAL = 100;
 
 	private final static int FAILURERETURNCODE = 1;
 
