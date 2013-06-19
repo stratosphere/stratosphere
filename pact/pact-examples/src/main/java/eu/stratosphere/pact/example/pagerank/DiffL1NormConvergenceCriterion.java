@@ -28,13 +28,14 @@ public class DiffL1NormConvergenceCriterion implements ConvergenceCriterion<Page
 
   @Override
   public String[] getVisualizationSeriesNames() {
-    return new String[] { "L1 Norm of diff", "Dangling Rank" };
+    return new String[] { "L1 Norm of diff", "Log of L1 Norm of diff", "Dangling Rank" };
   }
 
   @Override
   public Map<String, Double> getVisualizationData(int iteration, PageRankStats stats) {
     Map<String,Double> data = Maps.newHashMap();
     data.put("L1 Norm of diff", Double.valueOf(stats.diff()));
+    data.put("Log of L1 Norm of diff", Double.valueOf(Math.log(stats.diff())));
     data.put("Dangling Rank", Double.valueOf(stats.danglingRank()));
     return data;
   }

@@ -1307,7 +1307,14 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		if (convCriterion != null || convAggName != null) {
 			throw new CompilerException("Error: Cannot use custom convergence criterion with workset iteration. Workset iterations have implicit convergence criterion where workset is empty.");
 		}
-		
+
+    try {
+      String[] visualizationSeriesNames = new WorksetEmptyConvergenceCriterion().getVisualizationSeriesNames();
+      jobGraph.setVisualizationSeriesNames(visualizationSeriesNames);
+    } catch (Exception e) {
+      throw new CompilerException("Unable to instantiate convergence criterion", e);
+    }
+
 		headConfig.addIterationAggregator(WorksetEmptyConvergenceCriterion.AGGREGATOR_NAME, LongSumAggregator.class);
 		syncConfig.addIterationAggregator(WorksetEmptyConvergenceCriterion.AGGREGATOR_NAME, LongSumAggregator.class);
 		syncConfig.setConvergenceCriterion(WorksetEmptyConvergenceCriterion.AGGREGATOR_NAME, WorksetEmptyConvergenceCriterion.class);

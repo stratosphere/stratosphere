@@ -32,12 +32,12 @@ import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
 import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SinkPlanNode;
-import eu.stratosphere.pact.example.kmeans.KMeansSingleStep;
+/*import eu.stratosphere.pact.example.kmeans.KMeansSingleStep;
 import eu.stratosphere.pact.example.kmeans.udfs.ComputeDistance;
 import eu.stratosphere.pact.example.kmeans.udfs.FindNearestCenter;
 import eu.stratosphere.pact.example.kmeans.udfs.PointInFormat;
 import eu.stratosphere.pact.example.kmeans.udfs.PointOutFormat;
-import eu.stratosphere.pact.example.kmeans.udfs.RecomputeClusterCenter;
+import eu.stratosphere.pact.example.kmeans.udfs.RecomputeClusterCenter;*/
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
@@ -63,7 +63,7 @@ public class KMeansStepCompilerTest extends CompilerTestBase {
 	//  Check that the optimizer chooses valid plans
 	// ------------------------------------------------------------------------
 	
-	@Test
+	/*@Test
 	public void testQueryNoStatsAnyValidPlanNoUniqueness() {
 		try {
 			KMeansSingleStep job = new KMeansSingleStep();
@@ -203,10 +203,10 @@ public class KMeansStepCompilerTest extends CompilerTestBase {
 	//  Check that the optimizer chooses GOOD plans
 	// ------------------------------------------------------------------------
 	
-	/**
+	*//**
 	 * Verifies that a robust block-nested-loops join is used in the absence of statistics.
 	 * Since the data points have a unique id, the reducer should be chained.
-	 */
+	 *//*
 //	@Test
 	public void testQueryNoStatisticsChainedReducer() {
 		try {
@@ -238,10 +238,10 @@ public class KMeansStepCompilerTest extends CompilerTestBase {
 		}
 	}
 	
-	/**
+	*//**
 	 * Verifies that a robust block-nested-loops join is used in the absence of statistics.
 	 * The first reducer should be chained, as the partitioning ought to be pushed before the cross.
-	 */
+	 *//*
 //	@Test
 	public void testQueryNoStatisticsNonChainedReducer() {
 		try {
@@ -279,28 +279,28 @@ public class KMeansStepCompilerTest extends CompilerTestBase {
 		}
 	}
 	
-	/**
+	*//**
 	 * Tests the query with statistics that push for a broadcast of the centers and a
 	 * chained reducer receiving pre-grouped records from the streamed-nested loops cross.
-	 */
+	 *//*
 //	@Test
 	public void testQueryBCCentersStreamedReducer() {
 		testQueryGeneric(100l*1024*1024*1024, 1024*1024, true, true);
 	}
 	
-	/**
+	*//**
 	 * Tests the query with statistics that push for a broadcast of the centers and a
 	 * chained reducer after a block-nested-loops cross.
-	 */
+	 *//*
 //	@Test
 	public void testQueryBCCentersBlockNLChainedReducer() {
 		testQueryGeneric(100l*1024*1024*1024, 10l*1024*1024*1024, true, false);
 	}
 	
-	/**
+	*//**
 	 * Tests the query with statistics that push for a broadcast of the data points and a
 	 * chained reducer after a block-nested-loops cross.
-	 */
+	 *//*
 //	@Test
 	public void testQueryBCPointsBlockNLChainedReducer() {
 		testQueryGeneric(1024*1024, 100l*1024*1024*1024, false, false);
@@ -479,5 +479,5 @@ public class KMeansStepCompilerTest extends CompilerTestBase {
 		Assert.assertNull(combiner);
 		Assert.assertEquals(ShipStrategyType.FORWARD, reducer.getInput().getShipStrategy());
 		Assert.assertEquals(LocalStrategy.NONE, reducer.getInput().getLocalStrategy());
-	}
+	}*/
 }

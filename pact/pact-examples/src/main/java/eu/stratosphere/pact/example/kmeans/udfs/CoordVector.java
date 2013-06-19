@@ -84,7 +84,7 @@ public final class CoordVector implements Key {
 	 * @return The Euclidian distance to coordinate vector cv. If cv has a
 	 *         different length than this coordinate vector, -1 is returned.
 	 */
-	public double computeEuclidianDistance(CoordVector cv) {
+	public double computeEuclideanDistance(CoordVector cv) {
 		// check coordinate vector lengths
 		if (cv.coordinates.length != this.coordinates.length) {
 			return -1.0;

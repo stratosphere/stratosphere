@@ -23,12 +23,12 @@ import org.junit.Test;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.compiler.CompilerTestBase;
 import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
-import eu.stratosphere.pact.example.iterative.WorksetConnectedComponents;
+/*import eu.stratosphere.pact.example.iterative.WorksetConnectedComponents;
 import eu.stratosphere.pact.example.kmeans.KMeansIterative;
 import eu.stratosphere.pact.example.kmeans.KMeansSingleStep;
 import eu.stratosphere.pact.example.relational.TPCHQuery3;
 import eu.stratosphere.pact.example.relational.WebLogAnalysis;
-import eu.stratosphere.pact.example.wordcount.WordCount;
+import eu.stratosphere.pact.example.wordcount.WordCount;*/
 
 
 /*
@@ -36,7 +36,7 @@ import eu.stratosphere.pact.example.wordcount.WordCount;
  */
 public class CompiledPlanDumpTest extends CompilerTestBase {
 	
-	@Test
+	/*@Test
 	public void dumpWordCount() {
 		dump(new WordCount().getPlan(DEFAULT_PARALLELISM_STRING, IN_FILE, OUT_FILE));
 	}
@@ -80,5 +80,5 @@ public class CompiledPlanDumpTest extends CompilerTestBase {
 			e.printStackTrace();
 			Assert.fail("An error occurred in the test: " + e.getMessage());
 		}
-	}
+	}*/
 }

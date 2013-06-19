@@ -656,7 +656,7 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 				}
 			}
 			// create visualization data with  iteration metrics
-			networkTopology.setAttachment(new InstanceVisualizationData(isProfilingAvailable,iterationMetrics));
+			networkTopology.setAttachment(new InstanceVisualizationData(isProfilingAvailable, iterationMetrics));
 
 			final TreeItem jobItem = new TreeItem(jobTree, SWT.NONE);
 			jobItem.setText(jobName + " (" + jobID.toString() + ")");
@@ -670,8 +670,6 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 	}
 
 	private void dispatchEvent(AbstractEvent event, GraphVisualizationData graphVisualizationData) {
-
-    System.out.println("DISPATCHING " + event.getClass().getName());
 
 		if (event instanceof VertexProfilingEvent) {
 
@@ -750,8 +748,7 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 		    //TODO @micha find out to which graph it belongs
 		    // find out to which graph it belongs
 		    // update graph
-		    System.out.println("************************ Iter EVENT" + event);
-	     
+
 		    final NetworkTopology networkTopology = graphVisualizationData.getNetworkTopology();
             final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) networkTopology
                     .getAttachment();
