@@ -95,28 +95,53 @@
 							</includes>
 						</configuration>
 					</execution>
-					
-					<!-- KMeansIterative -->
+
+
+          <!-- KMeansIterative -->
+          <execution>
+            <id>KMeansIterative</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+
+            <configuration>
+              <classifier>KMeansIterative</classifier>
+
+              <archive>
+                <manifestEntries>
+                  <Pact-Assembler-Class>eu.stratosphere.pact.example.kmeans.KMeansIterative</Pact-Assembler-Class>
+                </manifestEntries>
+              </archive>
+
+              <includes>
+                <include>**/kmeans/KMeansIterative.class</include>
+                <include>**/kmeans/KMeansIterative$*.class</include>
+                <include>**/kmeans/*.class</include>
+                <include>**/kmeans/udfs/*.class</include>
+              </includes>
+            </configuration>
+          </execution>
+
+					<!-- ConnectedComponents -->
 					<execution>
-						<id>KMeansIterative</id>
+						<id>ConnectedComponents</id>
 						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
 
 						<configuration>
-							<classifier>KMeansIterative</classifier>
+							<classifier>ConnectedComponents</classifier>
 
 							<archive>
 								<manifestEntries>
-									<Pact-Assembler-Class>eu.stratosphere.pact.example.kmeans.KMeansIterative</Pact-Assembler-Class>
+									<Pact-Assembler-Class>eu.stratosphere.pact.example.iterative.WorksetConnectedComponents</Pact-Assembler-Class>
 								</manifestEntries>
 							</archive>
 
 							<includes>
-								<include>**/kmeans/KMeansIterative.class</include>
-								<include>**/kmeans/KMeansIterative$*.class</include>
-								<include>**/kmeans/udfs/*.class</include>
+                <include>**/iterative/*.class</include>
 							</includes>
 						</configuration>
 					</execution>
