@@ -16,12 +16,17 @@ package eu.stratosphere.pact.example.kmeans.udfs;
 
 import java.util.Iterator;
 
-import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
+import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.common.stubs.CoGroupStub;
 import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.ReduceStub;
-import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFields;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
+import eu.stratosphere.pact.example.kmeans.AverageClusterMovement;
+import eu.stratosphere.pact.example.kmeans.AverageMovementAggregator;
+import eu.stratosphere.pact.example.kmeans.CentroidDistanceConvergenceCriterion;
+import eu.stratosphere.pact.example.kmeans.KMeansIterative;
+import eu.stratosphere.pact.example.pagerank.PageRankStats;
+import eu.stratosphere.pact.example.pagerank.PageRankStatsAggregator;
 
 /**
  * Reduce PACT computes the new position (coordinate vector) of a cluster
@@ -32,17 +37,24 @@ import eu.stratosphere.pact.common.type.base.PactInteger;
  * 0: clusterID
  * 1: clusterVector
  */
-@Combinable
-@ConstantFields(0)
-public class RecomputeClusterCenter extends ReduceStub {
+public class RecomputeClusterCenter extends CoGroupStub {
 	
-	private final PactInteger count = new PactInteger();
-	
-	/**
+	//private final PactInteger count = new PactInteger();
+
+  private AverageMovementAggregator aggregator;
+
+  @Override
+  public void open(Configuration parameters) throws Exception {
+    super.open(parameters);
+    aggregator = (AverageMovementAggregator) getIterationRuntimeContext()
+        .<AverageClusterMovement>getIterationAggregator(KMeansIterative.CENTROID_MOVEMENT);
+  }
+
+  /**
 	 * Compute the new position (coordinate vector) of a cluster center.
 	 */
 	@Override
-	public void reduce(Iterator<PactRecord> dataPoints, Collector<PactRecord> out) {
+	public void coGroup(Iterator<PactRecord> dataPoints, Iterator<PactRecord> previousCenter, Collector<PactRecord> out) {
 		PactRecord next = null;
 			
 		// initialize coordinate vector sum and count
@@ -56,7 +68,7 @@ public class RecomputeClusterCenter extends ReduceStub {
 			
 			// get the coordinates and the count from the record
 			double[] thisCoords = next.getField(1, CoordVector.class).getCoordinates();
-			int thisCount = next.getField(2, PactInteger.class).getValue();
+			int thisCount = 1;//next.getField(2, PactInteger.class).getValue();
 			
 			if (coordinateSum == null) {
 				if (coordinates.getCoordinates() != null) {
@@ -78,16 +90,21 @@ public class RecomputeClusterCenter extends ReduceStub {
 		
 		coordinates.setCoordinates(coordinateSum);
 		next.setField(1, coordinates);
-		next.setNull(2);
+//		next.setNull(2);
 
-		// emit new position of cluster center
+    CoordVector previous = previousCenter.next().getField(1, CoordVector.class);
+
+    double distance = coordinates.computeEuclideanDistance(previous);
+    aggregator.aggregate(new AverageClusterMovement(1, distance));
+
+    // emit new position of cluster center
 		out.collect(next);
 	}
 
 	/**
 	 * Computes a pre-aggregated average value of a coordinate vector.
 	 */
-	@Override
+/*	@Override
 	public void combine(Iterator<PactRecord> dataPoints, Collector<PactRecord> out) {
 		
 		PactRecord next = null;
@@ -125,7 +142,7 @@ public class RecomputeClusterCenter extends ReduceStub {
 		
 		// emit partial sum and partial count for average computation
 		out.collect(next);
-	}
+	}      */
 
 	/**
 	 * Adds two coordinate vectors by summing up each of their coordinates.
@@ -148,4 +165,5 @@ public class RecomputeClusterCenter extends ReduceStub {
 			cvToAddTo[i] += cvToBeAdded[i];
 		}
 	}
+
 }

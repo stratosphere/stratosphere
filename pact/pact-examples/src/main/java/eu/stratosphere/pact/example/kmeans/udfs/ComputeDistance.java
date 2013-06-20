@@ -47,7 +47,7 @@ public class ComputeDistance extends	CrossStub {
 		PactInteger clusterCenterId = clusterCenterRecord.getField(0, PactInteger.class);
 		CoordVector clusterPoint = clusterCenterRecord.getField(1, CoordVector.class);
 	
-		this.distance.setValue(dataPoint.computeEuclidianDistance(clusterPoint));
+		this.distance.setValue(dataPoint.computeEuclideanDistance(clusterPoint));
 		
 		// add cluster center id and distance to the data point record 
 		dataPointRecord.setField(2, clusterCenterId);

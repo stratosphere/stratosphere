@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -174,7 +175,15 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final AtomicBoolean isShutdownInProgress = new AtomicBoolean(false);
 
 	private volatile boolean isShutDown = false;
+	
 
+	// TODO @micha remove
+	private int mockTimeStep = 0;
+
+//	// names of the metrics for iteration status display by jobid
+//	private Map<JobID,List<String>> iterMetricsByJobs= new HashMap<JobID, List<String>>(); 
+	
+	
 	
 	public JobManager(ExecutionMode executionMode) {
 		this(executionMode, null);
@@ -374,7 +383,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * Entry point for the program
 	 * 
 	 * @param args
-	 *        arguments from the command line
+	 *		arguments from the command line
 	 */
 	@SuppressWarnings("static-access")
 	public static void main(final String[] args) {
@@ -613,7 +622,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * Currently, it is only being used to unregister from profiling (if activated).
 	 * 
 	 * @param executionGraph
-	 *        the execution graph to remove from the job manager
+	 *		the execution graph to remove from the job manager
 	 */
 	private void unregisterJob(final ExecutionGraph executionGraph) {
 
@@ -738,9 +747,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * given execution graph.
 	 * 
 	 * @param eg
-	 *        the execution graph representing the job to cancel.
+	 *		the execution graph representing the job to cancel.
 	 * @return <code>null</code> if no error occurred during the cancel attempt,
-	 *         otherwise the returned object will describe the error
+	 *		 otherwise the returned object will describe the error
 	 */
 	private TaskCancelResult cancelJob(final ExecutionGraph eg) {
 
@@ -971,6 +980,13 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		this.eventCollector.getEventsForJob(jobID, eventList, true);
 
+    /*StringBuilder d = new StringBuilder();
+    for (AbstractEvent e : eventList) {
+       d.append(e.getClass().getName() + " " + e.getSequenceNumber() + "\n");
+    }
+    d.append("-----\n");
+    System.out.println(d.toString());    */
+
 		return eventList;
 	}
 
@@ -1044,7 +1060,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * to remove those checkpoints.
 	 * 
 	 * @param executionGraph
-	 *        the execution graph from which the checkpoints shall be removed
+	 *		the execution graph from which the checkpoints shall be removed
 	 */
 	private void removeAllCheckpoints(final ExecutionGraph executionGraph) {
 
@@ -1387,4 +1403,5 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		return jmp.requestData(data);
 	}
+	
 }

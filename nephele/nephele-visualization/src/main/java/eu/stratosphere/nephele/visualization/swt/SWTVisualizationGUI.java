@@ -16,6 +16,7 @@
 package eu.stratosphere.nephele.visualization.swt;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
@@ -554,13 +556,14 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 							final AbstractEvent event = eventIt.next();
 
 							// Did we already process this event?
-							if (this.lastProcessedEventSequenceNumber >= event.getSequenceNumber()) {
+							if (!(event instanceof IterationTimeSeriesEvent) && this.lastProcessedEventSequenceNumber >= event.getSequenceNumber()) {
 								continue;
 							}
 
 							dispatchEvent(event, graphVisualizationData);
 
-							this.lastProcessedEventSequenceNumber = event.getSequenceNumber();
+							this.lastProcessedEventSequenceNumber =
+                  Math.max(lastProcessedEventSequenceNumber, event.getSequenceNumber());
 						}
 
 					}
@@ -611,6 +614,12 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 			// This is a new job, request the management graph of the job and topology
 			final ManagementGraph managementGraph = this.jobManager.getManagementGraph(jobID);
 			final NetworkTopology networkTopology = this.jobManager.getNetworkTopology(jobID);
+			final List<String> iterationMetrics =  new ArrayList<String>();			
+			
+			// get list of iteration metric names from management graph
+			for(StringRecord iterationMetric : managementGraph.getIterationMetrics()){
+			    iterationMetrics.add(iterationMetric.toString());
+			}			
 
 			// Create graph visualization object
 			final GraphVisualizationData graphVisualizationData = new GraphVisualizationData(jobID, jobName,
@@ -646,7 +655,8 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 					networkNode.setAttachment(new InstanceVisualizationData(isProfilingAvailable));
 				}
 			}
-			networkTopology.setAttachment(new InstanceVisualizationData(isProfilingAvailable));
+			// create visualization data with  iteration metrics
+			networkTopology.setAttachment(new InstanceVisualizationData(isProfilingAvailable, iterationMetrics));
 
 			final TreeItem jobItem = new TreeItem(jobTree, SWT.NONE);
 			jobItem.setText(jobName + " (" + jobID.toString() + ")");
@@ -734,6 +744,15 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 			// Ignore this type of event
 		} else if (event instanceof VertexEvent) {
 			// Ignore this type of event
+		} else if (event instanceof IterationTimeSeriesEvent) {
+		    //TODO @micha find out to which graph it belongs
+		    // find out to which graph it belongs
+		    // update graph
+
+		    final NetworkTopology networkTopology = graphVisualizationData.getNetworkTopology();
+            final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) networkTopology
+                    .getAttachment();
+            instanceVisualizationData.processIterationTimeSeriesEvent((IterationTimeSeriesEvent) event);
 		} else {
 			System.out.println("Unknown event: " + event);
 		}

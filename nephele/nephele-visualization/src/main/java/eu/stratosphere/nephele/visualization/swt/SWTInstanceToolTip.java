@@ -38,7 +38,7 @@ public class SWTInstanceToolTip extends SWTToolTip {
 
 	private final ChartComposite cpuChart;
 
-	private final ChartComposite memoryChart;
+//	private final ChartComposite memoryChart;
 
 	private final ChartComposite networkChart;
 
@@ -69,14 +69,14 @@ public class SWTInstanceToolTip extends SWTToolTip {
 		if (isProfilingEnabled) {
 			this.cpuChart = createCPUChart(instanceVisualizationData, backgroundColor);
 			this.cpuChart.setLayoutData(new GridData(GridData.FILL_BOTH));
-			this.memoryChart = createMemoryChart(instanceVisualizationData, backgroundColor);
-			this.memoryChart.setLayoutData(new GridData(GridData.FILL_BOTH));
+//			this.memoryChart = createMemoryChart(instanceVisualizationData, backgroundColor);
+//			this.memoryChart.setLayoutData(new GridData(GridData.FILL_BOTH));
 			this.networkChart = createNetworkChart(instanceVisualizationData, backgroundColor);
 			this.networkChart.setLayoutData(new GridData(GridData.FILL_BOTH));
 			height = 460;
 		} else {
 			this.cpuChart = null;
-			this.memoryChart = null;
+//			this.memoryChart = null;
 			this.networkChart = null;
 			height = 75;
 		}
@@ -124,24 +124,24 @@ public class SWTInstanceToolTip extends SWTToolTip {
 		return new ChartComposite(getShell(), SWT.NONE, chart, true);
 	}
 
-	private ChartComposite createMemoryChart(InstanceVisualizationData instanceVisualizationData, Color backgroundColor) {
-
-		final JFreeChart chart = ChartFactory.createStackedXYAreaChart(null, "Time [sec.]", "Memory",
-			instanceVisualizationData.getMemoryDataSet(), PlotOrientation.VERTICAL, true, true, false);
-
-		chart.setBackgroundPaint(new java.awt.Color(backgroundColor.getRed(), backgroundColor.getGreen(),
-			backgroundColor.getBlue()));
-
-		// Set axis properly
-		final XYPlot xyPlot = chart.getXYPlot();
-		xyPlot.getDomainAxis().setAutoRange(true);
-		xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
-
-		xyPlot.getRangeAxis().setAutoRange(false);
-		xyPlot.getRangeAxis().setRange(0, instanceVisualizationData.getUpperBoundForMemoryChart());
-
-		return new ChartComposite(getShell(), SWT.NONE, chart, true);
-	}
+//	private ChartComposite createMemoryChart(InstanceVisualizationData instanceVisualizationData, Color backgroundColor) {
+//
+//		final JFreeChart chart = ChartFactory.createStackedXYAreaChart(null, "Time [sec.]", "Memory",
+//			instanceVisualizationData.getMemoryDataSet(), PlotOrientation.VERTICAL, true, true, false);
+//
+//		chart.setBackgroundPaint(new java.awt.Color(backgroundColor.getRed(), backgroundColor.getGreen(),
+//			backgroundColor.getBlue()));
+//
+//		// Set axis properly
+//		final XYPlot xyPlot = chart.getXYPlot();
+//		xyPlot.getDomainAxis().setAutoRange(true);
+//		xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
+//
+//		xyPlot.getRangeAxis().setAutoRange(false);
+//		xyPlot.getRangeAxis().setRange(0, instanceVisualizationData.getUpperBoundForMemoryChart());
+//
+//		return new ChartComposite(getShell(), SWT.NONE, chart, true);
+//	}
 
 	private ChartComposite createNetworkChart(InstanceVisualizationData instanceVisualizationData, Color backgroundColor) {
 
@@ -171,19 +171,19 @@ public class SWTInstanceToolTip extends SWTToolTip {
 			this.cpuChart.getChart().getXYPlot().configureDomainAxes();
 			this.cpuChart.getChart().fireChartChanged();
 		}
-		if (this.memoryChart != null) {
-
-			// Workaround because auto range function appears to be broken
-			final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.networkNode
-				.getAttachment();
-			final double newUpperBound = instanceVisualizationData.getUpperBoundForMemoryChart();
-			if (newUpperBound > this.memoryChart.getChart().getXYPlot().getRangeAxis().getUpperBound()) {
-				this.memoryChart.getChart().getXYPlot().getRangeAxis().setRange(0, newUpperBound);
-			}
-
-			this.memoryChart.getChart().getXYPlot().configureDomainAxes();
-			this.memoryChart.getChart().fireChartChanged();
-		}
+//		if (this.memoryChart != null) {
+//
+//			// Workaround because auto range function appears to be broken
+//			final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.networkNode
+//				.getAttachment();
+//			final double newUpperBound = instanceVisualizationData.getUpperBoundForMemoryChart();
+//			if (newUpperBound > this.memoryChart.getChart().getXYPlot().getRangeAxis().getUpperBound()) {
+//				this.memoryChart.getChart().getXYPlot().getRangeAxis().setRange(0, newUpperBound);
+//			}
+//
+//			this.memoryChart.getChart().getXYPlot().configureDomainAxes();
+//			this.memoryChart.getChart().fireChartChanged();
+//		}
 		if (this.networkChart != null) {
 			this.networkChart.getChart().getXYPlot().configureDomainAxes();
 			this.networkChart.getChart().fireChartChanged();

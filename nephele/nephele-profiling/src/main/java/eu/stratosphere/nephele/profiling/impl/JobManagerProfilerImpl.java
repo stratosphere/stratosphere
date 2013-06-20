@@ -45,6 +45,7 @@ import eu.stratosphere.nephele.profiling.impl.types.ProfilingDataContainer;
 import eu.stratosphere.nephele.profiling.types.InputGateProfilingEvent;
 import eu.stratosphere.nephele.profiling.types.InstanceSummaryProfilingEvent;
 import eu.stratosphere.nephele.profiling.types.OutputGateProfilingEvent;
+import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
 import eu.stratosphere.nephele.profiling.types.SingleInstanceProfilingEvent;
 import eu.stratosphere.nephele.profiling.types.ThreadProfilingEvent;
 import eu.stratosphere.nephele.util.StringUtils;
@@ -279,6 +280,21 @@ public class JobManagerProfilerImpl implements JobManagerProfiler, ProfilerImplP
 				dispatchOutputGateData(timestamp, (InternalOutputGateProfilingData) internalProfilingData);
 			} else {
 				LOG.error("Received unknown profiling data: " + internalProfilingData.getClass().getName());
+			}
+		}
+		
+		for (Iterator<ProfilingEvent> customEvents = profilingDataContainer.getCustomEvents();
+			 customEvents.hasNext(); )
+		{
+			ProfilingEvent evt = customEvents.next();
+			List<ProfilingListener> jobListeners = this.registeredListeners.get(evt.getJobID());
+			if (jobListeners == null) {
+				continue;
+			}
+			
+			final Iterator<ProfilingListener> it = jobListeners.iterator();
+			while (it.hasNext()) {
+				it.next().processProfilingEvents(evt);
 			}
 		}
 	}

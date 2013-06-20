@@ -20,13 +20,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eu.stratosphere.nephele.profiling.types.IterationTimeSeriesEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.google.common.base.Preconditions;
 
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
+import eu.stratosphere.nephele.execution.RuntimeEnvironment;
 import eu.stratosphere.nephele.io.MutableRecordReader;
+import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
+import eu.stratosphere.nephele.profiling.impl.TaskManagerProfilerImpl;
+import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
 import eu.stratosphere.nephele.template.AbstractOutputTask;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.pact.common.stubs.aggregators.Aggregator;
@@ -103,6 +109,17 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 
 		IntegerRecord dummy = new IntegerRecord();
 		
+		// temp hack: get a hold of the taskmanagerprofiler so we can publish events with the
+		// aggregates for visualization
+		JobID jobID = getEnvironment().getJobID();
+		TaskManagerProfilerImpl profiler = null;
+		if (getEnvironment() instanceof RuntimeEnvironment) {
+			TaskManagerProfiler p = ((RuntimeEnvironment) getEnvironment()).getTaskManagerProfiler();
+			if (p instanceof TaskManagerProfilerImpl) {
+				profiler = (TaskManagerProfilerImpl) p;
+			}
+		}
+		
 		while (!terminationRequested()) {
 
 //			notifyMonitor(IterationMonitoring.Event.SYNC_STARTING, currentIteration);
@@ -115,6 +132,12 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 
 			if (log.isInfoEnabled()) {
 				log.info(formatLogString("finishing iteration [" + currentIteration + "]"));
+			}
+			
+			// at this time, all aggregators have the global aggregate.
+			// send forward it to the profiler
+			if (profiler != null && taskConfig.usesConvergenceCriterion()) {
+        collectCustomProfilingEvents(profiler, jobID);
 			}
 
 			if (checkForConvergence()) {
@@ -151,6 +174,37 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 //			log.info(IterationMonitoring.logLine(getEnvironment().getJobID(), event, currentIteration, 1));
 //		}
 //	}
+
+  private void collectCustomProfilingEvents(TaskManagerProfilerImpl profiler, JobID jobID) {
+
+    if (convergenceAggregatorName != null) {
+      @SuppressWarnings("unchecked")
+      Aggregator<Value> aggregator = (Aggregator<Value>) aggregators.get(convergenceAggregatorName);
+      if (aggregator == null) {
+        throw new RuntimeException("Error: Aggregator for convergence criterion was null.");
+      }
+
+      Value aggregate = aggregator.getAggregate();
+      Map<String, Double> visualizationData = convergenceCriterion.getVisualizationData(currentIteration, aggregate);
+
+      long timestamp = System.currentTimeMillis();
+
+      for (Map.Entry<String, Double> visualizationDataEntry : visualizationData.entrySet()) {
+
+        String series = visualizationDataEntry.getKey();
+        double value = visualizationDataEntry.getValue();
+
+        if (log.isInfoEnabled()) {
+          log.info(formatLogString("recording profiling value [" + value +"] for series [" + series + "] " +
+              "in iteration [" + currentIteration + "]"));
+        }
+
+        IterationTimeSeriesEvent event = new IterationTimeSeriesEvent(jobID, timestamp, timestamp, series,
+                                                                      currentIteration, value);
+        profiler.publishCustomEvent(event);
+      }
+    }
+  }
 
 	private boolean checkForConvergence() {
 		if (maxNumberOfIterations == currentIteration) {

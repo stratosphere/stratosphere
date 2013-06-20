@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.instance.AbstractInstance;
 import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.compression.CompressionLevel;
@@ -31,6 +34,8 @@ import eu.stratosphere.nephele.managementgraph.ManagementGroupEdge;
 import eu.stratosphere.nephele.managementgraph.ManagementGroupVertex;
 import eu.stratosphere.nephele.managementgraph.ManagementStage;
 import eu.stratosphere.nephele.managementgraph.ManagementVertex;
+import eu.stratosphere.nephele.types.StringRecord;
+import eu.stratosphere.nephele.util.SerializableArrayList;
 
 public class ManagementGraphFactory {
 
@@ -45,7 +50,17 @@ public class ManagementGraphFactory {
 		final Map<ExecutionGroupVertex, ManagementGroupVertex> groupMap = addGroupVertices(stageMap);
 		addExecutionVertices(groupMap, executionGraph);
 
-		return managementGraph;
+    Configuration conf = executionGraph.getJobConfiguration();
+    String tokens = conf.getString("VisualizationSeriesNames", "");
+    if (!"".equals(tokens)) {
+      SerializableArrayList<StringRecord> seriesNames = new SerializableArrayList<StringRecord>();
+      for (String visualizationName : Splitter.on(';').split(tokens)) {
+        seriesNames.add(new StringRecord(visualizationName));
+      }
+      managementGraph.setIterationMetrics(seriesNames);
+    }
+
+    return managementGraph;
 	}
 
 	private static Map<ExecutionStage, ManagementStage> addExecutionStages(ManagementGraph managementGraph,

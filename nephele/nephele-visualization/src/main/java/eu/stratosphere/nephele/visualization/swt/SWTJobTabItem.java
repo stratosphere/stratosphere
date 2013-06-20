@@ -15,6 +15,9 @@
 
 package eu.stratosphere.nephele.visualization.swt;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.FillLayout;
@@ -38,9 +41,12 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 	private final ChartComposite cpuChart;
 
-	private final ChartComposite memoryChart;
+//	private final ChartComposite memoryChart;
 
 	private final ChartComposite networkChart;
+	// chart of iteration status
+	
+	private List<ChartComposite> iterationCharts; 
 
 	private final TabFolder tabFolder;
 
@@ -52,6 +58,7 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 	private final SWTVisualizationGUI visualizationGUI;
 
+
 	public SWTJobTabItem(SWTVisualizationGUI visualizationGUI, GraphVisualizationData visualizationData,
 			Composite parent, int style, boolean detectBottlenecks) {
 		super(parent, style);
@@ -60,14 +67,21 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 		this.visualizationGUI = visualizationGUI;
 		this.visualizationData = visualizationData;
+		
+		// create sashs to split graph panel into job graph, profiling and iteration time series
+		final SashForm vertSashGraphProfil = new SashForm(this, SWT.VERTICAL | SWT.BORDER);
+		final SashForm horiSashGraphIteration = new SashForm(vertSashGraphProfil, SWT.HORIZONTAL | SWT.BORDER);	
+		
+		final NetworkTopology networkTopology = visualizationData.getNetworkTopology();
+		final InstanceVisualizationData summaryDataset = (InstanceVisualizationData) networkTopology
+			.getAttachment();
 
 		// Layout of GUI depends on availability of profiling data
 		if (visualizationData.isProfilingAvailableForJob()) {
 
-			final SashForm verticalSash = new SashForm(this, SWT.VERTICAL);
-
 			// Create the tabs
-			this.tabFolder = new TabFolder(verticalSash, SWT.BOTTOM);
+			this.tabFolder = new TabFolder(horiSashGraphIteration, SWT.BOTTOM);
+
 			this.tabFolder.addListener(SWT.Selection, this);
 
 			final TabItem graphItem = new TabItem(this.tabFolder, SWT.NONE);
@@ -80,23 +94,19 @@ public class SWTJobTabItem extends Composite implements Listener {
 			topologyItem.setControl(this.topologyCanvas);
 			topologyItem.setText("Allocated Instances");
 
-			final Composite statisticsComposite = new Composite(verticalSash, SWT.NONE);
+			final Composite statisticsComposite = new Composite(vertSashGraphProfil, SWT.NONE);
 			statisticsComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-			final NetworkTopology networkTopology = visualizationData.getNetworkTopology();
-			final InstanceVisualizationData summaryDataset = (InstanceVisualizationData) networkTopology
-				.getAttachment();
-
 			this.cpuChart = initializeCPUChart(statisticsComposite, summaryDataset.getCpuDataSet());
-			this.memoryChart = initializeMemoryChart(statisticsComposite, summaryDataset.getMemoryDataSet());
+//			this.memoryChart = initializeMemoryChart(statisticsComposite, summaryDataset.getMemoryDataSet());
 			this.networkChart = initializeNetworkChart(statisticsComposite, summaryDataset.getNetworkDataSet());
 
-			verticalSash.setWeights(new int[] { 7, 3 });
+			vertSashGraphProfil.setWeights(new int[] { 7, 3 });
 
 		} else {
 
 			// Create the tabs
-			this.tabFolder = new TabFolder(this, SWT.BOTTOM);
+			this.tabFolder = new TabFolder(horiSashGraphIteration, SWT.BOTTOM);
 			final TabItem graphItem = new TabItem(this.tabFolder, SWT.NONE);
 			this.graphCanvas = new SWTGraphCanvas(visualizationData, this, tabFolder, SWT.NONE, detectBottlenecks);
 			graphItem.setControl(graphCanvas);
@@ -108,12 +118,30 @@ public class SWTJobTabItem extends Composite implements Listener {
 			topologyItem.setText("Allocated Instances");
 
 			this.cpuChart = null;
-			this.memoryChart = null;
+//			this.memoryChart = null;
 			this.networkChart = null;
+		}
+		
+		
+		if (summaryDataset.isIterationJob()){
+			final Composite iterStatComposite = new Composite(horiSashGraphIteration, SWT.RIGHT);
+			iterStatComposite.setLayout(new FillLayout(SWT.VERTICAL));
+
+			// initialize all iteration metric charts
+			this.iterationCharts = new ArrayList<ChartComposite>();		
+			for(String iterationMetric : summaryDataset.getIterationMetrics()){
+				this.iterationCharts.add(initializeIterChart(iterStatComposite, summaryDataset.getIterationDataSet(iterationMetric),iterationMetric));
+			}
+			
+			horiSashGraphIteration.setWeights(new int[] { 7, 3 });
+
+		} else{
+			this.iterationCharts = null;
 		}
 
 	}
 
+	
 	private ChartComposite initializeCPUChart(Composite parentComposite, TableXYDataset dataset) {
 
 		final JFreeChart chart = ChartFactory.createStackedXYAreaChart("CPU", "Time [sec.]",
@@ -130,24 +158,24 @@ public class SWTJobTabItem extends Composite implements Listener {
 		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
 	}
 
-	private ChartComposite initializeMemoryChart(Composite parentComposite, TableXYDataset dataset) {
-
-		final JFreeChart chart = ChartFactory.createStackedXYAreaChart("Memory", "Time [sec.]",
-			"Average amount of memory allocated [MB]", dataset, PlotOrientation.VERTICAL, true, true, false);
-
-		// Set axis properly
-		final XYPlot xyPlot = chart.getXYPlot();
-		xyPlot.getDomainAxis().setAutoRange(true);
-		xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
-
-		// Workaround because auto range does not seem to work properly on the range axis
-		final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.visualizationData
-			.getNetworkTopology().getAttachment();
-		xyPlot.getRangeAxis().setAutoRange(false);
-		xyPlot.getRangeAxis().setRange(0, instanceVisualizationData.getUpperBoundForMemoryChart());
-
-		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
-	}
+//	private ChartComposite initializeMemoryChart(Composite parentComposite, TableXYDataset dataset) {
+//
+//		final JFreeChart chart = ChartFactory.createStackedXYAreaChart("Memory", "Time [sec.]",
+//			"Average amount of memory allocated [MB]", dataset, PlotOrientation.VERTICAL, true, true, false);
+//
+//		// Set axis properly
+//		final XYPlot xyPlot = chart.getXYPlot();
+//		xyPlot.getDomainAxis().setAutoRange(true);
+//		xyPlot.getDomainAxis().setAutoRangeMinimumSize(60);
+//
+//		// Workaround because auto range does not seem to work properly on the range axis
+//		final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.visualizationData
+//			.getNetworkTopology().getAttachment();
+//		xyPlot.getRangeAxis().setAutoRange(false);
+//		xyPlot.getRangeAxis().setRange(0, instanceVisualizationData.getUpperBoundForMemoryChart());
+//
+//		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
+//	}
 
 	private ChartComposite initializeNetworkChart(Composite parentComposite, TableXYDataset dataset) {
 
@@ -165,6 +193,23 @@ public class SWTJobTabItem extends Composite implements Listener {
 
 		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
 	}
+	
+	/**
+	 * Initialize a chart for displaying a metric about an ongoing iteration.
+	 * 
+	 * @param parentComposite parent SWT Element for chart
+	 * @param dataset input dataset for chart
+	 * @param statName name of the metric display in the chart also x-axis label
+	 * @return
+	 */
+	private ChartComposite initializeIterChart(Composite parentComposite, TableXYDataset dataset, String statName) {
+
+		final JFreeChart chart = ChartFactory.createXYLineChart(statName, "Iteration", statName, dataset,
+        PlotOrientation.VERTICAL, false, false, false);
+
+		return new ChartComposite(parentComposite, SWT.NONE, chart, true);
+	}
+	
 
 	public void updateView() {
 
@@ -172,23 +217,42 @@ public class SWTJobTabItem extends Composite implements Listener {
 			this.cpuChart.getChart().getXYPlot().configureDomainAxes();
 			this.cpuChart.getChart().fireChartChanged();
 		}
-		if (this.memoryChart != null) {
-
-			// Workaround because auto range function appears to be broken
-			final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.visualizationData
-				.getNetworkTopology().getAttachment();
-			final double newUpperBound = instanceVisualizationData.getUpperBoundForMemoryChart();
-			if (newUpperBound > this.memoryChart.getChart().getXYPlot().getRangeAxis().getUpperBound()) {
-				this.memoryChart.getChart().getXYPlot().getRangeAxis().setRange(0, newUpperBound);
-			}
-
-			this.memoryChart.getChart().getXYPlot().configureDomainAxes();
-			this.memoryChart.getChart().fireChartChanged();
-		}
+//		if (this.memoryChart != null) {
+//
+//			// Workaround because auto range function appears to be broken
+//			final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.visualizationData
+//				.getNetworkTopology().getAttachment();
+//			final double newUpperBound = instanceVisualizationData.getUpperBoundForMemoryChart();
+//			if (newUpperBound > this.memoryChart.getChart().getXYPlot().getRangeAxis().getUpperBound()) {
+//				this.memoryChart.getChart().getXYPlot().getRangeAxis().setRange(0, newUpperBound);
+//			}
+//
+//			this.memoryChart.getChart().getXYPlot().configureDomainAxes();
+//			this.memoryChart.getChart().fireChartChanged();
+//		}
 		if (this.networkChart != null) {
 			this.networkChart.getChart().getXYPlot().configureDomainAxes();
 			this.networkChart.getChart().getXYPlot().configureRangeAxes();
 			this.networkChart.getChart().fireChartChanged();
+		}
+		
+		if(iterationCharts != null){
+			for(ChartComposite iterChart : iterationCharts){
+			//TODO @micha update iter charts
+				iterChart.getChart().getXYPlot().configureDomainAxes();
+				iterChart.getChart().getXYPlot().configureRangeAxes();
+				iterChart.getChart().fireChartChanged();
+				
+				// Workaround because auto range function appears to be broken
+				// add function for all charts
+				final InstanceVisualizationData instanceVisualizationData = (InstanceVisualizationData) this.visualizationData
+					.getNetworkTopology().getAttachment();			
+				final double newUpperBound = instanceVisualizationData.getUpperBoundForIterChart(iterChart.getChart().getTitle().getText());
+				if (newUpperBound > iterChart.getChart().getXYPlot().getRangeAxis().getUpperBound()) {
+					iterChart.getChart().getXYPlot().getRangeAxis().setRange(0, newUpperBound);
+				}
+			
+			}
 		}
 
 		if (this.tabFolder.getSelectionIndex() == 0) {

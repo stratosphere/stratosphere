@@ -34,6 +34,7 @@ import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.EnumUtils;
+import eu.stratosphere.nephele.util.SerializableArrayList;
 
 /**
  * A management graph is structurally equal to the graph Nephele uses internally for scheduling jobs. Management graphs
@@ -65,6 +66,11 @@ public final class ManagementGraph extends ManagementAttachment implements IORea
 	 * A map of group vertices this graph consists of.
 	 */
 	private final Map<ManagementGroupVertexID, ManagementGroupVertex> groupVertices = new HashMap<ManagementGroupVertexID, ManagementGroupVertex>();
+
+	/**
+	 * List of iteration metrics for showing iteration progress
+	 */
+	private SerializableArrayList<StringRecord> iterationMetrics =  new SerializableArrayList<StringRecord>();
 
 	/**
 	 * Constructs a new management graph with the given job ID.
@@ -491,6 +497,8 @@ public final class ManagementGraph extends ManagementAttachment implements IORea
 
 			}
 		}
+		// read iteration metrics
+		this.iterationMetrics.read(in);
 	}
 
 	/**
@@ -567,5 +575,16 @@ public final class ManagementGraph extends ManagementAttachment implements IORea
 				}
 			}
 		}
+		// write iteration metrics
+		this.iterationMetrics.write(out);
+		
+	}
+	
+	public List<StringRecord> getIterationMetrics() {
+		return this.iterationMetrics;
+	}
+
+	public void setIterationMetrics(SerializableArrayList<StringRecord> iterationMetrics) {
+		this.iterationMetrics = iterationMetrics;
 	}
 }

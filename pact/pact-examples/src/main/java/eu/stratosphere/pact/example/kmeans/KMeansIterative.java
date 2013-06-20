@@ -1,5 +1,6 @@
 package eu.stratosphere.pact.example.kmeans;
 
+import eu.stratosphere.pact.common.contract.CoGroupContract;
 import eu.stratosphere.pact.common.contract.CrossContract;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
@@ -19,7 +20,9 @@ import eu.stratosphere.pact.generic.contract.BulkIteration;
  *
  */
 public class KMeansIterative implements PlanAssembler, PlanAssemblerDescription {
-	
+
+  public static final String CENTROID_MOVEMENT = "centroidMovement";
+
 	@Override
 	public Plan getPlan(String... args) {
 		// parse job parameters
@@ -54,11 +57,21 @@ public class KMeansIterative implements PlanAssembler, PlanAssemblerDescription 
 				.build();
 
 		// create ReduceContract for computing new cluster positions
-		ReduceContract recomputeClusterCenter = ReduceContract.builder(RecomputeClusterCenter.class, PactInteger.class, 0)
+		/*ReduceContract recomputeClusterCenter = ReduceContract.builder(RecomputeClusterCenter.class, PactInteger.class, 0)
 				.input(findNearestClusterCenters)
 				.name("Recompute Center Positions")
-				.build();
+				.build();      */
+
+    CoGroupContract recomputeClusterCenter = CoGroupContract.builder(RecomputeClusterCenter.class, PactInteger.class, 0, 0)
+        .input2(findNearestClusterCenters)
+        .input1(iteration.getPartialSolution())
+        .name("Recompute Center Positions")
+        .build();
+
 		iteration.setNextPartialSolution(recomputeClusterCenter);
+
+    iteration.getAggregators().registerAggregationConvergenceCriterion(CENTROID_MOVEMENT,
+        AverageMovementAggregator.class, CentroidDistanceConvergenceCriterion.class);
 
 		// create DataSinkContract for writing the new cluster positions
 		FileDataSink finalResult = new FileDataSink(PointOutFormat.class, output, iteration, "New Center Positions");

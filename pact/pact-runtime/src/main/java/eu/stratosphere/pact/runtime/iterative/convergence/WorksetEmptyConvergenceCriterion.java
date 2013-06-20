@@ -15,10 +15,14 @@
 
 package eu.stratosphere.pact.runtime.iterative.convergence;
 
+import com.google.common.collect.Maps;
 import eu.stratosphere.pact.common.stubs.aggregators.ConvergenceCriterion;
 import eu.stratosphere.pact.common.type.base.PactLong;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A workset iteration is by definition converged if no records have been updated in the solutionset
@@ -40,4 +44,16 @@ public class WorksetEmptyConvergenceCriterion implements ConvergenceCriterion<Pa
 
 		return updatedElements == 0;
 	}
+
+  @Override
+  public String[] getVisualizationSeriesNames() {
+    return new String[] { "Workset" };
+  }
+
+  @Override
+  public Map<String, Double> getVisualizationData(int iteration, PactLong value) {
+    Map<String,Double> data = Maps.newHashMap();
+    data.put("Workset", Double.valueOf(value.getValue()));
+    return data;
+  }
 }

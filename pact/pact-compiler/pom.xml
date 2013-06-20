@@ -31,12 +31,12 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>pact-examples</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>

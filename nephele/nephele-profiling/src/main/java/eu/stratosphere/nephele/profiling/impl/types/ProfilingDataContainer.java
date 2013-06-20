@@ -19,28 +19,39 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 
+import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.io.IOReadableWritable;
+import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
 import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.StringUtils;
 
 public class ProfilingDataContainer implements IOReadableWritable {
 
 	private final Queue<InternalProfilingData> queuedProfilingData = new ArrayDeque<InternalProfilingData>();
+	
+	private final List<ProfilingEvent> customEvents = new ArrayList<ProfilingEvent>();
 
 	public void addProfilingData(InternalProfilingData profilingData) {
-
 		if (profilingData == null) {
 			return;
 		}
-
 		this.queuedProfilingData.add(profilingData);
+	}
+	
+	public void addCustomEvent(ProfilingEvent customEvent) {
+		if (customEvent != null) {
+			this.customEvents.add(customEvent);
+		}
 	}
 
 	public void clear() {
 		this.queuedProfilingData.clear();
+		this.customEvents.clear();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -70,18 +81,41 @@ public class ProfilingDataContainer implements IOReadableWritable {
 
 			this.queuedProfilingData.add(profilingData);
 		}
-	}
+		
+		int numCustomEvents = in.readInt();
+		for (int i = 0; i < numCustomEvents; i++) {
+			String className = StringRecord.readString(in);
+			Class<? extends ProfilingEvent> clazz = null;
+			try {
+				clazz = (Class<? extends ProfilingEvent>) Class.forName(className);
+			} catch (Exception e) {
+				throw new IOException(StringUtils.stringifyException(e));
+			}
 
-	public int size() {
-		return this.queuedProfilingData.size();
+			ProfilingEvent customEvent = null;
+			try {
+				customEvent = clazz.newInstance();
+			} catch (Exception e) {
+				throw new IOException(StringUtils.stringifyException(e));
+			}
+
+			// Restore internal state
+			customEvent.read(in);
+
+			this.customEvents.add(customEvent);
+		}
 	}
 
 	public boolean isEmpty() {
-		return this.queuedProfilingData.isEmpty();
+		return this.queuedProfilingData.isEmpty() && this.customEvents.isEmpty();
 	}
 
 	public Iterator<InternalProfilingData> getIterator() {
 		return this.queuedProfilingData.iterator();
+	}
+	
+	public Iterator<ProfilingEvent> getCustomEvents() {
+		return this.customEvents.iterator();
 	}
 
 	@Override
@@ -95,6 +129,13 @@ public class ProfilingDataContainer implements IOReadableWritable {
 			final InternalProfilingData profilingData = iterator.next();
 			StringRecord.writeString(out, profilingData.getClass().getName());
 			profilingData.write(out);
+		}
+		
+		// write the custom events
+		out.writeInt(this.customEvents.size());
+		for (AbstractEvent event : this.customEvents) {
+			StringRecord.writeString(out, event.getClass().getName());
+			event.write(out);
 		}
 	}
 

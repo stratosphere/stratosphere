@@ -17,6 +17,8 @@ package eu.stratosphere.pact.common.stubs.aggregators;
 
 import eu.stratosphere.pact.common.type.Value;
 
+import java.util.Map;
+
 /**
  * Used to check for convergence.
  */
@@ -26,4 +28,9 @@ public interface ConvergenceCriterion<T extends Value> {
 	 * Decide whether the iterative algorithm has converged
 	 */
 	boolean isConverged(int iteration, T value);
+
+  String[] getVisualizationSeriesNames();
+
+  Map<String,Double> getVisualizationData(int iteration, T value);
+
 }
