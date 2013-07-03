@@ -75,9 +75,11 @@ public final class DistributedFileSystem extends FileSystem {
 		}
 
 		Class<?> clazz = null;
+		
+		// try to get the FileSystem implementation class Hadoop 2.0.0 style
 		try {
-			Method newApi = org.apache.hadoop.fs.FileSystem.class.getMethod("getFileSystemClass", String.class, Configuration.class);
-			clazz = (Class<?>) newApi.invoke("hdfs",conf);
+			Method newApi = org.apache.hadoop.fs.FileSystem.class.getMethod("getFileSystemClass", String.class, org.apache.hadoop.conf.Configuration.class);
+			clazz = (Class<?>) newApi.invoke(null, "hdfs",conf);
 		} catch (Exception e) {
 			// if we can't find the FileSystem class using the new API,
 			// clazz will still be null, we assume we're running on an older Hadoop version
