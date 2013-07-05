@@ -24,6 +24,8 @@ if [ "$NEPHELE_IDENT_STRING" = "" ]; then
         NEPHELE_IDENT_STRING="$USER"
 fi
 
+NEPHELE_LIB_CLIENTS_DIR=$NEPHELE_ROOT_DIR/lib_clients
+
 JVM_ARGS="$JVM_ARGS -Xmx512m"
 
 # auxilliary function to construct a lightweight classpath for the
@@ -39,6 +41,10 @@ constructPactCLIClientClassPath() {
 	done
 
 	for jarfile in $NEPHELE_LIB_DIR/dropins/*.jar ; do
+		PACT_CC_CLASSPATH=$PACT_CC_CLASSPATH:$jarfile
+	done
+	
+	for jarfile in $NEPHELE_LIB_CLIENTS_DIR/*.jar ; do
 		PACT_CC_CLASSPATH=$PACT_CC_CLASSPATH:$jarfile
 	done
 
