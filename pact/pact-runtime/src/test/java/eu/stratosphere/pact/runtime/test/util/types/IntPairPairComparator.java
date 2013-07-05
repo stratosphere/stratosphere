@@ -18,35 +18,27 @@ package eu.stratosphere.pact.runtime.test.util.types;
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 
 
-/**
- * @author Stephan Ewen
- */
-public class IntPairPairComparator extends TypePairComparator<IntPair, IntPair>
-{
+public class IntPairPairComparator extends TypePairComparator<IntPair, IntPair> {
+	
 	private int key;
 	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#setReference(java.lang.Object, eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2)
-	 */
 	@Override
 	public void setReference(IntPair reference) {
 		this.key = reference.getKey();
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#equalToReference(java.lang.Object, eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2)
-	 */
 	@Override
 	public boolean equalToReference(IntPair candidate) {
 		return this.key == candidate.getKey();
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypePairComparator#compareToReference(java.lang.Object)
-	 */
 	@Override
 	public int compareToReference(IntPair candidate) {
 		return candidate.getKey() - this.key;
 	}
-	
+
+	@Override
+	public TypePairComparator<IntPair, IntPair> duplicate() {
+		return new IntPairPairComparator();
+	}
 }

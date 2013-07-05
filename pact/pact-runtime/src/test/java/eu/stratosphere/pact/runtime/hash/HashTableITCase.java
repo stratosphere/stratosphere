@@ -1466,13 +1466,10 @@ public class HashTableITCase
 	
 	// ============================================================================================
 	
-	private static final class PactRecordPairComparatorFirstInt extends TypePairComparator<PactRecord, PactRecord>
-	{
+	private static final class PactRecordPairComparatorFirstInt extends TypePairComparator<PactRecord, PactRecord> {
+
 		private int key;
 
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#setReference(java.lang.Object, eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2)
-		 */
 		@Override
 		public void setReference(PactRecord reference) {
 			try {
@@ -1482,9 +1479,6 @@ public class HashTableITCase
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#equalToReference(java.lang.Object, eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2)
-		 */
 		@Override
 		public boolean equalToReference(PactRecord candidate) {
 			try {
@@ -1494,9 +1488,6 @@ public class HashTableITCase
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.pact.runtime.plugable.TypePairComparator#compareToReference(java.lang.Object)
-		 */
 		@Override
 		public int compareToReference(PactRecord candidate) {
 			try {
@@ -1506,6 +1497,11 @@ public class HashTableITCase
 				throw new NullKeyFieldException();
 			}
 				
+		}
+
+		@Override
+		public PactRecordPairComparatorFirstInt duplicate() {
+			return new PactRecordPairComparatorFirstInt();
 		}
 	}
 }

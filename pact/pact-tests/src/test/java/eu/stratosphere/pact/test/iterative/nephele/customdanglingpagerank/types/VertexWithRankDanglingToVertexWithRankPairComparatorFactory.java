@@ -61,6 +61,11 @@ public class VertexWithRankDanglingToVertexWithRankPairComparatorFactory
 			long diff = candidate.getVertexID() - this.reference;
 			return diff < 0 ? -1 : diff > 0 ? 1 : 0;
 		}
+
+		@Override
+		public VertexWithRankDanglingToVertexWithRankComparator duplicate() {
+			return new VertexWithRankDanglingToVertexWithRankComparator();
+		}
 	}
 	
 	public static final class VertexWithRankToVertexWithRankDanglingPairComparator
@@ -82,6 +87,11 @@ public class VertexWithRankDanglingToVertexWithRankPairComparatorFactory
 		public int compareToReference(VertexWithRankAndDangling candidate) {
 			long diff = candidate.getVertexID() - this.reference;
 			return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+		}
+
+		@Override
+		public TypePairComparator<VertexWithRank, VertexWithRankAndDangling> duplicate() {
+			return new VertexWithRankToVertexWithRankDanglingPairComparator();
 		}
 	}
 }

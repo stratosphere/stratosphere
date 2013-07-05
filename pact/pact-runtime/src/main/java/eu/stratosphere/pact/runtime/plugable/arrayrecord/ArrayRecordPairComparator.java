@@ -27,8 +27,8 @@ import eu.stratosphere.pact.generic.types.TypePairComparator;
  * Implementation of the {@link TypePairComparator} interface for Pact Records. The equality is established on a set of
  * key fields. The indices of the key fields may be different on the reference and candidate side.
  */
-public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value[]>
-{
+public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value[]> {
+	
 	private final int[] keyFields1, keyFields2;			// arrays with the positions of the keys in the records
 	
 	private final Key[] keyHolders1;					// arrays with mutable objects for the key types
@@ -55,11 +55,26 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 		}
 	}
 	
+	private ArrayRecordPairComparator(int[] keyFieldsReference, int[] keyFieldsCandidate,
+			Key[] keyTypes)
+	{
+		this.keyFields1 = keyFieldsReference;
+		this.keyFields2 = keyFieldsCandidate;
+		
+		// instantiate fields to extract keys into
+		this.keyHolders1 = new Key[keyTypes.length];
+		try {
+			for (int i = 0; i < keyTypes.length; i++) {
+				this.keyHolders1[i] = keyTypes[i].getClass().newInstance();
+			}
+		} catch (Exception e) {
+			// should never happen, since we instantiated before
+			throw new RuntimeException(e);
+		}
+	}
+	
 	// --------------------------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#setReference(java.lang.Object)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void setReference(Value[] reference) {
@@ -68,9 +83,6 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeComparator#equalToReference(java.lang.Object)
-	 */
 	@Override
 	public boolean equalToReference(Value[] candidate) {
 		for (int i = 0; i < this.keyFields2.length; i++) {
@@ -83,9 +95,6 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypePairComparator#compareToReference(java.lang.Object)
-	 */
 	@Override
 	public int compareToReference(Value[] candidate) {
 		for (int i = 0; i < this.keyFields2.length; i++) {
@@ -100,5 +109,10 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public TypePairComparator<Value[], Value[]> duplicate() {
+		return new ArrayRecordPairComparator(keyFields1, keyFields2, keyHolders1);
 	}
 }

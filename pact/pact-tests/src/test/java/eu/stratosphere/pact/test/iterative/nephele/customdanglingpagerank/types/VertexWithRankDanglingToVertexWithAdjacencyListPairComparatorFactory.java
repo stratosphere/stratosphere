@@ -61,6 +61,11 @@ public class VertexWithRankDanglingToVertexWithAdjacencyListPairComparatorFactor
 			long diff = candidate.getVertexID() - this.reference;
 			return diff < 0 ? -1 : diff > 0 ? 1 : 0;
 		}
+
+		@Override
+		public VertexWithRankDanglingToVertexWithAdjacencyListPairComparator duplicate() {
+			return new VertexWithRankDanglingToVertexWithAdjacencyListPairComparator();
+		}
 	}
 	
 	public static final class VertexWithAdjacencyListToVertexWithRankDanglingPairComparator
@@ -82,6 +87,11 @@ public class VertexWithRankDanglingToVertexWithAdjacencyListPairComparatorFactor
 		public int compareToReference(VertexWithRankAndDangling candidate) {
 			long diff = candidate.getVertexID() - this.reference;
 			return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+		}
+
+		@Override
+		public VertexWithAdjacencyListToVertexWithRankDanglingPairComparator duplicate() {
+			return new VertexWithAdjacencyListToVertexWithRankDanglingPairComparator();
 		}
 	}
 }

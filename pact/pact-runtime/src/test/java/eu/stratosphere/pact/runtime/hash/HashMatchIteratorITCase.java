@@ -749,6 +749,11 @@ public class HashMatchIteratorITCase
 				throw new NullKeyFieldException();
 			}
 		}
+
+		@Override
+		public IntPairRecordPairComparator duplicate() {
+			return new IntPairRecordPairComparator();
+		}
 	}
 	
 	static final class RecordIntPairPairComparator extends TypePairComparator<PactRecord, IntPair>
@@ -768,6 +773,11 @@ public class HashMatchIteratorITCase
 		@Override
 		public int compareToReference(IntPair candidate) {
 			return candidate.getKey() - this.reference;
+		}
+
+		@Override
+		public RecordIntPairPairComparator duplicate() {
+			return new RecordIntPairPairComparator();
 		}
 	}
 }

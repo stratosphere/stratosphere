@@ -26,15 +26,14 @@ import eu.stratosphere.pact.generic.types.TypePairComparator;
  * Implementation of the {@link TypePairComparator} interface for Pact Records. The equality is established on a set of
  * key fields. The indices of the key fields may be different on the reference and candidate side.
  */
-public class PactRecordPairComparator extends TypePairComparator<PactRecord, PactRecord>
-{
+public class PactRecordPairComparator extends TypePairComparator<PactRecord, PactRecord> {
+	
 	private final int[] keyFields1, keyFields2;			// arrays with the positions of the keys in the records
 	
 	private final Key[] keyHolders1, keyHolders2;		// arrays with mutable objects for the key types
 	
 	
-	public PactRecordPairComparator(int[] keyFieldsReference, int[] keyFieldsCandidate, Class<? extends Key>[] keyTypes)
-	{
+	public PactRecordPairComparator(int[] keyFieldsReference, int[] keyFieldsCandidate, Class<? extends Key>[] keyTypes) {
 		if (keyFieldsReference.length != keyFieldsCandidate.length || keyFieldsCandidate.length != keyTypes.length) {
 			throw new IllegalArgumentException(
 				"The arrays describing the key positions and types must be of the same length.");
@@ -52,6 +51,25 @@ public class PactRecordPairComparator extends TypePairComparator<PactRecord, Pac
 			}
 			this.keyHolders1[i] = InstantiationUtil.instantiate(keyTypes[i], Key.class);
 			this.keyHolders2[i] = InstantiationUtil.instantiate(keyTypes[i], Key.class);
+		}
+	}
+	
+	private  PactRecordPairComparator(int[] keyFieldsReference, int[] keyFieldsCandidate, Key[] keyTypes) {
+		this.keyFields1 = keyFieldsReference;
+		this.keyFields2 = keyFieldsCandidate;
+		
+		// instantiate fields to extract keys into
+		this.keyHolders1 = new Key[keyTypes.length];
+		this.keyHolders2 = new Key[keyTypes.length];
+		
+		try {
+			for (int i = 0; i < keyTypes.length; i++) {
+				this.keyHolders1[i] = keyTypes[i].getClass().newInstance();
+				this.keyHolders2[i] = keyTypes[i].getClass().newInstance();
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Bug: Error instantiating key classes during comparator duplication.");
 		}
 	}
 	
@@ -104,5 +122,10 @@ public class PactRecordPairComparator extends TypePairComparator<PactRecord, Pac
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public PactRecordPairComparator duplicate() {
+		return new PactRecordPairComparator(this.keyFields1, this.keyFields2, this.keyHolders1);
 	}
 }

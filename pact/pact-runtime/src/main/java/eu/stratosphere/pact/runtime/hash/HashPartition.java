@@ -43,8 +43,8 @@ import eu.stratosphere.pact.runtime.util.MathUtils;
  * @param BT The type of the build side records.
  * @param PT The type of the probe side records.
  */
-public class HashPartition<BT, PT> extends AbstractPagedInputView implements SeekableDataInputView
-{
+public class HashPartition<BT, PT> extends AbstractPagedInputView implements SeekableDataInputView {
+	
 	// --------------------------------- Table Structure Auxiliaries ------------------------------------
 	
 	protected MemorySegment[] overflowSegments;	// segments in which overflow buckets from the table structure are stored
@@ -236,8 +236,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	 * @return A pointer to the object in the partition, or <code>-1</code>, if the partition is spilled.
 	 * @throws IOException Thrown, when this is a spilled partition and the write failed.
 	 */
-	public final long insertIntoBuildBuffer(BT record) throws IOException
-	{
+	public final long insertIntoBuildBuffer(BT record) throws IOException {
 		this.buildSideRecordCounter++;
 		
 		if (isInMemory()) {
@@ -260,8 +259,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	 * @param object The record to be inserted into the probe side buffers.
 	 * @throws IOException Thrown, if the buffer is full, needs to be spilled, and spilling causes an error.
 	 */
-	public final void insertIntoProbeBuffer(PT record) throws IOException
-	{
+	public final void insertIntoProbeBuffer(PT record) throws IOException {
 		this.probeSideSerializer.serialize(record, this.probeSideBuffer);
 		this.probeSideRecordCounter++;
 	}
@@ -383,8 +381,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	
 
 	
-	public void clearAllMemory(List<MemorySegment> target)
-	{
+	public void clearAllMemory(List<MemorySegment> target) {
 		// return current buffers from build side and probe side
 		if (this.buildSideWriteBuffer != null) {
 			if (this.buildSideWriteBuffer.getCurrentSegment() != null) {
@@ -431,8 +428,7 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 		}
 	}
 	
-	final PartitionIterator getPartitionIterator(TypeComparator<BT> comparator) throws IOException
-	{
+	final PartitionIterator getPartitionIterator(TypeComparator<BT> comparator) throws IOException {
 		return new PartitionIterator(comparator);
 	}
 	
@@ -599,23 +595,21 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 	
 	// ============================================================================================
 	
-	final class PartitionIterator implements MutableObjectIterator<BT>
-	{
+	protected final class PartitionIterator implements MutableObjectIterator<BT> {
+		
 		private final TypeComparator<BT> comparator;
 		
 		private long currentPointer;
 		
 		private int currentHashCode;
 		
-		private PartitionIterator(final TypeComparator<BT> comparator) throws IOException
-		{
+		private PartitionIterator(final TypeComparator<BT> comparator) throws IOException {
 			this.comparator = comparator;
 			setReadPosition(0);
 		}
 		
 		
-		public final boolean next(BT record) throws IOException
-		{
+		public final boolean next(BT record) throws IOException {
 			final int pos = getCurrentPositionInSegment();
 			final int buffer = HashPartition.this.currentBufferNum;
 			
@@ -630,18 +624,12 @@ public class HashPartition<BT, PT> extends AbstractPagedInputView implements See
 			}
 		}
 		
-		protected final long getPointer()
-		{
+		protected final long getPointer() {
 			return this.currentPointer;
 		}
 		
-		protected final int getCurrentHashCode()
-		{
+		protected final int getCurrentHashCode() {
 			return this.currentHashCode;
 		}
 	}
-
-	
-
-	
 }

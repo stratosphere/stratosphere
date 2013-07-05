@@ -200,6 +200,8 @@ public class TaskConfig {
 	
 	private static final String ITERATION_SOLUTION_SET_UPDATE_SKIP_REPROBE = "pact.iterative.ss-update-fast";
 	
+	private static final String ITERATION_SOLUTION_SET_JOIN_NUM = "pact.iterative.ss-join-id";
+	
 	// ---------------------------------- Miscellaneous -------------------------------------------
 	
 	private static final char SEPARATOR = '.';
@@ -930,6 +932,14 @@ public class TaskConfig {
 	
 	public boolean getUpdateSolutionSetWithoutReprobe() {
 		return this.config.getBoolean(ITERATION_SOLUTION_SET_UPDATE_SKIP_REPROBE, false);
+	}
+	
+	public void setIterationSolutionSetJoinNum(int num) {
+		this.config.setInteger(ITERATION_SOLUTION_SET_JOIN_NUM, num);
+	}
+	
+	public int getIterationSolutionSetJoinNum() {
+		return this.config.getInteger(ITERATION_SOLUTION_SET_JOIN_NUM, -1);
 	}
 
 	// --------------------------------------------------------------------------------------------

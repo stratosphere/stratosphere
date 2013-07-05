@@ -28,8 +28,8 @@ package eu.stratosphere.pact.generic.types;
  * @param <T1> The class of the first data type.
  * @param <T2> The class of the second data type. 
  */
-public abstract class TypePairComparator<T1, T2>
-{
+public abstract class TypePairComparator<T1, T2> {
+	
 	/**
 	 * Sets the reference for comparisons.
 	 * 
@@ -46,5 +46,9 @@ public abstract class TypePairComparator<T1, T2>
 	 */
 	public abstract boolean equalToReference(T2 candidate);
 	
+	
 	public abstract int compareToReference(T2 candidate);
+	
+	
+	public abstract TypePairComparator<T1, T2> duplicate();
 }

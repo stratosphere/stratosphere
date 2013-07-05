@@ -286,6 +286,9 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 */
 	private HashBucketIterator<BT, PT> bucketIterator;
 	
+	
+	private HashBucketIterator<BT, PT>[] bucketIterators;
+	
 //	private LazyHashBucketIterator<BT, PT> lazyBucketIterator;
 	
 	/**
@@ -439,6 +442,12 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		
 		// the bucket iterator can remain constant over the time
 		this.bucketIterator = new HashBucketIterator<BT, PT>(this.buildSideSerializer, this.recordComparator);
+		
+		if (this.bucketIterators == null) {
+			@SuppressWarnings("unchecked")
+			HashBucketIterator<BT, PT>[] bucketIterators = new HashBucketIterator[] { this.bucketIterator };
+			this.bucketIterators = bucketIterators;
+		}
 //		this.lazyBucketIterator = new LazyHashBucketIterator<BT, PT>(this.recordComparator);
 	}
 	
@@ -462,8 +471,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 			
 			// for an in-memory partition, process set the return iterators, else spill the probe records
 			if (p.isInMemory()) {
-				this.recordComparator.setReference(next);
-				this.bucketIterator.set(bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
+				this.bucketIterator.set(next, bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
 				return true;
 			}
 			else {
@@ -532,16 +540,40 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 * @throws IOException
 	 */
 	public boolean nextRecord() throws IOException {
-		
 		final boolean probeProcessing = processProbeIter();
-		if(probeProcessing) {
+		if (probeProcessing) {
 			return true;
 		}
 		return prepareNextPartition();
 	}
 	
-	public HashBucketIterator<BT, PT> getMatchesFor(PT record) throws IOException
-	{
+	public void ensureNumBuildSideIterators(int num) {
+		synchronized (this) {
+			if (num <= 0) {
+				throw new IllegalArgumentException();
+			}
+			
+			int numYet;
+			if (this.bucketIterators == null) {
+				@SuppressWarnings("unchecked")
+				HashBucketIterator<BT, PT>[] bucketIterators = new HashBucketIterator[num];
+				this.bucketIterators = bucketIterators;
+				numYet = 0;
+			} else {
+				numYet = this.bucketIterators.length;
+			}
+			
+			while (numYet < num) {
+				this.bucketIterators[numYet] = new HashBucketIterator<BT, PT>(this.buildSideSerializer, this.recordComparator.duplicate());
+			}
+		}
+	}
+	
+	public HashBucketIterator<BT, PT> getMatchesFor(PT record) throws IOException {
+		return getMatchesFor(record, 0);
+	}
+	
+	public HashBucketIterator<BT, PT> getMatchesFor(PT record, int num) throws IOException {
 		final TypeComparator<PT> probeAccessors = this.probeSideComparator;
 		final int hash = hash(probeAccessors.hash(record), this.currentRecursionDepth);
 		final int posHashCode = hash % this.numBuckets;
@@ -557,9 +589,9 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		
 		// for an in-memory partition, process set the return iterators, else spill the probe records
 		if (p.isInMemory()) {
-			this.recordComparator.setReference(record);
-			this.bucketIterator.set(bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
-			return this.bucketIterator;
+			HashBucketIterator<BT, PT> bi = this.bucketIterators[num];
+			bi.set(record, bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
+			return bi;
 		}
 		else {
 			throw new IllegalStateException("Method is not applicable to partially spilled hash tables.");
@@ -605,6 +637,10 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	public HashBucketIterator<BT, PT> getBuildSideIterator() {
 		return this.bucketIterator;
 	}
+	
+	public HashBucketIterator<BT, PT> getBuildSideIterator(int num) {
+		return this.bucketIterators[num];
+	}
 
 	public MutableObjectIterator<BT> getPartitionEntryIterator() {
 		return new HashPartitionIterator<BT, PT>(this.partitionsBeingBuilt.iterator(), this.buildSideSerializer);
@@ -616,8 +652,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 	 * complete inputs were properly processed, and as an cancellation call, which cleans up
 	 * all resources that are currently held by the hash join.
 	 */
-	public void close()
-	{
+	public void close() {
 		// make sure that we close only once
 		if (this.closed) {
 			return;
@@ -662,8 +697,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		}
 	}
 	
-	public List<MemorySegment> getFreedMemory()
-	{
+	public List<MemorySegment> getFreedMemory() {
 		if (!this.closed) {
 			throw new IllegalStateException("Cannot return memory while join is open.");
 		}
@@ -1327,7 +1361,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		}
 		
 		
-		void set(MemorySegment bucket, MemorySegment[] overflowSegments, HashPartition<BT, PT> partition,
+		void set(PT probeRecord, MemorySegment bucket, MemorySegment[] overflowSegments, HashPartition<BT, PT> partition,
 				int searchHashCode, int bucketInSegmentOffset)
 		{
 			this.bucket = bucket;
@@ -1337,6 +1371,8 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 			this.searchHashCode = searchHashCode;
 			this.bucketInSegmentOffset = bucketInSegmentOffset;
 			this.originalBucketInSegmentOffset = bucketInSegmentOffset;
+			
+			this.comparator.setReference(probeRecord);
 			
 			this.posInSegment = this.bucketInSegmentOffset + BUCKET_HEADER_LENGTH;
 			this.countInSegment = bucket.getShort(bucketInSegmentOffset + HEADER_COUNT_OFFSET);
