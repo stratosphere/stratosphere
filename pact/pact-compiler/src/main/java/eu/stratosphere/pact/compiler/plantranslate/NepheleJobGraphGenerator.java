@@ -406,51 +406,60 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			} else if (node instanceof SolutionSetPlanNode) {
 				// this represents an access into the solution set index.
 				// add the necessary information to all nodes that access the index
-				if (node.getOutgoingChannels().size() != 1) {
-					throw new CompilerException("Currently, only one join with the solution set is allowed.");
-				}
 				
-				Channel c = node.getOutgoingChannels().get(0);
-				DualInputPlanNode target = (DualInputPlanNode) c.getTarget();
-				AbstractJobVertex accessingVertex = this.vertices.get(target);
-				TaskConfig conf = new TaskConfig(accessingVertex.getConfiguration());
-				int inputNum = c == target.getInput1() ? 0 : c == target.getInput2() ? 1 : -1;
+				int joinNum = 0;
+				Iterator<Channel> outChannels = node.getOutgoingChannels().iterator();
 				
-				// sanity checks
-				if (inputNum == -1) {
-					throw new CompilerException();
+				while(outChannels.hasNext()){
+					Channel c = outChannels.next();
+					DualInputPlanNode target = (DualInputPlanNode) c.getTarget();
+					AbstractJobVertex accessingVertex = this.vertices.get(target);
+					TaskConfig conf = new TaskConfig(accessingVertex.getConfiguration());
+					int inputNum = c == target.getInput1() ? 0 : c == target.getInput2() ? 1 : -1;
+					
+					// sanity checks
+					if (inputNum == -1) {
+						throw new CompilerException();
+					}
+					
+					// assign a number to each operator that accesses the index
+					conf.setIterationSolutionSetJoinNum(joinNum);
+					
+					// adjust the driver
+					if (conf.getDriver().equals(MatchDriver.class)) {
+						conf.setDriver(inputNum == 0 ? SolutionSetFirstJoinDriver.class : SolutionSetSecondJoinDriver.class);
+					}
+					else if (conf.getDriver().equals(CoGroupDriver.class)) {
+						conf.setDriver(inputNum == 0 ? SolutionSetFirstCoGroupDriver.class : SolutionSetSecondCoGroupDriver.class);
+					}
+					else {
+						throw new CompilerException("Found join with solution set using incompatible operator (only Match/CoGroup are valid.");
+					}
+					
+					// set the serializer / comparator information
+					conf.setSolutionSetSerializer(((SolutionSetPlanNode) node).getContainingIterationNode().getSolutionSetSerializer());
+					
+					//this needs to be done only once
+					if(joinNum == 0){
+						// hack: for now, we need the prober in the workset iteration head task
+						IterationDescriptor iter = this.iterations.get(((SolutionSetPlanNode) node).getContainingIterationNode());
+						TaskConfig headConf = iter.getHeadConfig();
+						
+						TypeSerializerFactory<?> otherSerializer;
+						TypeComparatorFactory<?> otherComparator;
+						if (inputNum == 0) {
+							otherSerializer = target.getInput2().getSerializer();
+							otherComparator = target.getComparator2();
+						} else {
+							otherSerializer = target.getInput1().getSerializer();
+							otherComparator = target.getComparator1();
+						}
+						headConf.setSolutionSetProberSerializer(otherSerializer);
+						headConf.setSolutionSetProberComparator(otherComparator);
+						headConf.setSolutionSetPairComparator(target.getPairComparator());
+					}
+					joinNum++;
 				}
-				
-				// adjust the driver
-				if (conf.getDriver().equals(MatchDriver.class)) {
-					conf.setDriver(inputNum == 0 ? SolutionSetFirstJoinDriver.class : SolutionSetSecondJoinDriver.class);
-				}
-				else if (conf.getDriver().equals(CoGroupDriver.class)) {
-					conf.setDriver(inputNum == 0 ? SolutionSetFirstCoGroupDriver.class : SolutionSetSecondCoGroupDriver.class);
-				}
-				else {
-					throw new CompilerException("Found join with solution set using incompatible operator (only Match/CoGroup are valid.");
-				}
-				
-				// set the serializer / comparator information
-				conf.setSolutionSetSerializer(((SolutionSetPlanNode) node).getContainingIterationNode().getSolutionSetSerializer());
-				
-				// hack: for now, we need the prober in the workset iteration head task
-				IterationDescriptor iter = this.iterations.get(((SolutionSetPlanNode) node).getContainingIterationNode());
-				TaskConfig headConf = iter.getHeadConfig();
-				
-				TypeSerializerFactory<?> otherSerializer;
-				TypeComparatorFactory<?> otherComparator;
-				if (inputNum == 0) {
-					otherSerializer = target.getInput2().getSerializer();
-					otherComparator = target.getComparator2();
-				} else {
-					otherSerializer = target.getInput1().getSerializer();
-					otherComparator = target.getComparator1();
-				}
-				headConf.setSolutionSetProberSerializer(otherSerializer);
-				headConf.setSolutionSetProberComparator(otherComparator);
-				headConf.setSolutionSetPairComparator(target.getPairComparator());
 				
 				return;
 			}
