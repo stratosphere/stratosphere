@@ -138,6 +138,8 @@ public abstract class JoinWithSolutionSetCoGroupDriver<IT1, IT2, OT> implements 
 		final GenericCoGrouper<IT1, IT2, OT> coGroupStub = taskContext.getStub();
 		final Collector<OT> collector = taskContext.getOutputCollector();
 		
+		final int joinNum = taskContext.getTaskConfig().getIterationSolutionSetJoinNum();
+		
 		if (getSolutionSetInputIndex() == 0) {
 			final IT1 buildSideRecord = rec1;
 			
@@ -149,7 +151,7 @@ public abstract class JoinWithSolutionSetCoGroupDriver<IT1, IT2, OT> implements 
 			
 			while (this.running && probeSideInput.nextKey()) {
 				IT2 current = probeSideInput.getCurrent();
-				final MutableHashTable.HashBucketIterator<IT1, IT2> bucket = join.getMatchesFor(current);
+				final MutableHashTable.HashBucketIterator<IT1, IT2> bucket = join.getMatchesFor(current, joinNum);
 				if (bucket.next(buildSideRecord)) {
 					siIter.set(buildSideRecord);
 					coGroupStub.coGroup(siIter, probeSideInput.getValues(), collector);
@@ -170,7 +172,7 @@ public abstract class JoinWithSolutionSetCoGroupDriver<IT1, IT2, OT> implements 
 			
 			while (this.running && probeSideInput.nextKey()) {
 				IT1 current = probeSideInput.getCurrent();
-				final MutableHashTable.HashBucketIterator<IT2, IT1> bucket = join.getMatchesFor(current);
+				final MutableHashTable.HashBucketIterator<IT2, IT1> bucket = join.getMatchesFor(current, joinNum);
 				if (bucket.next(buildSideRecord)) {
 					siIter.set(buildSideRecord);
 					coGroupStub.coGroup(probeSideInput.getValues(), siIter, collector);

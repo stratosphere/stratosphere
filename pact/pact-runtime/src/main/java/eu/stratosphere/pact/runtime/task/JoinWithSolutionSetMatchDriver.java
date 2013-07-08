@@ -133,6 +133,8 @@ public abstract class JoinWithSolutionSetMatchDriver<IT1, IT2, OT> implements Re
 		final GenericMatcher<IT1, IT2, OT> matchStub = taskContext.getStub();
 		final Collector<OT> collector = taskContext.getOutputCollector();
 		
+		final int joinNum = taskContext.getTaskConfig().getIterationSolutionSetJoinNum();
+		
 		if (getSolutionSetInputIndex() == 0) {
 			final IT1 buildSideRecord = rec1;
 			final IT2 probeSideRecord = rec2;
@@ -142,7 +144,7 @@ public abstract class JoinWithSolutionSetMatchDriver<IT1, IT2, OT> implements Re
 			final MutableObjectIterator<IT2> probeSideInput = taskContext.<IT2>getInput(0);
 			
 			while (this.running && probeSideInput.next(probeSideRecord)) {
-				final MutableHashTable.HashBucketIterator<IT1, IT2> bucket = join.getMatchesFor(probeSideRecord);
+				final MutableHashTable.HashBucketIterator<IT1, IT2> bucket = join.getMatchesFor(probeSideRecord, joinNum);
 				if (bucket.next(buildSideRecord)) {
 					matchStub.match(buildSideRecord, probeSideRecord, collector);
 				} else {
@@ -159,7 +161,7 @@ public abstract class JoinWithSolutionSetMatchDriver<IT1, IT2, OT> implements Re
 			final MutableObjectIterator<IT1> probeSideInput = taskContext.<IT1>getInput(0);
 			
 			while (this.running && probeSideInput.next(probeSideRecord)) {
-				final MutableHashTable.HashBucketIterator<IT2, IT1> bucket = join.getMatchesFor(probeSideRecord);
+				final MutableHashTable.HashBucketIterator<IT2, IT1> bucket = join.getMatchesFor(probeSideRecord, joinNum);
 				if (bucket.next(buildSideRecord)) {
 					matchStub.match(probeSideRecord, buildSideRecord, collector);
 				} else {
