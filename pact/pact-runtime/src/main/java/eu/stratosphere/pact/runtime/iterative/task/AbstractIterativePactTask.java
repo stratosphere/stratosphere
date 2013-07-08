@@ -87,7 +87,7 @@ public abstract class AbstractIterativePactTask<S extends Stub, OT> extends Regu
 			if (config.getUpdateSolutionSetWithoutReprobe()) {
 				@SuppressWarnings("unchecked")
 				MutableHashTable<OT, ?> hashTable = (MutableHashTable<OT, ?>) SolutionsetBroker.instance().get(brokerKey);
-				this.output = new UpdateSolutionsetOutputCollector<OT>(this.output, hashTable);
+				this.output = new UpdateSolutionsetOutputCollector<OT>(this.output, hashTable, config.getIterationSolutionSetJoinNum());
 			} else {
 				throw new UnsupportedOperationException("Runtime currently supports only fast updates withpout reprobing.");
 			}

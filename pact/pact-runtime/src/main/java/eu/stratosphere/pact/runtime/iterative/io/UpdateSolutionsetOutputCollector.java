@@ -27,17 +27,27 @@ public class UpdateSolutionsetOutputCollector<T> implements Collector<T> {
 	private final MutableHashTable<T, ?> hashTable;
 
 	private long numUpdatedElements;
+	
+	private int joinNum;	
 
 	public UpdateSolutionsetOutputCollector(Collector<T> delegate, MutableHashTable<T, ?> hashTable) {
 		this.delegate = delegate;
 		this.hashTable = hashTable;
 		numUpdatedElements = 0;
 	}
+	
+	public UpdateSolutionsetOutputCollector(Collector<T> delegate, MutableHashTable<T, ?> hashTable, int joinNum) {
+		this.delegate = delegate;
+		this.hashTable = hashTable;
+		numUpdatedElements = 0;
+		this.joinNum = joinNum;
+	}
+	
 
 	@Override
 	public void collect(T record) {
 		try {
-			MutableHashTable.HashBucketIterator<T, ?> hashBucket = hashTable.getBuildSideIterator();
+			MutableHashTable.HashBucketIterator<T, ?> hashBucket = hashTable.getBuildSideIterator(joinNum);
 			hashBucket.writeBack(record);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
