@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.example.iterative;
+package eu.stratosphere.pact.example.connectedcomponents;
 
 import java.util.Iterator;
 

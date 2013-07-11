@@ -24,12 +24,12 @@ import org.junit.runners.Parameterized.Parameters;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.example.connectedcomponents.WorksetConnectedComponents;
+import eu.stratosphere.pact.example.connectedcomponents.WorksetConnectedComponentsWithCoGroup;
 import eu.stratosphere.pact.test.iterative.nephele.ConnectedComponentsNepheleITCase;
 import eu.stratosphere.pact.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
-public class ConnectedComponentsITCase extends TestBase2 {
+public class CoGroupConnectedComponentsITCase extends TestBase2 {
 	
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 	
@@ -43,7 +43,7 @@ public class ConnectedComponentsITCase extends TestBase2 {
 	protected String resultPath;
 	
 	
-	public ConnectedComponentsITCase(Configuration config) {
+	public CoGroupConnectedComponentsITCase(Configuration config) {
 		super(config);
 	}
 	
@@ -60,7 +60,7 @@ public class ConnectedComponentsITCase extends TestBase2 {
 		int maxIterations = config.getInteger("ConnectedComponents#NumIterations", 1);
 		String[] params = { String.valueOf(dop) , verticesPath, edgesPath, resultPath, String.valueOf(maxIterations) };
 		
-		WorksetConnectedComponents cc = new WorksetConnectedComponents();
+		WorksetConnectedComponentsWithCoGroup cc = new WorksetConnectedComponentsWithCoGroup();
 		return cc.getPlan(params);
 	}
 
