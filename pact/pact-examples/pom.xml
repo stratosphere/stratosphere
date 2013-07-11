@@ -59,7 +59,7 @@
 
 							<archive>
 								<manifestEntries>
-									<Pact-Assembler-Class>eu.stratopshere.pact.example.hbase.HBaseReadExample</Pact-Assembler-Class>
+									<Pact-Assembler-Class>eu.stratosphere.pact.example.hbase.HBaseReadExample</Pact-Assembler-Class>
 								</manifestEntries>
 							</archive>
 

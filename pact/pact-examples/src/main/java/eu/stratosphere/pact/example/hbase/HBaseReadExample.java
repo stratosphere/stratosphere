@@ -1,4 +1,4 @@
-package eu.stratopshere.pact.example.hbase;
+package eu.stratosphere.pact.example.hbase;
 
 /***********************************************************************************************************************
 *
