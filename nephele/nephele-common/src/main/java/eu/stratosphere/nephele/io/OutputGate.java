@@ -20,7 +20,6 @@ import java.util.List;
 
 import eu.stratosphere.nephele.io.channels.AbstractOutputChannel;
 import eu.stratosphere.nephele.io.channels.ChannelID;
-import eu.stratosphere.nephele.io.channels.bytebuffered.FileOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.InMemoryOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkOutputChannel;
 import eu.stratosphere.nephele.io.compression.CompressionException;
@@ -143,22 +142,6 @@ public interface OutputGate<T extends Record> extends Gate<T> {
 	 * @return the new network output channel
 	 */
 	NetworkOutputChannel<T> createNetworkOutputChannel(OutputGate<T> outputGate, ChannelID channelID,
-			ChannelID connectedChannelID, CompressionLevel compressionLevel);
-
-	/**
-	 * Creates a new file output channel and assigns it to the given output gate.
-	 * 
-	 * @param outputGate
-	 *        the output gate the channel shall be assigned to
-	 * @param channelID
-	 *        the ID of the channel
-	 * @param connectedChannelID
-	 *        the ID of the channel this channel is connected to
-	 * @param compressionLevel
-	 *        the level of compression to be used for this channel
-	 * @return the new file output channel
-	 */
-	FileOutputChannel<T> createFileOutputChannel(OutputGate<T> outputGate, ChannelID channelID,
 			ChannelID connectedChannelID, CompressionLevel compressionLevel);
 
 	/**

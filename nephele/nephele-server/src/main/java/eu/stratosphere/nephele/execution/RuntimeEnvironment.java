@@ -251,9 +251,6 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 				final ChannelDeploymentDescriptor cdd = gdd.getChannelDescriptor(j);
 				switch (channelType) {
-				case FILE:
-					og.createFileOutputChannel(og, cdd.getOutputChannelID(), cdd.getInputChannelID(), compressionLevel);
-					break;
 				case NETWORK:
 					og.createNetworkOutputChannel(og, cdd.getOutputChannelID(), cdd.getInputChannelID(),
 						compressionLevel);
@@ -282,9 +279,6 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 				final ChannelDeploymentDescriptor cdd = gdd.getChannelDescriptor(j);
 				switch (channelType) {
-				case FILE:
-					ig.createFileInputChannel(ig, cdd.getInputChannelID(), cdd.getOutputChannelID(), compressionLevel);
-					break;
 				case NETWORK:
 					ig.createNetworkInputChannel(ig, cdd.getInputChannelID(), cdd.getOutputChannelID(),
 						compressionLevel);

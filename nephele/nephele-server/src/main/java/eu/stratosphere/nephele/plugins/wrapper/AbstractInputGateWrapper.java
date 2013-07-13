@@ -24,7 +24,6 @@ import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.io.channels.AbstractInputChannel;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.channels.bytebuffered.FileInputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.InMemoryInputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkInputChannel;
 import eu.stratosphere.nephele.io.compression.CompressionLevel;
@@ -267,15 +266,6 @@ public abstract class AbstractInputGateWrapper<T extends Record> implements Inpu
 			compressionLevel);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public FileInputChannel<T> createFileInputChannel(final InputGate<T> inputGate, final ChannelID channelID,
-			final ChannelID connectedChannelID, final CompressionLevel compressionLevel) {
-
-		return this.wrappedInputGate.createFileInputChannel(inputGate, channelID, connectedChannelID, compressionLevel);
-	}
 
 	/**
 	 * {@inheritDoc}

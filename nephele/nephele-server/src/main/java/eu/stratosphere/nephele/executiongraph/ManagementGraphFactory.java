@@ -124,10 +124,13 @@ public class ManagementGraphFactory {
 			final ManagementGroupVertex parent = groupMap.get(ev.getGroupVertex());
 
 			final AbstractInstance instance = ev.getAllocatedResource().getInstance();
-			final ManagementVertex managementVertex = new ManagementVertex(parent, ev.getID().toManagementVertexID(),
-				(instance.getInstanceConnectionInfo() != null) ? instance.getInstanceConnectionInfo().toString()
-					: instance.toString(), instance.getType().toString(), ev.getCheckpointState().toString(),
-				ev.getIndexInVertexGroup());
+			final ManagementVertex managementVertex = new ManagementVertex(
+						parent, 
+						ev.getID().toManagementVertexID(),
+						(instance.getInstanceConnectionInfo() != null) ? instance.getInstanceConnectionInfo().toString() : instance.toString(), 
+						instance.getType().toString(), 
+						ev.getIndexInVertexGroup()
+					);
 			managementVertex.setExecutionState(ev.getExecutionState());
 			vertexMap.put(ev, managementVertex);
 

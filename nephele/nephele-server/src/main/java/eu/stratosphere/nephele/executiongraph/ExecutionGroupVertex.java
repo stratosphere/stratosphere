@@ -25,9 +25,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import eu.stratosphere.nephele.annotations.ForceCheckpoint;
-import eu.stratosphere.nephele.checkpointing.CheckpointMode;
-import eu.stratosphere.nephele.checkpointing.CheckpointUtils;
 import eu.stratosphere.nephele.configuration.ConfigConstants;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
@@ -942,97 +939,6 @@ public final class ExecutionGroupVertex {
 		}
 	}
 
-	/**
-	 * Calculates and returns initial checkpoint state of the vertex group.
-	 * 
-	 * @return the initial checkpoint state of the vertex group
-	 */
-	CheckpointState checkInitialCheckpointState() {
-
-		final CheckpointMode cpm = CheckpointUtils.getCheckpointMode();
-
-		if (cpm == CheckpointMode.ALWAYS) {
-
-			// Always create checkpoints
-			return CheckpointState.PARTIAL;
-
-		} else if (cpm == CheckpointMode.NEVER) {
-
-			// Check if vertex has a file channel
-			for (int i = 0; i < this.forwardLinks.size(); ++i) {
-				if (this.forwardLinks.get(i).getChannelType() == ChannelType.FILE) {
-					return CheckpointState.PARTIAL;
-				}
-			}
-
-			// Look for a user annotation
-			final ForceCheckpoint forcedCheckpoint = this.environment.getInvokable().getClass()
-				.getAnnotation(ForceCheckpoint.class);
-
-			// No user annotation, go with the default configuration
-			if (forcedCheckpoint == null) {
-				return CheckpointState.NONE;
-			}
-
-			// User enforced checkpoint
-			if (forcedCheckpoint.checkpoint()) {
-				return CheckpointState.PARTIAL;
-			}
-
-			return CheckpointState.NONE;
-
-		} else if (cpm == CheckpointMode.NETWORK) {
-
-			// Check if vertex has a file channel or network channel
-			for (int i = 0; i < this.forwardLinks.size(); ++i) {
-				final ChannelType channelType = this.forwardLinks.get(i).getChannelType();
-				if (channelType == ChannelType.FILE || channelType == ChannelType.NETWORK) {
-					return CheckpointState.PARTIAL;
-				}
-			}
-
-			// Look for a user annotation
-			final ForceCheckpoint forcedCheckpoint = this.environment.getInvokable().getClass()
-				.getAnnotation(ForceCheckpoint.class);
-
-			// No user annotation, go with the default configuration
-			if (forcedCheckpoint == null) {
-				return CheckpointState.NONE;
-			}
-
-			// User enforced checkpoint
-			if (forcedCheckpoint.checkpoint()) {
-				return CheckpointState.PARTIAL;
-			}
-
-			return CheckpointState.NONE;
-
-		} else {
-
-			// Check if vertex has a file channel
-			for (int i = 0; i < this.forwardLinks.size(); ++i) {
-				if (this.forwardLinks.get(i).getChannelType() == ChannelType.FILE) {
-					return CheckpointState.PARTIAL;
-				}
-			}
-
-			// Look for a user annotation
-			final ForceCheckpoint forcedCheckpoint = this.environment.getInvokable().getClass()
-				.getAnnotation(ForceCheckpoint.class);
-
-			// No user annotation, go with the default configuration
-			if (forcedCheckpoint == null) {
-				return CheckpointState.UNDECIDED;
-			}
-
-			// User enforced checkpoint
-			if (forcedCheckpoint.checkpoint()) {
-				return CheckpointState.PARTIAL;
-			}
-
-			return CheckpointState.NONE;
-		}
-	}
 
 	/**
 	 * Returns the task class that is assigned to execution vertices of this group.

@@ -19,11 +19,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import eu.stratosphere.nephele.executiongraph.CheckpointState;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.io.IOReadableWritable;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.util.EnumUtils;
 
 /**
  * This class can be used to propagate updates about a task's checkpoint state from the
@@ -37,8 +35,6 @@ public class TaskCheckpointState implements IOReadableWritable {
 
 	private ExecutionVertexID executionVertexID = null;
 
-	private CheckpointState checkpointState = CheckpointState.NONE;
-
 	/**
 	 * Creates a new task checkpoint state.
 	 * 
@@ -49,7 +45,7 @@ public class TaskCheckpointState implements IOReadableWritable {
 	 * @param checkpointState
 	 *        the new checkpoint to be reported
 	 */
-	public TaskCheckpointState(final JobID jobID, final ExecutionVertexID id, final CheckpointState checkpointState) {
+	public TaskCheckpointState(final JobID jobID, final ExecutionVertexID id) {
 
 		if (jobID == null) {
 			throw new IllegalArgumentException("Argument jobID must not be null");
@@ -59,13 +55,8 @@ public class TaskCheckpointState implements IOReadableWritable {
 			throw new IllegalArgumentException("Argument id must not be null");
 		}
 
-		if (checkpointState == null) {
-			throw new IllegalArgumentException("Argument checkpointState must not be null");
-		}
-
 		this.jobID = jobID;
 		this.executionVertexID = id;
-		this.checkpointState = checkpointState;
 	}
 
 	/**
@@ -99,8 +90,6 @@ public class TaskCheckpointState implements IOReadableWritable {
 			this.executionVertexID = null;
 		}
 
-		// Read checkpoint state
-		this.checkpointState = EnumUtils.readEnum(in, CheckpointState.class);
 	}
 
 	/**
@@ -124,8 +113,6 @@ public class TaskCheckpointState implements IOReadableWritable {
 			this.executionVertexID.write(out);
 		}
 
-		// Write checkpoint state
-		EnumUtils.writeEnum(out, this.checkpointState);
 	}
 
 	/**
@@ -144,14 +131,5 @@ public class TaskCheckpointState implements IOReadableWritable {
 	 */
 	public ExecutionVertexID getVertexID() {
 		return this.executionVertexID;
-	}
-
-	/**
-	 * Returns the new checkpoint state.
-	 * 
-	 * @return the new checkpoint state
-	 */
-	public CheckpointState getCheckpointState() {
-		return this.checkpointState;
 	}
 }

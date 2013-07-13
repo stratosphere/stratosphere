@@ -175,143 +175,6 @@ public class JobManagerITCase {
 		}
 	}
 
-	/**
-	 * Tests of the Nephele channels with a large (> 1 MB) file.
-	 */
-	@Test
-	public void testExecutionWithLargeInputFile() {
-		test(1000000);
-	}
-
-	/**
-	 * Tests of the Nephele channels with a file of zero bytes size.
-	 */
-	@Test
-	public void testExecutionWithZeroSizeInputFile() {
-		test(0);
-	}
-
-	/**
-	 * Tests the execution of a job with a directory as input. The test directory contains files of different length.
-	 */
-	@Test
-	public void testExecutionWithDirectoryInput() {
-
-		// Define size of input
-		final int sizeOfInput = 100;
-
-		// Create test directory
-		final String testDirectory = ServerTestUtils.getTempDir() + File.separator + INPUT_DIRECTORY;
-		final File td = new File(testDirectory);
-		if (!td.exists()) {
-			td.mkdir();
-		}
-
-		File inputFile1 = null;
-		File inputFile2 = null;
-		File outputFile = null;
-		File jarFile = null;
-		JobClient jobClient = null;
-
-		try {
-			// Get name of the forward class
-			final String forwardClassName = ForwardTask.class.getSimpleName();
-
-			// Create input and jar files
-			inputFile1 = ServerTestUtils.createInputFile(INPUT_DIRECTORY, 0);
-			inputFile2 = ServerTestUtils.createInputFile(INPUT_DIRECTORY, sizeOfInput);
-			outputFile = new File(ServerTestUtils.getTempDir() + File.separator + ServerTestUtils.getRandomFilename());
-			jarFile = ServerTestUtils.createJarFile(forwardClassName);
-
-			// Create job graph
-			final JobGraph jg = new JobGraph("Job Graph 1");
-
-			// input vertex
-			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
-			i1.setFileInputClass(FileLineReader.class);
-			i1.setFilePath(new Path(new File(testDirectory).toURI()));
-
-			// task vertex 1
-			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
-			t1.setTaskClass(ForwardTask.class);
-
-			// task vertex 2
-			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
-			t2.setTaskClass(ForwardTask.class);
-
-			// output vertex
-			JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
-			o1.setFileOutputClass(FileLineWriter.class);
-			o1.setFilePath(new Path(outputFile.toURI()));
-
-			t1.setVertexToShareInstancesWith(i1);
-			t2.setVertexToShareInstancesWith(i1);
-			o1.setVertexToShareInstancesWith(i1);
-
-			// connect vertices
-			try {
-				i1.connectTo(t1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-				t1.connectTo(t2, ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
-				t2.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
-			} catch (JobGraphDefinitionException e) {
-				e.printStackTrace();
-			}
-
-			// add jar
-			jg.addJar(new Path(new File(ServerTestUtils.getTempDir() + File.separator + forwardClassName + ".jar")
-				.toURI()));
-
-			// Create job client and launch job
-			jobClient = new JobClient(jg, configuration);
-			jobClient.submitJobAndWait();
-
-			// Finally, compare output file to initial number sequence
-			final BufferedReader bufferedReader = new BufferedReader(new FileReader(outputFile));
-			for (int i = 0; i < sizeOfInput; i++) {
-				final String number = bufferedReader.readLine();
-				try {
-					assertEquals(i, Integer.parseInt(number));
-				} catch (NumberFormatException e) {
-					fail(e.getMessage());
-				}
-			}
-
-			bufferedReader.close();
-
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		} catch (JobExecutionException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			fail(ioe.getMessage());
-		} finally {
-			// Remove temporary files
-			if (inputFile1 != null) {
-				inputFile1.delete();
-			}
-			if (inputFile2 != null) {
-				inputFile2.delete();
-			}
-			if (outputFile != null) {
-				outputFile.delete();
-			}
-			if (jarFile != null) {
-				jarFile.delete();
-			}
-
-			// Remove test directory
-			if (td != null) {
-				td.delete();
-			}
-
-			if (jobClient != null) {
-				jobClient.close();
-			}
-		}
-	}
 
 	/**
 	 * Tests the Nephele execution when an exception occurs. In particular, it is tested if the information that is
@@ -582,103 +445,103 @@ public class JobManagerITCase {
 
 	}
 
-	/**
-	 * Creates a file with a sequence of 0 to <code>limit</code> integer numbers
-	 * and triggers a sample job. The sample reads all the numbers from the input file and pushes them through a
-	 * network, a file, and an in-memory channel. Eventually, the numbers are written back to an output file. The test
-	 * is considered successful if the input file equals the output file.
-	 * 
-	 * @param limit
-	 *        the upper bound for the sequence of numbers to be generated
-	 */
-	private void test(final int limit) {
-
-		JobClient jobClient = null;
-
-		try {
-
-			// Get name of the forward class
-			final String forwardClassName = ForwardTask.class.getSimpleName();
-
-			// Create input and jar files
-			final File inputFile = ServerTestUtils.createInputFile(limit);
-			final File outputFile = new File(ServerTestUtils.getTempDir() + File.separator
-				+ ServerTestUtils.getRandomFilename());
-			final File jarFile = ServerTestUtils.createJarFile(forwardClassName);
-
-			// Create job graph
-			final JobGraph jg = new JobGraph("Job Graph 1");
-
-			// input vertex
-			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
-			i1.setFileInputClass(FileLineReader.class);
-			i1.setFilePath(new Path(inputFile.toURI()));
-
-			// task vertex 1
-			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
-			t1.setTaskClass(ForwardTask.class);
-
-			// task vertex 2
-			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
-			t2.setTaskClass(ForwardTask.class);
-
-			// output vertex
-			JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
-			o1.setFileOutputClass(FileLineWriter.class);
-			o1.setFilePath(new Path(outputFile.toURI()));
-
-			t1.setVertexToShareInstancesWith(i1);
-			t2.setVertexToShareInstancesWith(i1);
-			o1.setVertexToShareInstancesWith(i1);
-
-			// connect vertices
-			try {
-				i1.connectTo(t1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-				t1.connectTo(t2, ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
-				t2.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
-			} catch (JobGraphDefinitionException e) {
-				e.printStackTrace();
-			}
-
-			// add jar
-			jg.addJar(new Path(new File(ServerTestUtils.getTempDir() + File.separator + forwardClassName + ".jar")
-				.toURI()));
-
-			// Create job client and launch job
-			jobClient = new JobClient(jg, configuration);
-			try {
-				jobClient.submitJobAndWait();
-			} catch (JobExecutionException e) {
-				fail(e.getMessage());
-			}
-
-			// Finally, compare output file to initial number sequence
-			final BufferedReader bufferedReader = new BufferedReader(new FileReader(outputFile));
-			for (int i = 0; i < limit; i++) {
-				final String number = bufferedReader.readLine();
-				try {
-					assertEquals(i, Integer.parseInt(number));
-				} catch (NumberFormatException e) {
-					fail(e.getMessage());
-				}
-			}
-
-			bufferedReader.close();
-
-			// Remove temporary files
-			inputFile.delete();
-			outputFile.delete();
-			jarFile.delete();
-
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			fail(ioe.getMessage());
-		} finally {
-			if (jobClient != null) {
-				jobClient.close();
-			}
-		}
-	}
+//	/**
+//	 * Creates a file with a sequence of 0 to <code>limit</code> integer numbers
+//	 * and triggers a sample job. The sample reads all the numbers from the input file and pushes them through a
+//	 * network, a file, and an in-memory channel. Eventually, the numbers are written back to an output file. The test
+//	 * is considered successful if the input file equals the output file.
+//	 * 
+//	 * @param limit
+//	 *        the upper bound for the sequence of numbers to be generated
+//	 */
+//	private void test(final int limit) {
+//
+//		JobClient jobClient = null;
+//
+//		try {
+//
+//			// Get name of the forward class
+//			final String forwardClassName = ForwardTask.class.getSimpleName();
+//
+//			// Create input and jar files
+//			final File inputFile = ServerTestUtils.createInputFile(limit);
+//			final File outputFile = new File(ServerTestUtils.getTempDir() + File.separator
+//				+ ServerTestUtils.getRandomFilename());
+//			final File jarFile = ServerTestUtils.createJarFile(forwardClassName);
+//
+//			// Create job graph
+//			final JobGraph jg = new JobGraph("Job Graph 1");
+//
+//			// input vertex
+//			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
+//			i1.setFileInputClass(FileLineReader.class);
+//			i1.setFilePath(new Path(inputFile.toURI()));
+//
+//			// task vertex 1
+//			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
+//			t1.setTaskClass(ForwardTask.class);
+//
+//			// task vertex 2
+//			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
+//			t2.setTaskClass(ForwardTask.class);
+//
+//			// output vertex
+//			JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
+//			o1.setFileOutputClass(FileLineWriter.class);
+//			o1.setFilePath(new Path(outputFile.toURI()));
+//
+//			t1.setVertexToShareInstancesWith(i1);
+//			t2.setVertexToShareInstancesWith(i1);
+//			o1.setVertexToShareInstancesWith(i1);
+//
+//			// connect vertices
+//			try {
+//				i1.connectTo(t1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+//				t1.connectTo(t2, ChannelType.FILE, CompressionLevel.NO_COMPRESSION);
+//				t2.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+//			} catch (JobGraphDefinitionException e) {
+//				e.printStackTrace();
+//			}
+//
+//			// add jar
+//			jg.addJar(new Path(new File(ServerTestUtils.getTempDir() + File.separator + forwardClassName + ".jar")
+//				.toURI()));
+//
+//			// Create job client and launch job
+//			jobClient = new JobClient(jg, configuration);
+//			try {
+//				jobClient.submitJobAndWait();
+//			} catch (JobExecutionException e) {
+//				fail(e.getMessage());
+//			}
+//
+//			// Finally, compare output file to initial number sequence
+//			final BufferedReader bufferedReader = new BufferedReader(new FileReader(outputFile));
+//			for (int i = 0; i < limit; i++) {
+//				final String number = bufferedReader.readLine();
+//				try {
+//					assertEquals(i, Integer.parseInt(number));
+//				} catch (NumberFormatException e) {
+//					fail(e.getMessage());
+//				}
+//			}
+//
+//			bufferedReader.close();
+//
+//			// Remove temporary files
+//			inputFile.delete();
+//			outputFile.delete();
+//			jarFile.delete();
+//
+//		} catch (IOException ioe) {
+//			ioe.printStackTrace();
+//			fail(ioe.getMessage());
+//		} finally {
+//			if (jobClient != null) {
+//				jobClient.close();
+//			}
+//		}
+//	}
 
 	/**
 	 * Tests the Nephele execution with a job that has two vertices, that are connected twice with each other with

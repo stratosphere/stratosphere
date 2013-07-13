@@ -117,7 +117,6 @@ import eu.stratosphere.nephele.protocols.JobManagerProtocol;
 import eu.stratosphere.nephele.protocols.PluginCommunicationProtocol;
 import eu.stratosphere.nephele.taskmanager.AbstractTaskResult;
 import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
-import eu.stratosphere.nephele.taskmanager.TaskCheckpointState;
 import eu.stratosphere.nephele.taskmanager.TaskExecutionState;
 import eu.stratosphere.nephele.taskmanager.TaskKillResult;
 import eu.stratosphere.nephele.taskmanager.TaskSubmissionResult;
@@ -1323,40 +1322,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		return new InputSplitWrapper(jobID, this.inputSplitManager.getNextInputSplit(vertex, sequenceNumber.getValue()));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void updateCheckpointState(final TaskCheckpointState taskCheckpointState) throws IOException {
-
-		// Get the graph object for this
-		final JobID jobID = taskCheckpointState.getJobID();
-		final ExecutionGraph executionGraph = this.scheduler.getExecutionGraphByID(jobID);
-		if (executionGraph == null) {
-			LOG.error("Cannot find execution graph for job " + taskCheckpointState.getJobID()
-				+ " to update checkpoint state");
-			return;
-		}
-
-		final ExecutionVertex vertex = executionGraph.getVertexByID(taskCheckpointState.getVertexID());
-		if (vertex == null) {
-			LOG.error("Cannot find vertex with ID " + taskCheckpointState.getVertexID()
-				+ " to update checkpoint state");
-			return;
-		}
-
-		final Runnable taskStateChangeRunnable = new Runnable() {
-
-			@Override
-			public void run() {
-
-				vertex.updateCheckpointState(taskCheckpointState.getCheckpointState());
-			}
-		};
-
-		// Hand over to the executor service, as this may result in a longer operation with several IPC operations
-		executionGraph.executeCommand(taskStateChangeRunnable);
-	}
 
 	/**
 	 * {@inheritDoc}

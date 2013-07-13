@@ -20,16 +20,13 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.nephele.checkpointing.EphemeralCheckpoint;
 import eu.stratosphere.nephele.execution.RuntimeEnvironment;
-import eu.stratosphere.nephele.executiongraph.CheckpointState;
 import eu.stratosphere.nephele.io.AbstractID;
 import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.io.OutputGate;
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.compression.CompressionBufferProvider;
-import eu.stratosphere.nephele.taskmanager.bufferprovider.AsynchronousEventListener;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferAvailabilityListener;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferProvider;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.LocalBufferPool;
@@ -39,7 +36,7 @@ import eu.stratosphere.nephele.taskmanager.bytebuffered.TaskContext;
 import eu.stratosphere.nephele.taskmanager.transferenvelope.TransferEnvelopeDispatcher;
 import eu.stratosphere.nephele.types.Record;
 
-public final class RuntimeTaskContext implements BufferProvider, AsynchronousEventListener, TaskContext {
+public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 
 	private static final Log LOG = LogFactory.getLog(RuntimeTaskContext.class);
 
@@ -51,16 +48,13 @@ public final class RuntimeTaskContext implements BufferProvider, AsynchronousEve
 
 	private final TransferEnvelopeDispatcher transferEnvelopeDispatcher;
 
-	private final EphemeralCheckpoint ephemeralCheckpoint;
-
 	private final EnvelopeConsumptionLog envelopeConsumptionLog;
 
 	private CompressionBufferProvider compressionBufferProvider = null;
 
-	RuntimeTaskContext(final RuntimeTask task, final CheckpointState initialCheckpointState,
-			final TransferEnvelopeDispatcher transferEnvelopeDispatcher) {
+	RuntimeTaskContext(final RuntimeTask task, final TransferEnvelopeDispatcher transferEnvelopeDispatcher) {
 
-		this.localBufferPool = new LocalBufferPool(1, false, this);
+		this.localBufferPool = new LocalBufferPool(1, false);
 		this.task = task;
 
 		final RuntimeEnvironment environment = task.getRuntimeEnvironment();
@@ -77,14 +71,6 @@ public final class RuntimeTaskContext implements BufferProvider, AsynchronousEve
 		}
 		this.numberOfOutputChannels = nooc;
 
-		if (initialCheckpointState == CheckpointState.NONE) {
-			this.ephemeralCheckpoint = null;
-		} else {
-			this.ephemeralCheckpoint = new EphemeralCheckpoint(task, this.numberOfOutputChannels,
-				initialCheckpointState == CheckpointState.UNDECIDED);
-			this.task.registerCheckpointDecisionRequester(this.ephemeralCheckpoint);
-		}
-
 		this.transferEnvelopeDispatcher = transferEnvelopeDispatcher;
 		this.envelopeConsumptionLog = new EnvelopeConsumptionLog(task.getVertexID(), environment);
 	}
@@ -94,10 +80,6 @@ public final class RuntimeTaskContext implements BufferProvider, AsynchronousEve
 		return this.transferEnvelopeDispatcher;
 	}
 
-	EphemeralCheckpoint getEphemeralCheckpoint() {
-
-		return this.ephemeralCheckpoint;
-	}
 
 	/**
 	 * Returns (and if necessary previously creates) a compression buffer provider for output gate contexts. This method
@@ -187,24 +169,6 @@ public final class RuntimeTaskContext implements BufferProvider, AsynchronousEve
 		}
 	}
 
-	/**
-	 * Called by an {@link OutputGateContext} to indicate that the task has temporarily run out of memory buffers.
-	 */
-	void reportExhaustionOfMemoryBuffers() throws IOException, InterruptedException {
-
-		if (this.ephemeralCheckpoint == null) {
-			return;
-		}
-
-		if (!this.ephemeralCheckpoint.isUndecided()) {
-			return;
-		}
-
-		// TODO: Remove this and implement decision logic for ephemeral checkpoint
-		LOG.error("Checkpoint state of " + this.task.getRuntimeEnvironment().getTaskNameWithIndex() + " is UNDECIDED");
-		this.ephemeralCheckpoint.setCheckpointDecisionSynchronously(false);
-
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -213,16 +177,6 @@ public final class RuntimeTaskContext implements BufferProvider, AsynchronousEve
 	public void reportAsynchronousEvent() {
 
 		this.localBufferPool.reportAsynchronousEvent();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void asynchronousEventOccurred() throws IOException, InterruptedException {
-
-		// Trigger checkpoint decision here
-		reportExhaustionOfMemoryBuffers();
 	}
 
 	/**
