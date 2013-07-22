@@ -151,7 +151,6 @@ public class NepheleMiniCluster {
 			// check that all threads are done before we return
 			Thread[] allThreads = new Thread[Thread.activeCount()];
 			int numThreads = Thread.enumerate(allThreads);
-			
 			for (int i = 0; i < numThreads; i++) {
 				Thread t = allThreads[i];
 				String name = t.getName();
@@ -221,6 +220,8 @@ public class NepheleMiniCluster {
 		config.setInteger(ConfigConstants.JOB_EXECUTION_RETRIES_KEY, 0);
 		config.setBoolean("taskmanager.setup.usediscovery", false);
 		config.setBoolean("jobmanager.visualization.enable", visualization);
+		
+		config.setLong(ConfigConstants.MEMORY_MANAGER_AVAILABLE_MEMORY_SIZE_KEY, Runtime.getRuntime().maxMemory() / 4 / 1024 / 1024);
 		
 		// hdfs
 		if (hdfsConfigFile != null) {

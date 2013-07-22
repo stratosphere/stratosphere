@@ -13,11 +13,14 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.io;
+package eu.stratosphere.pact.generic.io;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.BlockLocation;
@@ -25,9 +28,8 @@ import eu.stratosphere.nephele.fs.FileInputSplit;
 import eu.stratosphere.nephele.fs.FileStatus;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.nephele.template.InputSplit;
 import eu.stratosphere.pact.common.util.ReflectionUtil;
-import eu.stratosphere.pact.generic.io.InputFormat;
-import eu.stratosphere.pact.generic.io.OutputFormat;
 
 /**
  * Provides convenience methods to deal with I/O operations related to {@link InputFormat} and {@link OutputFormat}.
@@ -35,6 +37,7 @@ import eu.stratosphere.pact.generic.io.OutputFormat;
  * @author Arvid Heise
  */
 public class FormatUtil {
+
 
 	/**
 	 * Creates an {@link InputFormat} from a given class for the specified file. The optional {@link Configuration}
@@ -52,12 +55,12 @@ public class FormatUtil {
 	 * @throws IOException
 	 *         if an I/O error occurred while accessing the file or initializing the InputFormat.
 	 */
-	public static <T extends FileInputFormat> T openInput(
-			Class<T> inputFormatClass, String path, Configuration configuration) throws IOException {
+	public static <T, F extends FileInputFormat<T>> F openInput(
+			Class<F> inputFormatClass, String path, Configuration configuration) throws IOException {
 		configuration = configuration == null ? new Configuration() : configuration;
 
 		Path normalizedPath = normalizePath(new Path(path));
-		final T inputFormat = ReflectionUtil.newInstance(inputFormatClass);
+		final F inputFormat = ReflectionUtil.newInstance(inputFormatClass);
 
 		configuration.setString(FileInputFormat.FILE_PARAMETER_KEY, path);
 		configuration.setLong(FileInputFormat.INPUT_STREAM_OPEN_TIMEOUT_KEY, 0);
@@ -88,20 +91,45 @@ public class FormatUtil {
 	 *         if an I/O error occurred while accessing the files or initializing the InputFormat.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends FileInputFormat> T[] openAllInputs(
-			Class<T> inputFormatClass, String path, Configuration configuration) throws IOException {
+	public static <T, F extends FileInputFormat<T>> List<F> openAllInputs(
+			Class<F> inputFormatClass, String path, Configuration configuration) throws IOException {
 		Path nephelePath = new Path(path);
 		FileSystem fs = nephelePath.getFileSystem();
 		FileStatus fileStatus = fs.getFileStatus(nephelePath);
 		if (!fileStatus.isDir())
-			return (T[]) new FileInputFormat[] { openInput(inputFormatClass, path, configuration) };
+			return Arrays.asList(openInput(inputFormatClass, path, configuration));
 		FileStatus[] list = fs.listStatus(nephelePath);
-		T[] formats = (T[]) new FileInputFormat[list.length];
-		for (int index = 0; index < formats.length; index++)
-			formats[index] = openInput(inputFormatClass, list[index].getPath().toString(), configuration);
+		List<F> formats = new ArrayList<F>();
+		for (int index = 0; index < list.length; index++)
+			formats.add(openInput(inputFormatClass, list[index].getPath().toString(), configuration));
 		return formats;
 	}
 
+	/**
+	 * Creates an {@link InputFormat} from a given class. The optional {@link Configuration}
+	 * initializes the format.
+	 * 
+	 * @param <T>
+	 *        the class of the InputFormat
+	 * @param inputFormatClass
+	 *        the class of the InputFormat
+	 * @param configuration
+	 *        optional configuration of the InputFormat
+	 * @return the created {@link InputFormat}
+	 * @throws IOException
+	 *         if an I/O error occurred while accessing the file or initializing the InputFormat.
+	 */
+	public static <T, IS extends InputSplit, F extends InputFormat<T, IS>> F openInput(
+			Class<F> inputFormatClass, Configuration configuration) throws IOException {
+		configuration = configuration == null ? new Configuration() : configuration;
+
+		final F inputFormat = ReflectionUtil.newInstance(inputFormatClass);
+		inputFormat.configure(configuration);
+		final IS[] splits = inputFormat.createInputSplits(1);
+		inputFormat.open(splits[0]);
+		return inputFormat;
+	}
+	
 	/**
 	 * Creates an {@link OutputFormat} from a given class for the specified file. The optional {@link Configuration}
 	 * initializes the format.
@@ -118,13 +146,13 @@ public class FormatUtil {
 	 * @throws IOException
 	 *         if an I/O error occurred while accessing the file or initializing the OutputFormat.
 	 */
-	public static <T extends FileOutputFormat> T openOutput(
-			Class<T> outputFormatClass, String path, Configuration configuration) throws IOException {
-		final T outputFormat = ReflectionUtil.newInstance(outputFormatClass);
+	public static <T, F extends FileOutputFormat<? extends T>> F openOutput(
+			Class<F> outputFormatClass, String pathString, Configuration configuration) throws IOException {
+		final F outputFormat = ReflectionUtil.newInstance(outputFormatClass);
 
 		configuration = configuration == null ? new Configuration() : configuration;
 
-		configuration.setString(FileOutputFormat.FILE_PARAMETER_KEY, path);
+		configuration.setString(FileOutputFormat.FILE_PARAMETER_KEY, pathString);
 		configuration.setLong(FileOutputFormat.OUTPUT_STREAM_OPEN_TIMEOUT_KEY, 0);
 		outputFormat.configure(configuration);
 		outputFormat.open(1);
