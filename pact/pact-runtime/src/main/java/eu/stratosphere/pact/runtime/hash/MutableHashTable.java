@@ -561,10 +561,18 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 				numYet = 0;
 			} else {
 				numYet = this.bucketIterators.length;
+				if (numYet < num) {
+					@SuppressWarnings("unchecked")
+					HashBucketIterator<BT, PT>[] bucketIterators = new HashBucketIterator[num];
+					for (int i=0; i<this.bucketIterators.length; i++)
+						bucketIterators[i] = this.bucketIterators[i];
+					this.bucketIterators = bucketIterators;
+				}
 			}
 			
 			while (numYet < num) {
 				this.bucketIterators[numYet] = new HashBucketIterator<BT, PT>(this.buildSideSerializer, this.recordComparator.duplicate());
+				numYet++;
 			}
 		}
 	}
@@ -589,6 +597,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		
 		// for an in-memory partition, process set the return iterators, else spill the probe records
 		if (p.isInMemory()) {
+			ensureNumBuildSideIterators(num+1);
 			HashBucketIterator<BT, PT> bi = this.bucketIterators[num];
 			bi.set(record, bucket, p.overflowSegments, p, hash, bucketInSegmentOffset);
 			return bi;
