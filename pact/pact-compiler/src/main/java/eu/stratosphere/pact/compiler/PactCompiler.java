@@ -1027,47 +1027,54 @@ public class PactCompiler {
 				final OptimizerNode nextWorksetNode = recursiveCreator.con2node.get(iter.getNextWorkset());
 				final OptimizerNode solutionSetDeltaNode = recursiveCreator.con2node.get(iter.getSolutionSetDelta());
 				
-				// for now, check that the solution set it joined with only once. we want to allow multiple joins
-				// with the solution set later when we can share data structures among operators. also, the join
-				// must be a match which is at the same time the solution set delta
 				if (solutionSetNode == null || solutionSetNode.getOutgoingConnections() == null || solutionSetNode.getOutgoingConnections().isEmpty()) {
 					throw new CompilerException("Error: The step function does not reference the solution set.");
 				} else {
-					if (solutionSetNode.getOutgoingConnections().size() > 1) {
-						throw new CompilerException("Error: The solution set may currently be joined with only once.");
-					} else {
-						OptimizerNode successor = solutionSetNode.getOutgoingConnections().get(0).getTarget();
+					
+					Iterator <PactConnection> connections = solutionSetNode.getOutgoingConnections().iterator();
+					List<OptimizerNode> targets = new ArrayList<OptimizerNode>();
+					
+					while (connections.hasNext()){
+						targets.add(connections.next().getTarget());
+					}
+					// at least one of the nodes that the solution set is joined with, must be the solution set delta
+					if (!(targets.contains(solutionSetDeltaNode))){
+						throw new CompilerException("Error: The solution set delta must currently be the" +
+								"	same node that joins with the solution set (this will change later).");
+					}	
+					else {
+						Iterator<OptimizerNode> successors = targets.iterator();
 						
-						if (successor != solutionSetDeltaNode) {
-							throw new CompilerException("Error: The solution set delta must currently be the" +
-									"	same node that joins with the solution set (this will change later).");
-						}
-						
-						if (successor.getClass() == MatchNode.class) {
-							// find out which input to the match the solution set is
-							MatchNode mn = (MatchNode) successor;
-							if (mn.getFirstPredecessorNode() == solutionSetNode) {
-								mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_FIRST);
-							} else if (mn.getSecondPredecessorNode() == solutionSetNode) {
-								mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_SECOND);
-							} else {
-								throw new CompilerException();
+						while (successors.hasNext()){
+							OptimizerNode successor = successors.next();
+							
+							if (successor.getClass() == MatchNode.class) {
+								// find out which input to the match the solution set is
+								MatchNode mn = (MatchNode) successor;
+								if (mn.getFirstPredecessorNode() == solutionSetNode) {
+									mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_FIRST);
+								} else if (mn.getSecondPredecessorNode() == solutionSetNode) {
+									mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_SECOND);
+								} else {
+									throw new CompilerException();
+								}
 							}
-						}
-						else if (successor.getClass() == CoGroupNode.class) {
-							CoGroupNode cg = (CoGroupNode) successor;
-							if (cg.getFirstPredecessorNode() == solutionSetNode) {
-								cg.makeCoGroupWithSolutionSet(0);
-							} else if (cg.getSecondPredecessorNode() == solutionSetNode) {
-								cg.makeCoGroupWithSolutionSet(1);
-							} else {
-								throw new CompilerException();
+							else if (successor.getClass() == CoGroupNode.class) {
+								CoGroupNode cg = (CoGroupNode) successor;
+								if (cg.getFirstPredecessorNode() == solutionSetNode) {
+									cg.makeCoGroupWithSolutionSet(0);
+								} else if (cg.getSecondPredecessorNode() == solutionSetNode) {
+									cg.makeCoGroupWithSolutionSet(1);
+								} else {
+									throw new CompilerException();
+								}
 							}
-						}
-						else {
-							throw new CompilerException("Error: The solution set may only be joined with through a Match or a CoGroup.");
+							else {
+								throw new CompilerException("Error: The solution set may only be joined with through a Match or a CoGroup.");
+							}
 						}
 					}
+									
 				}
 				
 				// set the step function nodes to the iteration node
