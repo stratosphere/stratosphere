@@ -127,6 +127,8 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	
 	private IterationPlanNode currentIteration;	// hack: as long as no nesting is possible, remember the enclosing iteration
 	
+	private boolean visitedSolutionSet = false; // hack to avoid visiting the SolutionSetPlanNode more than once, since no vertex is created
+	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -230,7 +232,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	@Override
 	public boolean preVisit(PlanNode node) {
 		// check if we have visited this node before. in non-tree graphs, this happens
-		if (this.vertices.containsKey(node) || this.chainedTasks.containsKey(node)) {
+		if (this.vertices.containsKey(node) || this.chainedTasks.containsKey(node) || visitedSolutionSet) {
 			// return false to prevent further descend
 			return false;
 		}
@@ -305,6 +307,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			}
 			else if (node instanceof SolutionSetPlanNode) {
 				// skip the solution set place holder. we create the head at the workset place holder
+				visitedSolutionSet = true;
 				vertex = null;
 			}
 			else if (node instanceof WorksetPlanNode) {
@@ -426,7 +429,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					conf.setIterationSolutionSetJoinNum(joinNum);
 					
 					// adjust the driver
-					if (conf.getDriver().equals(MatchDriver.class)) {
+				    if (conf.getDriver().equals(MatchDriver.class)) {
 						conf.setDriver(inputNum == 0 ? SolutionSetFirstJoinDriver.class : SolutionSetSecondJoinDriver.class);
 					}
 					else if (conf.getDriver().equals(CoGroupDriver.class)) {
@@ -459,8 +462,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 						headConf.setSolutionSetPairComparator(target.getPairComparator());
 					}
 					joinNum++;
-				}
-				
+				}	
 				return;
 			}
 			
