@@ -81,7 +81,6 @@ import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ByteBufferedChannelManager;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.InsufficientResourcesException;
-import eu.stratosphere.nephele.taskmanager.runtime.EnvelopeConsumptionLog;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 import eu.stratosphere.nephele.util.SerializableArrayList;
 import eu.stratosphere.nephele.util.StringUtils;
@@ -478,35 +477,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 		return new TaskKillResult(id, AbstractTaskResult.ReturnCode.SUCCESS);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskCheckpointResult requestCheckpointDecision(ExecutionVertexID id) throws IOException {
-
-		final Task task = this.runningTasks.get(id);
-
-		if (task == null) {
-			final TaskCheckpointResult taskCheckpointResult = new TaskCheckpointResult(id,
-					AbstractTaskResult.ReturnCode.TASK_NOT_FOUND);
-			taskCheckpointResult.setDescription("No task with ID + " + id + " is currently running");
-			return taskCheckpointResult;
-		}
-
-		if (!(task instanceof RuntimeTask)) {
-			final TaskCheckpointResult taskCheckpointResult = new TaskCheckpointResult(id,
-				AbstractTaskResult.ReturnCode.TASK_NOT_FOUND);
-			taskCheckpointResult.setDescription("No task with ID + " + id + " is not a runtime task");
-			return taskCheckpointResult;
-		}
-
-		final RuntimeTask runtimeTask = (RuntimeTask) task;
-
-		reportAsyncronousEvent(id);
-
-		return new TaskCheckpointResult(id, AbstractTaskResult.ReturnCode.SUCCESS);
-	}
-
 	private void reportAsyncronousEvent(final ExecutionVertexID vertexID) {
 
 		this.byteBufferedChannelManager.reportAsynchronousEvent(vertexID);
@@ -846,33 +816,6 @@ public class TaskManager implements TaskOperationProtocol, PluginCommunicationPr
 				}
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void removeCheckpoints(final List<ExecutionVertexID> listOfVertexIDs) throws IOException {
-
-		final List<ExecutionVertexID> threadSafeList = Collections.unmodifiableList(listOfVertexIDs);
-
-		final Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-
-				final Iterator<ExecutionVertexID> it = threadSafeList.iterator();
-				while (it.hasNext()) {
-
-					final ExecutionVertexID vertexID = it.next();
-
-					// Try to remove the envelope consumption log first
-					EnvelopeConsumptionLog.removeLog(vertexID);
-				}
-			}
-		};
-
-		this.executorService.execute(r);
 	}
 
 	/**

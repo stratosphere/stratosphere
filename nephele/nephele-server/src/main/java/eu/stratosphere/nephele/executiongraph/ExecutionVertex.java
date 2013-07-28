@@ -41,7 +41,6 @@ import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.taskmanager.AbstractTaskResult;
 import eu.stratosphere.nephele.taskmanager.AbstractTaskResult.ReturnCode;
 import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
-import eu.stratosphere.nephele.taskmanager.TaskCheckpointResult;
 import eu.stratosphere.nephele.taskmanager.TaskKillResult;
 import eu.stratosphere.nephele.taskmanager.TaskSubmissionResult;
 import eu.stratosphere.nephele.util.AtomicEnum;
@@ -730,28 +729,6 @@ public final class ExecutionVertex {
 		}
 	}
 
-	public TaskCheckpointResult requestCheckpointDecision() {
-
-		final AllocatedResource ar = this.allocatedResource.get();
-
-		if (ar == null) {
-			final TaskCheckpointResult result = new TaskCheckpointResult(getID(),
-				AbstractTaskResult.ReturnCode.NO_INSTANCE);
-			result.setDescription("Assigned instance of vertex " + this.toString() + " is null!");
-			return result;
-		}
-
-		try {
-			return ar.getInstance().requestCheckpointDecision(this.vertexID);
-
-		} catch (IOException e) {
-			final TaskCheckpointResult result = new TaskCheckpointResult(getID(),
-				AbstractTaskResult.ReturnCode.IPC_ERROR);
-			result.setDescription(StringUtils.stringifyException(e));
-			return result;
-		}
-	}
-
 	/**
 	 * Cancels and removes the task represented by this vertex
 	 * from the instance it is currently running on. If the task
@@ -807,8 +784,7 @@ public final class ExecutionVertex {
 					return new TaskCancelResult(getID(), AbstractTaskResult.ReturnCode.SUCCESS);
 				}
 
-				if (previousState != ExecutionState.RUNNING && previousState != ExecutionState.FINISHING
-					&& previousState != ExecutionState.REPLAYING) {
+				if (previousState != ExecutionState.RUNNING && previousState != ExecutionState.FINISHING) {
 					// Set to canceled directly
 					updateExecutionState(ExecutionState.CANCELED, null);
 					return new TaskCancelResult(getID(), AbstractTaskResult.ReturnCode.SUCCESS);
@@ -941,7 +917,7 @@ public final class ExecutionVertex {
 	 * Unregisters the {@link ExecutionListener} object for this vertex. This object
 	 * will no longer be notified about particular events during the vertex's lifetime.
 	 * 
-	 * @param checkpointStateChangeListener
+	 * @param executionListener
 	 *        the object to be unregistered
 	 */
 	public void unregisterExecutionListener(final ExecutionListener executionListener) {

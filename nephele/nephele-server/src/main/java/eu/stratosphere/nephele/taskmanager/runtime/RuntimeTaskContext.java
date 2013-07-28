@@ -48,8 +48,6 @@ public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 
 	private final TransferEnvelopeDispatcher transferEnvelopeDispatcher;
 
-	private final EnvelopeConsumptionLog envelopeConsumptionLog;
-
 	private CompressionBufferProvider compressionBufferProvider = null;
 
 	RuntimeTaskContext(final RuntimeTask task, final TransferEnvelopeDispatcher transferEnvelopeDispatcher) {
@@ -72,7 +70,6 @@ public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 		this.numberOfOutputChannels = nooc;
 
 		this.transferEnvelopeDispatcher = transferEnvelopeDispatcher;
-		this.envelopeConsumptionLog = new EnvelopeConsumptionLog(task.getVertexID(), environment);
 	}
 
 	TransferEnvelopeDispatcher getTransferEnvelopeDispatcher() {
@@ -136,8 +133,6 @@ public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 		// Clear the buffer cache
 		this.localBufferPool.destroy();
 
-		// Finish the envelope consumption log
-		this.envelopeConsumptionLog.finish();
 	}
 
 	/**
@@ -163,10 +158,6 @@ public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 
 		System.out.println("\t\t" + environment.getTaskNameWithIndex() + ": " + ava + " available, " + req
 			+ " requested, " + des + " designated");
-
-		if (this.envelopeConsumptionLog.followsLog()) {
-			this.envelopeConsumptionLog.showOustandingEnvelopeLog();
-		}
 	}
 
 
@@ -253,8 +244,7 @@ public final class RuntimeTaskContext implements BufferProvider, TaskContext {
 			throw new IllegalStateException("Cannot find input gate with ID " + gateID);
 		}
 
-		return new RuntimeInputGateContext(re.getTaskNameWithIndex(), this.transferEnvelopeDispatcher, inputGate,
-			this.envelopeConsumptionLog);
+		return new RuntimeInputGateContext(re.getTaskNameWithIndex(), this.transferEnvelopeDispatcher, inputGate);
 	}
 
 	public LocalBufferPool getLocalBufferPool() {

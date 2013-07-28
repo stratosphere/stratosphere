@@ -209,8 +209,7 @@ public final class RuntimeTask implements Task, ExecutionObserver {
 			return;
 		}
 
-		if (this.executionState != ExecutionState.RUNNING && this.executionState != ExecutionState.REPLAYING
-			&& this.executionState != ExecutionState.FINISHING) {
+		if (this.executionState != ExecutionState.RUNNING && this.executionState != ExecutionState.FINISHING) {
 			return;
 		}
 

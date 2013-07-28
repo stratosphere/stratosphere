@@ -54,25 +54,18 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 
 	private final Queue<TransferEnvelope> queuedEnvelopes = new ArrayDeque<TransferEnvelope>();
 
-	private final EnvelopeConsumptionLog envelopeConsumptionLog;
-
-	private final boolean isReexecuted;
-
 	private int lastReceivedEnvelope = -1;
 
 	private boolean destroyCalled = false;
 
 	RuntimeInputChannelContext(final RuntimeInputGateContext inputGateContext,
 			final TransferEnvelopeDispatcher transferEnvelopeDispatcher,
-			final AbstractByteBufferedInputChannel<?> byteBufferedInputChannel,
-			final EnvelopeConsumptionLog envelopeConsumptionLog) {
+			final AbstractByteBufferedInputChannel<?> byteBufferedInputChannel) {
 
 		this.inputGateContext = inputGateContext;
 		this.transferEnvelopeDispatcher = transferEnvelopeDispatcher;
 		this.byteBufferedInputChannel = byteBufferedInputChannel;
 		this.byteBufferedInputChannel.setInputChannelBroker(this);
-		this.envelopeConsumptionLog = envelopeConsumptionLog;
-		this.isReexecuted = (envelopeConsumptionLog.getNumberOfInitialLogEntries() > 0L);
 	}
 
 	/**
@@ -112,7 +105,7 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 			}
 
 			// Notify the channel that an envelope has been consumed
-			this.envelopeConsumptionLog.reportEnvelopeConsumed(this.byteBufferedInputChannel);
+			this.byteBufferedInputChannel.notifyDataUnitConsumed();
 
 			return null;
 		}
@@ -151,7 +144,8 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 		}
 
 		// Notify the channel that an envelope has been consumed
-		this.envelopeConsumptionLog.reportEnvelopeConsumed(this.byteBufferedInputChannel);
+//		this.envelopeConsumptionLog.reportEnvelopeConsumed(this.byteBufferedInputChannel);
+		this.byteBufferedInputChannel.notifyDataUnitConsumed();
 
 		if (buffer.remaining() > 0) {
 			LOG.warn("ConsumedReadBuffer has " + buffer.remaining() + " unconsumed bytes left (early end of reading?).");
@@ -204,17 +198,14 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 				// We received an envelope with higher sequence number than expected
 				if (sequenceNumber > expectedSequenceNumber) {
 
-					/**
-					 * In case the task is reexecuted, we might receive envelopes from the original run that have been
-					 * stuck in some network queues. As a result, we will simply ignore those envelopes. If the task is
-					 * not restarted, we are actually missing data.
-					 */
-					if (!this.isReexecuted) {
+					// This is a problem, now we are actually missing some data
+					this.byteBufferedInputChannel.reportIOException(new IOException("Expected data packet "
+						+ expectedSequenceNumber + " but received " + sequenceNumber));
+					this.byteBufferedInputChannel.checkForNetworkEvents();
 
-						// This is a problem, now we are actually missing some data
-						this.byteBufferedInputChannel.reportIOException(new IOException("Expected data packet "
-							+ expectedSequenceNumber + " but received " + sequenceNumber));
-						this.byteBufferedInputChannel.checkForNetworkEvents();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Input channel " + getChannelName() + " expected envelope " + expectedSequenceNumber
+							+ " but received " + sequenceNumber);
 					}
 
 				} else {
@@ -228,13 +219,6 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 					}
 				}
 
-				if (!this.isReexecuted || sequenceNumber > expectedSequenceNumber) {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug("Input channel " + getChannelName() + " expected envelope " + expectedSequenceNumber
-							+ " but received " + sequenceNumber);
-					}
-				}
-
 				final Buffer buffer = transferEnvelope.getBuffer();
 				if (buffer != null) {
 					buffer.recycleBuffer();
@@ -245,7 +229,7 @@ final class RuntimeInputChannelContext implements InputChannelContext, ByteBuffe
 				this.lastReceivedEnvelope = sequenceNumber;
 
 				// Notify the channel about the new data
-				this.envelopeConsumptionLog.reportEnvelopeAvailability(this.byteBufferedInputChannel);
+				this.byteBufferedInputChannel.checkForNetworkEvents();
 			}
 		}
 

@@ -21,7 +21,6 @@ import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.io.channels.AbstractInputChannel;
 import eu.stratosphere.nephele.io.channels.Buffer;
-import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.bytebuffered.AbstractByteBufferedInputChannel;
 import eu.stratosphere.nephele.io.compression.CompressionBufferProvider;
@@ -47,19 +46,16 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 
 	private final InputGate<? extends Record> inputGate;
 
-	private final EnvelopeConsumptionLog envelopeConsumptionLog;
-
 	private Decompressor decompressor = null;
 
 	RuntimeInputGateContext(final String taskName, final TransferEnvelopeDispatcher transferEnvelopeDispatcher,
-			final InputGate<? extends Record> inputGate, final EnvelopeConsumptionLog envelopeConsumptionLog) {
+			final InputGate<? extends Record> inputGate) {
 
 		this.taskName = taskName;
 		this.localBufferPool = new LocalBufferPool(1, false);
 
 		this.transferEnvelopeDispatcher = transferEnvelopeDispatcher;
 		this.inputGate = inputGate;
-		this.envelopeConsumptionLog = envelopeConsumptionLog;
 	}
 	/**
 	 * {@inheritDoc}
@@ -79,12 +75,6 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 		final Buffer buffer = this.localBufferPool.requestEmptyBuffer(minimumSizeOfBuffer);
 		if (buffer != null) {
 			return buffer;
-		}
-
-		if (this.envelopeConsumptionLog.followsLog()) {
-			throw new RuntimeException("There is no such thing as files for nephele anymore!");
-		//	return BufferFactory.createFromFile(minimumSizeOfBuffer, this.inputGate.getGateID(),
-		//		null, false, true);
 		}
 
 		return this.localBufferPool.requestEmptyBufferBlocking(minimumSizeOfBuffer);
@@ -191,7 +181,7 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 		}
 
 		return new RuntimeInputChannelContext(this, this.transferEnvelopeDispatcher,
-			(AbstractByteBufferedInputChannel<? extends Record>) channel, this.envelopeConsumptionLog);
+			(AbstractByteBufferedInputChannel<? extends Record>) channel);
 	}
 
 	/**
