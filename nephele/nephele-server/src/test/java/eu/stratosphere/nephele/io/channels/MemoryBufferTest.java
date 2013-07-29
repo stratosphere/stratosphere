@@ -9,13 +9,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.nephele.util.BufferPoolConnector;
 
 
-public class TestMemoryBuffer {
+public class MemoryBufferTest {
 
 	private MemoryBufferPoolConnector bufferPoolConnector;
 	private Queue<MemorySegment> bufferPool;
@@ -35,16 +36,12 @@ public class TestMemoryBuffer {
 
 	@Test
 	public void readToSmallByteBuffer() throws IOException {
-		ReferenceMemoryBuffer ref = new ReferenceMemoryBuffer(INT_COUNT*INT_SIZE, ByteBuffer.allocate(INT_COUNT*INT_SIZE), bufferPoolConnector);
-		fillBuffer(ref);
-		
-		MemoryBuffer buf = new MemoryBuffer(INT_COUNT*INT_SIZE, new MemorySegment(new byte[INT_COUNT*INT_SIZE], 0, INT_COUNT*INT_SIZE), bufferPoolConnector);
+		MemoryBuffer buf = new MemoryBuffer(INT_COUNT*INT_SIZE, new MemorySegment(new byte[INT_COUNT*INT_SIZE]), bufferPoolConnector);
 		fillBuffer(buf);
 		
 		ByteBuffer target = ByteBuffer.allocate(INT_SIZE);
 		ByteBuffer largeTarget = ByteBuffer.allocate(INT_COUNT*INT_SIZE);
 		int i = 0;
-		System.err.println("Starting to read");
 		while(buf.hasRemaining()) {
 			buf.read(target);
 			target.rewind();
@@ -60,42 +57,6 @@ public class TestMemoryBuffer {
 		validateByteBuffer(largeTarget);
 	}
 		
-	@Test
-	public void readToByteBuffer() throws IOException {
-		
-		ReferenceMemoryBuffer ref = new ReferenceMemoryBuffer(INT_COUNT*INT_SIZE, ByteBuffer.allocate(INT_COUNT*INT_SIZE), bufferPoolConnector);
-		fillBuffer(ref);
-		
-		MemoryBuffer buf = new MemoryBuffer(INT_COUNT*INT_SIZE, new MemorySegment(new byte[INT_COUNT*INT_SIZE], 0, INT_COUNT*INT_SIZE), bufferPoolConnector);
-		fillBuffer(buf);
-		
-		ByteBuffer target = ByteBuffer.allocate(INT_COUNT*INT_SIZE);
-		
-		// test for similar starting position
-		assertEquals(ref.getByteBuffer().limit(), buf.limit());
-		assertEquals(ref.getByteBuffer().position(), buf.position());
-		
-		// call to be tested!
-		buf.read(target);
-		final int actLim = buf.limit();
-		final int actPos = buf.position();
-		
-		validateByteBuffer(target);
-		final int actLim1 = buf.limit();
-		final int actPos1 = buf.position();
-		
-		target.clear();
-		
-		ref.read(target);
-		assertEquals(ref.getByteBuffer().limit(), actLim);
-		assertEquals(ref.getByteBuffer().position(), actPos);
-		
-		validateByteBuffer(target);
-		assertEquals(ref.getByteBuffer().limit(), actLim1);
-		assertEquals(ref.getByteBuffer().position(), actPos1);
-		
-		buf.close(); // make eclipse happy
-	}
 	
 	/**
 	 * CopyToBuffer uses system.arraycopy()
@@ -105,13 +66,13 @@ public class TestMemoryBuffer {
 	@Test
 	public void copyToBufferTest() throws IOException {
 
-		MemoryBuffer buf = new MemoryBuffer(INT_COUNT*INT_SIZE, new MemorySegment(new byte[INT_COUNT*INT_SIZE], 0, INT_COUNT*INT_SIZE), bufferPoolConnector);
+		MemoryBuffer buf = new MemoryBuffer(INT_COUNT*INT_SIZE, new MemorySegment(new byte[INT_COUNT*INT_SIZE]), bufferPoolConnector);
 		fillBuffer(buf);
 		
 		
 		// the target buffer is larger to check if the limit is set appropriately
 		MemoryBuffer destination = new MemoryBuffer(INT_COUNT*INT_SIZE*2, 
-					new MemorySegment(new byte[INT_COUNT*INT_SIZE*2],0,INT_COUNT*INT_SIZE*2), 
+					new MemorySegment(new byte[INT_COUNT*INT_SIZE*2]), 
 					bufferPoolConnector);
 		assertEquals(INT_COUNT*INT_SIZE*2, destination.limit());
 		// copy buf contents to double sized MemBuffer
@@ -128,10 +89,10 @@ public class TestMemoryBuffer {
 		destination.position(written);
 		destination.limit(destination.getTotalSize());
 		// allocate another byte buffer to write the rest of destination into a byteBuffer
-		ByteBuffer testRemiander = ByteBuffer.allocate(INT_COUNT*INT_SIZE);
-		written = destination.read(testRemiander);
+		ByteBuffer testRemainder = ByteBuffer.allocate(INT_COUNT*INT_SIZE);
+		written = destination.read(testRemainder);
 		assertEquals(INT_COUNT*INT_SIZE, written);
-		expectAllNullByteBuffer(testRemiander);
+		expectAllNullByteBuffer(testRemainder);
 		
 		buf.close(); // make eclipse happy
 	}
@@ -142,10 +103,9 @@ public class TestMemoryBuffer {
 		for(int i = 0; i < INT_COUNT; ++i) {
 			src.putInt(0,i);
 			src.rewind();
-			int written = buf.write(src);
-		//	System.err.println("Put int i="+i+" Written "+written);
+			buf.write(src);
 		}
-		buf.finishWritePhase();
+		buf.flip();
 	}
 	
 	

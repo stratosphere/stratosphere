@@ -86,7 +86,7 @@ public final class GlobalBufferPool {
 		for (int i = 0; i < this.numberOfBuffers; i++) {
 			// allocate byteBuffer
 			final byte[] segMemory = new byte[this.bufferSizeInBytes];
-			final MemorySegment readBuffer = new MemorySegment(segMemory, 0, this.bufferSizeInBytes);
+			final MemorySegment readBuffer = new MemorySegment(segMemory);
 			this.buffers.add(readBuffer);
 		}
 

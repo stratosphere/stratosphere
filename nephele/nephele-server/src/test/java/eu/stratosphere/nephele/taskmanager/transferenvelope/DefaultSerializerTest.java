@@ -135,7 +135,7 @@ public class DefaultSerializerTest {
 		final FileChannel fileChannel = outputStream.getChannel();
 		final Deque<MemorySegment> recycleQueue = new ArrayDeque<MemorySegment>();
 		final DefaultSerializer serializer = new DefaultSerializer();
-		final MemorySegment byteBuffer = new MemorySegment(new byte[BUFFER_SIZE], 0, BUFFER_SIZE);
+		final MemorySegment byteBuffer = new MemorySegment(new byte[BUFFER_SIZE]);
 		final ByteBuffer initBuffer = ByteBuffer.allocate(1);
 		
 		// The byte buffer is initialized from this buffer
@@ -155,9 +155,7 @@ public class DefaultSerializerTest {
 				buffer.write(initBuffer);
 				initBuffer.position(0);
 			}
-
-			// Finish write phase
-			buffer.finishWritePhase();
+			buffer.flip();
 
 			final TransferEnvelope transferEnvelope = new TransferEnvelope(i, this.jobID, this.sourceChannelID);
 			transferEnvelope.setBuffer(buffer);

@@ -185,9 +185,7 @@ final class RuntimeOutputChannelBroker extends AbstractOutputChannelForwarder im
 			throw new IllegalStateException("Channel " + this.byteBufferedOutputChannel.getID()
 				+ " has already a buffer attached");
 		}
-
-		// Finish the write phase of the buffer
-		buffer.finishWritePhase();
+		buffer.flip();
 		this.outgoingTransferEnvelope.setBuffer(buffer);
 
 		this.forwardingChain.pushEnvelope(this.outgoingTransferEnvelope);

@@ -29,7 +29,6 @@ import eu.stratosphere.pact.example.connectedcomponents.WorksetConnectedComponen
 import eu.stratosphere.pact.test.iterative.nephele.ConnectedComponentsNepheleITCase;
 import eu.stratosphere.pact.test.util.TestBase2;
 
-@Ignore
 @RunWith(Parameterized.class)
 public class CoGroupConnectedComponentsITCase extends TestBase2 {
 	

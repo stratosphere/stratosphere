@@ -29,8 +29,6 @@ public final class MemoryBuffer extends Buffer {
 	private final MemoryBufferRecycler bufferRecycler;
 
 	private final MemorySegment internalMemorySegment;
-
-	private final AtomicBoolean writeMode = new AtomicBoolean(true);
 	
 	/**
 	 * Internal index that points to the next byte to write
@@ -54,8 +52,8 @@ public final class MemoryBuffer extends Buffer {
 		this.limit(bufferSize);
 	}
 
-	private MemoryBuffer(final int bufferSize, final MemorySegment memory, final MemoryBufferRecycler bufferRecycler) {
-		this.position(0);
+	private MemoryBuffer(final int bufferSize, final int pos, final MemorySegment memory, final MemoryBufferRecycler bufferRecycler) {
+		this.position(pos);
 		this.limit(bufferSize);
 		this.bufferRecycler = bufferRecycler;
 		this.internalMemorySegment = memory;
@@ -63,34 +61,26 @@ public final class MemoryBuffer extends Buffer {
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		if (this.writeMode.get()) {
-			throw new IOException("Buffer is still in write mode!");
-		}
 
 		if (!this.hasRemaining()) {
 			return -1;
 		}
-		
-		if (!dst.hasRemaining()) {
+		int numBytes = dst.remaining();
+		final int remaining = this.remaining();
+		if (numBytes == 0) {
 			return 0;
 		}
-			
-		final int oldIndex = index;
-		for(; index < limit; index++) {
-			if(!dst.hasRemaining()) {
-				break;
-			}
-			dst.put(this.internalMemorySegment.get(index));
+		if(numBytes > remaining) {
+			numBytes = remaining;
 		}
-		return index-oldIndex;
+		internalMemorySegment.get(position(), dst, numBytes);
+		index += numBytes;
+		return numBytes;
 	}
 	
 
 	@Override
-	public int read(WritableByteChannel writableByteChannel) throws IOException {
-		if (this.writeMode.get()) {
-			throw new IOException("Buffer is in write mode!");
-		}
+	public int writeTo(WritableByteChannel writableByteChannel) throws IOException {
 		if (!this.hasRemaining()) {
 			return -1;
 		}
@@ -129,7 +119,6 @@ public final class MemoryBuffer extends Buffer {
 		if(bufferSize > this.internalMemorySegment.size()) {
 			throw new RuntimeException("Given buffer size exceeds underlying buffer size");
 		}
-		this.writeMode.set(true);
 		this.position(0);
 		this.limit(bufferSize);
 	}
@@ -141,6 +130,7 @@ public final class MemoryBuffer extends Buffer {
 		index = i;
 	}
 	
+	@Override
 	public final int position() {
 		return index;
 	}
@@ -178,7 +168,6 @@ public final class MemoryBuffer extends Buffer {
 	public void clear() {
 		this.limit = getTotalSize();
 		this.position(0);
-		this.writeMode.set(true);
 	}
 
 	/**
@@ -209,17 +198,6 @@ public final class MemoryBuffer extends Buffer {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void finishWritePhase() {
-		if (!this.writeMode.compareAndSet(true, false)) {
-			throw new IllegalStateException("MemoryBuffer is already in read mode!");
-		}
-
-		this.flip();
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -234,14 +212,8 @@ public final class MemoryBuffer extends Buffer {
 	 */
 	@Override
 	public MemoryBuffer duplicate() {
-		if (this.writeMode.get()) {
-			throw new IllegalStateException("Cannot duplicate buffer that is still in write mode");
-		}
-
-		final MemoryBuffer duplicatedMemoryBuffer = new MemoryBuffer(this.limit(), this.internalMemorySegment, this.bufferRecycler);
-
+		final MemoryBuffer duplicatedMemoryBuffer = new MemoryBuffer(this.limit(), this.position(), this.internalMemorySegment, this.bufferRecycler);
 		this.bufferRecycler.increaseReferenceCounter();
-		duplicatedMemoryBuffer.writeMode.set(this.writeMode.get());
 		return duplicatedMemoryBuffer;
 	}
 
@@ -250,47 +222,33 @@ public final class MemoryBuffer extends Buffer {
 	 */
 	@Override
 	public void copyToBuffer(final Buffer destinationBuffer) throws IOException {
-		if (this.writeMode.get()) {
-			throw new IllegalStateException("Cannot copy buffer that is still in write mode");
-		}
 		if (size() > destinationBuffer.size()) {
 			throw new IllegalArgumentException("Destination buffer is too small to store content of source buffer: "
 				+ size() + " vs. " + destinationBuffer.size());
 		}
 		final MemoryBuffer target = (MemoryBuffer) destinationBuffer;
-		
-		System.arraycopy(this.getMemorySegment().getBackingArray(), 0,
-				target.getMemorySegment().getBackingArray(),target.position(), limit()- position() );
+		this.internalMemorySegment.copyTo(this.position(), target.getMemorySegment(), destinationBuffer.position(), limit()-position());
 		target.position(limit()-position()); // even if we do not change the source (this), we change the destination!!
-		destinationBuffer.finishWritePhase();
+		destinationBuffer.flip();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isInWriteMode() {
-		return this.writeMode.get();
-	}
 	 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public int write(final ByteBuffer src) throws IOException {
-		if (!this.writeMode.get()) {
-			throw new IOException("Cannot write to buffer, buffer already switched to read mode");
+		int numBytes = src.remaining();
+		final int thisRemaining = this.remaining();
+		if(thisRemaining == 0) {
+			return 0;
 		}
-
-		final int initialPos = position();
-		while(src.hasRemaining()) {
-			if(position() >= limit()) {
-				return index-initialPos;
-			}
-			this.internalMemorySegment.put(position(), src.get());
-			position(position()+1);
+		if(numBytes > thisRemaining) {
+			numBytes = thisRemaining;
 		}
-		return position()-initialPos;
+		this.internalMemorySegment.put(position(), src, numBytes);
+		this.index += numBytes;
+		return numBytes;
 	}
 
 	/**
@@ -298,9 +256,6 @@ public final class MemoryBuffer extends Buffer {
 	 */
 	@Override
 	public int write(final ReadableByteChannel readableByteChannel) throws IOException {
-		if (!this.writeMode.get()) {
-			throw new IOException("Cannot write to buffer, buffer already switched to read mode");
-		}
 
 		if (!this.hasRemaining()) {
 			return 0;

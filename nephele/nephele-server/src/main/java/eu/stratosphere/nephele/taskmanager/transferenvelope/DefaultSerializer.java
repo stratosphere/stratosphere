@@ -34,7 +34,7 @@ public class DefaultSerializer extends AbstractSerializer {
 	protected boolean writeBufferData(final WritableByteChannel writableByteChannel, final Buffer buffer)
 			throws IOException {
 
-		buffer.read(writableByteChannel);
+		buffer.writeTo(writableByteChannel);
 
 		return buffer.hasRemaining();
 	}

@@ -42,9 +42,6 @@ import eu.stratosphere.nephele.taskmanager.TaskCheckpointResult;
 import eu.stratosphere.nephele.util.SerializableHashSet;
 import eu.stratosphere.nephele.util.StringUtils;
 
-/**
- * @author marrus
- */
 public final class RecoveryLogic {
 
 	/**
@@ -75,9 +72,7 @@ public final class RecoveryLogic {
 
 			final Set<ExecutionVertex> verticesToBeCanceled = new HashSet<ExecutionVertex>();
 
-			final Set<ExecutionVertex> checkpointsToBeReplayed = new HashSet<ExecutionVertex>();
-
-			findVerticesToRestart(failedVertex, verticesToBeCanceled, checkpointsToBeReplayed);
+			findVerticesToRestart(failedVertex, verticesToBeCanceled);
 
 			// Restart all predecessors without checkpoint
 			final Iterator<ExecutionVertex> cancelIterator = verticesToBeCanceled.iterator();
@@ -115,16 +110,6 @@ public final class RecoveryLogic {
 
 			LOG.info("Cache invalidation complete");
 
-			// Replay all necessary checkpoints
-			final Iterator<ExecutionVertex> checkpointIterator = checkpointsToBeReplayed.iterator();
-
-			while (checkpointIterator.hasNext()) {
-
-				final ExecutionVertex checkpoint = checkpointIterator.next();
-				checkpoint.updateExecutionState(ExecutionState.ASSIGNED);
-				assignedVertices.add(checkpoint);
-			}
-
 			// Restart failed vertex
 			failedVertex.updateExecutionState(getStateToUpdate(failedVertex));
 			if (failedVertex.getExecutionState() == ExecutionState.ASSIGNED) {
@@ -150,8 +135,7 @@ public final class RecoveryLogic {
 	}
 
 	private static void findVerticesToRestart(final ExecutionVertex failedVertex,
-			final Set<ExecutionVertex> verticesToBeCanceled,
-			final Set<ExecutionVertex> checkpointsToBeReplayed) {
+			final Set<ExecutionVertex> verticesToBeCanceled) {
 
 		final Queue<ExecutionVertex> verticesToTest = new ArrayDeque<ExecutionVertex>();
 		final Set<ExecutionVertex> visited = new HashSet<ExecutionVertex>();

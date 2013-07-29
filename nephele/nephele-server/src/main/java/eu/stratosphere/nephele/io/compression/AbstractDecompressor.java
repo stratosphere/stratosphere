@@ -16,13 +16,13 @@
 package eu.stratosphere.nephele.io.compression;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.BufferFactory;
 import eu.stratosphere.nephele.io.channels.MemoryBuffer;
 import eu.stratosphere.nephele.io.channels.MemoryBufferPoolConnector;
 import eu.stratosphere.nephele.io.compression.Decompressor;
-import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 
 public abstract class AbstractDecompressor implements Decompressor {
 
@@ -32,9 +32,9 @@ public abstract class AbstractDecompressor implements Decompressor {
 
 	protected MemoryBuffer compressedBuffer;
 
-	protected MemorySegment uncompressedMemorySegment;
+	protected ByteBuffer uncompressedDataBuffer;
 
-	protected MemorySegment compressedMemorySegment;
+	protected ByteBuffer compressedDataBuffer;
 
 	protected int uncompressedDataBufferLength;
 
@@ -61,15 +61,15 @@ public abstract class AbstractDecompressor implements Decompressor {
 
 		if (buffer == null) {
 			this.compressedBuffer = null;
-			this.compressedMemorySegment = null;
+			this.compressedDataBuffer = null;
 			this.compressedDataBufferLength = 0;
 		} else {
-			this.compressedMemorySegment = buffer.getMemorySegment();
-			this.compressedDataBufferLength = this.compressedMemorySegment.size();
+			this.compressedDataBuffer = buffer.getMemorySegment().wrap(0, buffer.limit());
+			this.compressedDataBufferLength = this.compressedDataBuffer.limit();
 			this.compressedBuffer = buffer;
 
 			// Extract length of uncompressed buffer from the compressed buffer
-			this.uncompressedDataBufferLength = bufferToInt(this.compressedMemorySegment, 4);
+			this.uncompressedDataBufferLength = bufferToInt(this.compressedDataBuffer, 4);
 		}
 	}
 
@@ -77,10 +77,10 @@ public abstract class AbstractDecompressor implements Decompressor {
 
 		if (buffer == null) {
 			this.uncompressedBuffer = null;
-			this.uncompressedMemorySegment = null;
+			this.uncompressedDataBuffer = null;
 			this.uncompressedDataBufferLength = 0;
 		} else {
-			this.uncompressedMemorySegment = buffer.getMemorySegment();
+			this.uncompressedDataBuffer = buffer.getMemorySegment().wrap(0, buffer.limit());
 			this.uncompressedBuffer = buffer;
 			// Uncompressed buffer length is set the setCompressDataBuffer method
 		}
@@ -91,73 +91,50 @@ public abstract class AbstractDecompressor implements Decompressor {
 	 */
 	@Override
 	public Buffer decompress(Buffer compressedData) throws IOException {
-
-		boolean tmpBufferUsed = false;
-		if (!compressedData.isBackedByMemory()) {
-			tmpBufferUsed = true;
-			final MemoryBuffer tmpBuffer = this.bufferProvider.lockTemporaryBuffer();
-			tmpBuffer.reset(this.bufferProvider.getMaximumBufferSize());
-			compressedData.copyToBuffer(tmpBuffer);
-			compressedData.recycleBuffer();
-			compressedData = tmpBuffer;
-		}
-
 		setCompressedDataBuffer((MemoryBuffer) compressedData);
 		setUncompressedDataBuffer(this.bufferProvider.lockCompressionBuffer());
-		
-		if (this.uncompressedBuffer.position() > 0) {
+
+		if (this.uncompressedDataBuffer.position() > 0) {
 			throw new IllegalStateException("Uncompressed data buffer is expected to be empty");
 		}
-		this.uncompressedBuffer.clear();
-		
+		this.uncompressedDataBuffer.clear();
+
 		final int result = decompressBytesDirect(SIZE_LENGTH);
 		if (result < 0) {
 			throw new IOException("Compression libary returned error-code: " + result);
 		}
+		throw new RuntimeException("Uncomment the code below. this is never executed");
+//
+//		if (this.uncompressedBuffer.isInWriteMode()) {
+//			this.uncompressedDataBuffer.position(result);
+//			this.uncompressedBuffer.finishWritePhase();
+//		} else {
+//			this.uncompressedDataBuffer.position(0);
+//			this.uncompressedDataBuffer.limit(result);
+//		}
+		// System.out.println("UNCOMPRESSED SIZE: " + this.uncompressedBuffer.size());
 
-		if (this.uncompressedBuffer.isInWriteMode()) {
-			this.uncompressedBuffer.position(result);
-			this.uncompressedBuffer.finishWritePhase();
-		} else {
-			this.uncompressedBuffer.position(0);
-			this.uncompressedBuffer.limit(result);
-		}
-	
-		Buffer uncompressedBuffer = this.uncompressedBuffer;
-
-		// Release the compression buffer again
-		this.bufferProvider.releaseCompressionBuffer(this.compressedBuffer);
-
-		setCompressedDataBuffer(null);
-		setUncompressedDataBuffer(null);
-
-		if (tmpBufferUsed) {
-
-			final MemoryBuffer memBuffer = (MemoryBuffer) uncompressedBuffer;
-			final MemorySegment ms = memBuffer.getMemorySegment();
-
-			uncompressedBuffer = BufferFactory.createFromMemory(memBuffer.remaining(), ms, new MemoryBufferPoolConnector() {
-
-				/**
-				 * {@inheritDoc}
-				 */
-				@Override
-				public void recycle(final MemorySegment byteBuffer) {
-
-					bufferProvider.releaseTemporaryBuffer(memBuffer);
-				}
-			});
-			// Fake transition to read mode
-			memBuffer.position(memBuffer.limit());
-			memBuffer.limit(memBuffer.size());
-			uncompressedBuffer.finishWritePhase();
-		}
-
-		return uncompressedBuffer;
+//		Buffer uncompressedBuffer = this.uncompressedBuffer;
+//
+//		// Release the compression buffer again
+//		this.bufferProvider.releaseCompressionBuffer(this.compressedBuffer);
+//
+//		setCompressedDataBuffer(null);
+//		setUncompressedDataBuffer(null);
+//
+//		return uncompressedBuffer;
 	}
 
-	protected int bufferToInt(MemorySegment buffer, int offset) {
-		return buffer.getInt(offset);
+	protected int bufferToInt(ByteBuffer buffer, int offset) {
+
+		int retVal = 0;
+
+		retVal += 0xff000000 & (((int) buffer.get(offset)) << 24);
+		retVal += 0x00ff0000 & (((int) buffer.get(offset + 1)) << 16);
+		retVal += 0x0000ff00 & (((int) buffer.get(offset + 2)) << 8);
+		retVal += 0x000000ff & ((int) buffer.get(offset + 3));
+
+		return retVal;
 	}
 
 	protected abstract int decompressBytesDirect(int offset);
@@ -167,6 +144,7 @@ public abstract class AbstractDecompressor implements Decompressor {
 	 */
 	@Override
 	public void setCurrentInternalDecompressionLibraryIndex(final int index) {
+
 		throw new IllegalStateException(
 			"setCurrentInternalDecompressionLibraryIndex called with wrong compression level activated");
 	}

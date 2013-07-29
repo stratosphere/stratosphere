@@ -927,8 +927,8 @@ public class ExecutionGraph implements ExecutionListener {
 				final ExecutionGroupEdge edge = groupVertex.getBackwardEdge(i);
 				final int stageNumber = stageNumbers.get(edge.getSourceVertex());
 				if (stageNumber != succeedingNumber) {
-					LOG.error(edge.getSourceVertex() + " and " + edge.getTargetVertex()
-						+ " are assigned to different stages although not connected by a file channel");
+					throw new IllegalStateException(edge.getSourceVertex() + " and " + edge.getTargetVertex()
+						+ " are assigned to different stages");
 				}
 			}
 		}

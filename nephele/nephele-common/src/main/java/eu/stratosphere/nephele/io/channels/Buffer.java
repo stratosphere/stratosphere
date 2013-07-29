@@ -62,8 +62,6 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	public abstract boolean isOpen();
 	
 	
-	public abstract boolean isInWriteMode();
-	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -127,14 +125,6 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	
 	protected abstract void recycle();
 
-	/**
-	 * Switches the buffer from write mode into read mode. After being switched to read
-	 * mode, the buffer will no longer accept write requests.
-	 * 
-	 * @throws IOException
-	 *         throws if an error occurs while finishing writing mode
-	 */
-	public abstract void finishWritePhase() throws IOException;
 
 	/**
 	 * Returns whether the buffer is backed by main memory or a file.
@@ -173,7 +163,17 @@ public abstract class Buffer implements ReadableByteChannel, WritableByteChannel
 	 *         end of the stream.
 	 * @throws IOException Thrown if an error occurs while writing to the {@link WritableByteChannel} object.
 	 */
-	public abstract int read(WritableByteChannel writableByteChannel) throws IOException;
+	public abstract int writeTo(WritableByteChannel writableByteChannel) throws IOException;
 
+	/**
+	 * Flip buffer (exchange limit and position).
+	 */
+	public abstract void flip();
+	
+	/**
+	 * Returns the current read/write position for relative operations.
+	 * @return
+	 */
+	public abstract int position();
 
 }

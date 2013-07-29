@@ -783,136 +783,136 @@ public class ExecutionGraphTest {
 		}
 	}
 
-//	/*
-//	 * input1 -> task1 -> output1
-//	 * -> task3 -> task4
-//	 * input2 -> task2 -> output2
-//	 * all subtasks defined
-//	 * all instance types defined
-//	 * all channel types defined
-//	 */
-//	@Test
-//	public void testConvertJobGraphToExecutionGraph4() {
-//
-//		File inputFile1 = null;
-//		File inputFile2 = null;
-//		JobID jobID = null;
-//
-//		try {
-//
-//			inputFile1 = ServerTestUtils.createInputFile(0);
-//			inputFile2 = ServerTestUtils.createInputFile(0);
-//
-//			// create job graph
-//			final JobGraph jg = new JobGraph("Job Graph 1");
-//			jobID = jg.getJobID();
-//
-//			// input vertex
-//			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
-//			i1.setFileInputClass(FileLineReader.class);
-//			i1.setFilePath(new Path(inputFile1.toURI()));
-//			i1.setNumberOfSubtasks(4);
-//			i1.setNumberOfSubtasksPerInstance(2);
-//			final JobFileInputVertex i2 = new JobFileInputVertex("Input 2", jg);
-//			i2.setFileInputClass(FileLineReader.class);
-//			i2.setFilePath(new Path(inputFile2.toURI()));
-//			i2.setNumberOfSubtasks(4);
-//			i2.setNumberOfSubtasksPerInstance(2);
-//			// task vertex
-//			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
-//			t1.setTaskClass(ForwardTask1Input1Output.class);
-//			t1.setNumberOfSubtasks(4);
-//			t1.setNumberOfSubtasksPerInstance(2);
-//			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
-//			t2.setTaskClass(ForwardTask1Input1Output.class);
-//			t2.setNumberOfSubtasks(4);
-//			t2.setNumberOfSubtasksPerInstance(2);
-//			final JobTaskVertex t3 = new JobTaskVertex("Task 3", jg);
-//			t3.setTaskClass(ForwardTask2Inputs1Output.class);
-//			t3.setNumberOfSubtasks(8);
-//			t3.setNumberOfSubtasksPerInstance(4);
-//			final JobTaskVertex t4 = new JobTaskVertex("Task 4", jg);
-//			t4.setTaskClass(ForwardTask1Input2Outputs.class);
-//			t4.setNumberOfSubtasks(8);
-//			t4.setNumberOfSubtasksPerInstance(4);
-//			// output vertex
-//			final JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
-//			o1.setFileOutputClass(FileLineWriter.class);
-//			o1.setFilePath(new Path(new File(ServerTestUtils.getRandomFilename()).toURI()));
-//			o1.setNumberOfSubtasks(4);
-//			o1.setNumberOfSubtasksPerInstance(2);
-//			final JobFileOutputVertex o2 = new JobFileOutputVertex("Output 2", jg);
-//			o2.setFileOutputClass(FileLineWriter.class);
-//			o2.setFilePath(new Path(new File(ServerTestUtils.getRandomFilename()).toURI()));
-//			o2.setNumberOfSubtasks(4);
-//			o2.setNumberOfSubtasksPerInstance(2);
-//			o1.setVertexToShareInstancesWith(o2);
-//
-//			// connect vertices
-//			i1.connectTo(t1, ChannelType.FILE, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
-//			i2.connectTo(t2, ChannelType.FILE, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
-//			t1.connectTo(t3, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-//			t2.connectTo(t3, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-//			t3.connectTo(t4, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
-//			t4.connectTo(o1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-//			t4.connectTo(o2, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
-//
-//			LibraryCacheManager.register(jobID, new String[0]);
-//
-//			// now convert job graph to execution graph
-//			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
-//
-//			// test instance types in ExecutionGraph
-//			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
-//			ExecutionStage executionStage = eg.getCurrentExecutionStage();
-//			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
-//			assertEquals(1, instanceRequestMap.size());
-//			assertEquals(4,
-//				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
-//					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
-//			// Fake transition to next stage by triggering execution state changes manually
-//			final Iterator<ExecutionVertex> it = new ExecutionGraphIterator(eg, eg.getIndexOfCurrentExecutionStage(),
-//				true, true);
-//
-//			while (it.hasNext()) {
-//				final ExecutionVertex ev = it.next();
-//				ev.updateExecutionState(ExecutionState.SCHEDULED);
-//				ev.updateExecutionState(ExecutionState.ASSIGNED);
-//				ev.updateExecutionState(ExecutionState.READY);
-//				ev.updateExecutionState(ExecutionState.STARTING);
-//				ev.updateExecutionState(ExecutionState.RUNNING);
-//				ev.updateExecutionState(ExecutionState.FINISHING);
-//				ev.updateExecutionState(ExecutionState.FINISHED);
-//			}
-//			instanceRequestMap.clear();
-//			executionStage = eg.getCurrentExecutionStage();
-//			assertEquals(1, executionStage.getStageNumber());
-//			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
-//			assertEquals(1, instanceRequestMap.size());
-//			assertEquals(8,
-//				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
-//					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
-//		} catch (GraphConversionException e) {
-//			fail(e.getMessage());
-//		} catch (JobGraphDefinitionException e) {
-//			fail(e.getMessage());
-//		} catch (IOException e) {
-//			fail(e.getMessage());
-//		} finally {
-//			if (inputFile1 != null) {
-//				inputFile1.delete();
-//			}
-//			if (inputFile2 != null) {
-//				inputFile2.delete();
-//			}
-//			if (jobID != null) {
-//				try {
-//					LibraryCacheManager.unregister(jobID);
-//				} catch (IOException e) {
-//				}
-//			}
-//		}
-//	}
+	/*
+	 * input1 -> task1 -> output1
+	 * -> task3 -> task4
+	 * input2 -> task2 -> output2
+	 * all subtasks defined
+	 * all instance types defined
+	 * all channel types defined
+	 */
+	@Test
+	public void testConvertJobGraphToExecutionGraph4() {
+
+		File inputFile1 = null;
+		File inputFile2 = null;
+		JobID jobID = null;
+
+		try {
+
+			inputFile1 = ServerTestUtils.createInputFile(0);
+			inputFile2 = ServerTestUtils.createInputFile(0);
+
+			// create job graph
+			final JobGraph jg = new JobGraph("Job Graph 1");
+			jobID = jg.getJobID();
+
+			// input vertex
+			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
+			i1.setFileInputClass(FileLineReader.class);
+			i1.setFilePath(new Path(inputFile1.toURI()));
+			i1.setNumberOfSubtasks(4);
+			i1.setNumberOfSubtasksPerInstance(2);
+			final JobFileInputVertex i2 = new JobFileInputVertex("Input 2", jg);
+			i2.setFileInputClass(FileLineReader.class);
+			i2.setFilePath(new Path(inputFile2.toURI()));
+			i2.setNumberOfSubtasks(4);
+			i2.setNumberOfSubtasksPerInstance(2);
+			// task vertex
+			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
+			t1.setTaskClass(ForwardTask1Input1Output.class);
+			t1.setNumberOfSubtasks(4);
+			t1.setNumberOfSubtasksPerInstance(2);
+			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
+			t2.setTaskClass(ForwardTask1Input1Output.class);
+			t2.setNumberOfSubtasks(4);
+			t2.setNumberOfSubtasksPerInstance(2);
+			final JobTaskVertex t3 = new JobTaskVertex("Task 3", jg);
+			t3.setTaskClass(ForwardTask2Inputs1Output.class);
+			t3.setNumberOfSubtasks(8);
+			t3.setNumberOfSubtasksPerInstance(4);
+			final JobTaskVertex t4 = new JobTaskVertex("Task 4", jg);
+			t4.setTaskClass(ForwardTask1Input2Outputs.class);
+			t4.setNumberOfSubtasks(8);
+			t4.setNumberOfSubtasksPerInstance(4);
+			// output vertex
+			final JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
+			o1.setFileOutputClass(FileLineWriter.class);
+			o1.setFilePath(new Path(new File(ServerTestUtils.getRandomFilename()).toURI()));
+			o1.setNumberOfSubtasks(4);
+			o1.setNumberOfSubtasksPerInstance(2);
+			final JobFileOutputVertex o2 = new JobFileOutputVertex("Output 2", jg);
+			o2.setFileOutputClass(FileLineWriter.class);
+			o2.setFilePath(new Path(new File(ServerTestUtils.getRandomFilename()).toURI()));
+			o2.setNumberOfSubtasks(4);
+			o2.setNumberOfSubtasksPerInstance(2);
+			o1.setVertexToShareInstancesWith(o2);
+
+			// connect vertices
+			i1.connectTo(t1, null, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
+			i2.connectTo(t2, null, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
+			t1.connectTo(t3, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+			t2.connectTo(t3, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+			t3.connectTo(t4, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
+			t4.connectTo(o1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+			t4.connectTo(o2, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+
+			LibraryCacheManager.register(jobID, new String[0]);
+
+			// now convert job graph to execution graph
+			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+
+			// test instance types in ExecutionGraph
+			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
+			ExecutionStage executionStage = eg.getCurrentExecutionStage();
+			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
+			assertEquals(1, instanceRequestMap.size());
+			assertEquals(12,
+				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
+					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
+			// Fake transition to next stage by triggering execution state changes manually
+			final Iterator<ExecutionVertex> it = new ExecutionGraphIterator(eg, eg.getIndexOfCurrentExecutionStage(),
+				true, true);
+
+			while (it.hasNext()) {
+				final ExecutionVertex ev = it.next();
+				ev.updateExecutionState(ExecutionState.SCHEDULED);
+				ev.updateExecutionState(ExecutionState.ASSIGNED);
+				ev.updateExecutionState(ExecutionState.READY);
+				ev.updateExecutionState(ExecutionState.STARTING);
+				ev.updateExecutionState(ExecutionState.RUNNING);
+				ev.updateExecutionState(ExecutionState.FINISHING);
+				ev.updateExecutionState(ExecutionState.FINISHED);
+			}
+			instanceRequestMap.clear();
+			executionStage = eg.getCurrentExecutionStage();
+			assertEquals(1, executionStage.getStageNumber());
+			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
+			assertEquals(1, instanceRequestMap.size());
+			assertEquals(4,
+				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
+					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
+		} catch (GraphConversionException e) {
+			fail(e.getMessage());
+		} catch (JobGraphDefinitionException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			if (inputFile1 != null) {
+				inputFile1.delete();
+			}
+			if (inputFile2 != null) {
+				inputFile2.delete();
+			}
+			if (jobID != null) {
+				try {
+					LibraryCacheManager.unregister(jobID);
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
 
 	/**
 	 * Tests the conversion of a job graph representing a self cross to an execution graph.
