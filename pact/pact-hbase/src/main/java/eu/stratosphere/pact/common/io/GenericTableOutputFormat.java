@@ -14,10 +14,6 @@ import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.io.OutputFormat;
 import eu.stratosphere.pact.common.type.PactRecord;
 
-
-/**
- * 
- */
 public abstract class GenericTableOutputFormat implements OutputFormat<PactRecord>
 {
 	public static final String JT_ID_KEY = "pact.hbase.jtkey";

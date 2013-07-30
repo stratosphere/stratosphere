@@ -7,19 +7,12 @@ import eu.stratosphere.pact.generic.contract.Contract;
 
 
 /**
- *
- *
- * @author Stephan Ewen (stephan.ewen@tu-berlin.de)
+ * A sink for writing to HBase
  */
 public class HBaseDataSink extends GenericDataSink
 {
 	private static final int IDENTIFYIER_LEN = 16;
 	
-	/**
-	 * @param c
-	 * @param input
-	 * @param name
-	 */
 	public HBaseDataSink(Class<? extends GenericTableOutputFormat> c, Contract input, String name)
 	{
 		super(c, input, name);
@@ -31,7 +24,7 @@ public class HBaseDataSink extends GenericDataSink
 			bld.append((char) (rnd.nextInt(26) + 'a'));
 		}
 		
-		setParameter(GenericTableOutputFormat.JOB_ID_KEY, bld.toString());
+		setParameter(GenericTableOutputFormat.JT_ID_KEY, bld.toString());
 		setParameter(GenericTableOutputFormat.JOB_ID_KEY, rnd.nextInt());
 	}
 

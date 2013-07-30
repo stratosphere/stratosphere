@@ -47,6 +47,31 @@
 				<version>2.4</version>
 				<executions>
 
+					<!-- HBaseExample
+					<execution>
+						<id>HBaseExample</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>HBaseExample</classifier>
+
+							<archive>
+								<manifestEntries>
+									<Pact-Assembler-Class>eu.stratosphere.pact.example.hbase.HBaseReadExample</Pact-Assembler-Class>
+								</manifestEntries>
+							</archive>
+
+							<includes>
+								<include>**/hbase/*.class</include>
+								<include>**/util/ConfigUtils.class</include>
+							</includes>
+						</configuration>
+					</execution>
+					-->
+					
+
 					<!-- Connected Components -->
 					<execution>
 						<id>ConnectedComponents</id>

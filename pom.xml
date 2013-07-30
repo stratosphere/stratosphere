@@ -151,7 +151,8 @@
 			<scope>compile</scope>
 		</dependency>
 		-->
-		
+	
+		<!-- Managed dependency required for HBase in pact-hbase  -->
 	  <dependency>
       	<groupId>org.slf4j</groupId>
       	<artifactId>slf4j-api</artifactId>
