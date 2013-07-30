@@ -21,9 +21,10 @@ import java.io.IOException;
 
 import eu.stratosphere.nephele.services.memorymanager.DataInputView;
 import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.pact.common.type.CopyableValue;
 import eu.stratosphere.pact.common.type.Key;
-import eu.stratosphere.pact.common.type.DeNormalizableKey;
+import eu.stratosphere.pact.common.type.NormalizableKey;
 
 /**
  * Integer base type for PACT programs that implements the Key interface.
@@ -31,7 +32,7 @@ import eu.stratosphere.pact.common.type.DeNormalizableKey;
  * 
  * @see eu.stratosphere.pact.common.type.Key
  */
-public class PactShort implements Key, DeNormalizableKey, CopyableValue<PactShort> {
+public class PactShort implements Key, NormalizableKey, CopyableValue<PactShort> {
 	
 	private short value;
 
@@ -120,42 +121,29 @@ public class PactShort implements Key, DeNormalizableKey, CopyableValue<PactShor
 	}
 
 	@Override
-	public void copyNormalizedKey(byte[] target, int offset, int len) {
+	public void copyNormalizedKey(MemorySegment target, int offset, int len) {
 		if (len == 2) {
 			// default case, full normalized key
 			int highByte = ((value >>> 8) & 0xff);
 			highByte -= Byte.MIN_VALUE;
-			target[offset    ] = (byte) highByte;
-			target[offset + 1] = (byte) ((value) & 0xff);
+			target.put(offset, (byte) highByte);
+			target.put(offset + 1, (byte) ((value) & 0xff));
 		}
 		else if (len <= 0) {
 		}
 		else if (len == 1) {
 			int highByte = ((value >>> 8) & 0xff);
 			highByte -= Byte.MIN_VALUE;
-			target[offset] = (byte) highByte;
+			target.put(offset, (byte) highByte);
 		}
 		else {
 			int highByte = ((value >>> 8) & 0xff);
 			highByte -= Byte.MIN_VALUE;
-			target[offset    ] = (byte) highByte;
-			target[offset + 3] = (byte) ((value) & 0xff);
+			target.put(offset, (byte) highByte);
+			target.put(offset + 1, (byte) ((value) & 0xff));
 			for (int i = 2; i < len; i++) {
-				target[offset + i] = 0;
+				target.put(offset + i, (byte) 0);
 			}
-		}
-	}
-	
-	@Override
-	public void readFromNormalizedKey(byte[] source, int offset, int len) {
-		if (len == 2) {
-			// the only allowed case
-			value = 0;
-			value |= (((source[offset   ] - Byte.MIN_VALUE) & 0xFF) << 8);
-			value |= ((source[offset + 1] & 0xFF));
-		}
-		else {
-			throw new IllegalArgumentException("We can only read from normalized keys if the have full length.");
 		}
 	}
 
