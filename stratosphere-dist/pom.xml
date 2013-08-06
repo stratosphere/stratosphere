@@ -134,6 +134,7 @@
 										<prefix>/usr/share/${project.artifactId}/bin</prefix>
 										<user>root</user>
 										<group>root</group>
+										<filemode>0755</filemode>
 									</mapper>
 								</data>
 								<data>
@@ -206,6 +207,12 @@
 									<type>link</type>
 									<linkName>/usr/share/${project.artifactId}/conf</linkName>
 									<linkTarget>/etc/${project.artifactId}/conf</linkTarget>
+									<symlink>true</symlink>
+								</data>
+								<data>
+									<type>link</type>
+									<linkName>/usr/share/${project.artifactId}/log</linkName>
+									<linkTarget>/var/log/${project.artifactId}</linkTarget>
 									<symlink>true</symlink>
 								</data>
 							</dataSet>
