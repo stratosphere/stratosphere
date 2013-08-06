@@ -31,8 +31,6 @@ if [ -f /etc/default/nephele ] ; then
   . /etc/default/nephele
 fi
 
-# . $HADOOP_HOME/bin/hadoop-config.sh
-
 
 if [ "$NEPHELE_PID_DIR" = "" ]; then
 	NEPHELE_PID_DIR=/tmp
@@ -41,14 +39,13 @@ fi
 if [ "$NEPHELE_IDENT_STRING" = "" ]; then
 	NEPHELE_IDENT_STRING="$USER"
 fi
-pid_file_m=$NEPHELE_PID_DIR/nephele-$NEPHELE_IDENT_STRING-taskmanager.pid
 
 NEPHELE_HOME=/usr/share/stratosphere-dist
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON_SCRIPT=$NEPHELE_HOME/bin/nephele-taskmanager.sh
 NAME=nephele-taskmanager
 DESC="Nephele taskmanager daemon"
-PID_FILE=$pid_file_m
+PID_FILE=$NEPHELE_PID_DIR/nephele-$NEPHELE_IDENT_STRING-taskmanager.pid
 
 test -x $DAEMON_SCRIPT || exit 1
 
