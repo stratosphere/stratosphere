@@ -33,7 +33,6 @@ import eu.stratosphere.nephele.instance.InstanceManager;
 import eu.stratosphere.nephele.io.RecordReader;
 import eu.stratosphere.nephele.io.RecordWriter;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobGraphDefinitionException;
 import eu.stratosphere.nephele.jobgraph.JobInputVertex;
@@ -122,7 +121,7 @@ public class QueueSchedulerTest {
 		outputVertex.setNumberOfSubtasks(1);
 
 		try {
-			inputVertex.connectTo(outputVertex, channelType, CompressionLevel.NO_COMPRESSION);
+			inputVertex.connectTo(outputVertex, channelType);
 		} catch (JobGraphDefinitionException e) {
 			fail(StringUtils.stringifyException(e));
 		}

@@ -38,7 +38,6 @@ import eu.stratosphere.nephele.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.io.library.FileLineReader;
 import eu.stratosphere.nephele.io.library.FileLineWriter;
 import eu.stratosphere.nephele.jobgraph.JobFileInputVertex;
@@ -211,8 +210,8 @@ public class JobManagerITCase {
 			o1.setVertexToShareInstancesWith(i1);
 
 			// connect vertices
-			i1.connectTo(t1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
-			t1.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+			i1.connectTo(t1, ChannelType.INMEMORY);
+			t1.connectTo(o1, ChannelType.INMEMORY);
 
 			// add jar
 			jg.addJar(new Path(new File(ServerTestUtils.getTempDir() + File.separator + exceptionClassName + ".jar")
@@ -299,8 +298,8 @@ public class JobManagerITCase {
 			o1.setVertexToShareInstancesWith(i1);
 
 			// connect vertices
-			i1.connectTo(t1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
-			t1.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+			i1.connectTo(t1, ChannelType.INMEMORY);
+			t1.connectTo(o1, ChannelType.INMEMORY);
 
 			// add jar
 			jg.addJar(new Path(new File(ServerTestUtils.getTempDir() + File.separator + runtimeExceptionClassName
@@ -387,7 +386,7 @@ public class JobManagerITCase {
 
 			// connect vertices
 			try {
-				i1.connectTo(o1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION);
+				i1.connectTo(o1, ChannelType.NETWORK);
 			} catch (JobGraphDefinitionException e) {
 				e.printStackTrace();
 			}
@@ -485,9 +484,9 @@ public class JobManagerITCase {
 			o1.setVertexToShareInstancesWith(i1);
 
 			// connect vertices
-			i1.connectTo(t1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
-			i1.connectTo(t1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION, DistributionPattern.BIPARTITE);
-			t1.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+			i1.connectTo(t1, ChannelType.INMEMORY, DistributionPattern.POINTWISE);
+			i1.connectTo(t1, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
+			t1.connectTo(o1, ChannelType.INMEMORY);
 
 			// add jar
 			jg.addJar(new Path(jarFile.toURI()));
@@ -560,7 +559,7 @@ public class JobManagerITCase {
 			o1.setVertexToShareInstancesWith(i1);
 
 			// connect vertices
-			i1.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+			i1.connectTo(o1, ChannelType.INMEMORY);
 
 			// add jar
 			jg.addJar(new Path(jarFile.toURI()));
@@ -662,9 +661,9 @@ public class JobManagerITCase {
 			u1.setVertexToShareInstancesWith(o1);
 
 			// connect vertices
-			i1.connectTo(u1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION, DistributionPattern.POINTWISE);
-			i2.connectTo(u1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
-			u1.connectTo(o1, ChannelType.INMEMORY, CompressionLevel.NO_COMPRESSION);
+			i1.connectTo(u1, ChannelType.INMEMORY, DistributionPattern.POINTWISE);
+			i2.connectTo(u1, ChannelType.INMEMORY );
+			u1.connectTo(o1, ChannelType.INMEMORY);
 
 			// add jar
 			jg.addJar(new Path(jarFile.toURI()));
@@ -812,9 +811,9 @@ public class JobManagerITCase {
 			f1.setVertexToShareInstancesWith(o1);
 
 			// connect vertices
-			i1.connectTo(f1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION, DistributionPattern.BIPARTITE);
-			i2.connectTo(f1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION, DistributionPattern.BIPARTITE);
-			f1.connectTo(o1, ChannelType.NETWORK, CompressionLevel.NO_COMPRESSION, DistributionPattern.BIPARTITE);
+			i1.connectTo(f1, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
+			i2.connectTo(f1, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
+			f1.connectTo(o1, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
 
 			// add jar
 			jg.addJar(new Path(jarFile.toURI()));

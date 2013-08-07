@@ -20,12 +20,9 @@ import java.io.IOException;
 import eu.stratosphere.nephele.event.task.AbstractEvent;
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
 import eu.stratosphere.nephele.io.channels.Buffer;
-import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.channels.bytebuffered.AbstractByteBufferedOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.ByteBufferedChannelCloseEvent;
 import eu.stratosphere.nephele.io.channels.bytebuffered.ByteBufferedOutputChannelBroker;
-import eu.stratosphere.nephele.io.compression.CompressionException;
-import eu.stratosphere.nephele.io.compression.Compressor;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.AbstractOutputChannelForwarder;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.OutputChannelForwardingChain;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ReceiverNotFoundEvent;
@@ -219,15 +216,5 @@ final class RuntimeOutputChannelBroker extends AbstractOutputChannelForwarder im
 
 			this.forwardingChain.pushEnvelope(ephemeralTransferEnvelope);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Compressor getCompressor() throws CompressionException {
-
-		// Delegate call to the gate context
-		return this.outputGateContext.getCompressor();
 	}
 }

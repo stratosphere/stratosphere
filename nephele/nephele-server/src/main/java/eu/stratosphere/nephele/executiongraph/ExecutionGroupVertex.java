@@ -34,7 +34,6 @@ import eu.stratosphere.nephele.instance.DummyInstance;
 import eu.stratosphere.nephele.instance.InstanceType;
 import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.JobVertexID;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.InputSplit;
@@ -396,7 +395,6 @@ public final class ExecutionGroupVertex {
 	 */
 	ExecutionGroupEdge wireTo(final ExecutionGroupVertex groupVertex, final int indexOfInputGate,
 			final int indexOfOutputGate, final ChannelType channelType, final boolean userDefinedChannelType,
-			final CompressionLevel compressionLevel, final boolean userDefinedCompressionLevel,
 			final DistributionPattern distributionPattern, final boolean isBroadcast) throws GraphConversionException {
 
 		try {
@@ -410,7 +408,7 @@ public final class ExecutionGroupVertex {
 		}
 
 		final ExecutionGroupEdge edge = new ExecutionGroupEdge(this, indexOfOutputGate, groupVertex, indexOfInputGate,
-			channelType, userDefinedChannelType, compressionLevel, userDefinedCompressionLevel, distributionPattern,
+			channelType, userDefinedChannelType, distributionPattern,
 			isBroadcast);
 
 		this.forwardLinks.add(edge);

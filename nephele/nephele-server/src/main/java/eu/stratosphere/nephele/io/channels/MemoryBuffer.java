@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 import eu.stratosphere.nephele.services.memorymanager.MemorySegment;

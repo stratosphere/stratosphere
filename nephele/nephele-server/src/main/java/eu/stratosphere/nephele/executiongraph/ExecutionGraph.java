@@ -44,7 +44,6 @@ import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.AbstractJobInputVertex;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
 import eu.stratosphere.nephele.jobgraph.JobEdge;
@@ -232,9 +231,6 @@ public class ExecutionGraph implements ExecutionListener {
 				final ExecutionGroupEdge edge = groupVertex.getForwardEdge(i);
 				if (edge.isChannelTypeUserDefined()) {
 					edge.changeChannelType(edge.getChannelType());
-				}
-				if (edge.isCompressionLevelUserDefined()) {
-					edge.changeCompressionLevel(edge.getCompressionLevel());
 				}
 
 				// Create edges between execution vertices
@@ -432,19 +428,12 @@ public class ExecutionGraph implements ExecutionListener {
 					channelType = ChannelType.NETWORK;
 				}
 				// Use NO_COMPRESSION as default compression level if nothing else is defined by the user
-				CompressionLevel compressionLevel = edge.getCompressionLevel();
-				boolean userDefinedCompressionLevel = true;
-				if (compressionLevel == null) {
-					userDefinedCompressionLevel = false;
-					compressionLevel = CompressionLevel.NO_COMPRESSION;
-				}
 
 				final DistributionPattern distributionPattern = edge.getDistributionPattern();
 
 				// Connect the corresponding group vertices and copy the user settings from the job edge
 				final ExecutionGroupEdge groupEdge = sgv.wireTo(tgv, edge.getIndexOfInputGate(), i, channelType,
-					userDefinedChannelType, compressionLevel, userDefinedCompressionLevel, distributionPattern,
-					isBroadcast);
+					userDefinedChannelType,distributionPattern, isBroadcast);
 
 				final ExecutionGate outputGate = new ExecutionGate(new GateID(), sev, groupEdge, false);
 				sev.insertOutputGate(i, outputGate);

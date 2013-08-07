@@ -23,10 +23,6 @@ import eu.stratosphere.nephele.io.channels.AbstractInputChannel;
 import eu.stratosphere.nephele.io.channels.Buffer;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.bytebuffered.AbstractByteBufferedInputChannel;
-import eu.stratosphere.nephele.io.compression.CompressionBufferProvider;
-import eu.stratosphere.nephele.io.compression.CompressionException;
-import eu.stratosphere.nephele.io.compression.CompressionLoader;
-import eu.stratosphere.nephele.io.compression.Decompressor;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferAvailabilityListener;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.BufferProvider;
 import eu.stratosphere.nephele.taskmanager.bufferprovider.LocalBufferPool;
@@ -45,8 +41,6 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 	private final TransferEnvelopeDispatcher transferEnvelopeDispatcher;
 
 	private final InputGate<? extends Record> inputGate;
-
-	private Decompressor decompressor = null;
 
 	RuntimeInputGateContext(final String taskName, final TransferEnvelopeDispatcher transferEnvelopeDispatcher,
 			final InputGate<? extends Record> inputGate) {
@@ -212,23 +206,4 @@ final class RuntimeInputGateContext implements BufferProvider, InputGateContext,
 		return this.localBufferPool.registerBufferAvailabilityListener(bufferAvailabilityListener);
 	}
 
-	/**
-	 * Returns (and if necessary previously creates) the decompressor to be used by the attached input channels.
-	 * 
-	 * @return the decompressor to be used by the attached input channels or <code>null</code> if no decompression is
-	 *         necessary
-	 * @throws CompressionException
-	 *         thrown if an error occurs while creating the decompressor
-	 */
-	Decompressor getDecompressor() throws CompressionException {
-
-		if (this.decompressor == null) {
-			this.decompressor = CompressionLoader.getDecompressorByCompressionLevel(
-				this.inputGate.getCompressionLevel(), new CompressionBufferProvider(this, true));
-		} else {
-			this.decompressor.increaseChannelCounter();
-		}
-
-		return this.decompressor;
-	}
 }

@@ -973,7 +973,7 @@ public final class ExecutionVertex {
 				cdd.add(new ChannelDeploymentDescriptor(ee.getOutputChannelID(), ee.getInputChannelID()));
 			}
 
-			ogd.add(new GateDeploymentDescriptor(eg.getGateID(), eg.getChannelType(), eg.getCompressionLevel(), cdd));
+			ogd.add(new GateDeploymentDescriptor(eg.getGateID(), eg.getChannelType(), cdd));
 		}
 
 		final SerializableArrayList<GateDeploymentDescriptor> igd = new SerializableArrayList<GateDeploymentDescriptor>(
@@ -990,7 +990,7 @@ public final class ExecutionVertex {
 				cdd.add(new ChannelDeploymentDescriptor(ee.getOutputChannelID(), ee.getInputChannelID()));
 			}
 
-			igd.add(new GateDeploymentDescriptor(eg.getGateID(), eg.getChannelType(), eg.getCompressionLevel(), cdd));
+			igd.add(new GateDeploymentDescriptor(eg.getGateID(), eg.getChannelType(), cdd));
 		}
 
 		final TaskDeploymentDescriptor tdd = new TaskDeploymentDescriptor(this.executionGraph.getJobID(),
