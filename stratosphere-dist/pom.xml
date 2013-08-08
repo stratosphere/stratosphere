@@ -127,6 +127,39 @@
 							<controlDir>${basedir}/src/deb/control</controlDir>
 							<dataSet>
 								<data>
+									<src>${basedir}/src/deb/bin/nephele-jobmanager</src>
+									<type>file</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/etc/init.d</prefix>
+										<user>root</user>
+										<group>root</group>
+										<filemode>0755</filemode>
+									</mapper>
+								</data>
+								<data>
+									<src>${basedir}/src/deb/bin/nephele-taskmanager</src>
+									<type>file</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/etc/init.d</prefix>
+										<user>root</user>
+										<group>root</group>
+										<filemode>0755</filemode>
+									</mapper>
+								</data>
+								<data>
+									<src>${basedir}/src/deb/bin/pact-webfrontend</src>
+									<type>file</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/etc/init.d</prefix>
+										<user>root</user>
+										<group>root</group>
+										<filemode>0755</filemode>
+									</mapper>
+								</data>
+								<data>
 									<src>${project.build.directory}/${project.artifactId}-${project.version}-bin/stratosphere-${project.version}/bin</src>
 									<type>directory</type>
 									<mapper>

@@ -37,6 +37,7 @@ case "$1" in
         if [ -z "$2" ]; then
             chown -R stratosphere:ozone /var/log/stratosphere-dist
         fi
+	sed -i s'#./resources/web-docs#/usr/share/stratosphere-dist/resources/web-docs#' /usr/share/stratosphere-dist/conf/pact-user.xml
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
