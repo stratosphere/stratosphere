@@ -33,6 +33,7 @@ import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.AbstractJobOutputVertex;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
+import eu.stratosphere.nephele.jobgraph.DummyJobVertex;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobGraphDefinitionException;
 import eu.stratosphere.nephele.jobgraph.JobInputVertex;
@@ -126,8 +127,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	private int iterationIdEnumerator = 1;
 	
 	private IterationPlanNode currentIteration;	// hack: as long as no nesting is possible, remember the enclosing iteration
-	
-	private boolean visitedSolutionSet = false; // hack to avoid visiting the SolutionSetPlanNode more than once, since no vertex is created
 	
 	// ------------------------------------------------------------------------
 
@@ -232,7 +231,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	@Override
 	public boolean preVisit(PlanNode node) {
 		// check if we have visited this node before. in non-tree graphs, this happens
-		if (this.vertices.containsKey(node) || this.chainedTasks.containsKey(node) || visitedSolutionSet) {
+		if (this.vertices.containsKey(node) || this.chainedTasks.containsKey(node)) {
 			// return false to prevent further descend
 			return false;
 		}
@@ -307,8 +306,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			}
 			else if (node instanceof SolutionSetPlanNode) {
 				// skip the solution set place holder. we create the head at the workset place holder
-				visitedSolutionSet = true;
-				vertex = null;
+				vertex = DummyJobVertex.getInstance(this.jobGraph);
 			}
 			else if (node instanceof WorksetPlanNode) {
 				// create the iteration head here
