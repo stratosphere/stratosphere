@@ -18,6 +18,7 @@ package eu.stratosphere.pact.test.iterative;
 import java.io.BufferedReader;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
