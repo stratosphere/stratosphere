@@ -470,7 +470,11 @@ public final class LibraryCacheManager {
 
 		final LibraryCacheManager lib = get();
 
-		return lib.getRequiredJarFilesInternal(id);
+		String[] r = lib.getRequiredJarFilesInternal(id);
+		if(r == null) {
+			return new String[0];
+		}
+		return r;
 	}
 
 	/**

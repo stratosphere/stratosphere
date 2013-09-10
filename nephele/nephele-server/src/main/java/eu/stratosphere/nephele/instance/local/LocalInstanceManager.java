@@ -140,7 +140,7 @@ public class LocalInstanceManager implements InstanceManager {
 
 		this.instanceTypeDescriptionMap = new SerializableHashMap<InstanceType, InstanceTypeDescription>();
 
-		this.localTaskManagerThread = new LocalTaskManagerThread();
+		this.localTaskManagerThread = new LocalTaskManagerThread("Local Taskmanager IO Loop");
 		this.localTaskManagerThread.start();
 	}
 
@@ -399,5 +399,10 @@ public class LocalInstanceManager implements InstanceManager {
 	public void cancelPendingRequests(final JobID jobID) {
 
 		// The local instance manager does not support pending requests, so nothing to do here
+	}
+
+	@Override
+	public int getNumberOfTaskTrackers() {
+		return (this.localInstance == null) ? 0 : 1; // this instance manager can have at most one TaskTracker
 	}
 }
