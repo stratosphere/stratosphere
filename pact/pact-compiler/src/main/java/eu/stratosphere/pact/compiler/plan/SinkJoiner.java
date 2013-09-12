@@ -76,9 +76,14 @@ public class SinkJoiner extends TwoInputNode {
 		
 		List<UnclosedBranchDescriptor> result1 = new ArrayList<UnclosedBranchDescriptor>();
 		List<UnclosedBranchDescriptor> result2 = new ArrayList<UnclosedBranchDescriptor>();
-		result1.addAll(getFirstPredecessorNode().openBranches);
-		result2.addAll(getSecondPredecessorNode().openBranches);
-
+		
+		if(getFirstPredecessorNode().openBranches != null) {
+			result1.addAll(getFirstPredecessorNode().openBranches);
+		}
+		if(getSecondPredecessorNode().openBranches != null) {
+			result2.addAll(getSecondPredecessorNode().openBranches);
+		}
+		
 		this.openBranches = mergeLists(result1, result2);
 	}
 
