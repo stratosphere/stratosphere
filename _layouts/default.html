@@ -52,6 +52,14 @@
 
 	<script src="http://code.jquery.com/jquery.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
-
+	
+	{% if page.smooth_scroll %}
+	<script src="/js/jquery.smooth-scroll.js"></script>
+	<script src="/js/inner_page.js"></script>
+	<script type="text/javascript">
+	$('body').scrollspy({ target: '#navbar-inner' });
+	</script>
+	{% endif %}
+	
 </body>
 </html>
