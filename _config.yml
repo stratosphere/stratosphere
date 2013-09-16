@@ -1,0 +1,6 @@
+name:        "Stratosphere | Above the Clouds"
+markdown:    redcarpet
+pygments:    true
+timezone:    "Europe/Berlin"
+safe:        true
+lsi:         false

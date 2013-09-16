@@ -1,0 +1,92 @@
+/*****************************************************************************/
+/* Common
+/*****************************************************************************/
+
+/* Global Reset */
+body {
+	padding-top: 50px;
+}
+
+/*****************************************************************************/
+/* Home
+/*****************************************************************************/
+.bs-footer {
+	text-align: left;
+}
+
+.bs-footer {
+	border-top: 1px solid #E5E5E5;
+	color: #777777;
+	margin-top: 100px;
+	padding-bottom: 30px;
+	padding-top: 40px;
+	text-align: center;
+}
+
+.footer-links {
+	margin: 10px 0;
+	padding-left: 0;
+}
+
+.footer-links li:first-child {
+	padding-left: 0;
+}
+
+.footer-links li {
+	display: inline;
+	padding: 0 2px;
+}
+
+/*****************************************************************************/
+/* Home
+/*****************************************************************************/
+ul.posts {
+	list-style-type: none;
+	margin-bottom: 2em;
+}
+
+ul.posts li {
+	line-height: 1.75em;
+}
+
+ul.posts span {
+	color: #aaa;
+	font-family: Monaco, "Courier New", monospace;
+	font-size: 80%;
+}
+
+/*****************************************************************************/
+/* Posts
+/*****************************************************************************/
+
+/* standard */
+.post pre {
+	border: 1px solid #ddd;
+	background-color: #eef;
+	padding: 0 .4em;
+}
+
+.post ul,.post ol {
+	margin-left: 1.35em;
+}
+
+.post code {
+	border: 1px solid #ddd;
+	background-color: #eef;
+	padding: 0 .2em;
+}
+
+.post pre code {
+	border: none;
+}
+
+/* terminal */
+.post pre.terminal {
+	border: 1px solid #000;
+	background-color: #333;
+	color: #FFF;
+}
+
+.post pre.terminal code {
+	background-color: #333;
+}
