@@ -885,12 +885,12 @@ public class ExecutionGraphTest {
 			}
 			instanceRequestMap.clear();
 			executionStage = eg.getCurrentExecutionStage();
-			assertEquals(1, executionStage.getStageNumber());
-			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
+			assertEquals(null, executionStage); // as the documentation of getCurrentExecutionStage() states, the ExecutionStage is null if the job has finished
+			/*executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
 			assertEquals(1, instanceRequestMap.size());
 			assertEquals(4,
 				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
-					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
+					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME))); */
 		} catch (GraphConversionException e) {
 			fail(e.getMessage());
 		} catch (JobGraphDefinitionException e) {
