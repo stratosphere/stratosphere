@@ -6,6 +6,6 @@ title: News
 
 {% for page in site.posts %}
 <li>
-    <a href="{{ page.url }}">{{ page.title }}</a>
+    <a href="{{ site.baseurl }}{{ page.url }}">{{ page.title }}</a>
 </li>
 {% endfor %}

@@ -3,7 +3,7 @@ layout: inner_text
 title: Contact 
 ---
 
-If you have any troubles or questions about the system itself, please see our [Support page](/support).
+If you have any troubles or questions about the system itself, please see our [Support page]({{ site.baseurl }}/support).
 
 <p>
 	For <strong>project management issues, organizational questions, and collaboration requests</strong> please contact the speaker of the Stratosphere project:
