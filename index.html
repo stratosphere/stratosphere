@@ -8,11 +8,46 @@ title:  Above the Clouds
 
 <div class="container">
 
-	<h1>Bootstrap starter template</h1>
+	<div id="carousel-homepage" class="carousel slide">
+	  
+	  <!-- Indicators -->
+	  <ol class="carousel-indicators">
+	    <li data-target="#carousel-homepage" data-slide-to="0" class="active"></li>
+	    <li data-target="#carousel-homepage" data-slide-to="1"></li>
+	    <li data-target="#carousel-homepage" data-slide-to="2"></li>
+	  </ol>
+	
+	  <!-- Wrapper for slides -->
+	  <div class="carousel-inner">
+	    <div class="item active">
+	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <div class="carousel-caption">
+	        Foobar
+	      </div>
+	    </div>
+	    <div class="item">
+	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <div class="carousel-caption">
+	        Foobar
+	      </div>
+	    </div>
+	    <div class="item">
+	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <div class="carousel-caption">
+	        Foobar
+	      </div>
+	    </div>
+	  </div>
+	
+	  <!-- Controls -->
+	  <a class="left carousel-control" href="#carousel-homepage" data-slide="prev">
+	    <span class="icon-prev"></span>
+	  </a>
+	  <a class="right carousel-control" href="#carousel-homepage" data-slide="next">
+	    <span class="icon-next"></span>
+	  </a>
+	</div>
 
-	<p class="lead">
-		Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.
-	</p>
 
 	<ul class="posts">
 		{% for post in site.posts %}
