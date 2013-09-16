@@ -1,0 +1,18 @@
+---
+layout: post
+title:  'Stratosphere Demo Accepted for ICDE 2013'
+date:   2012-10-15 14:57:18
+categories: publications news
+---
+
+
+ <p>Our demo submission<br />
+<strong><cite>"Peeking into the Optimization of Data Flow Programs with MapReduce-style UDFs"</cite></strong><br />
+has been accepted for ICDE 2013 in Brisbane, Australia.<br />
+The demo illustrates the contributions of our VLDB 2012 paper <cite>"Opening the Black Boxes in Data Flow Optimization"</cite> <a href="https://www.stratosphere.eu/sites/default/files/papers/openingTheBlackBoxes_12.pdf">[pdf]</a>.</p>
+<p>Visit our poster, enjoy the demo, and talk to us if you are going to attend ICDE 2013.</p>
+<p><strong>Abstract:</strong><br />
+Data flows are a popular abstraction to define data-intensive processing tasks. In order to support a wide range of use cases, many data processing systems feature MapReduce-style user-defined functions (UDFs). In contrast to UDFs as known from relational DBMS, MapReduce-style UDFs have less strict templates. These templates do not alone provide all the information needed to decide whether they can be reordered with relational operators and other UDFs. However, it is well-known that reordering operators such as filters, joins, and aggregations can yield runtime improvements by orders of magnitude.<br />
+We demonstrate an optimizer for data flows that is able to reorder operators with MapReduce-style UDFs written in an imperative language. Our approach leverages static code analysis to extract information from UDFs which is used to reason about the reorderbility of UDF operators. This information is sufficient to enumerate a large fraction of the search space covered by conventional RDBMS optimizers including filter and aggregation push-down, bushy join orders, and choice of physical execution strategies based on interesting properties.<br />
+We demonstrate our optimizer and a job submission client that allows users to peek step-by-step into each phase of the optimization process: the static code analysis of UDFs, the enumeration of reordered candidate data flows, the generation of physical execution plans, and their parallel execution. For the demonstration, we provide a selection of relational and non-relational data flow programs which highlight the salient features of our approach.</p>
+
