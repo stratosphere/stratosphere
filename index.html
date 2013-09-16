@@ -48,11 +48,16 @@ title:  Above the Clouds
 	  </a>
 	</div>
 
-
-	<ul class="posts">
-		{% for post in site.posts %}
-		<li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li> {% endfor %}
-	</ul>
+	<div class="row">
+	{% for post in site.posts limit 3 %} 
+		<div class="col-md-4">
+			<h4><a href="{{ post.url }}">{{ post.short_title }}</a></h4>
+			<span>{{ post.date | date_to_string }}</span>
+			<p>{{ post.teaser_text }}</p>
+			<a href="{{ post.url }}">Read more</a>
+		</div>
+	{% endfor %}
+	</div>
 
 </div>
 <!-- /.container -->
