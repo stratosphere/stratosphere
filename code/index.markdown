@@ -1,13 +1,12 @@
 ---
 layout: inner_text
-title: Downloads 
+title: Try It Out 
 ---
 
-### Development Versions
+
+## Building Stratosphere from scratch
 
 We keep our development version always as stable as possible, so it's a viable option if you want to start using the system.
-
-#### Building Stratosphere from its sources
 
 Get the source:
 You can download the code here: [Download zip](https://github.com/dimalabs/ozone/archive/master.zip) or use Git, if you want to track our changes:
@@ -31,8 +30,28 @@ The directory structure here looks like the contents of an official release dist
 
 Please refer to our [README](https://github.com/dimalabs/ozone/blob/master/README.md) for further instructions on running your first code.
 
-### Releases
+## Releases
 
 There are currently no official releases of Stratosphere. Our most recent development version is the best you can get.
+
+## Support
+
+Don't hesitate to ask if you have any questions.
+
+The best way to get fast and good help is to [open an issue on github](https://github.com/dimalabs/ozone/issues/new).
+
+<br>
+ <div class="text-center">
+<a href="https://github.com/dimalabs/ozone/issues/new" class="btn btn-primary">Open an Issue on Github</a>
+</div>
+<hr>
+
+<!--
+If you don't want to register on github, we also have a users mailing list:<br>
+	<a href="mailto:users@stratosphere.tu-berlin.de">users@stratosphere.tu-berlin.de</a>
+<p>
+	<strong>Prior to usage, you need to register at the mailing list:</strong><br>
+	<a href="https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users">users@stratosphere.tu-berlin.de registration</a>
+</p> -->
 
 
