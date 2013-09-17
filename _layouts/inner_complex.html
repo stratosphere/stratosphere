@@ -3,14 +3,7 @@ layout:        default
 smooth_scroll: true
 ---
 
-<!-- call to action jumbotron -->
-<div class="jumbotron">
-	<div class="container">
-		<h1>{{ page.title }}</h1>
-		{% if page.subtitle %}<h2>{{ page.subtitle }}</h2>{% endif %}
-		{% if page.teaser_text %}<p>{{ page.teaser_text }}</p>{% endif %}
-	</div>
-</div>
+{% if page.jumbotron %}{% include jumbotron.html jumbotron=page.jumbotron %}{% endif %}
 
 <div class="container">
 
@@ -22,7 +15,7 @@ smooth_scroll: true
 		</ul>
 	</div>
 	
-	<div>
+	<div data-offset='100' data-spy="scroll" data-target="#navbar-inner">
 		{{ content }}
 	</div>
 	

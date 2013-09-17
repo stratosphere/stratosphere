@@ -1,10 +1,13 @@
 --- 
 layout: default 
 title:  Above the Clouds
+jumbotron:
+  title:       Workshop teaser title!
+  text:        This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.
+  link:        { url: "events/2013/workshop.html", text: "Learn more &raquo;" }
 ---
 
-
-{% include jumbotron.html %}
+{% if page.jumbotron %}{% include jumbotron.html jumbotron=page.jumbotron %}{% endif %}
 
 <div class="container">
 

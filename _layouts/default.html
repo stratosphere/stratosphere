@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="{{ site.baseurl }}/css/syntax.css" />
 
 <!-- Bootstrap core CSS -->
-<link href="{{ site.baseurl }}/css/bootstrap.min.css" rel="stylesheet" />
+<link href="{{ site.baseurl }}/css/bootstrap.css" rel="stylesheet" />
 <link href="{{ site.baseurl }}/css/main.css" rel="stylesheet" />
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -42,8 +42,6 @@
 
 <body>
 
-
-
 	{% include header.html %}
 	
 	{{ content }}
@@ -55,10 +53,7 @@
 	
 	{% if page.smooth_scroll %}
 	<script src="{{ site.baseurl }}/js/jquery.smooth-scroll.js"></script>
-	<script src="{{ site.baseurl }}/js/inner_page.js"></script>
-	<script type="text/javascript">
-	$('body').scrollspy({ target: '#navbar-inner' });
-	</script>
+	<script src="{{ site.baseurl }}/js/subnav.js"></script>
 	{% endif %}
 	
 </body>

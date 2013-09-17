@@ -1,10 +1,10 @@
-<!-- call to action jumbotron -->
 <div class="jumbotron">
 	<div class="container">
-		<h1>Workshop teaser title!</h1>
-		<p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-		<p>
-			<a href="{{ site.baseurl }}/workshop" class="btn btn-primary btn-lg">Learn more &raquo;</a>
-		</p>
+		<h1>{{ include.jumbotron.title }}</h1>
+		{% if include.jumbotron.subtitle %}<h2>{{ include.jumbotron.subtitle }}</h2>{% endif %}
+		{% if include.jumbotron.text %}<p>{{ include.jumbotron.text }}</p>{% endif %}
+		{% if include.jumbotron.link %}<p>
+			<a href="{{ site.baseurl }}/{{ include.jumbotron.link.url }}" class="btn btn-primary btn-lg">{{ include.jumbotron.link.text }}</a>
+		</p>{% endif %}
 	</div>
 </div>
