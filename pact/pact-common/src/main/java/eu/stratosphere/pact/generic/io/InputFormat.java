@@ -123,12 +123,12 @@ public interface InputFormat<OT, T extends InputSplit> {
 	public abstract boolean reachedEnd() throws IOException;
 	
 	/**
-	 * Tries to read the next pair from the input. By using the return value invalid records in the
+	 * Tries to read the next record from the input. By using the return value invalid records in the
 	 * input can be skipped.
 	 * <p>
 	 * When this method is called, the input format it guaranteed to be opened.
 	 * 
-	 * @param record Record into which the next key / value pair will be stored.
+	 * @param record Type to store the next record.
 	 * @return Indicates whether the record could be successfully read. A return value of <i>true</i>
 	 *         indicates that the read was successful, a return value of false indicates that the
 	 *         current record was not read successfully and should be skipped.
