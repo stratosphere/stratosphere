@@ -3,15 +3,8 @@ layout: inner_text
 title: Contact 
 ---
 
-<p>
-	For <strong>questions regarinding the usage of the system, development issues, or technical questions</strong> contact us via the users mailing list:<br>
-	<a href="mailto:users@stratosphere.tu-berlin.de">users@stratosphere.tu-berlin.de</a>
-</p>
-<p>
-	<strong>Prior to usage, you need to register at the mailing list:</strong><br>
-	<a href="https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users">users@stratosphere.tu-berlin.de registration</a>
-</p>
-<hr>
+If you have any troubles or questions about the system itself, please see our [Support page]({{ site.baseurl }}/code).
+
 <p>
 	For <strong>project management issues, organizational questions, and collaboration requests</strong> please contact the speaker of the Stratosphere project:
 </p>

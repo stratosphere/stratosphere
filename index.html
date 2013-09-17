@@ -20,19 +20,19 @@ title:  Above the Clouds
 	  <!-- Wrapper for slides -->
 	  <div class="carousel-inner">
 	    <div class="item active">
-	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
 	      <div class="carousel-caption">
 	        Foobar
 	      </div>
 	    </div>
 	    <div class="item">
-	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
 	      <div class="carousel-caption">
 	        Foobar
 	      </div>
 	    </div>
 	    <div class="item">
-	      <img src="/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
 	      <div class="carousel-caption">
 	        Foobar
 	      </div>
@@ -51,10 +51,10 @@ title:  Above the Clouds
 	<div class="row">
 	{% for post in site.posts limit 3 %} 
 		<div class="col-md-4">
-			<h4><a href="{{ post.url }}">{{ post.short_title }}</a></h4>
+			<h4><a href="{{ site.baseurl }}{{ post.url }}">{{ post.short_title }}</a></h4>
 			<span>{{ post.date | date_to_string }}</span>
 			<p>{{ post.teaser_text }}</p>
-			<a href="{{ post.url }}">Read more</a>
+			<a href="{{ site.baseurl }}{{ post.url }}">Read more</a>
 		</div>
 	{% endfor %}
 	</div>
