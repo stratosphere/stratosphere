@@ -7,14 +7,27 @@ body {
 	padding-top: 50px;
 }
 
-/* fixups */
-.nav-pills > li.active > a,
-.nav-pills > li.active > a:hover,
-.nav-pills > li.active > a:focus {
-  color: #ffffff;
-  background-color: #446e9b;
+/*****************************************************************************/
+/* Teasers
+/*****************************************************************************/
+
+.jumbotron-teaser {
+	height: 26ex;
+	display: block;
+	color: #efefef;
+	background-repeat: repeat-x;
+	background-position: center center;
 }
 
+.jumbotron-teaser h1 {
+	font-size: 2.4em;
+	color: #fff;
+}
+
+.jumbotron-teaser h2 {
+	font-size: 1.1em;
+	color: #fff;
+}
 
 /*****************************************************************************/
 /* Home
