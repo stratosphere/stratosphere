@@ -1,6 +1,6 @@
 ---
-layout: inner_text
-title: Try It Out 
+layout: inner_simple
+title: Code 
 ---
 
 
@@ -40,13 +40,14 @@ Don't hesitate to ask if you have any questions.
 
 The best way to get fast and good help is to [open an issue on github](https://github.com/dimalabs/ozone/issues/new).
 
+<!--
+
 <br>
  <div class="text-center">
 <a href="https://github.com/dimalabs/ozone/issues/new" class="btn btn-primary">Open an Issue on Github</a>
 </div>
 <hr>
 
-<!--
 If you don't want to register on github, we also have a users mailing list:<br>
 	<a href="mailto:users@stratosphere.tu-berlin.de">users@stratosphere.tu-berlin.de</a>
 <p>
