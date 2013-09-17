@@ -2,6 +2,8 @@ $('a[rel=tooltip]').tooltip({
 	'placement': 'bottom'
 });
 
+// $('.subnav a').smoothScroll(); -- does not work with the offset scroll fix
+
 (function ($) {
 
 	$(function() {
@@ -27,11 +29,51 @@ $('a[rel=tooltip]').tooltip({
 				isFixed = 1;
 				$nav.addClass('subnav-fixed');
 				$body.css('margin-top', marginTop + subnavHeight +  'px');
-			} else if (scrollTop < subnavTop && isFixed) {
+			} else if (scrollTop < subnavTop-1 && isFixed) {
 				isFixed = 0;
 				$nav.removeClass('subnav-fixed');
 				$body.css('margin-top', marginTop + 'px');
 			}
+		}
+		
+		// Required if "viewport" content is "width=device-width, initial-scale=1.0": 
+		// navbar is not fixed on lower widths.
+		if ($(document).width() > 979) { 
+			var hash = window.location.hash;
+
+			// Code below fixes the issue if you land directly onto a page section
+			// (http://domain/page.html#section1)
+
+			if (hash != "") {
+				$(document).scrollTop(($(hash).offset().top) - ($(".navbar-fixed-top").height() + $(".subnav").height() + 60));
+			}
+
+			// Here's the fix, if any <a> element points to a page section an offset
+			// function is called
+
+			var locationHref = window.location.protocol + '//' + window.location.host + $(window.location).attr('pathname');
+			var anchorsList = $('a').get();
+
+			for (i = 0; i < anchorsList.length; i++) {
+				var hash = anchorsList[i].href.replace(locationHref, '');
+				if (hash[0] == "#" && hash != "#") {
+					// Retain your pre-defined onClick functions
+					var originalOnClick = anchorsList[i].onclick; 
+					setNewOnClick(originalOnClick, hash);
+				}
+			}
+		}
+
+		function setNewOnClick(originalOnClick, hash) {
+			anchorsList[i].onclick = function() {
+				$(originalOnClick);
+				if (isFixed) {
+					$(document).scrollTop( ($(hash).offset().top) - ($(".navbar-fixed-top").height() + $(".subnav").height()) - 20);
+				} else {
+					$(document).scrollTop( ($(hash).offset().top) - ($(".navbar-fixed-top").height() + $(".subnav").height()) - 62);
+				}
+				return false;
+			};
 		}
 	});
 	
@@ -46,41 +88,5 @@ $('a[rel=tooltip]').tooltip({
 	 * Usage:
 	 * Paste this function wherever you want in your document and append _fixNavbarIssue()_ to your <body>'s onload attribute.
 	 */
-	
-	// Required if "viewport" content is "width=device-width, initial-scale=1.0": 
-	// navbar is not fixed on lower widths.
-	if ($(document).width() > 979) { 
-		var hash = window.location.hash;
-
-		// Code below fixes the issue if you land directly onto a page section
-		// (http://domain/page.html#section1)
-
-		if (hash != "") {
-			$(document).scrollTop(($(hash).offset().top) - ($(".navbar-fixed-top").height() + $(".subnav").height() - 20));
-		}
-
-		// Here's the fix, if any <a> element points to a page section an offset
-		// function is called
-
-		var locationHref = window.location.protocol + '//' + window.location.host + $(window.location).attr('pathname');
-		var anchorsList = $('a').get();
-
-		for (i = 0; i < anchorsList.length; i++) {
-			var hash = anchorsList[i].href.replace(locationHref, '');
-			if (hash[0] == "#" && hash != "#") {
-				// Retain your pre-defined onClick functions
-				var originalOnClick = anchorsList[i].onclick; 
-				setNewOnClick(originalOnClick, hash);
-			}
-		}
-	}
-
-	function setNewOnClick(originalOnClick, hash) {
-		anchorsList[i].onclick = function() {
-			$(originalOnClick);
-			$(document).scrollTop( ($(hash).offset().top) - ($(".navbar-fixed-top").height() + $(".subnav").height()) - 20);
-			return false;
-		};
-	}
 	
 })(window.jQuery);
