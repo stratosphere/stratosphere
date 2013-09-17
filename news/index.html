@@ -1,11 +1,36 @@
 ---
-layout: inner_text
+layout: inner_simple
 title: News 
 ---
 
-
-{% for page in site.posts %}
-<li>
-    <a href="{{ site.baseurl }}{{ page.url }}">{{ page.title }}</a>
-</li>
+{% for post in paginator.posts %}
+<article>
+	<h2><a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a></h2>
+	<p class="meta">{{ post.date | date_to_string }}</p>
+	
+	<div>{{ post.content }}</div>
+</article>
 {% endfor %}
+
+{% if paginator.total_pages > 1 %}
+<!-- Pagination links -->
+<ul class="pager">
+	<li>
+	{% if paginator.previous_page %}
+		<a href="{{ site.baseurl }}/news{% if paginator.previous_page > 1%}/page-{{ paginator.previous_page }}{% endif %}" class="previous">Previous</a>
+	{% else %}
+		<span>Previous</span>
+	{% endif %}
+	</li>
+	<li>
+		<span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+	</li>
+	<li>
+	{% if paginator.next_page %}
+		<a href="{{ site.baseurl }}/news/page-{{ paginator.next_page }}" class="next">Next</a>
+	{% else %}
+		<span>Next</span>
+	{% endif %}
+	</li>
+</ul>
+{% endif %}

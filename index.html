@@ -2,11 +2,11 @@
 layout: default 
 title:  Above the Clouds
 jumbotron:
-  title:       Stratosphere Workshop
-  subtitle:    Nov 14th, DIMA Labs, TU Berlin
-  text:        Discover the power of big data analytics with the Stratosphere system. Register now! 
-  image:       workshop_jumbotron.jpg
-  link:        { url: "events/2013/workshop.html", text: "Learn more &raquo;" }
+  title:       Stratosphere Summit
+  subtitle:    November 14-15th, Berlin
+  text:        Discover the power of Big Data analytics with the Stratosphere system. Register now! 
+  image:       summit_jumbotron.jpg
+  link:        { url: "events/2013/summit.html", text: "Learn more &raquo;" }
 
 ---
 
@@ -14,44 +14,104 @@ jumbotron:
 
 <div class="container">
 
+	<h1>Welcome to Stratosphere</h1>
+
+	<div class="lead">
+		<p><em>Stratosphere</em> is a DFG-funded research project investigating new paradigms for scalable, complex analytics on massively-parallel data sets.
+		The <em>Stratosphere System</em> is available under the Apache License, Version 2.0. Feel free to <a href="{{ site.baseurl }}/code">download it</a>, try it out and give feedback or ask for help on our <a href="https://github.com/dimalabs/ozone">GitHub page</a>.</p>
+	</div>
+
+	<h2>Layered Architecture</h2>
+	
+	<img alt="Stratosphere Layers" src="{{ site.baseurl }}/img/stratosphere_layers_new_scaled.png" style="margin: 0px 20px; float: right;" height="270px" width="359px" />
+
+	<ol>
+		<li>An extensible higher level language (Meteor) to quickly compose queries for common and recurring use cases. Internally, Meteor scripts are translated into Sopremo algebra and optimized.</li>
+		<li>A parallel programming model (PACT, an extension of MapReduce) to run user-defined operations. PACT is based on second-order functions and features an optimizer that chooses parallelization strategies.</li>
+		<li>An efficient massively parallel runtime (Nephele) for fault tolerant execution of acyclic data flows.</li>
+	</ol>
+
+	<p>
+		The Stratosphere System is an open-source cluster/cloud computing framework for Big Data analytics. It comprises a rich stack of components with different programming abstractions for complex analytics tasks:
+	</p>
+
+	<h2>Meteor Language</h2>
+	
+	<p>Meteor is a textual higher-level language for rapid composition of queries. It uses a JSON-like data model and features in its core typical operation for analysis and transformation of (semi-) structured nested data.</p>
+	<p>The meteor language is highly extensible and supports the addition of custom operations that integrate fluently with the syntax, in order to create problem specific Domain Languages. Meteor queries are translated into Sopremo algebra, optimized, and transformed into PACT programs by the compiler.</p>
+	
+	<h2>PACT Programming Model</h2>
+	
+	<p>The PACT programming model is an extension of the well known MapReduce programming model. PACT features a richer set of second-order functions (Map/Reduce/Match/CoGroup/Cross) that can be flexibly composed as DAGs into programs. PACT programs use a generic schema-free tuple data model to ease composition of more complex programs.</p>
+	<p>PACT programs are parallelized by a cost-based compiler that picks data shipping and local processing strategies such that network- and disk I/O is minimized. The compiler incorporates user code properties (when possible) to find better plans; it thus alleviates the need for many manual optimizations (such as job merging) that one typically does to create efficient MapReduce programs. Compiled PACT programs are executed by the Nephele Data Flow Engine.</p>
+	
+	<h2>Nephele Data Flow Engine</h2>
+	
+	<p>Nephele is a massively parallel data flow engine dealing with resource management, work scheduling, communication, and fault tolerance. Nephele can run on top of a cluster and govern the resources itself, or directly connect to an IaaS cloud service to allocate computing resources on demand.</p>
+	
+    <!--
 	<div id="carousel-homepage" class="carousel slide">
 	  
-	  <!-- Indicators -->
+	  < !-- Indicators -- >
 	  <ol class="carousel-indicators">
 	    <li data-target="#carousel-homepage" data-slide-to="0" class="active"></li>
 	    <li data-target="#carousel-homepage" data-slide-to="1"></li>
 	    <li data-target="#carousel-homepage" data-slide-to="2"></li>
+	    <li data-target="#carousel-homepage" data-slide-to="3"></li>
 	  </ol>
 	
-	  <!-- Wrapper for slides -->
+	  < !-- Wrapper for slides -- >
 	  <div class="carousel-inner">
 	    <div class="item active">
-	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/overview_1.jpg" alt="Stratosphere Architecture Overview" />
 	      <div class="carousel-caption">
-	        Foobar
+	        The Stratosphere System is an open-source cluster/cloud computing framework for Big Data analytics. It comprises a rich stack of components with different programming abstractions for complex analytics tasks:
 	      </div>
 	    </div>
 	    <div class="item">
-	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/overview_2.jpg" alt="Stratosphere Architecture Overview" />
 	      <div class="carousel-caption">
-	        Foobar
+	        An extensible higher level language (Meteor) to quickly compose queries for common and recurring use cases. Internally, Meteor scripts are translated into Sopremo algebra and optimized.
 	      </div>
 	    </div>
 	    <div class="item">
-	      <img src="{{ site.baseurl }}/img/carousel_image.png" alt="Carousel Image generic" />
+	      <img src="{{ site.baseurl }}/img/overview_3.jpg" alt="Stratosphere Architecture Overview" />
 	      <div class="carousel-caption">
-	        Foobar
+	        A parallel programming model (PACT, an extension of MapReduce) to run user-defined operations. PACT is based on second-order functions and features an optimizer that chooses parallelization strategies.
+	      </div>
+	    </div>
+	    <div class="item">
+	      <img src="{{ site.baseurl }}/img/overview_4.jpg" alt="Stratosphere Architecture Overview" />
+	      <div class="carousel-caption">
+	        An efficient massively parallel runtime (Nephele) for fault tolerant execution of acyclic data flows.
 	      </div>
 	    </div>
 	  </div>
 	
-	  <!-- Controls -->
+	  < !-- Controls -- >
 	  <a class="left carousel-control" href="#carousel-homepage" data-slide="prev">
 	    <span class="icon-prev"></span>
 	  </a>
 	  <a class="right carousel-control" href="#carousel-homepage" data-slide="next">
 	    <span class="icon-next"></span>
 	  </a>
+	</div>
+
+	<div class="row">
+		<div class="col-md-4">
+			<h3>Meteor Language</h3>
+			<p>Meteor is a textual higher-level language for rapid composition of queries. It uses a JSON-like data model and features in its core typical operation for analysis and transformation of (semi-) structured nested data.</p>
+			<p>The meteor language is highly extensible and supports the addition of custom operations that integrate fluently with the syntax, in order to create problem specific Domain Languages. Meteor queries are translated into Sopremo algebra, optimized, and transformed into PACT programs by the compiler.</p>
+		</div>
+		<div class="col-md-4">
+			<h3>PACT Programming Model</h3>
+			<p>The PACT programming model is an extension of the well known MapReduce programming model. PACT features a richer set of second-order functions (Map/Reduce/Match/CoGroup/Cross) that can be flexibly composed as DAGs into programs. PACT programs use a generic schema-free tuple data model to ease composition of more complex programs.</p>
+			<p>PACT programs are parallelized by a cost-based compiler that picks data shipping and local processing strategies such that network- and disk I/O is minimized. The compiler incorporates user code properties (when possible) to find better plans; it thus alleviates the need for many manual optimizations (such as job merging) that one typically does to create efficient MapReduce programs. Compiled PACT programs are executed by the Nephele Data Flow Engine.</p>
+		</div>
+		<div class="col-md-4">
+			<h3>Nephele Data Flow Engine</h3>
+			<p>Nephele is a massively parallel data flow engine dealing with resource management, work scheduling, communication, and fault tolerance. Nephele can run on top of a cluster and govern the resources itself, or directly connect to an IaaS cloud service to allocate computing resources on demand.</p>
+		</div>
 	</div>
 
 	<div class="row">
@@ -64,6 +124,7 @@ jumbotron:
 		</div>
 	{% endfor %}
 	</div>
+	-->
 
 </div>
 <!-- /.container -->

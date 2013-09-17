@@ -7,32 +7,106 @@ body {
 	padding-top: 50px;
 }
 
+
 /*****************************************************************************/
 /* Teasers
 /*****************************************************************************/
 
 .jumbotron-teaser {
-	height: 26ex;
+	position: relative;
+	height: 400px;
 	display: block;
 	color: #efefef;
-	background-repeat: repeat-x;
 	background-position: center center;
+	background-size: cover;
+	background-repeat:no-repeat;
 }
 
 .jumbotron-teaser h1 {
-	font-size: 2.4em;
+	font-size: 2.0em;
 	color: #fff;
 }
 
 .jumbotron-teaser h2 {
-	font-size: 1.1em;
+	font-size: 1.2em;
 	color: #fff;
 }
+
+.jumbotron-teaser .text {
+	position: absolute;
+	top: 30px;
+}
+
+
+/*****************************************************************************/
+/* Notices
+/*****************************************************************************/
+
+.notice-important {
+	background-color: #fcf2f2;
+	border-color: #dFb5b4;
+	margin: 2ex 0;
+	padding: 1ex 2em 1ex 1em;
+	border-left: 5px solid #eee;
+}
+
+/*****************************************************************************/
+/* Pager
+/*****************************************************************************/
+.pager {
+	margin-left: 0;
+	margin-bottom: 18px;
+	list-style: none;
+	text-align: center;
+	*zoom: 1;
+}
+
+.pager:before,.pager:after {
+	display: table;
+	content: "";
+}
+
+.pager:after {
+	clear: both;
+}
+
+.pager li {
+	display: inline;
+}
+
+.pager a {
+	display: inline-block;
+	padding: 5px 14px;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+}
+
+.pager a:hover {
+	text-decoration: none;
+	background-color: #f5f5f5;
+}
+
+.pager .next a {
+	float: right;
+}
+
+.pager .previous a {
+	float: left;
+}
+
+.pager .disabled a,.pager .disabled a:hover {
+	color: #999999;
+	background-color: #fff;
+	cursor: default;
+}
+
 
 /*****************************************************************************/
 /* Home
 /*****************************************************************************/
-
 .bs-footer {
 	text-align: left;
 	height: 800px;

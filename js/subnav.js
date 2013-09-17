@@ -25,7 +25,7 @@ $('a[rel=tooltip]').tooltip({
 		function processScroll() {
 			var i, scrollTop = $win.scrollTop();
 
-			if (scrollTop >= subnavTop && !isFixed) {
+			if (scrollTop >= subnavTop-1 && !isFixed) {
 				isFixed = 1;
 				$nav.addClass('subnav-fixed');
 				$body.css('margin-top', marginTop + subnavHeight +  'px');
