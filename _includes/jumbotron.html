@@ -1,0 +1,12 @@
+<div class="jumbotron jumbotron-teaser" style="background: url('{{ site.baseurl }}/img/{{ include.jumbotron.image }}')">
+	<div class="container">
+		<div class="text">
+			<h1>{{ include.jumbotron.title }}</h1>
+			{% if include.jumbotron.subtitle %}<h2>{{ include.jumbotron.subtitle }}</h2>{% endif %}
+			{% if include.jumbotron.text %}<p>{{ include.jumbotron.text }}</p>{% endif %}
+			{% if include.jumbotron.link %}<p>
+				<a href="{{ site.baseurl }}/{{ include.jumbotron.link.url }}" class="btn btn-primary btn-lg">{{ include.jumbotron.link.text }}</a>
+			</p>{% endif %}
+		</div>
+	</div>
+</div>
