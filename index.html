@@ -9,9 +9,9 @@ title:  Above the Clouds
 <div class="jumbotron">
   <div class="container">
     <h1>Stratosphere</h1>
-    <p>Awesome, blazing fast Big Data Analytics above the Clouds.</p>
-    <p>
-    	<a href="https://github.com/twbs/bootstrap/archive/v3.0.0.zip" class="btn btn-primary btn-lg"><i class="icon-download"> </i>Download</a>
+    <p style="padding-bottom:150px">Awesome, blazing fast Big Data Analytics above the Clouds.</p>
+    <p class="text-center">
+    	<a href="https://github.com/twbs/bootstrap/archive/v3.0.0.zip" class="btn btn-default btn-lg"><i class="icon-download"> </i>Download</a>
     	<a href="https://github.com/twbs/bootstrap/archive/v3.0.0.zip" class="btn btn-primary btn-lg"><i class="icon-github"> </i>View on GitHub</a>
 	</p>
 	<div class="row">
@@ -20,18 +20,11 @@ title:  Above the Clouds
 <pre class="prettyprint linenums lang-scala">
 val file = spark.textFile("hdfs://...")
 file.flatMap(line => line.split(" "))
-    .map(word => (word, 1))
-    .reduceByKey(_ + _)</pre>
+ .map(word => (word, 1))
+ .reduceByKey(_ + _)</pre>
 		</div>
 		<div class="col-lg-4">
 			<h2>Iterative Algorithms</h2>
-			<pre class="prettyprint lang-html">
-The lang-* class specifies the language file extensions.
-File extensions supported by default include
-"bsh", "c", "cc", "cpp", "cs", "csh", "cyc", "cv", "htm", "html",
-"java", "js", "m", "mxml", "perl", "pl", "pm", "py", "rb", "sh",
-"xhtml", "xml", "xsl".
-</pre>
 
 		</div>
 		<div class="col-lg-4">
