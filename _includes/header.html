@@ -12,7 +12,7 @@
 		</div>
 		<div class="collapse navbar-collapse">
 			<ul class="nav navbar-nav">
-				<li><a href="{{ site.baseurl }}/blog">Blog</a></li>
+				<li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Blog</a></li>
 				<!--
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Events <b class="caret"></b></a>
@@ -21,7 +21,7 @@
 					</ul>
 				</li>
 				-->
-				<li><a href="{{ site.baseurl }}/code">Code</a></li>
+				<li class="{% if page.url contains '/code/' %}active{% endif %}"><a href="{{ site.baseurl }}/code">Code</a></li>
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
 					<ul class="dropdown-menu">
@@ -34,12 +34,12 @@
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Project <b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li><a href="{{ site.baseurl }}/about">About</a></li>
-						<li><a href="{{ site.baseurl }}/people">People</a></li>
-						<li><a href="{{ site.baseurl }}/publications">Publications</a></li>
+						<li  class="{% if page.url contains '/about/' %}active{% endif %}"><a href="{{ site.baseurl }}/about">About</a></li>
+						<li  class="{% if page.url contains '/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/people">People</a></li>
+						<li  class="{% if page.url contains '/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/publications">Publications</a></li>
 					</ul>
 				</li>
-				<li><a href="{{ site.baseurl }}/contact">Contact</a></li>
+				<li  class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
 				<!-- li><a href="downloads">Development</a></li -->
 			</ul>
 		</div>
