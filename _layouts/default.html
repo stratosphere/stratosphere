@@ -14,8 +14,13 @@
 <link rel="stylesheet" href="{{ site.baseurl }}/css/syntax.css" />
 
 <!-- Bootstrap core CSS -->
-<link href="{{ site.baseurl }}/css/bootstrap.css" rel="stylesheet" />
+<link href="{{ site.baseurl }}/css/bootstrap.min.css" rel="stylesheet" />
 <link href="{{ site.baseurl }}/css/main.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{ site.baseurl }}/css/font-awesome/css/font-awesome.min.css">
+
+<link href="{{ site.baseurl }}/css/prettify.css" type="text/css" rel="stylesheet" />
+
+<script type="text/javascript" src="{{ site.baseurl }}/js/prettify/prettify.js"></script>
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -42,7 +47,7 @@
 <link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" />
 </head>
 
-<body data-offset='150' data-spy="scroll" data-target="#navbar-inner">
+<body data-offset='150' data-spy="scroll" onload="prettyPrint()" data-target="#navbar-inner">
 
 	{% include header.html %}
 	
