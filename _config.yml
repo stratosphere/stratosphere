@@ -7,7 +7,7 @@ lsi:                false
 
 # pagination
 paginate:           10
-paginate_path:      "news/page-:num"
+paginate_path:      "blog/page-:num"
 
 # see https://github.com/mojombo/jekyll/issues/332
 baseurl:            /ozone
