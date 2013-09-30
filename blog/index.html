@@ -1,0 +1,52 @@
+---
+layout: inner_simple
+title: Blog 
+---
+
+{% for post in paginator.posts %}
+<article>
+	<h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+	<p class="meta">{{ post.date | date_to_string }}</p>
+	
+	<div>{{ post.content }}</div>
+	<a href="{{ site.baseurl }}{{ post.url }}#disqus_thread">{{ post.title }}</a>
+</article>
+{% endfor %}
+
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'stratosphere-eu'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+    
+
+
+{% if paginator.total_pages > 1 %}
+<!-- Pagination links -->
+<ul class="pager">
+	<li>
+	{% if paginator.previous_page %}
+		<a href="{{ site.baseurl }}/blog{% if paginator.previous_page > 1%}/page-{{ paginator.previous_page }}{% endif %}" class="previous">Previous</a>
+	{% else %}
+		<span>Previous</span>
+	{% endif %}
+	</li>
+	<li>
+		<span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+	</li>
+	<li>
+	{% if paginator.next_page %}
+		<a href="{{ site.baseurl }}/blog/page-{{ paginator.next_page }}" class="next">Next</a>
+	{% else %}
+		<span>Next</span>
+	{% endif %}
+	</li>
+</ul>
+{% endif %}
