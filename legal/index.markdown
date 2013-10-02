@@ -1,6 +1,6 @@
 --- 
 layout: inner_text
-title: Disclaimer 
+title: Legal 
 ---
 
 This page was created on behalf of the *Stratosphere* project members by the Database Systems and Information Management Research Group, Fak. IV, TU Berlin. We assume no liability on the contents of external links. The content of linked websites is exclusevly down to the persons or organizations running these websites.
@@ -32,3 +32,4 @@ This page was created on behalf of the *Stratosphere* project members by the Dat
 This site uses or has used in the past the following works:
 
 * [East Berlin Panorama](http://www.flickr.com/photos/42311564@N00/3877349119/) by [Sebastian Niedlich](http://www.flickr.com/photos/42311564@N00/) 
+
