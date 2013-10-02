@@ -91,8 +91,11 @@ public interface InstanceManager {
 	 *        the {@link InstanceConnectionInfo} object attached to the heart beat message
 	 * @param hardwareDescription
 	 *        a hardware description with details on the instance's compute resources.
+	 * @param taskManagerID
+	 *        an optional identifier for the task manager, possibly <code>null</code>
 	 */
-	void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription);
+	void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
+			final HardwareDescription hardwareDescription, final String taskManagerID);
 
 	/**
 	 * Translates the name of an instance type to the corresponding instance type object.

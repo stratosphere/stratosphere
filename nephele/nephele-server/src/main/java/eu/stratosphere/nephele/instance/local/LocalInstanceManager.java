@@ -225,7 +225,7 @@ public class LocalInstanceManager implements InstanceManager {
 	 */
 	@Override
 	public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+			final HardwareDescription hardwareDescription, final String taskManagerID) {
 
 		synchronized (this.synchronizationObject) {
 			if (this.localInstance == null) {
@@ -348,7 +348,7 @@ public class LocalInstanceManager implements InstanceManager {
 					if (this.localInstance != null) { // Instance is available
 						if (this.allocatedResource == null) { // Instance is not used by another job
 							allocatedResource = new AllocatedResource(this.localInstance, entry.getKey(),
-								new AllocationID());
+								AllocationID.generate());
 							this.allocatedResource = allocatedResource;
 							assignmentSuccessful = true;
 						}

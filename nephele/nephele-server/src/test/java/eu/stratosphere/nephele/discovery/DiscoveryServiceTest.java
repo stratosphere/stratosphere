@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -18,13 +18,16 @@ package eu.stratosphere.nephele.discovery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import eu.stratosphere.nephele.configuration.ConfigConstants;
 
 /**
  * This class contains tests for the {@link DiscoveryService} class.
@@ -39,6 +42,11 @@ public class DiscoveryServiceTest {
 	private static final int IPC_PORT = 5555;
 
 	/**
+	 * The instance of the discovery service used during the tests.
+	 */
+	private DiscoveryService discoveryService;
+
+	/**
 	 * Starts the discovery service before the tests.
 	 * 
 	 * @throws UnknownHostException
@@ -46,12 +54,10 @@ public class DiscoveryServiceTest {
 	 * @throws DiscoveryException
 	 *         thrown if an error occurs during the start of the discovery manager
 	 */
-	@BeforeClass
-	public static void startService() throws UnknownHostException, DiscoveryException {
+	@Before
+	public void startService() throws IOException {
 
-		final InetAddress bindAddress = InetAddress.getLocalHost();
-
-		DiscoveryService.startDiscoveryService(bindAddress, IPC_PORT);
+		this.discoveryService = new DiscoveryService(ConfigConstants.DEFAULT_DISCOVERY_PORT, IPC_PORT);
 	}
 
 	/**
@@ -59,56 +65,59 @@ public class DiscoveryServiceTest {
 	 */
 	@Test
 	public void testJobManagerDiscovery() {
-		
+
 		InetAddress localHost = null;
-		
+
 		try {
 			localHost = InetAddress.getLocalHost();
-		} catch(UnknownHostException e) {
+		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}
-		
+
 		try {
 			final InetSocketAddress jobManagerAddress = DiscoveryService.getJobManagerAddress();
-			
+
 			assertEquals(localHost, jobManagerAddress.getAddress());
 			assertEquals(IPC_PORT, jobManagerAddress.getPort());
-			
-		} catch(DiscoveryException e) {
+
+		} catch (DiscoveryException e) {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Tests if the task manager address resolution works properly.
 	 */
 	@Test
 	public void testTaskManagerAddressResolution() {
-		
+
 		InetAddress localHost = null;
-		
+
 		try {
 			localHost = InetAddress.getLocalHost();
-		} catch(UnknownHostException e) {
+		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}
-		
+
 		try {
-			final InetAddress taskManagerAddress = DiscoveryService.getTaskManagerAddress(localHost);
-			
+			final InetAddress taskManagerAddress = DiscoveryService.getTaskManagerAddress(localHost,
+				ConfigConstants.DEFAULT_DISCOVERY_PORT);
+
 			assertEquals(localHost, taskManagerAddress);
-			
-		} catch(DiscoveryException e) {
+
+		} catch (DiscoveryException e) {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Shuts the discovery service down after the tests.
 	 */
-	@AfterClass
-	public static void stopService() {
+	@After
+	public void stopService() {
 
-		DiscoveryService.stopDiscoveryService();
+		if (this.discoveryService != null) {
+			this.discoveryService.shutdown();
+		}
 	}
 }

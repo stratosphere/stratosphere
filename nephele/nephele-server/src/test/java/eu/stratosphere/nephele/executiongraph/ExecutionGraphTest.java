@@ -127,7 +127,7 @@ public class ExecutionGraphTest {
 		 */
 		@Override
 		public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-				final HardwareDescription hardwareDescription) {
+				final HardwareDescription hardwareDescription,String taskManagerID) {
 
 			throw new IllegalStateException("reportHeartBeat called on TestInstanceManager");
 		}

@@ -701,7 +701,7 @@ public class ClusterManager implements InstanceManager {
 	 */
 	@Override
 	public synchronized void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+			final HardwareDescription hardwareDescription, final String taskID) {
 
 		ClusterInstance host = registeredHosts.get(instanceConnectionInfo);
 

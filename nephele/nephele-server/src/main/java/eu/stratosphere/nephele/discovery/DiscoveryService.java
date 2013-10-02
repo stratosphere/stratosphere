@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -36,7 +36,9 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import eu.stratosphere.nephele.configuration.ConfigConstants;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.nephele.util.NumberUtils;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -53,7 +55,7 @@ import eu.stratosphere.nephele.util.StringUtils;
  * @author warneke
  * @author Dominic Battre
  */
-public class DiscoveryService implements Runnable {
+public final class DiscoveryService extends Thread {
 
 	/**
 	 * Number of retries before discovery is considered to be failed.
@@ -69,27 +71,6 @@ public class DiscoveryService implements Runnable {
 	 * The IPv6 multicast address for link-local all-nodes.
 	 */
 	private static final String IPV6MULTICASTADDRESS = "FF02::1";
-
-	/**
-	 * The key to retrieve the discovery service's magic number from the configuration.
-	 */
-	private static final String MAGICNUMBER_KEY = "discoveryservice.magicnumber";
-
-	/**
-	 * The default magic number.
-	 */
-	private static final int DEFAULT_MAGICNUMBER = 0;
-
-	/**
-	 * The key to retrieve the network port the discovery service listens on for incoming connections from the
-	 * configuration.
-	 */
-	public static final String DISCOVERYPORT_KEY = "discoveryservice.port";
-
-	/**
-	 * The default network port the discovery service listens on for incoming connections.
-	 */
-	private static final int DEFAULT_DISCOVERYPORT = 7001;
 
 	/**
 	 * Flag indicating whether to use IPv6 or not.
@@ -148,24 +129,9 @@ public class DiscoveryService implements Runnable {
 	private static final Log LOG = LogFactory.getLog(DiscoveryService.class);
 
 	/**
-	 * Singleton instance of the discovery service.
-	 */
-	private static DiscoveryService discoveryService = null;
-
-	/**
-	 * The network port the discovery service listens on for incoming connections.
-	 */
-	private final int discoveryPort;
-
-	/**
 	 * The magic number used to identify this instance of the discovery service.
 	 */
 	private final int magicNumber;
-
-	/**
-	 * The network address the IPC is bound to, possibly <code>null</code>.
-	 */
-	private final InetAddress ipcAddress;
 
 	/**
 	 * The network port that is announced for the job manager's IPC service.
@@ -173,122 +139,68 @@ public class DiscoveryService implements Runnable {
 	private final int ipcPort;
 
 	/**
-	 * The thread executing the receive operation on the discovery port.
-	 */
-	private Thread listeningThread = null;
-
-	/**
 	 * The datagram socket of the discovery server.
 	 */
-	private DatagramSocket serverSocket = null;
+	private final DatagramSocket serverSocket;
 
 	/**
-	 * Flag to check whether the service is running
+	 * Indicates whether a shutdown of the discovery service has been requested.
 	 */
-	private volatile boolean isRunning = false;
+	private volatile boolean shutdownRequested = false;
 
 	/**
-	 * Constructs a new {@link DiscoveryService} object and stores
+	 * Constructs and starts a new {@link DiscoveryService} object and stores
 	 * the job manager's IPC port.
 	 * 
-	 * @param ipcAddress
-	 *        the network address the IPC is bound to, possibly <code>null</code>
+	 * @param discoveryPort
+	 *        the port the discovery service shall listen on for incoming data,
+	 *        <code>-1<code> to choose a random free port
 	 * @param ipcPort
 	 *        the network port that is announced for the job manager's IPC service
 	 */
-	private DiscoveryService(final InetAddress ipcAddress, final int ipcPort) {
+	public DiscoveryService(final int discoveryPort, final int ipcPort) throws SocketException {
 
-		this.discoveryPort = GlobalConfiguration.getInteger(DISCOVERYPORT_KEY, DEFAULT_DISCOVERYPORT);
-		this.magicNumber = GlobalConfiguration.getInteger(MAGICNUMBER_KEY, DEFAULT_MAGICNUMBER);
+		this.magicNumber = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_MAGICNUMBER_KEY,
+			ConfigConstants.DEFAULT_DISCOVERY_MAGICNUMBER);
 
-		this.ipcAddress = ipcAddress;
 		this.ipcPort = ipcPort;
-	}
 
-	/**
-	 * Starts a new discovery service.
-	 * 
-	 * @param ipcAddress
-	 *        the network address the IPC is bound to, possibly <code>null</code>
-	 * @param ipcPort
-	 *        the network port that is announced for the job manager's IPC service.
-	 * @throws DiscoveryException
-	 *         thrown if the discovery service could not be started because
-	 *         of network difficulties
-	 */
-	public static synchronized void startDiscoveryService(final InetAddress ipcAddress, final int ipcPort)
-			throws DiscoveryException {
-
-		if (discoveryService == null) {
-			discoveryService = new DiscoveryService(ipcAddress, ipcPort);
-		}
-
-		if (!discoveryService.isRunning()) {
-			discoveryService.startService();
-		}
-	}
-
-	/**
-	 * Checks whether the discovery service is running.
-	 * 
-	 * @return <code>true</code> if the service is running, <code>false</code> otherwise
-	 */
-	public boolean isRunning() {
-
-		return this.isRunning;
-	}
-
-	/**
-	 * Stops the discovery service.
-	 */
-	public static synchronized void stopDiscoveryService() {
-
-		if (discoveryService != null) {
-			if (discoveryService.isRunning()) {
-				discoveryService.stopService();
-			}
-		}
-
-	}
-
-	/**
-	 * Auxiliary method to start the discovery service.
-	 * 
-	 * @throws DiscoveryException
-	 *         thrown if the discovery service could not be started because
-	 *         of network difficulties
-	 */
-	private void startService() throws DiscoveryException {
-
-		try {
-			this.serverSocket = new DatagramSocket(this.discoveryPort, this.ipcAddress);
-		} catch (SocketException e) {
-			throw new DiscoveryException(e.toString());
+		if (discoveryPort == -1) {
+			this.serverSocket = new DatagramSocket();
+		} else {
+			this.serverSocket = new DatagramSocket(discoveryPort);
 		}
 
 		LOG.info("Discovery service socket is bound to " + this.serverSocket.getLocalSocketAddress());
-
-		this.isRunning = true;
-
-		this.listeningThread = new Thread(this, "Discovery Service Thread");
-		this.listeningThread.start();
+		start();
 	}
 
 	/**
-	 * Auxiliary method to stop the discovery service.
+	 * Returns the port of the network socket the discovery service is bound to.
+	 * 
+	 * @return the port the network socket the discovery service is bound to, <code>-1</code> if the socket is closed,
+	 *         or <code>0</code> if it is not bound yet
 	 */
-	private void stopService() {
+	public int getDiscoveryPort() {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Stopping discovery service on port" + this.discoveryPort);
-		}
+		return this.serverSocket.getLocalPort();
+	}
 
-		this.isRunning = false;
+	/**
+	 * Shuts down the discovery service.
+	 */
+	public void shutdown() {
 
-		this.listeningThread.interrupt();
-
-		// Close the server socket
+		this.shutdownRequested = true;
 		this.serverSocket.close();
+
+		try {
+			join();
+		} catch (InterruptedException ie) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(StringUtils.stringifyException(ie));
+			}
+		}
 	}
 
 	/**
@@ -301,9 +213,9 @@ public class DiscoveryService implements Runnable {
 	private static DatagramPacket createJobManagerLookupRequestPacket(final int magicNumber) {
 
 		final byte[] bytes = new byte[12];
-		integerToByteArray(magicNumber, MAGIC_NUMBER_OFFSET, bytes);
-		integerToByteArray(generateRandomPacketID(), PACKET_ID_OFFSET, bytes);
-		integerToByteArray(JM_LOOKUP_REQUEST_ID, PACKET_TYPE_ID_OFFSET, bytes);
+		NumberUtils.integerToByteArray(magicNumber, bytes, MAGIC_NUMBER_OFFSET);
+		NumberUtils.integerToByteArray(generateRandomPacketID(), bytes, PACKET_ID_OFFSET);
+		NumberUtils.integerToByteArray(JM_LOOKUP_REQUEST_ID, bytes, PACKET_TYPE_ID_OFFSET);
 
 		return new DatagramPacket(bytes, bytes.length);
 	}
@@ -320,10 +232,10 @@ public class DiscoveryService implements Runnable {
 	private static DatagramPacket createJobManagerLookupReplyPacket(final int ipcPort, final int magicNumber) {
 
 		final byte[] bytes = new byte[16];
-		integerToByteArray(magicNumber, MAGIC_NUMBER_OFFSET, bytes);
-		integerToByteArray(generateRandomPacketID(), PACKET_ID_OFFSET, bytes);
-		integerToByteArray(JM_LOOKUP_REPLY_ID, PACKET_TYPE_ID_OFFSET, bytes);
-		integerToByteArray(ipcPort, PAYLOAD_OFFSET, bytes);
+		NumberUtils.integerToByteArray(magicNumber, bytes, MAGIC_NUMBER_OFFSET);
+		NumberUtils.integerToByteArray(generateRandomPacketID(), bytes, PACKET_ID_OFFSET);
+		NumberUtils.integerToByteArray(JM_LOOKUP_REPLY_ID, bytes, PACKET_TYPE_ID_OFFSET);
+		NumberUtils.integerToByteArray(ipcPort, bytes, PAYLOAD_OFFSET);
 
 		return new DatagramPacket(bytes, bytes.length);
 	}
@@ -338,9 +250,9 @@ public class DiscoveryService implements Runnable {
 	private static DatagramPacket createTaskManagerAddressRequestPacket(final int magicNumber) {
 
 		final byte[] bytes = new byte[12];
-		integerToByteArray(magicNumber, MAGIC_NUMBER_OFFSET, bytes);
-		integerToByteArray(generateRandomPacketID(), PACKET_ID_OFFSET, bytes);
-		integerToByteArray(TM_ADDRESS_REQUEST_ID, PACKET_TYPE_ID_OFFSET, bytes);
+		NumberUtils.integerToByteArray(magicNumber, bytes, MAGIC_NUMBER_OFFSET);
+		NumberUtils.integerToByteArray(generateRandomPacketID(), bytes, PACKET_ID_OFFSET);
+		NumberUtils.integerToByteArray(TM_ADDRESS_REQUEST_ID, bytes, PACKET_TYPE_ID_OFFSET);
 
 		return new DatagramPacket(bytes, bytes.length);
 	}
@@ -359,10 +271,10 @@ public class DiscoveryService implements Runnable {
 
 		final byte[] addr = taskManagerAddress.getAddress();
 		final byte[] bytes = new byte[20 + addr.length];
-		integerToByteArray(magicNumber, MAGIC_NUMBER_OFFSET, bytes);
-		integerToByteArray(generateRandomPacketID(), PACKET_ID_OFFSET, bytes);
-		integerToByteArray(TM_ADDRESS_REPLY_ID, PACKET_TYPE_ID_OFFSET, bytes);
-		integerToByteArray(addr.length, PAYLOAD_OFFSET, bytes);
+		NumberUtils.integerToByteArray(magicNumber, bytes, MAGIC_NUMBER_OFFSET);
+		NumberUtils.integerToByteArray(generateRandomPacketID(), bytes, PACKET_ID_OFFSET);
+		NumberUtils.integerToByteArray(TM_ADDRESS_REPLY_ID, bytes, PACKET_TYPE_ID_OFFSET);
+		NumberUtils.integerToByteArray(addr.length, bytes, PAYLOAD_OFFSET);
 		System.arraycopy(addr, 0, bytes, PAYLOAD_OFFSET + 4, addr.length);
 
 		return new DatagramPacket(bytes, bytes.length);
@@ -374,14 +286,17 @@ public class DiscoveryService implements Runnable {
 	 * 
 	 * @param jobManagerAddress
 	 *        the address of the job manager
+	 * @param discoveryPort
+	 *        the port the discovery manager listens on
 	 * @return the address with which the task manager shall announce itself to the job manager
 	 * @throws DiscoveryException
 	 *         thrown if an error occurs during the packet exchange
 	 */
-	public static InetAddress getTaskManagerAddress(final InetAddress jobManagerAddress) throws DiscoveryException {
+	public static InetAddress getTaskManagerAddress(final InetAddress jobManagerAddress, final int discoveryPort)
+			throws DiscoveryException {
 
-		final int magicNumber = GlobalConfiguration.getInteger(MAGICNUMBER_KEY, DEFAULT_MAGICNUMBER);
-		final int discoveryPort = GlobalConfiguration.getInteger(DISCOVERYPORT_KEY, DEFAULT_DISCOVERYPORT);
+		final int magicNumber = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_MAGICNUMBER_KEY,
+			ConfigConstants.DEFAULT_DISCOVERY_MAGICNUMBER);
 
 		InetAddress taskManagerAddress = null;
 		DatagramSocket socket = null;
@@ -407,7 +322,7 @@ public class DiscoveryService implements Runnable {
 				try {
 					socket.receive(responsePacket);
 				} catch (SocketTimeoutException ste) {
-					LOG.warn("Timeout wainting for task manager address reply. Retrying...");
+					LOG.warn("Timeout waiting for task manager address reply. Retrying...");
 					continue;
 				}
 
@@ -452,8 +367,10 @@ public class DiscoveryService implements Runnable {
 	 */
 	public static InetSocketAddress getJobManagerAddress() throws DiscoveryException {
 
-		final int magicNumber = GlobalConfiguration.getInteger(MAGICNUMBER_KEY, DEFAULT_MAGICNUMBER);
-		final int discoveryPort = GlobalConfiguration.getInteger(DISCOVERYPORT_KEY, DEFAULT_DISCOVERYPORT);
+		final int magicNumber = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_MAGICNUMBER_KEY,
+			ConfigConstants.DEFAULT_DISCOVERY_MAGICNUMBER);
+		final int discoveryPort = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_PORT_KEY,
+			ConfigConstants.DEFAULT_DISCOVERY_PORT);
 
 		InetSocketAddress jobManagerAddress = null;
 		DatagramSocket socket = null;
@@ -563,7 +480,7 @@ public class DiscoveryService implements Runnable {
 			return -1;
 		}
 
-		return byteArrayToInteger(data, PAYLOAD_OFFSET);
+		return NumberUtils.byteArrayToInteger(data, PAYLOAD_OFFSET);
 	}
 
 	/**
@@ -586,7 +503,7 @@ public class DiscoveryService implements Runnable {
 			return null;
 		}
 
-		final int len = byteArrayToInteger(data, PAYLOAD_OFFSET);
+		final int len = NumberUtils.byteArrayToInteger(data, PAYLOAD_OFFSET);
 
 		final byte[] addr = new byte[len];
 		System.arraycopy(data, PAYLOAD_OFFSET + 4, addr, 0, len);
@@ -684,7 +601,7 @@ public class DiscoveryService implements Runnable {
 
 		final Map<Integer, Long> packetIDMap = new HashMap<Integer, Long>();
 
-		while (this.isRunning) {
+		while (!this.shutdownRequested) {
 
 			try {
 				this.serverSocket.receive(requestPacket);
@@ -742,7 +659,7 @@ public class DiscoveryService implements Runnable {
 			} catch (SocketTimeoutException ste) {
 				LOG.debug("Discovery service: socket timeout");
 			} catch (IOException ioe) {
-				if (this.isRunning) { // Ignore exception when service has been stopped
+				if (!this.shutdownRequested) { // Ignore exception when service has been stopped
 					LOG.error("Discovery service stopped working with IOException:\n" + ioe.toString());
 				}
 				break;
@@ -751,44 +668,6 @@ public class DiscoveryService implements Runnable {
 
 		// Close the socket finally
 		this.serverSocket.close();
-	}
-
-	/**
-	 * Serializes and writes the given integer number to the provided byte array.
-	 * 
-	 * @param integerToSerialize
-	 *        the integer number of serialize
-	 * @param offset
-	 *        the offset at which to start writing inside the byte array
-	 * @param byteArray
-	 *        the byte array to write to
-	 */
-	private static void integerToByteArray(final int integerToSerialize, final int offset, final byte[] byteArray) {
-
-		for (int i = 0; i < 4; ++i) {
-			final int shift = i << 3; // i * 8
-			byteArray[(offset + 3) - i] = (byte) ((integerToSerialize & (0xff << shift)) >>> shift);
-		}
-	}
-
-	/**
-	 * Reads and deserializes an integer number from the given byte array.
-	 * 
-	 * @param byteArray
-	 *        the byte array to read from
-	 * @param offset
-	 *        the offset at which to start reading the byte array
-	 * @return the deserialized integer number
-	 */
-	private static int byteArrayToInteger(final byte[] byteArray, final int offset) {
-
-		int integer = 0;
-
-		for (int i = 0; i < 4; ++i) {
-			integer |= (byteArray[(offset + 3) - i] & 0xff) << (i << 3);
-		}
-
-		return integer;
 	}
 
 	/**
@@ -813,7 +692,7 @@ public class DiscoveryService implements Runnable {
 			return false;
 		}
 
-		if (byteArrayToInteger(data, MAGIC_NUMBER_OFFSET) != magicNumber) {
+		if (NumberUtils.byteArrayToInteger(data, MAGIC_NUMBER_OFFSET) != magicNumber) {
 			return false;
 		}
 
@@ -839,7 +718,7 @@ public class DiscoveryService implements Runnable {
 			return -1;
 		}
 
-		return byteArrayToInteger(data, PACKET_TYPE_ID_OFFSET);
+		return NumberUtils.byteArrayToInteger(data, PACKET_TYPE_ID_OFFSET);
 	}
 
 	/**
@@ -871,6 +750,6 @@ public class DiscoveryService implements Runnable {
 			return -1;
 		}
 
-		return byteArrayToInteger(data, PACKET_ID_OFFSET);
+		return NumberUtils.byteArrayToInteger(data, PACKET_ID_OFFSET);
 	}
 }

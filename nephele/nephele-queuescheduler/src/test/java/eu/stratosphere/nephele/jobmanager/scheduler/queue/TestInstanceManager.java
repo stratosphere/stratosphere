@@ -118,7 +118,7 @@ public final class TestInstanceManager implements InstanceManager {
 			final InstanceConnectionInfo ici = new InstanceConnectionInfo(Inet4Address.getLocalHost(), 1, 1);
 			final NetworkTopology nt = new NetworkTopology();
 			final TestInstance ti = new TestInstance(INSTANCE_TYPE, ici, nt.getRootNode(), nt, hd);
-			this.allocatedResources.add(new AllocatedResource(ti, INSTANCE_TYPE, new AllocationID()));
+			this.allocatedResources.add(new AllocatedResource(ti, INSTANCE_TYPE, AllocationID.generate()));
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(StringUtils.stringifyException(e));
 		}
@@ -196,7 +196,7 @@ public final class TestInstanceManager implements InstanceManager {
 	 */
 	@Override
 	public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+			final HardwareDescription hardwareDescription, String taskManagerID) {
 		throw new IllegalStateException("reportHeartBeat called on TestInstanceManager");
 	}
 

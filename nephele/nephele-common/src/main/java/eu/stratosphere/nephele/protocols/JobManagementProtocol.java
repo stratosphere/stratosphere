@@ -76,4 +76,13 @@ public interface JobManagementProtocol extends VersionedProtocol {
 	 *         thrown if an error occurred while transmitting the request
 	 */
 	IntegerRecord getRecommendedPollingInterval() throws IOException;
+	
+	/**
+	 * Shutdown all TaskManagers and the JobManager. 
+	 * The function works only in yarn mode. 
+	 * 
+	 * @throws IOException
+	 * 		   thrown if an error occurs during this remote procedure call
+	 */
+	void shutdownSystem() throws IOException;	
 }

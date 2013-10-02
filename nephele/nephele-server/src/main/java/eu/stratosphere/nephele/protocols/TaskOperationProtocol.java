@@ -121,4 +121,7 @@ public interface TaskOperationProtocol extends VersionedProtocol {
 	 *         thrown if an error occurs during this remote procedure call
 	 */
 	void killTaskManager() throws IOException;
+	
+	
+	void shutdownTaskManager() throws IOException;
 }
