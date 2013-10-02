@@ -347,3 +347,13 @@ ul.posts span {
         width: 1168px; /* 2px less to account for left/right borders being removed when in fixed mode */
     }
 }
+
+
+/**
+ Custom classes
+ */
+
+.logos img {
+    padding:20px;
+    width: 150px;
+}
