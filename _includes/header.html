@@ -18,13 +18,13 @@
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/">Blog</a></li>
+        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Blog</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Project <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li  class="{% if page.url contains '/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/funding">Funding</a></li>
-            <li  class="{% if page.url contains '/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/people">People</a></li>
-            <li  class="{% if page.url contains '/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/publications">Publications</a></li>
+            <li class="{% if page.url contains '/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/funding">Funding</a></li>
+            <li class="{% if page.url contains '/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/people">People</a></li>
+            <li class="{% if page.url contains '/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/publications">Publications</a></li>
           </ul>
         </li>
         <li  class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
