@@ -13,6 +13,20 @@ This page was created on behalf of the *Stratosphere* project members by the Dat
 * [HU Berlin, Knowledge Management in Bioinformatics Group](http://www.informatik.hu-berlin.de/forschung/gebiete/wbi/)
 * [HPI Potsdam, Information Systems Group](http://www.hpi.uni-potsdam.de/naumann/home.html)
 
+<p style="text-align: center;">
+  <a href="http://www.tu-berlin.de">
+    <img style="width: 55px; height: 40px; border-width: 0px; border-style: solid; margin: 0 0.5em;" src="{{ site.baseurl }}/img/logo/TUBerlin-logo.svg" alt="Tu Berlin">
+  </a>
+  <a href="http://www.hu-berlin.de/">
+    <img style="width: 41px; height: 40px; border-width: 0px; border-style: solid; margin: 0 0.5em;" src="{{ site.baseurl }}/img/logo/HU-logo.svg" alt="HU Berlin">
+  </a>
+  <a href="http://www.hpi.uni-potsdam.de/">
+    <img style="width: 40px; height: 40px; border-width: 0px; border-style: solid; margin: 0 0.5em;" src="{{ site.baseurl }}/img/logo/HPI-logo.png" alt="HPI">
+  </a>
+</p>
+
+<p>This project is funded by the DFG as FOR 1306.</p>
+
 ### Project Speaker
 
 <address>

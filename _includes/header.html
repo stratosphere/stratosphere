@@ -6,8 +6,8 @@
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Quick Start</a></li>
-        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Examples</a></li>
+        <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quick Start</a></li>
+        <li class="{% if page.url contains '/examples/' %}active{% endif %}"><a href="{{ site.baseurl }}/examples">Examples</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
           <ul class="dropdown-menu">
@@ -15,7 +15,7 @@
             <li><a href="https://stratosphere2.dima.tu-berlin.de/wiki/doku.php/wiki:gettingstarted" title="">QuickStart Tutorial</a></li>
             <li><a href="https://stratosphere2.dima.tu-berlin.de/wiki/doku.php/wiki:faq" title="">FAQ</a></li>
           </ul>
-        </li>        
+        </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/">Blog</a></li>
@@ -30,6 +30,5 @@
         <li  class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
       </ul>
     </div>
-    <!--/.nav-collapse -->
   </div>
 </div>
