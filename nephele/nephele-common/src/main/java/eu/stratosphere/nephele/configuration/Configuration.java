@@ -486,4 +486,9 @@ public class Configuration implements IOReadableWritable {
 		final Configuration other = (Configuration) obj;
 		return confData.equals(other.confData);
 	}
+	
+	@Override
+	public String toString() {
+		return confData.toString();
+	}
 }

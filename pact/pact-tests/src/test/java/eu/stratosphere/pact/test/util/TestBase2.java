@@ -118,7 +118,7 @@ public abstract class TestBase2 {
 			e.printStackTrace();
 			Assert.fail("Pre-submit work caused an error: " + e.getMessage());
 		}
-
+		
 		// submit job
 		JobGraph jobGraph = null;
 		try {
@@ -135,6 +135,7 @@ public abstract class TestBase2 {
 			JobClient client = this.executer.getJobClient(jobGraph);
 			client.setConsoleStreamForReporting(getNullPrintStream());
 			client.submitJobAndWait();
+			
 		} catch(Exception e) {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
