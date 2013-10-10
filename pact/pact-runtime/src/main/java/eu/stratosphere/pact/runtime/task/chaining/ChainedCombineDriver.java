@@ -115,7 +115,7 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 				this.inputCollector = this.sorter.getInputCollector();
 				break;
 			default:
-				throw new RuntimeException("Invalid local strategy provided for CombineTask.");
+				throw new RuntimeException("Invalid local strategy "+ds+" provided for CombineTask.");
 		}
 		
 		// ----------------- Set up the combiner thread -------------------------

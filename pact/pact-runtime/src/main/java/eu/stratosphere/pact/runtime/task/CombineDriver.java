@@ -131,7 +131,7 @@ public class CombineDriver<T> implements PactDriver<GenericReducer<T, ?>, T>
 			break;
 		// obtain and return a grouped iterator from the combining sort-merger
 		default:
-			throw new RuntimeException("Invalid local strategy provided for CombineTask.");
+			throw new RuntimeException("Invalid local strategy "+ls+" provided for CombineTask.");
 		}
 	}
 

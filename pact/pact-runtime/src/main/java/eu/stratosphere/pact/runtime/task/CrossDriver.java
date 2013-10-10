@@ -128,7 +128,7 @@ public class CrossDriver<T1, T2, OT> implements PactDriver<GenericCrosser<T1, T2
 			this.firstIsOuter = false;
 			break;
 		default:
-			throw new RuntimeException("Invalid local strategy for CROSS: " + ls);
+			throw new RuntimeException("Invalid local strategy "+ls+" for CROSS: " + ls);
 		}
 		
 		this.memManager = this.taskContext.getMemoryManager();
