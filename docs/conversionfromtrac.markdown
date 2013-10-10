@@ -19,142 +19,142 @@ Bits and pieces:
 
 (Aljoscha Krettek)
 
-[gettingstarted](gettingstarted "gettingstarted")–done  
+[gettingstarted](gettingstarted.html "gettingstarted")–done  
 
-[configreference](configreference "configreference")–done  
+[configreference](configreference.html "configreference")–done  
 
-[cloudsetup](cloudsetup "cloudsetup")–done  
+[cloudsetup](cloudsetup.html "cloudsetup")–done  
 
-[clustersetup](clustersetup "clustersetup")–done  
+[clustersetup](clustersetup.html "clustersetup")–done  
 
-[faq](faq "faq")–done  
+[faq](faq.html "faq")–done  
 
-[helpfulscripts](helpfulscripts "helpfulscripts")–done  
+[helpfulscripts](helpfulscripts.html "helpfulscripts")–done  
 
-[licensing](licensing "licensing")–done  
+[licensing](licensing.html "licensing")–done  
 
-[logos](logos "logos")–done  
+[logos](logos.html "logos")–done  
 
-[updatechangepolicy](updatechangepolicy "updatechangepolicy")–done  
+[updatechangepolicy](updatechangepolicy.html "updatechangepolicy")–done  
 
-[updateschangeson0.1](updateschangeson0.1 "updateschangeson0.1")–done  
+[updateschangeson0.1](updateschangeson0.1.html "updateschangeson0.1")–done  
 
-[changelogs](changelogs "changelogs")–done  
+[changelogs](changelogs.html "changelogs")–done  
 
-[changesrelease0.1.1](changesrelease0.1.1 "changesrelease0.1.1")–done  
+[changesrelease0.1.1](changesrelease0.1.1.html "changesrelease0.1.1")–done  
 
-[changesrelease0.1.2](changesrelease0.1.2 "changesrelease0.1.2")–done  
+[changesrelease0.1.2](changesrelease0.1.2.html "changesrelease0.1.2")–done  
 
 Mostly nephele stuff:
 
 (Stephan Ewen, Fabian Hüske, evtl. Aljoscha, evtl. Daniel, Philipp
 Richter for the Nephele part) (Wir teilen das bei uns auf)
 
-[nephele](nephele "nephele")
+[nephele](nephele.html "nephele")
 done  
 
-[nephelecompression](nephelecompression "nephelecompression")
+[nephelecompression](nephelecompression.html "nephelecompression")
 done  
 
-[nephelevisualization](nephelevisualization "nephelevisualization")  
+[nephelevisualization](nephelevisualization.html "nephelevisualization")  
 
-[jobmanager](jobmanager "jobmanager")
+[jobmanager](jobmanager.html "jobmanager")
 done  
 
-[taskmanager](taskmanager "taskmanager")
+[taskmanager](taskmanager.html "taskmanager")
 done  
 
-[instancemanager](instancemanager "instancemanager")
+[instancemanager](instancemanager.html "instancemanager")
 done  
 
-[instancesandscheduling](instancesandscheduling "instancesandscheduling")
+[instancesandscheduling](instancesandscheduling.html "instancesandscheduling")
 done  
 
-[memorymanager](memorymanager "memorymanager")
+[memorymanager](memorymanager.html "memorymanager")
 done  
 
-[iomanager](iomanager "iomanager")
+[iomanager](iomanager.html "iomanager")
 done  
 
-[writingnehelejobs](writingnehelejobs "writingnehelejobs")
+[writingnehelejobs](writingnehelejobs.html "writingnehelejobs")
 done  
 
 Mostly PACT stuff:
 
-[pact](pact "pact")
+[pact](pact.html "pact")
 done  
 
-[pactcompiler](pactcompiler "pactcompiler")
+[pactcompiler](pactcompiler.html "pactcompiler")
 done  
 
-[pactexamples](pactexamples "pactexamples")
+[pactexamples](pactexamples.html "pactexamples")
 done  
 
-[pactmemorymanagement](pactmemorymanagement "pactmemorymanagement")
+[pactmemorymanagement](pactmemorymanagement.html "pactmemorymanagement")
 done  
 
-[pactmodule](pactmodule "pactmodule")
+[pactmodule](pactmodule.html "pactmodule")
 – SOPREMO   
 
 [pactoptimization](pactoptimization "pactoptimization")
 – not public / DELETED  
 
-[pactpm](pactpm "pactpm")
+[pactpm](pactpm.html "pactpm")
 done  
 
 [pactrewriting](pactrewriting "pactrewriting")
 – not public / DELETED  
 
-[pactstrategies](pactstrategies "pactstrategies")
+[pactstrategies](pactstrategies.html "pactstrategies")
 done  
 
-[advancedpactprogramming](advancedpactprogramming "advancedpactprogramming")
+[advancedpactprogramming](advancedpactprogramming.html "advancedpactprogramming")
 done  
 
-[writepactprogram](writepactprogram "writepactprogram")
+[writepactprogram](writepactprogram.html "writepactprogram")
 done  
 
-[testpactprogram](testpactprogram "testpactprogram")  
+[testpactprogram](testpactprogram.html "testpactprogram")  
 
-[dataformats](dataformats "dataformats")
+[dataformats](dataformats.html "dataformats")
 done  
 
-[executepactprogram](executepactprogram "executepactprogram")
+[executepactprogram](executepactprogram.html "executepactprogram")
 done  
 
 Examples:
 
 (Rico Bergmann)
 
-[a2aspexample](a2aspexample "a2aspexample")
+[a2aspexample](a2aspexample.html "a2aspexample")
 done  
 
-[kmeansexample](kmeansexample "kmeansexample")
+[kmeansexample](kmeansexample.html "kmeansexample")
 done  
 
-[tpch-q3example](tpch-q3example "tpch-q3example")
+[tpch-q3example](tpch-q3example.html "tpch-q3example")
 done  
 
-[triangleexample](triangleexample "triangleexample")
+[triangleexample](triangleexample.html "triangleexample")
 done  
 
-[weblogexample](weblogexample "weblogexample")
+[weblogexample](weblogexample.html "weblogexample")
 done  
 
 (Aljoscha Krettek)
 
-[wordcountexample](wordcountexample "wordcountexample")
+[wordcountexample](wordcountexample.html "wordcountexample")
 done  
 
-[textmining](textmining "textmining")
+[textmining](textmining.html "textmining")
 done  
 
 For developers:
 
-[sourcecodestructure](sourcecodestructure "sourcecodestructure")
+[sourcecodestructure](sourcecodestructure.html "sourcecodestructure")
 done  
 
-[systemarchitecture](systemarchitecture "systemarchitecture")
+[systemarchitecture](systemarchitecture.html "systemarchitecture")
 done  
 
 [testconfiguration](testconfiguration "testconfiguration")
@@ -162,30 +162,30 @@ internal and only draft – DELETED
 
 (Astrid Rheinländer + student Jörg)
 
-[testingguidelines](testingguidelines "testingguidelines")–done  
+[testingguidelines](testingguidelines.html "testingguidelines")–done  
 
-[testthesystem](testthesystem "testthesystem")–done  
+[testthesystem](testthesystem.html "testthesystem")–done  
 
-[unittests](unittests "unittests")–done  
+[unittests](unittests.html "unittests")–done  
 
-[antdeployment](antdeployment "antdeployment")–done  
+[antdeployment](antdeployment.html "antdeployment")–done  
 
-[buildthesystem](buildthesystem "buildthesystem")–done  
+[buildthesystem](buildthesystem.html "buildthesystem")–done  
 
-[codingguidelines](codingguidelines "codingguidelines")–done  
+[codingguidelines](codingguidelines.html "codingguidelines")–done  
 
-[eclipseimport](eclipseimport "eclipseimport")–done  
+[eclipseimport](eclipseimport.html "eclipseimport")–done  
 
-[eclipsewarningsettings](eclipsewarningsettings "eclipsewarningsettings")–done  
+[eclipsewarningsettings](eclipsewarningsettings.html "eclipsewarningsettings")–done  
 
-[gitworkflow](gitworkflow "gitworkflow")–done  
+[gitworkflow](gitworkflow.html "gitworkflow")–done  
 
 Sopremo:
 
 (Arvid Heise)
-[sopremo](sopremo "sopremo")  
+[sopremo](sopremo.html "sopremo")  
 
-[sopremoimplementation](sopremoimplementation "sopremoimplementation")  
+[sopremoimplementation](sopremoimplementation.html "sopremoimplementation")  
 
-[sopremotopact](sopremotopact "sopremotopact")  
+[sopremotopact](sopremotopact.html "sopremotopact")  
 

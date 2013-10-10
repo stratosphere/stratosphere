@@ -132,7 +132,7 @@ number of instances to use.
  The JobManager to which PACT programs are submitted is configured by
 specifying host and port in *./conf/nephele-user.xml*.   
  Refer to the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 The PACT Web Interface
@@ -221,7 +221,7 @@ upper plan view. The following information is displayed:
 
 -   PACT Properties: Details on the selected PACT. Refer to the section
     [Writing Pact
-    Programs](writepactprogram "writepactprogram")
+    Programs](writepactprogram.html "writepactprogram")
     to learn how to set Output Contracts and the degree of parallelism.
 -   Global Data Properties: Information on the global properties of the
     data after the PACT (including the user function) was applied, i.e.
@@ -253,7 +253,7 @@ number of instances to use.
  The JobManager to which PACT programs are submitted is configured by
 specifying host and port in *./conf/nephele-user.xml*.   
  Refer to the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 The PACT Client API (Embedded Client)
@@ -301,7 +301,7 @@ parameters that define the behavior of the PactCompiler (such as the
 default parallelism, intra-node parallelism, and the limit to the number
 of instances to use) are also drawn from this configuration. Please
 refer to the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 As an alternative, the client can be started with a Java

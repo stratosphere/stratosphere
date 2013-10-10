@@ -2,47 +2,47 @@ System Architecture
 ===================
 
 The current prototype of the Stratosphere system is a stack of the
-[Nephele](nephele "nephele")
+[Nephele](nephele.html "nephele")
 execution engine, the
-[PACT](pact "pact")
+[PACT](pact.html "pact")
 programming model and compiler, the [Sopremo operator
-model](sopremoom "wiki:sopremoom"),
+model](sopremoom.html "wiki:sopremoom"),
 and the [meteor query
-language](meteorquery "wiki:meteorquery").
+language](meteorquery.html "wiki:meteorquery").
 
 [![](media/wiki/stack.png)](media/wiki/stack.png "wiki:stack.png")
 
 -   [Nephele -
-    Overview](nephele "nephele")
+    Overview](nephele.html "nephele")
 
 -   Nephele Components
-    -   [JobManager](jobmanager "jobmanager")
-    -   [TaskManager](taskmanager "taskmanager")
-    -   [InstanceManager](instancemanager "instancemanager")
+    -   [JobManager](jobmanager.html "jobmanager")
+    -   [TaskManager](taskmanager.html "taskmanager")
+    -   [InstanceManager](instancemanager.html "instancemanager")
     -   [Scheduler](scheduler "scheduler")
-    -   [MemoryManager](memorymanager "memorymanager")
-    -   [IOManager](iomanager "iomanager")
+    -   [MemoryManager](memorymanager.html "memorymanager")
+    -   [IOManager](iomanager.html "iomanager")
     -   [NepheleGUI](nephelegui "nephelegui")
-    -   [Client](nephele "nephele")
+    -   [Client](nephele.html "nephele")
 
 -   [PACT -
-    Overview](pact "pact")
+    Overview](pact.html "pact")
 
 -   PACT Components
     -   [PACT Programming
-        Model](pactpm "pactpm")
+        Model](pactpm.html "pactpm")
     -   [PACT
-        Compiler](pactcompiler "pactcompiler")
+        Compiler](pactcompiler.html "pactcompiler")
     -   [Internal PACT
-        Strategies](pactstrategies "pactstrategies")
+        Strategies](pactstrategies.html "pactstrategies")
     -   [PACT Memory
-        Management](pactmemorymanagement "pactmemorymanagement")
+        Management](pactmemorymanagement.html "pactmemorymanagement")
     -   [PACT
-        Clients](executepactprogram "executepactprogram")
+        Clients](executepactprogram.html "executepactprogram")
 
 -   [Sopremo -
-    Overview](sopremoom "wiki:sopremoom")
+    Overview](sopremoom.html "wiki:sopremoom")
 
 -   [Meteor -
-    Overview](meteorquery "wiki:meteorquery")
+    Overview](meteorquery.html "wiki:meteorquery")
 

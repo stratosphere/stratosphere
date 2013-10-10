@@ -21,24 +21,24 @@ System](http://hadoop.apache.org/hdfs/ "http://hadoop.apache.org/hdfs/")
 following wiki pages.
 
 -   [Cluster
-    Setup](clustersetup "clustersetup")
+    Setup](clustersetup.html "clustersetup")
 -   [Configuration
-    Reference](configreference "configreference")
+    Reference](configreference.html "configreference")
 
 In its current version, Stratosphere consists of the parallel dataflow
 engine
-[Nephele](nephele "nephele")
+[Nephele](nephele.html "nephele")
 and the
-[PACT](pact "pact")
+[PACT](pact.html "pact")
 programming model and compiler. Please consult the following wiki pages
 for detailed information on the system and its features.
 
 -   [System
-    Architecture](systemarchitecture "systemarchitecture")
+    Architecture](systemarchitecture.html "systemarchitecture")
 -   [Nephele Execution
-    Engine](nephele "nephele")
+    Engine](nephele.html "nephele")
 -   [PACT Programming
-    Model](pactpm "pactpm")
+    Model](pactpm.html "pactpm")
 
 Installing Stratosphere
 =======================
@@ -115,19 +115,19 @@ To check, whether the web client was successfully started you can:
 
 -   You find more details on PACT's clients including the web interface
     in the section about [executing PACT
-    programms](executepactprogram "executepactprogram").
+    programms](executepactprogram.html "executepactprogram").
 
 Run WordCount Example PACT Program
 ==================================
 
 The distribution contains a couple of example data analysis programs.
 See [Pact
-Examples](pactexamples "pactexamples")
+Examples](pactexamples.html "pactexamples")
 for a list of provided PACT examples and detailed documentation. In this
 guide, we will discuss how to setup and execute the classic MapReduce
 WordCount example using the PACT web client. The other clients are
 described
-[here](executepactprogram "executepactprogram").
+[here](executepactprogram.html "executepactprogram").
 
 Example Resources
 -----------------
@@ -144,7 +144,7 @@ locations listed below.
 -   Source Code:
     [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java")
 -   Documentation: [WordCount Example
-    Documentation](wordcountexample "wordcountexample")
+    Documentation](wordcountexample.html "wordcountexample")
 
 Obtain and Store Test Data
 --------------------------
@@ -176,7 +176,7 @@ The Stratosphere distribution comes with several clients for PACT job
 submission. In this guide we will use the web client. The usage of the
 command-line client and the embedded client is described in the section
 on [Pact
-Clients](executepactprogram "executepactprogram").
+Clients](executepactprogram.html "executepactprogram").
   
  To execute the WordCount example using the PACT web client by following
 these steps:
@@ -233,7 +233,7 @@ at the location given below.
 -   Source Code:
     [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java")
 -   Documentation: [K-Means Example
-    Documentation](kmeansexample "kmeansexample")
+    Documentation](kmeansexample.html "kmeansexample")
 
 Generate and Upload Test Data
 -----------------------------

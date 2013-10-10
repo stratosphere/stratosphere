@@ -11,14 +11,14 @@ Nephele job:
 
 -   Use Nephele's visualization tool. The tool reports the states of all
     subtasks. If *profiling* is enabled (see [Configuration
-    Reference](configreference "configreference")),
+    Reference](configreference.html "configreference")),
     the load of all threads and all involved instances is displayed as
     well. See NepheleGUI to learn how to configure, run and use it.
 -   Execute a PACT program on the PACT command line client with *“wait”*
     option (-w). The client waits until the job is finished and prints
     its progress (status changes of all subtasks) to standard out. See
     the [PACT client
-    documentation](executepactprogram "executepactprogram")
+    documentation](executepactprogram.html "executepactprogram")
     for details.
 -   All status changes are logged to the JobManager's log file. Track it
     with: `tail -f ../log/nephele-<user>-jobmanager-<host>.log`.
@@ -40,7 +40,7 @@ Nephele job:
 source code?**
 
 The [Stratosphere Development with
-Eclipse](eclipseimport "eclipseimport")
+Eclipse](eclipseimport.html "eclipseimport")
 guide explains how to import the source code into Eclipse and run /
 debug Nephele in local mode directly from Eclipse.
 
@@ -117,7 +117,7 @@ To solve that problem, follow these steps:
 
 1.  Check which Version you have.
 2.  Checkout the Stratosphere source code. The guide is in [Building the
-    System](buildthesystem "buildthesystem")
+    System](buildthesystem.html "buildthesystem")
 3.  Open the file pom.xml in the stratosphere root directory. It should
     contain an entry
 
@@ -140,7 +140,7 @@ To solve that problem, follow these steps:
 4) Change the version from 0.20.2 to the version that you are using
 
 5) Build the system as described in [Building the
-System](buildthesystem "buildthesystem")
+System](buildthesystem.html "buildthesystem")
 
 **I can't stop Nephele with the provided stop-scripts. What can I do?**
 
@@ -183,7 +183,7 @@ If your user code simply has a large memory requirement, you can
 decrease the size of the memory managed by the MemoryManager using the
 parameter `taskmanager.memory.size`. This will leave more memory to JVM
 heap. See the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 **Why do the TaskManager log files become so huge?**
@@ -202,7 +202,7 @@ If you run Nephele in a massively parallel setting (100+ parallel
 threads), you should adapt the number of write buffers. As a
 rule-of-thumb, the number of write buffers should be   
  *(2 \* numberOfNodes \* numberOfTasksPerNode%%\^2 )* See [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 Features

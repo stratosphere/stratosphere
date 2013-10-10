@@ -177,4 +177,4 @@ object instances across function calls. In general, user code should
 always try to do this, as reference tracing and object garbage
 collection can become a serious computational bottleneck. See [Advanced
 Pact
-Programming](advancedpactprogramming "advancedpactprogramming")
+Programming](advancedpactprogramming.html "advancedpactprogramming")

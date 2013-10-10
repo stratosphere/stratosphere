@@ -2,7 +2,7 @@ Meteor Base Operators
 =====================
 
 On this page, we describe the syntax and semantics of the [base
-operators](sopremobase "wiki:sopremobase")
+operators](sopremobase.html "wiki:sopremobase")
 in Meteor by examples.
 
 Relational operators

@@ -58,7 +58,7 @@ example job:
 3.  `String outputPath`: Destination path for the result.
 
 See
-[here](executepactprogram "executepactprogram")
+[here](executepactprogram.html "executepactprogram")
 for details on how to specify paths for Nephele.
 
 Test Data

@@ -123,7 +123,7 @@ an impact on the scheduling and execution of PACT programs on Nephele.
 
 These parameters configure the PACT web interface. For information on
 how to start, use, and configure the PACT web interface, refer to
-[here](executepactprogram "executepactprogram").
+[here](executepactprogram.html "executepactprogram").
 
 <table>
 <tbody>
@@ -225,7 +225,7 @@ These parameters are relevant for configuration of Nephele channels.
 
 These parameters are relevant if you want to setup Nephele in a Cloud
 environment. See [Cloud
-Setup](cloudsetup "cloudsetup")
+Setup](cloudsetup.html "cloudsetup")
 for information how to setup Nephele in Cloud mode.
 
 <table>

@@ -2,13 +2,13 @@ Sopremo Operator Model
 ======================
 
 -   [The Sopremo Operator
-    Model](sopremoom "wiki:sopremoom")
+    Model](sopremoom.html "wiki:sopremoom")
 -   [Writing Custom Operators And
     Packages](sopremooperators "wiki:sopremooperators")
 -   [Evaluation
-    Expressions](sopremoexpressions "wiki:sopremoexpressions")
+    Expressions](sopremoexpressions.html "wiki:sopremoexpressions")
 -   [Existing Sopremo
-    Packages](sopremopackages "wiki:sopremopackages")
+    Packages](sopremopackages.html "wiki:sopremopackages")
 -   [Serialization to
-    PactRecords](sopremoserialization "wiki:sopremoserialization")
+    PactRecords](sopremoserialization.html "wiki:sopremoserialization")
 

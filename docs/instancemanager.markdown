@@ -4,7 +4,7 @@ InstanceManager
 In Nephele an instance manager maintains the set of available compute
 resources. It is responsible for allocating new compute resources and
 provisioning available compute resources to the
-[JobManager](jobmanager "jobmanager").
+[JobManager](jobmanager.html "jobmanager").
 Additionally it is keeping track of the availability of the utilized
 compute resources in order to report unexpected resource outages. For
 this purpose the instance manager receives heartbeats of each task
@@ -42,7 +42,7 @@ in the
 package. The ClusterManager is an instance manager for a static cluster.
 The ClusterManager can handle heterogeneous instances (compute nodes).
 Each instance type used in the cluster must be described in the
-[configuration](configreference "configreference").
+[configuration](configreference.html "configreference").
 Each instance is expected to run exactly one TaskManager. When the
 TaskManager registers with the JobManager it sends a hardware
 description of the actual hardware characteristics of the instance

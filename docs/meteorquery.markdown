@@ -79,11 +79,11 @@ future usage.
 
 In the second highlighted fragment, we use and configure the
 `remove duplicates` operator from the [cleansing
-package](sopremocleansing "wiki:sopremocleansing").
+package](sopremocleansing.html "wiki:sopremocleansing").
 The operator has two properties *where* and *retain*, which specify the
 similarity condition and the conflict resolution function. For more
 details, please refer to the [cleansing package
-page](sopremocleansing "wiki:sopremocleansing").
+page](sopremocleansing.html "wiki:sopremocleansing").
 
 Aside from operators, each Sopremo package may also contain
 [functions](#functions " ↵") and constants. For example, the cleansing

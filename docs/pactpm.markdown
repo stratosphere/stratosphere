@@ -66,7 +66,7 @@ can be executed in parallel, because the subsets are independent.
 Optionally, the user code can be annotated with additional information.
 These annotations disclose some information on the behavior of the
 black-box user function. The [PACT
-Compiler](pactcompiler "pactcompiler")
+Compiler](pactcompiler.html "pactcompiler")
 can utilize the information to obtain more efficient execution plans.
 However, while a missing annotation will not change the result of the
 execution, an incorrect Output Contract produces wrong results.
@@ -147,7 +147,7 @@ Pact Record Data Model
 
 In contrast to MapReduce, PACT uses a more generic data model of records
 ([Pact
-Record](pactrecord "pactrecord"))
+Record](pactrecord.html "pactrecord"))
 to pass data between functions. The Pact Record can be thought of as a
 tuple with a free schema. The interpretation of the fields of a record
 is up to the user function. A Key/Value pair (as in MapReduce) is a
@@ -244,7 +244,7 @@ Advantages of PACT over MapReduce
 6.  PACTs specify data parallelization in a declarative way which leaves
     several degrees of freedom to the system. These degrees of freedom
     are an important prerequisite for automatic optimization. The [PACT
-    compiler](pactcompiler "pactcompiler")
+    compiler](pactcompiler.html "pactcompiler")
     enumerate different execution strategies and chooses the strategy
     with the least estimated amount of data to ship. In contrast, Hadoop
     executes MapReduce jobs always with the same strategy.

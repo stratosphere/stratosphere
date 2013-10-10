@@ -8,7 +8,7 @@ implementation details. Therefore, new programs can be composed by
 connecting the modules using their public API.
 
 The concept can also be transferred to [Pact
-programs](writepactprogram "writepactprogram").
+programs](writepactprogram.html "writepactprogram").
 Since programs are directed acyclic graphs, the API consists a list of
 input and output channels. The implementation are the contracts and
 stubs that are connected to the input and output channels.

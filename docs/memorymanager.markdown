@@ -46,7 +46,7 @@ Nephele provides a
 It is started with a certain memory size. The size may be exactly
 specified (in megabytes) in the Nephele configuration via the parameter
 `taskmanager.memory.size` (see [Configuration
-Reference](configreference "configreference")).
+Reference](configreference.html "configreference")).
 If the `taskmanager.memory.size` parameter is not specified, the
 TaskManager instantiates the MemoryManager with a certain ratio of its
 remaining memory. That amount is determined after all other Nephele

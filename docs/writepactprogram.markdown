@@ -2,7 +2,7 @@ Writing a PACT Program
 ======================
 
 This section assumes you are familiar with the [PACT Programming
-Model](pactpm "pactpm").
+Model](pactpm.html "pactpm").
 It explains how you implement a designed pact program. We start with the
 implementation of a PACT program and explain later how programs are
 packaged for execution.
@@ -16,7 +16,7 @@ to implement and extend, and how to assemble them to a valid PACT
 program.   
  A set of example PACT programs with links to their source code can be
 found in the
-[Examples](pactexamples "pactexamples")
+[Examples](pactexamples.html "pactexamples")
 section.
 
 ### Code Dependencies
@@ -98,7 +98,7 @@ A PACT program basically consist of four components:
      For more details on the Input- and Output Formats, such as non-file
     data sources, binary formats, or custom partitions, please refer to
     the detail section on [Input And Output
-    Formats](dataformats "dataformats").
+    Formats](dataformats.html "dataformats").
 
 \* **Stub implementations**: Your job logic goes into PACT stub
 implementations. Stubs are templates for first-order user functions that
@@ -113,7 +113,7 @@ use a `Match` contract, than you need to extend the `MatchStub`.
 *[eu.stratosphere.pact.common.plan.PlanAssembler](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java")*
 provides PACT job plans. The method *getPlan(String …)* constructs the
 plan of a [PACT
-Job](pactpm "pactpm").
+Job](pactpm.html "pactpm").
 The plan consists of connected [Input
 Contracts](pactpm#input_contracts "pactpm")
 (found in
@@ -292,7 +292,7 @@ Average records emitted per stub call must be \>= 0.
 This page only explains the technical details of how to write a Pact
 program.   
  Have a look at [Best Practices of Pact
-Programming](advancedpactprogramming "advancedpactprogramming")
+Programming](advancedpactprogramming.html "advancedpactprogramming")
 for concrete implementation guidelines.
 
 Package a PACT Program
@@ -300,7 +300,7 @@ Package a PACT Program
 
 To run a PACT program on a Nephele system all required Java classes must
 be available to all participating Nephele
-[TaskManagers](taskmanager "taskmanager").
+[TaskManagers](taskmanager.html "taskmanager").
 Therefore, all Java classes that are part of the PACT program (stub
 implementations, data types, data formats, external classes) must be
 packaged into a jar file. To make the jar file an executable PACT
@@ -308,5 +308,5 @@ program, it must also contain a class that implements the
 *PlanAssembler* interface. In addition, you must register in the jar
 file's manifest using the attribute *Pact-Assembler-Class*. See
 [Executing Pact
-Programs](executepactprogram "executepactprogram")
+Programs](executepactprogram.html "executepactprogram")
 for details.

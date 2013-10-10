@@ -2,16 +2,16 @@ Stratosphere Development
 ========================
 
 -   [The System's
-    Architecture](systemarchitecture "wiki:systemarchitecture")
+    Architecture](systemarchitecture.html "wiki:systemarchitecture")
 -   [Source Code
-    Structure](sourcecodestructure "wiki:sourcecodestructure")
+    Structure](sourcecodestructure.html "wiki:sourcecodestructure")
 -   [Build
-    Stratosphere](buildthesystem "wiki:buildthesystem")
+    Stratosphere](buildthesystem.html "wiki:buildthesystem")
 -   [Stratosphere Development with
-    Eclipse](eclipseimport "wiki:eclipseimport")
+    Eclipse](eclipseimport.html "wiki:eclipseimport")
 -   [Test
-    Stratosphere](testthesystem "wiki:testthesystem")
+    Stratosphere](testthesystem.html "wiki:testthesystem")
 -   [Coding
-    Guidelines](codingguidelines "wiki:codingguidelines")
--   [Licensing](licensing "wiki:licensing")
+    Guidelines](codingguidelines.html "wiki:codingguidelines")
+-   [Licensing](licensing.html "wiki:licensing")
 

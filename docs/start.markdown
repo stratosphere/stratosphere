@@ -2,86 +2,86 @@ Main
 ====
 
 -   **[Getting
-    Started](gettingstarted "wiki:gettingstarted")**
+    Started](gettingstarted.html "wiki:gettingstarted")**
 
 -   **[Setup &
-    Configuration](setupandconfig "wiki:setupandconfig")**
+    Configuration](setupandconfig.html "wiki:setupandconfig")**
     -   [Cluster
-        Setup](clustersetup "wiki:clustersetup")
+        Setup](clustersetup.html "wiki:clustersetup")
     -   [Cloud
-        Setup](cloudsetup "wiki:cloudsetup")
+        Setup](cloudsetup.html "wiki:cloudsetup")
     -   [Instances and Parallel
-        Scheduling](instancesandscheduling "wiki:instancesandscheduling")
+        Scheduling](instancesandscheduling.html "wiki:instancesandscheduling")
     -   [Configuration
-        Reference](configreference "wiki:configreference")
+        Reference](configreference.html "wiki:configreference")
     -   [Using Nephele with Channel
-        Compression](nephelecompression "wiki:nephelecompression")
+        Compression](nephelecompression.html "wiki:nephelecompression")
 
 -   **[Pact Programming
-    Model](pactprogrammingmodel "wiki:pactprogrammingmodel")**
+    Model](pactprogrammingmodel.html "wiki:pactprogrammingmodel")**
     -   [The PACT Programming
-        Model](pactpm "wiki:pactpm")
+        Model](pactpm.html "wiki:pactpm")
     -   [Write a PACT
-        Program](writepactprogram "wiki:writepactprogram")
+        Program](writepactprogram.html "wiki:writepactprogram")
     -   [Example PACT
-        Programs](pactexamples "wiki:pactexamples")
+        Programs](pactexamples.html "wiki:pactexamples")
     -   [Execute a
-        Program](executepactprogram "wiki:executepactprogram")
+        Program](executepactprogram.html "wiki:executepactprogram")
     -   [Test a PACT
-        Program](testpactprogram "wiki:testpactprogram")
+        Program](testpactprogram.html "wiki:testpactprogram")
     -   [Best Practices of PACT
-        Programming](advancedpactprogramming "wiki:advancedpactprogramming")
+        Programming](advancedpactprogramming.html "wiki:advancedpactprogramming")
     -   [Deployment with
-        Ant](antdeployment "wiki:antdeployment")
+        Ant](antdeployment.html "wiki:antdeployment")
 
 -   **[Writing Nephele
-    Jobs](writingnehelejobs "wiki:writingnehelejobs")**
+    Jobs](writingnehelejobs.html "wiki:writingnehelejobs")**
 
 -   **[Meteor Query
-    Language](meteorql "wiki:meteorql")**
+    Language](meteorql.html "wiki:meteorql")**
     -   [Formulating a
-        Query](meteorquery "wiki:meteorquery")
+        Query](meteorquery.html "wiki:meteorquery")
     -   [Executing a
-        Query](meteorexecution "wiki:meteorexecution")
+        Query](meteorexecution.html "wiki:meteorexecution")
     -   [Standard operators in
-        Meteor](meteorbaseoperators "wiki:meteorbaseoperators")
+        Meteor](meteorbaseoperators.html "wiki:meteorbaseoperators")
 
 -   **[Sopremo Operator
-    Model](sopremoopmod "wiki:sopremoopmod")**
+    Model](sopremoopmod.html "wiki:sopremoopmod")**
     -   [The Sopremo Operator
-        Model](sopremoom "wiki:sopremoom")
+        Model](sopremoom.html "wiki:sopremoom")
     -   [Writing Custom Operators And
         Packages](sopremooperators "wiki:sopremooperators")
     -   [Evaluation
-        Expressions](sopremoexpressions "wiki:sopremoexpressions")
+        Expressions](sopremoexpressions.html "wiki:sopremoexpressions")
     -   [Existing Sopremo
-        Packages](sopremopackages "wiki:sopremopackages")
+        Packages](sopremopackages.html "wiki:sopremopackages")
     -   [Serialization to
-        PactRecords](sopremoserialization "wiki:sopremoserialization")
+        PactRecords](sopremoserialization.html "wiki:sopremoserialization")
 
--   **[FAQ](faq "wiki:faq")**
+-   **[FAQ](faq.html "wiki:faq")**
 
 -   **[Stratosphere
-    Development](stratospheredev "wiki:stratospheredev")**
+    Development](stratospheredev.html "wiki:stratospheredev")**
     -   [The System's
-        Architecture](systemarchitecture "wiki:systemarchitecture")
+        Architecture](systemarchitecture.html "wiki:systemarchitecture")
     -   [Source Code
-        Structure](sourcecodestructure "wiki:sourcecodestructure")
+        Structure](sourcecodestructure.html "wiki:sourcecodestructure")
     -   [Build
-        Stratosphere](buildthesystem "wiki:buildthesystem")
+        Stratosphere](buildthesystem.html "wiki:buildthesystem")
     -   [Stratosphere Development with
-        Eclipse](eclipseimport "wiki:eclipseimport")
+        Eclipse](eclipseimport.html "wiki:eclipseimport")
     -   [Test
-        Stratosphere](testthesystem "wiki:testthesystem")
+        Stratosphere](testthesystem.html "wiki:testthesystem")
     -   [Coding
-        Guidelines](codingguidelines "wiki:codingguidelines")
-    -   [Licensing](licensing "wiki:licensing")
+        Guidelines](codingguidelines.html "wiki:codingguidelines")
+    -   [Licensing](licensing.html "wiki:licensing")
 
 -   **Updates and Changes**
     -   [Update and Change
-        Policy](updatechangepolicy "wiki:updatechangepolicy")
+        Policy](updatechangepolicy.html "wiki:updatechangepolicy")
     -   [Changelogs and Updates of
-        Releases](changelogs "wiki:changelogs")
+        Releases](changelogs.html "wiki:changelogs")
 
 -   **Accounts**
     -   [Create TRAC

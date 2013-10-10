@@ -2,9 +2,9 @@ PACT Task Execution Strategies
 ==============================
 
 Data analysis tasks implemented with the [PACT programming
-model](pactpm "pactpm")
+model](pactpm.html "pactpm")
 are declaratively specified with respect to data parallelism. The [PACT
-Compiler](pactcompiler "pactcompiler")
+Compiler](pactcompiler.html "pactcompiler")
 optimizes PACT programs and chooses strategies to execute the program
 that guarantee that all Parallelization Contract are fulfilled.
 Execution strategies can be divided into [Shipping
@@ -123,7 +123,7 @@ the amount of data to be processed afterward. This strategy is
 especially beneficial for large number\_of\_records / number\_of\_keys
 ratios. The *Combining Sort* strategy is only applicable for *Reduce*
 tasks that implement the *combine()* method (see [Write PACT
-Programs](writepactprogram "writepactprogram")).
+Programs](writepactprogram.html "writepactprogram")).
   
 
 *Combining Sort* is used for:
@@ -140,7 +140,7 @@ The *Sort Merge* strategy operates on two inputs. Usually, both inputs
 are sorted by key and finally aligned by key (merged). The *Sort Merge*
 strategy comes in multiple variations, depending on whether none, the
 second, the first, or both inputs are already sorted. The [PACT
-Compiler](pactcompiler "pactcompiler")
+Compiler](pactcompiler.html "pactcompiler")
 derives existence of the sorting property from existing properties
 (resulting from former sorts), Output Contracts, applied Shipping
 Strategies.   

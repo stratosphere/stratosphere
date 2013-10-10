@@ -2,17 +2,17 @@ Pact Programming Model
 ======================
 
 -   [The PACT Programming
-    Model](pactpm "wiki:pactpm")
+    Model](pactpm.html "wiki:pactpm")
 -   [Write a PACT
-    Program](writepactprogram "wiki:writepactprogram")
+    Program](writepactprogram.html "wiki:writepactprogram")
 -   [Example PACT
-    Programs](pactexamples "wiki:pactexamples")
+    Programs](pactexamples.html "wiki:pactexamples")
 -   [Execute a
-    Program](executepactprogram "wiki:executepactprogram")
+    Program](executepactprogram.html "wiki:executepactprogram")
 -   [Test a PACT
-    Program](testpactprogram "wiki:testpactprogram")
+    Program](testpactprogram.html "wiki:testpactprogram")
 -   [Best Practices of PACT
-    Programming](advancedpactprogramming "wiki:advancedpactprogramming")
+    Programming](advancedpactprogramming.html "wiki:advancedpactprogramming")
 -   [Deployment with
-    Ant](antdeployment "wiki:antdeployment")
+    Ant](antdeployment.html "wiki:antdeployment")
 

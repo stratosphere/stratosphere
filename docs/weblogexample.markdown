@@ -6,7 +6,7 @@ Task Description
 
 The Weblog Analysis example shows how analyzing relational data can be
 done with the help of the [PACT Programming
-Model](pactpm "pactpm").
+Model](pactpm.html "pactpm").
 In this case a scenario is considered where the log files for different
 webpages are analyzed. These log files contain information about the
 page ranks and the page visits of the different webpages. The picture
@@ -56,7 +56,7 @@ job:
 5.  `String outputPath`: Destination path for the result.
 
 See
-[here](executepactprogram "executepactprogram")
+[here](executepactprogram.html "executepactprogram")
 for details on how to specify paths for Nephele.
 
 Data Generator

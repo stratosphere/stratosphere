@@ -27,7 +27,7 @@ Where \<ip-list\> must be replaced with the absolute path to the file
 mentioned above and \<ssh-key\> and with the absolute path to the
 private ssh-key. 'nephele' is the user existing on all nodes as
 described in the [cluster
-setup](clustersetup "clustersetup").
+setup](clustersetup.html "clustersetup").
 Save the script (e.g. as “forall.sh”) and add the the permission to
 execute it.
 

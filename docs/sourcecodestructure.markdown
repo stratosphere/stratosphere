@@ -34,25 +34,25 @@ Nephele is divided into several Maven modules:
 -   **nephele-server** contains basic components of the execution
     engine. This includes
     -   The [Job
-        Manager](jobmanager "jobmanager")
+        Manager](jobmanager.html "jobmanager")
         which is responsible for the coordinating the execution of a
         job's individual tasks
     -   The [Task
-        Manager](taskmanager "taskmanager")
+        Manager](taskmanager.html "taskmanager")
         which runs on the worker nodes and actually executes the tasks
     -   Various services for memory and I/O management
 
 -   **nephele-hdfs** is the Nephele binding to the HDFS file system.
 
 -   **nephele-clustermanager** is the default [instance
-    manager](instancemanager "instancemanager")
+    manager](instancemanager.html "instancemanager")
     Nephele uses in cluster mode. It is responsible for
     -   Providing suitable compute resources according to hardware
         demand of a task
     -   Monitoring the availability of the worker nodes
 
 -   **nephele-ec2cloudmanager** is the default [instance
-    manager](instancemanager "instancemanager")
+    manager](instancemanager.html "instancemanager")
     Nephele uses in cloud mode. It is responsible for
     -   Allocating and deallocating compute resources from a cloud with
         an EC2-compatible interface
@@ -75,7 +75,7 @@ Nephele is divided into several Maven modules:
     -   How to compose the individual tasks to a Nephele JobGraph
     -   How to submit created jobs to the Nephele runtime system
     -   See the [Writing Nephele
-        Jobs](writingnehelejobs "writingnehelejobs")
+        Jobs](writingnehelejobs.html "writingnehelejobs")
         Page to learn how to write your own example
 
 -   **nephele-management** contains management API that goes beyond the
@@ -119,7 +119,7 @@ modules:
     -   Data types (basic data types and abstract classes to write own
         data types)
     -   See [PACT program
-        documentation](writepactprogram "writepactprogram")
+        documentation](writepactprogram.html "writepactprogram")
         to learn how to write PACT programs.
 
 -   **pact-runtime** contains the source code that is executed by the
@@ -146,11 +146,11 @@ modules:
         line
     -   A client library to run PACT programs directly from sourcecode
     -   See [PACT client
-        documentation](executepactprogram "executepactprogram")
+        documentation](executepactprogram.html "executepactprogram")
 
 -   **pact-examples** contains example PACT programs.
     -   Example PACT jobs. See [PACT example
-        documentation](pactexamples "pactexamples")
+        documentation](pactexamples.html "pactexamples")
     -   Job launchers
     -   Test data generators
 

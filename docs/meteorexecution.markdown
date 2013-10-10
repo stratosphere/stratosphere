@@ -6,7 +6,7 @@ provides a standalone client that can executed on a different computer
 than the actual Stratosphere cluster.
 
 As a precondition, the [Nephele
-Jobmanager](clustersetup "wiki:clustersetup")
+Jobmanager](clustersetup.html "wiki:clustersetup")
 and the Sopremo Server must run.
 
 ### Starting Sopremo Server

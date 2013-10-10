@@ -89,6 +89,6 @@ Code Style Conventions
 We have defined a code style for the Stratosphere project to which all
 the source code files should comply to.   
  See the [Eclipse
-Import](eclipseimport "eclipseimport")
+Import](eclipseimport.html "eclipseimport")
 page for style configuration files and Eclipse configuration
 instructions.

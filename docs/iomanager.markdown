@@ -24,7 +24,7 @@ in the scope of one job. They are by default created in the system's
 temp directory and are described by channel IDs, which encapsulate their
 path. The path of the temp files is configured with the parameter
 *taskmanager.tmp.dir*. Refer to the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 Block Channels

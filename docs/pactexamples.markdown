@@ -14,32 +14,32 @@ understanding the PACT programming model. Hence, the code often written
 in a more understandable way rather than in the most efficient way. If
 you want to learn how to write efficient and fast PACT programs, have a
 look at [advanced PACT
-programming](advancedpactprogramming "advancedpactprogramming").
+programming](advancedpactprogramming.html "advancedpactprogramming").
 
 Classic MapReduce
 -----------------
 
--   [WordCount](wordcountexample "wordcountexample")
+-   [WordCount](wordcountexample.html "wordcountexample")
 
 Relational Queries
 ------------------
 
 -   [TPC-H Query
-    3](tpch-q3example "tpch-q3example")
+    3](tpch-q3example.html "tpch-q3example")
 -   [Weblog
-    Analysis](weblogexample "weblogexample")
+    Analysis](weblogexample.html "weblogexample")
 
 Data Mining
 -----------
 
 -   [K-Means
-    Iteration](kmeansexample "kmeansexample")
+    Iteration](kmeansexample.html "kmeansexample")
 
 Graph Analysis Algorithms
 -------------------------
 
 -   [Pairwise Shortest
-    Paths](a2aspexample "a2aspexample")
+    Paths](a2aspexample.html "a2aspexample")
 -   [Triangle
-    Enumeration](triangleexample "triangleexample")
+    Enumeration](triangleexample.html "triangleexample")
 

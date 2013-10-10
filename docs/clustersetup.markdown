@@ -260,7 +260,7 @@ Page](http://stratosphere.eu/downloads "http://stratosphere.eu/downloads")
 or compile the system from source code. This document focuses on the
 first approach. If you want to compile the system on your own, please
 check the instructions on [building the Stratosphere
-system](buildthesystem "buildthesystem").
+system](buildthesystem.html "buildthesystem").
 
 ### Downloading and Installing the Stratosphere System
 
@@ -456,7 +456,7 @@ following parameters:
 -   *channel.network.bufferSizeInBytes*.
 
 Please see the [Configuration
-Reference](configreference "configreference")
+Reference](configreference.html "configreference")
 for details.
 
 ### Launching the Stratosphere System

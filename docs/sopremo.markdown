@@ -158,10 +158,10 @@ Related Information
 -------------------
 
 [Translation to
-PACT](sopremotopact "sopremotopact")
+PACT](sopremotopact.html "sopremotopact")
 
 [Implementation
-Details](sopremoimplementation "sopremoimplementation")
+Details](sopremoimplementation.html "sopremoimplementation")
 
 Curent Limitations
 ------------------

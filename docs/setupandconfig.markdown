@@ -2,15 +2,15 @@ Setup & Configuration
 =====================
 
 -   [Getting
-    Started](gettingstarted "wiki:gettingstarted")
+    Started](gettingstarted.html "wiki:gettingstarted")
 -   [Cluster
-    Setup](clustersetup "wiki:clustersetup")
+    Setup](clustersetup.html "wiki:clustersetup")
 -   [Cloud
-    Setup](cloudsetup "wiki:cloudsetup")
+    Setup](cloudsetup.html "wiki:cloudsetup")
 -   [Instances and Parallel
-    Scheduling](instancesandscheduling "wiki:instancesandscheduling")
+    Scheduling](instancesandscheduling.html "wiki:instancesandscheduling")
 -   [Configuration
-    Reference](configreference "wiki:configreference")
+    Reference](configreference.html "wiki:configreference")
 -   [Using Nephele with Channel
-    Compression](nephelecompression "wiki:nephelecompression")
+    Compression](nephelecompression.html "wiki:nephelecompression")
 

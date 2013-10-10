@@ -4,10 +4,10 @@ Sopremo Package
 ### Current Packages
 
 -   [Common
-    operators](sopremobase "wiki:sopremobase")
+    operators](sopremobase.html "wiki:sopremobase")
     including relational operators
 -   [Data
-    quality](sopremocleansing "wiki:sopremocleansing")
+    quality](sopremocleansing.html "wiki:sopremocleansing")
     improving operators
 -   [Information
     Extraction](sopremoie "wiki:sopremoie")

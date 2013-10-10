@@ -106,7 +106,7 @@ job:
     must be provided. Otherwise, the custom path format is required.
 
 See
-[here](executepactprogram "executepactprogram")
+[here](executepactprogram.html "executepactprogram")
 for details on how to specify paths for Nephele.
 
 Test Data Sets

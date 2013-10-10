@@ -1,33 +1,33 @@
 **Sections**
 
 -   [Setup &
-    Configuration](setupandconfig "wiki:setupandconfig")
+    Configuration](setupandconfig.html "wiki:setupandconfig")
 -   [Pact Programming
-    Model](pactprogrammingmodel "wiki:pactprogrammingmodel")
+    Model](pactprogrammingmodel.html "wiki:pactprogrammingmodel")
 -   [Meteor Query
-    Language](meteorql "wiki:meteorql")
+    Language](meteorql.html "wiki:meteorql")
 -   [Sopremo Operator
-    Model](sopremoopmod "wiki:sopremoopmod")
+    Model](sopremoopmod.html "wiki:sopremoopmod")
 -   [Stratosphere
-    Development](stratospheredev "wiki:stratospheredev")
+    Development](stratospheredev.html "wiki:stratospheredev")
 
 * * * * *
 
 **Shortcuts**
 
 -   [Getting
-    Started](gettingstarted "wiki:gettingstarted")
+    Started](gettingstarted.html "wiki:gettingstarted")
 -   [Write a Pact
-    Program](writepactprogram "wiki:writepactprogram")
+    Program](writepactprogram.html "wiki:writepactprogram")
 -   [Example Pact
-    Programs](pactexamples "wiki:pactexamples")
+    Programs](pactexamples.html "wiki:pactexamples")
 -   [Execute Pact
-    Programs](executepactprogram "wiki:executepactprogram")
+    Programs](executepactprogram.html "wiki:executepactprogram")
 -   [Write a Nephele
-    Job](writingnehelejobs "wiki:writingnehelejobs")
+    Job](writingnehelejobs.html "wiki:writingnehelejobs")
 -   [Write a Meteor
-    Query](meteorquery "wiki:meteorquery")
+    Query](meteorquery.html "wiki:meteorquery")
 -   [Execute Meteor
-    Queries](meteorexecution "wiki:meteorexecution")
--   [FAQ](faq "wiki:faq")
+    Queries](meteorexecution.html "wiki:meteorexecution")
+-   [FAQ](faq.html "wiki:faq")
 

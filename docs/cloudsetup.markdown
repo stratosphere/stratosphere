@@ -17,7 +17,7 @@ Setting up Stratosphere in Cloud Mode
 This documentation is intended to provide instructions on how to run the
 Stratosphere system in the so-called *cloud mode*. In contrast to the
 [cluster
-mode](clustersetup "clustersetup"),
+mode](clustersetup.html "clustersetup"),
 the Stratosphere system does not work with a fixed number of worker
 nodes in cloud node. Instead, the system tries to allocate the worker
 nodes which are necessary to run a job *on demand* from an

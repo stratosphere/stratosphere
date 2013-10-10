@@ -132,5 +132,5 @@ path
 denormalizes arrays
 
 Please refer to the [Meteor Base
-operator](meteorbaseoperators "wiki:meteorbaseoperators")
+operator](meteorbaseoperators.html "wiki:meteorbaseoperators")
 page for their usage in Meteor.

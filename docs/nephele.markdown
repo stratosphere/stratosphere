@@ -5,14 +5,14 @@ Nephele Architecture
 
 Before submitting a Nephele compute job, a user must start an instance
 inside the cloud which runs the so called [Job
-Manager](jobmanager "jobmanager").
+Manager](jobmanager.html "jobmanager").
 The Job Manager receives the client’s jobs, is responsible for
 scheduling them and coordinates their execution. It can allocate or
 deallocate virtual machines according to the current job execution
 phase. The actual execution of tasks is carried out by a set of
 instances. Each instance runs a local component of the Nephele framework
 ([Task
-Manager](taskmanager "taskmanager")).
+Manager](taskmanager.html "taskmanager")).
 A Task Manager receives one or more tasks from the Job Manager at a
 time, executes them and informs the Job Manager about their completion
 or possible errors. Unless a job is submitted to the Job Manager, we
@@ -26,12 +26,12 @@ cost-efficient processing.
 For details on the architectural components, refer to the following
 sections:
 
--   [JobManager](jobmanager "jobmanager")
--   [TaskManager](taskmanager "taskmanager")
--   [InstanceManager](instancemanager "instancemanager")
+-   [JobManager](jobmanager.html "jobmanager")
+-   [TaskManager](taskmanager.html "taskmanager")
+-   [InstanceManager](instancemanager.html "instancemanager")
 -   [Scheduler](scheduler "scheduler")
--   [MemoryManager](memorymanager "memorymanager")
--   [IOManager](iomanager "iomanager")
+-   [MemoryManager](memorymanager.html "memorymanager")
+-   [IOManager](iomanager.html "iomanager")
 -   [NepheleGUI](nephelegui "nephelegui")
--   [Client](nephele "nephele")
+-   [Client](nephele.html "nephele")
 

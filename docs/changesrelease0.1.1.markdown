@@ -35,7 +35,7 @@ Updates and Bug Fixes on Release 0.1.1
 
 Updates and Bug Fixes are only available in the source distribution
 available in our public Git repository ([build
-instructions](buildthesystem "buildthesystem")).
+instructions](buildthesystem.html "buildthesystem")).
   
  Of course, they will be included in the binary distributions of future
 releases.

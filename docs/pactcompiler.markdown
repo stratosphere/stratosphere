@@ -2,7 +2,7 @@ The Pact Compiler
 =================
 
 The Pact Compiler is the component that takes a [Pact
-Program](writepactprogram "writepactprogram")
+Program](writepactprogram.html "writepactprogram")
 and translates it into a Nephele DAG. The Pact Programming Model
 specifies the parallelism in a declarative way: What are dependencies
 for parallelization, rather than how to do it exactly. Due to that fact,
@@ -59,7 +59,7 @@ optimizer connects to the JobManager and requests information about the
 available instances. It selects a suitable instance type for the
 program's tasks and records the amount of memory that the instances have
 available. Refer to [Instances and
-Scheduling](instancesandscheduling "instancesandscheduling")
+Scheduling](instancesandscheduling.html "instancesandscheduling")
 for more information on how instances and resources are managed.
 
 The actual optimization process is inspired by the design of the
@@ -139,7 +139,7 @@ properties makes them overall cheaper.
 
 The example below shows two different plans for the simplified [TPC-H
 Query
-Example](tpch-q3example "tpch-q3example").
+Example](tpch-q3example.html "tpch-q3example").
 The first candidate represents the optimizer's choice to realize the
 *Match* contract though re-partitioning of both inputs. The presence of
 the [User Code

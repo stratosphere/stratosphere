@@ -124,9 +124,9 @@ Use User Code Annotations and Compiler Hints
     function violates may cause incorrect results. Refer to the [list of
     annotations](pactpm#user_code_annotations "pactpm")
     for an overview of available annotations, and to the [programming
-    tutorial](writepactprogram "writepactprogram")
+    tutorial](writepactprogram.html "writepactprogram")
     to learn how to attach them. Our
-    [examples](pactexamples "pactexamples")
+    [examples](pactexamples.html "pactexamples")
     also show how to correctly use them. We are currenlty prototyping
     static code analysis methods to infer those annotations
     automatically.

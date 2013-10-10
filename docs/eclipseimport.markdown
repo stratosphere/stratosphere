@@ -45,7 +45,7 @@ Clone the latest revision from our public github repository:
     git clone https://github.com/stratosphere-eu/stratosphere.git
 
 The source code will be placed in a directory called `stratosphere`. See
-[here](sourcecodestructure "sourcecodestructure")
+[here](sourcecodestructure.html "sourcecodestructure")
 for information on the structure of the source code.
 
 ### Import Source Code into Eclipse
