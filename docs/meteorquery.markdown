@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Formulating a Query with Meteor
 -------------------------------
 

@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Meteor Base Operators
 =====================
 

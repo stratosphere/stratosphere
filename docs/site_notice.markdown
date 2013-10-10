@@ -1,2 +1,5 @@
+---
+layout: documentation
+---
 Stratosphere Documentation
 ==========================

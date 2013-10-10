@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Here we will manage the manual conversion touch ups required to make the
 content comply with dokuwiki syntax. This is a list of all relevant wiki
 pages, we will divide the work and once a page is converted please mark

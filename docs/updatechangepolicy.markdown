@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Update and Change Policy
 ========================
 

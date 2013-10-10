@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Writing a PACT Program
 ======================
 

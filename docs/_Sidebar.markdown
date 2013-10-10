@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 **Main Documentation Sections**
 *  [Setup & Configuration](setupandconfig)
 *  [Pact Programming Model](pactprogrammingmodel)

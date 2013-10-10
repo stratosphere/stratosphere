@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Sopremo Operator Model
 ----------------------
 

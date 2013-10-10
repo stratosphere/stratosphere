@@ -22,6 +22,10 @@
 
 <script type="text/javascript" src="{{ site.baseurl }}/js/prettify/prettify.js"></script>
 
+<script type="text/javascript" src="{{ site.baseurl }}/js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ site.baseurl }}/js/bootstrap.min.js"></script>
+
+
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
 <script src="js/html5shiv.js"></script>
@@ -43,6 +47,7 @@
 
 </script>
 
+
 <!-- favicon -->
 <link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" />
 </head>
@@ -54,9 +59,6 @@
 	{{ content }}
 	
 	{% include footer.html %}
-
-	<script src="{{ site.baseurl }}/js/jquery.min.js"></script>
-	<script src="{{ site.baseurl }}/js/bootstrap.min.js"></script>
 	
 	{% if page.smooth_scroll %}
 	<script src="{{ site.baseurl }}/js/jquery.smooth-scroll.js"></script>

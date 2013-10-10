@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 PACT Task Execution Strategies
 ==============================
 

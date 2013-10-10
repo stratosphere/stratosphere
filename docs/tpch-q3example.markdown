@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 TPCH - Query 3
 ==============
 

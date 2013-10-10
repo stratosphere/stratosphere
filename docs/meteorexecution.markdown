@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Execution of Meteor Queries
 ---------------------------
 

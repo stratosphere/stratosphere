@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Build the System
 ================
 

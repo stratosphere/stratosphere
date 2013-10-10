@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Setting up Stratosphere on a Cluster
 ====================================
 

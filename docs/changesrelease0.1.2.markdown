@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Changelog and Updates of Release 0.1.2
 ======================================
 

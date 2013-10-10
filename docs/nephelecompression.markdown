@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Using Nephele with Channel Compression
 ======================================
 

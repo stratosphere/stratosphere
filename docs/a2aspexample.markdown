@@ -1,4 +1,7 @@
 ---
+layout: documentation
+---
+---
 layout: inner_complex
 ---
 

@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Best Practices of Pact Programming
 ==================================
 

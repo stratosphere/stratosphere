@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Implementation Details
 ======================
 

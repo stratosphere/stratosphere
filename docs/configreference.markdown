@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Configuration Reference
 =======================
 

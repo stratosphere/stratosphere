@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Stratosphere Development with Eclipse
 =====================================
 

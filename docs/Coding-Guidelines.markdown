@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 # Coding Guidelines
 
 The guidelines cover code conventions, documentation requirements, and utilities for easing the development of Stratosphere in Java.

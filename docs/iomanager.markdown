@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 I/O Manager
 -----------
 

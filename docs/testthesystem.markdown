@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 [[PageOutline]](pageoutline "pageoutline")
 
 Effective Testing on StratoSphere

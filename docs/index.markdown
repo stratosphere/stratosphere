@@ -5,7 +5,7 @@ title: Documentation Home
 
 # Table of Contents
 
-Before you start, we recommend you to follow our [Getting Started](gettingstarted) guide. 
+Before you start, we recommend you to follow our [Getting Started](gettingstarted.html) guide. 
 
 
 -   **[Setup &  Configuration](setupandconfig.html "wiki:setupandconfig")**

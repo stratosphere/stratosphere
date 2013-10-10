@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Eclipse Warning Settings
 ========================
 

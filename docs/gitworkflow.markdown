@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Git workflow
 ============
 

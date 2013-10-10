@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Input and Output Formats
 ========================
 

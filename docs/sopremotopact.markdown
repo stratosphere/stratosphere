@@ -1,3 +1,6 @@
+---
+layout: documentation
+---
 Translation of Sopremo Plan to Pact Plan
 ========================================
 
