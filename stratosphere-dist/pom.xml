@@ -24,7 +24,17 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
+			<artifactId>nephele-common-yarn</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
 			<artifactId>nephele-clustermanager</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>nephele-yarn</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

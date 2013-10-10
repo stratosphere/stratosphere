@@ -18,13 +18,12 @@ package eu.stratosphere.nephele.instance.local;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import eu.stratosphere.nephele.configuration.ConfigConstants;
@@ -41,11 +40,13 @@ import eu.stratosphere.nephele.util.ServerTestUtils;
  */
 public class LocalInstanceManagerTest {
 
+	private DiscoveryService discoveryService;
+	
 	/**
 	 * Starts the discovery service before the tests.
 	 */
-	@BeforeClass
-	public static void startDiscoveryService() {
+	@Before
+	public void startDiscoveryService() {
 
 		final String configDir = ServerTestUtils.getConfigDir();
 		if (configDir == null) {
@@ -54,7 +55,7 @@ public class LocalInstanceManagerTest {
 
 		GlobalConfiguration.loadConfiguration(configDir);
 
-		final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
+		/*final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
 		InetAddress bindAddress = null;
 		if (address != null) {
 			try {
@@ -62,11 +63,19 @@ public class LocalInstanceManagerTest {
 			} catch (UnknownHostException e) {
 				fail(e.getMessage());
 			}
-		}
+		}*/
 
+		// Start discovery service
+		final int discoveryPort = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_PORT_KEY,
+			ConfigConstants.DEFAULT_DISCOVERY_PORT);
+
+		// Start RPC service
+		final int rpcPort = GlobalConfiguration.getInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY,
+			ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT);
+		
 		try {
-			DiscoveryService.startDiscoveryService(bindAddress, 5555);
-		} catch (DiscoveryException e) {
+			this.discoveryService = new DiscoveryService(discoveryPort, rpcPort);
+		} catch (IOException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -74,10 +83,11 @@ public class LocalInstanceManagerTest {
 	/**
 	 * Stops the discovery service after the tests.
 	 */
-	@AfterClass
-	public static void stopDiscoveryService() {
-
-		DiscoveryService.stopDiscoveryService();
+	@After
+	public void stopDiscoveryService() {
+		if (this.discoveryService != null) {
+			this.discoveryService.shutdown();
+		}
 	}
 
 	/**

@@ -37,19 +37,6 @@
 		</developer>
 	</developers>
 
-	<modules>
-		<module>nephele-common</module>
-		<module>nephele-management</module>
-		<module>nephele-profiling</module>
-		<module>nephele-queuescheduler</module>
-		<module>nephele-clustermanager</module>
-		<module>nephele-hdfs</module>
-		<module>nephele-s3</module>
-		<module>nephele-visualization</module>
-		<module>nephele-server</module>
-		<module>nephele-examples</module>
-	</modules>
-
 	<reporting>
 		<plugins>
 		</plugins>
@@ -62,4 +49,19 @@
 
 	<dependencies>
 	</dependencies>
+
+	<modules>
+		<module>nephele-common</module>
+		<module>nephele-common-yarn</module>
+		<module>nephele-management</module>
+		<module>nephele-profiling</module>
+		<module>nephele-queuescheduler</module>
+		<module>nephele-clustermanager</module>
+		<module>nephele-hdfs</module>
+		<module>nephele-s3</module>
+		<module>nephele-visualization</module>
+		<module>nephele-server</module>
+		<module>nephele-examples</module>
+		<module>nephele-yarn</module>
+	</modules>
 </project>

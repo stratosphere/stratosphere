@@ -212,7 +212,7 @@ public class NepheleMiniCluster {
 		config.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, jobManagerRpcPort);
 		config.setInteger(ConfigConstants.TASK_MANAGER_IPC_PORT_KEY, taskManagerRpcPort);
 		config.setInteger(ConfigConstants.TASK_MANAGER_DATA_PORT_KEY, taskManagerDataPort);
-		config.setInteger(DiscoveryService.DISCOVERYPORT_KEY, discoveryPort);
+		config.setInteger(ConfigConstants.DISCOVERY_PORT_KEY, discoveryPort);
 		
 		// polling interval
 		config.setInteger(ConfigConstants.JOBCLIENT_POLLING_INTERVAL_KEY, 2);

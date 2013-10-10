@@ -24,7 +24,24 @@ public final class ConfigConstants {
 	// ------------------------------------------------------------------------
 	// Configuration Keys
 	// ------------------------------------------------------------------------
+	
+	// -------------------------- YARN specific -------------------------
+	/**
+	 * The name of the environment variable storing the job manager IPC address (if set).
+	 */
+	public static final String JOB_MANAGER_IPC_ADDRESS_ENV_KEY = "NEPHELE_JM_IPC_ADDRESS";
 
+	/**
+	 * The name of the environment variable storing the job manager IPC port (if set).
+	 */
+	public static final String JOB_MANAGER_IPC_PORT_ENV_KEY = "NEPHELE_JM_IPC_PORT";
+
+	/**
+	 * The name of the environment variable storing an optional task manager ID.
+	 */
+	public static final String TASK_MANAGER_ID_ENV_KEY = "NEPHELE_TM_ID";
+	
+	
 	// -------------------------- Addresses and Ports -------------------------
 
 	/**
@@ -74,11 +91,27 @@ public final class ConfigConstants {
 	 * The key for the config parameter defining flag to terminate a job at job-client shutdown.
 	 */
 	public static final String JOBCLIENT_SHUTDOWN_TERMINATEJOB_KEY = "jobclient.shutdown.terminatejob";
+	
+	/**
+	 * The key to retrieve the network port the discovery service listens on for incoming connections from the
+	 * configuration.
+	 */
+	public static final String DISCOVERY_PORT_KEY = "discoveryservice.port";
+	
+	/**
+	 * The key to retrieve the discovery service's magic number from the configuration.
+	 */
+	public static final String DISCOVERY_MAGICNUMBER_KEY = "discoveryservice.magicnumber";
 
 	// ------------------------------------------------------------------------
 	// Default Values
 	// ------------------------------------------------------------------------
 
+	/**
+	 * The default network address to connect to for communication with the job manager.
+	 */
+	public static final String DEFAULT_JOB_MANAGER_IPC_ADDRESS = "localhost";
+	
 	/**
 	 * The default network port to connect to for communication with the job manager.
 	 */
@@ -123,6 +156,16 @@ public final class ConfigConstants {
 	 * The default value for the flag to terminate a job on job-client shutdown.
 	 */
 	public static final boolean DEFAULT_JOBCLIENT_SHUTDOWN_TERMINATEJOB = true;
+	
+	/**
+	 * The default network port the discovery service listens on for incoming connections.
+	 */
+	public static final int DEFAULT_DISCOVERY_PORT = 7001;
+	
+	/**
+	 * The default magic number for the discovery service.
+	 */
+	public static final int DEFAULT_DISCOVERY_MAGICNUMBER = 0;
 
 	// ----------------------------- Instances --------------------------------
 
