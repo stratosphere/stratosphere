@@ -121,17 +121,13 @@ public class CombineDriver<T> implements PactDriver<GenericReducer<T, ?>, T>
 		this.comparator = this.taskContext.getInputComparator(0);
 
 		switch (ls) {
-		// local strategy is COMBININGSORT
-		// The Input is combined using a sort-merge strategy. Before spilling on disk, the data volume is reduced using
-		// the combine() method of the ReduceStub.
-		// An iterator on the sorted, grouped, and combined pairs is created and returned
-		case SORTED_GROUP:
+		case PARTIAL_GROUP:
 			this.input = new AsynchronousPartialSorter<T>(memoryManager, in, this.taskContext.getOwningNepheleTask(),
 						this.serializer, this.comparator.duplicate(), availableMemory);
 			break;
 		// obtain and return a grouped iterator from the combining sort-merger
 		default:
-			throw new RuntimeException("Invalid local strategy "+ls+" provided for CombineTask.");
+			throw new RuntimeException("Invalid local strategy provided for CombineTask.");
 		}
 	}
 
