@@ -105,7 +105,7 @@ public class ReduceNode extends SingleInputNode
 				}
 				useCombiner = true;
 			} else {
-				throw new CompilerException("Invalid local strategy hint for match contract: " + localStrategy);
+				throw new CompilerException("Invalid local strategy hint "+localStrategy+" for match contract: " + localStrategy);
 			}
 		} else {
 			useCombiner = isCombineable();
