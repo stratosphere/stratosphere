@@ -87,7 +87,7 @@ public class MatchNode extends TwoInputNode {
 			} else if (PactCompiler.HINT_LOCAL_STRATEGY_HASH_BUILD_SECOND.equals(localStrategy)) {
 				fixedDriverStrat = new HashJoinBuildSecondProperties(this.keys1, this.keys2);
 			} else {
-				throw new CompilerException("Invalid local strategy hint for match contract: " + localStrategy);
+				throw new CompilerException("Invalid local strategy hint "+localStrategy+" for match contract: " + localStrategy);
 			}
 			return Collections.singletonList(fixedDriverStrat);
 		} else {
