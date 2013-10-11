@@ -3,6 +3,13 @@ layout: documentation
 title: Getting Started
 ---
 
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/docs/">Documentation</a></li>
+  <li><a href="/docs/setupandconfig.html">Setup &amp; Configuration</a></li>
+  <li class="active">Getting Started</li>
+</ol>
+
 
 Getting Started
 ===============

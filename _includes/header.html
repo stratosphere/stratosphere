@@ -8,12 +8,12 @@
       <ul class="nav navbar-nav">
         <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quick Start</a></li>
         <!-- <li class="{% if page.url contains '/examples/' %}active{% endif %}"><a href="{{ site.baseurl }}/examples">Examples</a></li> -->
-        <li class="dropdown">
+        <li class="dropdown {% if page.url contains '/docs/' %}active{% endif %}"">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li><a href="https://stratosphere2.dima.tu-berlin.de/wiki" title="">Index</a></li>
-            <li><a href="https://stratosphere2.dima.tu-berlin.de/wiki/doku.php/wiki:gettingstarted" title="">QuickStart Tutorial</a></li>
-            <li><a href="https://stratosphere2.dima.tu-berlin.de/wiki/doku.php/wiki:faq" title="">FAQ</a></li>
+            <li><a href="/docs/" title="">Index</a></li>
+            <li><a href="/docs/gettingstarted.html" title="">QuickStart Tutorial</a></li>
+            <li><a href="/docs/faq.html" title="">FAQ</a></li>
           </ul>
         </li>
       </ul>

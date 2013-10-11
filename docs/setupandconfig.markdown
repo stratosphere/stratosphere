@@ -1,6 +1,14 @@
 ---
 layout: documentation
 ---
+
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/docs/">Documentation</a></li>
+  <li class="active">Setup &amp; Configuration</li>
+</ol>
+
+
 Setup & Configuration
 =====================
 
