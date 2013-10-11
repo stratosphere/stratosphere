@@ -84,7 +84,7 @@ public class CrossNode extends TwoInputNode
 			} else if (PactCompiler.HINT_LOCAL_STRATEGY_NESTEDLOOP_STREAMED_OUTER_SECOND.equals(localStrategy)) {
 				fixedDriverStrat = new CrossStreamOuterSecondDescriptor();
 			} else {
-				throw new CompilerException("Invalid local strategy hint for cross contract: " + localStrategy);
+				throw new CompilerException("Invalid local strategy hint "+localStrategy+" for cross contract: " + localStrategy);
 			}
 			
 			return Collections.singletonList(fixedDriverStrat);
