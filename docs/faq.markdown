@@ -2,15 +2,6 @@
 layout: documentation
 ---
 
-
-<ol class="breadcrumb">
-  <li><a href="/">Home</a></li>
-  <li><a href="/docs/">Documentation</a></li>
-  <li class="active">Frequently Asked Questions
-</li>
-</ol>
-
-
 Frequently Asked Questions
 ==========================
 

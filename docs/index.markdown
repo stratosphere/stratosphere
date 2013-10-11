@@ -3,12 +3,32 @@ layout: documentation
 title: Documentation Home
 ---
 
-# Table of Contents
+# Stratosphere Documentation 
 
 Before you start, we recommend you to follow our [Getting Started](gettingstarted.html) guide. 
 
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
--   **[Setup &  Configuration](setupandconfig.html "wiki:setupandconfig")**
+<!-- -   **[Setup &  Configuration](setupandconfig.html "wiki:setupandconfig")**
     -   [Cluster
         Setup](clustersetup.html "wiki:clustersetup")
     -   [Cloud
@@ -88,4 +108,4 @@ Before you start, we recommend you to follow our [Getting Started](gettingstarte
     -   [Subscribe to User Mailing
         List](https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users "https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users")
 
-* * * * *
+* * * * * -->
