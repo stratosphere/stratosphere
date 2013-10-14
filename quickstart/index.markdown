@@ -12,8 +12,8 @@ Stratosphere runs on all *UNIX-like* environments: **Linux**, **Mac OS X**, **Cy
 We check out the latest version from GitHub and build it with maven.
 
 <pre class="prettyprint" style="padding-left:1em">
-git clone https://github.com/dimalabs/ozone.git
-cd ozone
+git clone https://github.com/stratosphere/stratosphere.git
+cd stratosphere
 mvn clean package -DskipTests
 </pre>
 

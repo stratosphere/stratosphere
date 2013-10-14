@@ -14,7 +14,7 @@ Input Formats
 Input formats are a generic description of how your records enter the
 dataflow in a parallel fashion. All input formats implement the
 interface
-*[eu.stratosphere.pact.common.generic.io.InputFormat](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java")*.
+*[eu.stratosphere.pact.common.generic.io.InputFormat](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java")*.
 The input format describes two aspects:
 
 1.  How to partition an input into *splits* that are processed in
@@ -37,13 +37,13 @@ file input format reads the path to the file from the configuration.
 
 The actual split generation happens in the method *InputSplit[]
 createInputSplits(int minNumSplits)*. The method creates an array of
-*[eu.stratosphere.nephele.template.InputSplit](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/template/InputSplit.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/template/InputSplit.java")*s
+*[eu.stratosphere.nephele.template.InputSplit](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/template/InputSplit.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/template/InputSplit.java")*s
 (or a subclass thereof) that describe the partitions of the data. The
 input split interface itself does not provide more information than the
 number of the split, and input formats with sophisticated partitioning
 typically implement more complex subclasses of InputSplit. The file
 input format uses for example the more specialized
-*[eu.stratosphere.nephele.fs.FileInputSplit](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/fs/FileInputSplit.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/fs/FileInputSplit.java")*,
+*[eu.stratosphere.nephele.fs.FileInputSplit](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/fs/FileInputSplit.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/fs/FileInputSplit.java")*,
 which holds information about the file path, the start position in the
 file's byte stream, the partition length, and the number of hosts where
 the split is locally accessible. The internal semantics of the split are
@@ -68,7 +68,7 @@ the record generation can start. As an example, the file input format
 reads the path of the file, opens a file input stream and seeks that
 stream to the position that marks the beginning of the split. The input
 format for delimited records
-*[eu.stratosphere.pact.common.io.DelimitedInputFormat](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/DelimitedInputFormat.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/DelimitedInputFormat.java")*
+*[eu.stratosphere.pact.common.io.DelimitedInputFormat](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/DelimitedInputFormat.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/DelimitedInputFormat.java")*
 searches the file stream for the occurrence of the next delimiter.
 
 During the actual record generation process, the method **boolean
@@ -131,7 +131,7 @@ as shown below:
 
 You can easily create an input format that runs a data generator rather
 than reading the data with the help of the
-*[eu.stratosphere.pact.common.io.GenericInputFormat](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/GenericInputFormat.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/GenericInputFormat.java")*.
+*[eu.stratosphere.pact.common.io.GenericInputFormat](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/GenericInputFormat.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/GenericInputFormat.java")*.
 It uses a generic input split type that holds no information except its
 partition number. The example below shows a minimal example:
 

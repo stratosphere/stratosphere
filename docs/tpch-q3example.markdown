@@ -5,7 +5,7 @@ TPCH - Query 3
 ==============
 
 The source code of this example can be found
-[here](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java").
+[here](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java").
 
 Task Description
 ----------------
@@ -27,7 +27,7 @@ PACT Program
 
 The example PACT program implements the SQL Query given above in the
 Java class
-[eu.stratosphere.pact.example.relational.TPCHQuery3](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
+[eu.stratosphere.pact.example.relational.TPCHQuery3](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
 in the pact-examples module.
 
 [![](media/wiki/tpch3_pactprogram.2.png)](media/wiki/tpch3_pactprogram.2.png "tpch3_pactprogram.2.png")

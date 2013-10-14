@@ -147,7 +147,7 @@ locations listed below.
     ./examples/pact/pact-examples-0.2-WordCount.jar
 
 -   Source Code:
-    [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java")
+    [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCount.java")
 -   Documentation: [WordCount Example
     Documentation](wordcountexample.html "wordcountexample")
 
@@ -236,7 +236,7 @@ at the location given below.
     ./examples/pact/pact-examples-0.2-KMeansIteration.jar
 
 -   Source Code:
-    [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java")
+    [/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java")
 -   Documentation: [K-Means Example
     Documentation](kmeansexample.html "kmeansexample")
 

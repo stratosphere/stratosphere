@@ -161,7 +161,7 @@ For input contracts that operate on keys (like *Reduce*, *Match*, or
 *CoGroup*, one specifies which combination of the record's fields make
 up the key. An arbitrary combination of fields may used. See the [TPCH
 Query
-Exampe](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
+Exampe](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
 on how programs defining *Reduce* and *Match* contracts on one or more
 fields and can be written to minimally move data between fields.
 
