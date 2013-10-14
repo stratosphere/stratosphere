@@ -12,6 +12,15 @@ smooth_scroll: true
 		</ul>
 	</div> -->
 
+<script type="text/javascript">
+	var highlight_menu = function(path) {
+	    /* Highlight current link */    
+	    $('.nav li').removeClass('active');
+	    $('.nav li:has(a[href="' + path.split("/")[2] + '"])').addClass('active')
+	};
+</script>
+
+
 <div class="container">
  <div class="row">
         
@@ -102,4 +111,8 @@ smooth_scroll: true
 
       </div>
 </div>
+
+<script>
+    highlight_menu('{{page.url}}');
+</script>
 <!-- /.container -->
