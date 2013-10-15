@@ -210,15 +210,27 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			System.exit(FAILURERETURNCODE);
 		}
 		
-		// TODO: CHANGE THAT
-		
 		int ipcPort = 0; // -1;
-		
 		if( executionMode != ExecutionMode.YARN ) {		
 			ipcPort = GlobalConfiguration.getInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY,
 					ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT);
 		}
 
+		// Next, start the discovery manager
+		DiscoveryService discoveryService = null;
+		try {
+			int discoveryPort = -1;
+			if (executionMode != ExecutionMode.YARN) {
+				discoveryPort = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_PORT_KEY,
+													   		   ConfigConstants.DEFAULT_DISCOVERY_PORT); 						
+			}
+			discoveryService = new DiscoveryService(discoveryPort, ipcPort);
+		} catch (IOException e) {
+			LOG.fatal("Cannot start discovery manager: " + StringUtils.stringifyException(e));
+			System.exit(FAILURERETURNCODE);
+		}
+		this.discoveryService = discoveryService;		
+		
 		// First of all, start discovery manager
 		/*try {
 			DiscoveryService.startDiscoveryService(networkAddress, ipcPort);
@@ -296,21 +308,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		// Create multicastManager
 		this.multicastManager = new MulticastManager(this.scheduler);
-
-		// Next, start the discovery manager
-		DiscoveryService discoveryService = null;
-		try {
-			int discoveryPort = -1;
-			if (executionMode != ExecutionMode.YARN) {
-				discoveryPort = GlobalConfiguration.getInteger(ConfigConstants.DISCOVERY_PORT_KEY,
-					ConfigConstants.DEFAULT_DISCOVERY_PORT);
-			}
-			discoveryService = new DiscoveryService(discoveryPort, ipcPort);
-		} catch (IOException e) {
-			LOG.fatal("Cannot start discovery manager: " + StringUtils.stringifyException(e));
-			System.exit(FAILURERETURNCODE);
-		}
-		this.discoveryService = discoveryService;
 		
 		// Load profiler if it should be used
 		if (GlobalConfiguration.getBoolean(ProfilingUtils.ENABLE_PROFILING_KEY, false)) {

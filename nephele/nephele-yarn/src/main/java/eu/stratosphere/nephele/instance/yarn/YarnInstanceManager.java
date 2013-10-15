@@ -457,10 +457,11 @@ public final class YarnInstanceManager implements InstanceManager {
 
 		// Add to list of pending containers
 		pendingContainerList.add(container, instanceType);
+		
 
 		// Start bootstrap thread
 		YarnContainerBootstrapper ycb = new YarnContainerBootstrapper(container, this.nepheleHome, JobManager.jobManagerIPCPort, this.yarnRPC,
-			this.yarnConf);		
+			this.yarnConf, instanceType );		
 		ycb.start();
 	}
 

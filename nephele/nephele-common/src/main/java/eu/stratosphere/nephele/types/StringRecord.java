@@ -437,7 +437,7 @@ public class StringRecord implements Record {
 	 */
 	public static ByteBuffer encode(final String string, final boolean replace) throws CharacterCodingException {
 
-		final CharsetEncoder encoder = ENCODER_FACTORY.get();
+		final CharsetEncoder encoder = ENCODER_FACTORY.get();		
 		if (replace) {
 			encoder.onMalformedInput(CodingErrorAction.REPLACE);
 			encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);

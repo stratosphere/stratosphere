@@ -21,8 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 
@@ -41,7 +39,7 @@ final class PendingContainerList {
 	/**
 	 * The log object used to report debugging and error information.
 	 */
-	private static final Log LOG = LogFactory.getLog(PendingContainerList.class);
+	//private static final Log LOG = LogFactory.getLog(PendingContainerList.class);
 	
 	/**
 	 * A pending container list entry contains all information necesasry to either detect stale containers or to

@@ -19,6 +19,10 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/nephele-config.sh
 
+if [ "$1" != "" ]; then
+	NEPHELE_TM_HEAP=$1
+fi
+
 if [ "$NEPHELE_PID_DIR" = "" ]; then
 	NEPHELE_PID_DIR=/tmp
 fi
@@ -109,6 +113,9 @@ constructTaskManagerClassPath() {
 
 
 
+
+
+
 NEPHELE_TM_CLASSPATH=$(constructTaskManagerClassPath)
 
 log=$NEPHELE_LOG_DIR/nephele-$NEPHELE_IDENT_STRING-taskmanager-$HOSTNAME-$YARN_CONTAINER_ID.$$.log
@@ -118,4 +125,5 @@ log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$NEPHELE_CONF_DIR"/
 JVM_ARGS="$JVM_ARGS -XX:+UseParNewGC -XX:NewRatio=8 -XX:PretenureSizeThreshold=64m -Xms"$NEPHELE_TM_HEAP"m -Xmx"$NEPHELE_TM_HEAP"m"
 
 echo Starting Nephele task manager
+echo $JAVA_HOME/bin/java $JVM_ARGS $NEPHELE_OPTS $log_setting -classpath $NEPHELE_TM_CLASSPATH eu.stratosphere.nephele.taskmanager.TaskManager -configDir $NEPHELE_CONF_DIR > "$out" 2>&1 < /dev/null
 $JAVA_HOME/bin/java $JVM_ARGS $NEPHELE_OPTS $log_setting -classpath $NEPHELE_TM_CLASSPATH eu.stratosphere.nephele.taskmanager.TaskManager -configDir $NEPHELE_CONF_DIR > "$out" 2>&1 < /dev/null

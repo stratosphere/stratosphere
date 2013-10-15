@@ -40,6 +40,7 @@ import org.apache.hadoop.yarn.ipc.YarnRPC;
 import org.apache.hadoop.yarn.util.Records;
 
 import eu.stratosphere.nephele.configuration.ConfigConstants;
+import eu.stratosphere.nephele.instance.InstanceType;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -78,9 +79,15 @@ final class YarnContainerBootstrapper extends Thread {
 	 * The port of the job manager's RPC service.
 	 */
 	private final int rpcPort;
+	
+	/**
+	 * The characteristics of the container the TM is bootstrapped inside.
+	 */
+	private final InstanceType instanceType;
+	
 
 	YarnContainerBootstrapper(final Container container, final String nepheleHome, final int rpcPort,
-			final YarnRPC yarnRPC, final YarnConfiguration yarnConf) {
+			final YarnRPC yarnRPC, final YarnConfiguration yarnConf, final InstanceType instanceType) {
 
 		// sanity check
 		if (container == null) {
@@ -98,6 +105,9 @@ final class YarnContainerBootstrapper extends Thread {
 		if (yarnConf == null) {
 			throw new IllegalArgumentException("Argument yarnConf must not be null");
 		}
+		if( instanceType == null ) {
+			throw new IllegalArgumentException("Argument instanceType must not be null"); 
+		}
 
 		this.container = container;
 		this.nepheleHome = nepheleHome;
@@ -108,6 +118,7 @@ final class YarnContainerBootstrapper extends Thread {
 		final InetSocketAddress cmAddress = NetUtils.createSocketAddr(cmIpPortStr);
 
 		this.containerManager = (ContainerManager) yarnRPC.getProxy(ContainerManager.class, cmAddress, yarnConf);
+		this.instanceType = instanceType;
 	}
 
 	/**
@@ -138,11 +149,11 @@ final class YarnContainerBootstrapper extends Thread {
 			System.getenv(ApplicationConstants.NM_HOST_ENV));
 		environment.put(ConfigConstants.JOB_MANAGER_IPC_PORT_ENV_KEY, Integer.toString(this.rpcPort));
 		launchContext.setEnvironment(environment);
-
+		
 		// Command setup.
-		LOG.info("Completed setting up app master command " + command.toString());
+		LOG.info("Completed setting up app master command " + command.toString() + " " + instanceType.getMemorySize());
 		final List<String> commands = new ArrayList<String>();
-		commands.add(command.toString());
+		commands.add(command.toString() + " " + instanceType.getMemorySize());
 		launchContext.setCommands(commands);
 		final StartContainerRequest startRequest = Records.newRecord(StartContainerRequest.class);
 		startRequest.setContainerLaunchContext(launchContext);

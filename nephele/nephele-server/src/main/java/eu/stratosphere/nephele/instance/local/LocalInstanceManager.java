@@ -139,7 +139,7 @@ public class LocalInstanceManager implements InstanceManager {
 		this.networkTopology = NetworkTopology.createEmptyTopology();
 
 		this.instanceTypeDescriptionMap = new SerializableHashMap<InstanceType, InstanceTypeDescription>();
-
+		
 		this.localTaskManagerThread = new LocalTaskManagerThread();
 		this.localTaskManagerThread.start();
 	}
