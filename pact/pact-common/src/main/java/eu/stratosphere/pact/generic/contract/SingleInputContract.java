@@ -149,6 +149,9 @@ public abstract class SingleInputContract<T extends Stub> extends AbstractPact<T
 	public void accept(Visitor<Contract> visitor) {
 		if (visitor.preVisit(this)) {
 			for(Contract c : this.input) {
+				if(c == null) {
+					throw new IllegalArgumentException("The contract '"+this.getName()+"' has a illegal input (null)");
+				}
 				c.accept(visitor);
 			}
 			visitor.postVisit(this);
