@@ -27,7 +27,7 @@ The newly created directory is identical to the contents of the official release
 We change to it with:
 
 <pre class="prettyprint" style="padding-left:1em">
-cd stratosphere-dist/target/stratosphere-dist-0.2-ozone-bin/stratosphere-0.2-ozone/
+cd stratosphere-dist/target/stratosphere-dist-0.4-SNAPSHOT-bin/stratosphere-0.4-SNAPSHOT/
 </pre>
 
 Now, we can start Stratosphere in local mode:
@@ -48,7 +48,7 @@ Start the job:
 
 <pre class="prettyprint" style="padding-left:1em">
 ./bin/pact-client.sh run \
-    --jarfile ./examples/pact/pact-examples-0.2-ozone-WordCount.jar \
+    --jarfile ./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar \
     --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
 </pre>
 
