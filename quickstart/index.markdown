@@ -8,13 +8,14 @@ title: Quick Start - Overview
 
 <div class="row">
   <div class="col-md-4">
-	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="location.href='{{ site.baseurl }}/quickstart/java.html'">
-		<i class="icon-coffee icon-4x"></i><br> <br>Write a Stratosphere Job in Java
-	</button>
+	  <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="location.href='{{ site.baseurl }}/quickstart/java.html'">
+		  <i class="icon-coffee icon-4x"></i><br> <br>Write a Stratosphere Job in Java
+	  </button>
   </div>
   <div class="col-md-4">
-  	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="javascript:alert('ask aljoscha krettek');">
-  		<i class="icon-code icon-4x"></i><br> <br>Write a Stratosphere Job in Scala</button>
+  	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="location.href='{{ site.baseurl }}/quickstart/scala.html'">
+  		<i class="icon-code icon-4x"></i><br> <br>Write a Stratosphere Job in Scala
+    </button>
   </div>
   <div class="col-md-4">
   	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="location.href='{{ site.baseurl }}/quickstart/build.html'">

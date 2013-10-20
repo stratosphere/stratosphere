@@ -4,7 +4,7 @@ title: Quick Start - Java
 ---
 
 # Quickstart: Java
-	
+    
 
 ## Preparation
 
@@ -23,7 +23,7 @@ If you want to name your newly created project, use the following command. It wi
 ```
 mvn archetype:generate                              \
    -DarchetypeGroupId=eu.stratosphere               \
-   -DarchetypeArtifactId=stratosphere-quickstart    \
+   -DarchetypeArtifactId=quickstart-java            \
    -DarchetypeVersion=0.4-SNAPSHOT                  \
    -DarchetypeCatalog=https://oss.sonatype.org/content/repositories/snapshots/
 ```
@@ -33,7 +33,7 @@ mvn archetype:generate                              \
 Switch into the directory of your newly created project. If you've used the `curl` approach, the directory is called `quickstart`. Otherwise, it has the name of your artifactId.
 
 ```
-	cd quickstart
+    cd quickstart
 ```
 
 The `quickstart` project is a Maven project. We strongly recommend to import this project into your IDE. If you use Eclipse, the [m2e](http://www.eclipse.org/m2e/) allows to [import Maven projects](http://books.sonatype.com/m2eclipse-book/reference/creating-sect-importing-projects.html#fig-creating-import). Other IDEs such as IntelliJ also support this.
@@ -42,7 +42,7 @@ The `quickstart` project is a Maven project. We strongly recommend to import thi
 Browse to start writing your job.
 
 ```
-./src/main/java/quickstart/eu/stratosphere/quickstart/Job.java
+./src/main/java/eu/stratosphere/quickstart/Job.java
 ```
 
 Please note the `main()` method in this class, which allows you to start Stratosphere in a development/testing mode.
@@ -58,7 +58,7 @@ mvn clean package
 You will find a jar that runs on every Stratosphere cluster right here:
 
 ```
-./target/stratosphere-project-0.1-SNAPSHOT-Sample.jar
+./target/stratosphere-project-0.1-SNAPSHOT.jar
 ```
 
 
