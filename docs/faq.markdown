@@ -2,15 +2,6 @@
 layout: documentation
 ---
 
-
-<ol class="breadcrumb">
-  <li><a href="/">Home</a></li>
-  <li><a href="/docs/">Documentation</a></li>
-  <li class="active">Frequently Asked Questions
-</li>
-</ol>
-
-
 Frequently Asked Questions
 ==========================
 
@@ -96,7 +87,7 @@ Stratosphere is for 64bit Linux GTK systems. If you have a different
 system, you need a different SWT library.
 
 To fix the problem, update the maven dependency in
-*[/nephele/nephele-visualization/pom.xml](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-visualization/pom.xml "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-visualization/pom.xml")*
+*[/nephele/nephele-visualization/pom.xml](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-visualization/pom.xml "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-visualization/pom.xml")*
 to refer to your platform specific library.
 
 You can find a the list of available library versions under

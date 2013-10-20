@@ -82,7 +82,7 @@ Implement your own efficient Data Types
     whenever network is involved, data is sorted or hashed, or
     checkpoints are created.
 -   If your data type acts as a key, consider also implementing the
-    [NormalizableKey](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/NormalizableKey.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/NormalizableKey.java")
+    [NormalizableKey](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/NormalizableKey.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/NormalizableKey.java")
     interface. That allows the system to operate more efficiently during
     sorting.
 

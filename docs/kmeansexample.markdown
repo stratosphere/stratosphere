@@ -5,7 +5,7 @@ K-Means Iteration
 =================
 
 The source code of this example can be found
-[here](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java").
+[here](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java").
 
 Task description
 ----------------
@@ -51,7 +51,7 @@ PACT Program
 The example PACT program implements one iteration step (steps 2,3, and
 4) of the k-means algorithm. The implementation resides in the following
 Java class:
-[eu.stratosphere.pact.example.datamining.KMeansIteration.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java")
+[eu.stratosphere.pact.example.datamining.KMeansIteration.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/KMeansIteration.java")
 in the pact-examples module. All required classes (data types, data
 formats, PACT stubs, etc.) are contained in this class as static inline
 classes.
@@ -128,7 +128,7 @@ Data Generator
 
 We provide a data set generator to generate data points and cluster
 centers input files. The generator is implemented as Java class:
-[eu.stratosphere.pact.example.datamining.generator.KMeansGenerator.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/generator/KMeansGenerator.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/generator/KMeansGenerator.java")
+[eu.stratosphere.pact.example.datamining.generator.KMeansGenerator.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/generator/KMeansGenerator.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/datamining/generator/KMeansGenerator.java")
 in the pact-examples module.   
  The parameters of the main method of the generator are:
 

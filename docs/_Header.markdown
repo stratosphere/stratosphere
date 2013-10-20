@@ -1,4 +1,4 @@
 ---
 layout: documentation
 ---
-[Documentation Home](http://github.com/dimalabs/ozone/wiki)
+[Documentation Home](http://github.com/stratosphere/stratosphere/wiki)

@@ -5,7 +5,7 @@ Pact Record
 ===========
 
 The
-[PactRecord](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/PactRecord.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/PactRecord.java")
+[PactRecord](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/PactRecord.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/PactRecord.java")
 is the basic data type that flows in the PACT data flow programs. It
 replaces the Key/Value pair in MapReduce and is more generic and
 flexible.
@@ -13,7 +13,7 @@ flexible.
 The Pact Record can be thought of as a schema free tuple that may
 contain arbitrary fields. The fields may be any data type that
 implements the
-[Value](https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java")
+[Value](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java")
 interface, which describes how the type is serialized and deserialized.
 
 The interpretation of a field is up to the user code. Whenever a field

@@ -66,7 +66,7 @@ PACT Program
 The example PACT program implements one iteration step of the all pairs
 shortest path algorithm.   
  The implementation resides in the following Java class:
-[eu.stratosphere.pact.example.graph.PairwiseSP.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/PairwiseSP.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/PairwiseSP.java")
+[eu.stratosphere.pact.example.graph.PairwiseSP.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/PairwiseSP.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/PairwiseSP.java")
 in the pact-examples module.
 
 [![](media/wiki/all2all_sp_pactprogram.png)](media/wiki/all2all_sp_pactprogram.png "wiki:all2all_sp_pactprogram.png")

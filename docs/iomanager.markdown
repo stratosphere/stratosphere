@@ -36,7 +36,7 @@ Block Channels
 Block channels are instantiated with a channel ID (an internal id for
 the file path) and a synchronized queue that is a source or drain of
 buffers. The
-[BlockChannelWriter](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/BlockChannelWriter.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/BlockChannelWriter.java")
+[BlockChannelWriter](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/BlockChannelWriter.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/BlockChannelWriter.java")
 for example accepts memory segments (blocks), writes them as soon as
 possible, and returns the memory block that was written to the given
 queue. If the same queue is used to draw the next required memory

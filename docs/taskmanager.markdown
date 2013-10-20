@@ -15,7 +15,7 @@ it is still running.
 ### Interface
 
 The task manager implements the
-*[TaskOperationProtocol](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java")*
+*[TaskOperationProtocol](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java")*
 interface which is defined as part of the `nephele-server` project in
 the package
 *[eu.stratosphere.nephele.protocols](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols")*.

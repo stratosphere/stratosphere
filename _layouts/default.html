@@ -16,6 +16,7 @@
 <!-- Bootstrap core CSS -->
 <link href="{{ site.baseurl }}/css/bootstrap.flatly.min.css" rel="stylesheet" />
 <link href="{{ site.baseurl }}/css/main.css" rel="stylesheet" />
+<link href="{{ site.baseurl }}/css/documentation.css" rel="stylesheet" />
 <link rel="stylesheet" href="{{ site.baseurl }}/css/font-awesome/css/font-awesome.min.css">
 
 <link href="{{ site.baseurl }}/css/prettify.css" type="text/css" rel="stylesheet" />
@@ -35,6 +36,10 @@
 <!-- Google Analytics -->
 <script type="text/javascript">
 
+  if (window.location.href.indexOf('http://dimalabs.github.io/ozone') === 0) {
+  	window.location.href = 'http://stratosphere.eu/';
+  }
+
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-22995440-1']);
   _gaq.push(['_trackPageview']);
@@ -45,7 +50,8 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
-</script>
+</script>	
+
 
 
 <!-- favicon -->

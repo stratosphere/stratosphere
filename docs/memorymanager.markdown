@@ -11,7 +11,7 @@ The MemoryManager interface is defined as part of the `nephele-common`
 project in the package
 *[eu.stratosphere.nephele.services.memorymanager](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/ "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/")*.
 Memory is allocated in
-*[MemorySegments](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java")*,
+*[MemorySegments](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java")*,
 which have a certain fixed size and are also referred to as memory
 pages. The segments themselves can randomly access data at certain
 positions as certain types (int, long, byte[], …).
@@ -45,7 +45,7 @@ Default Memory Manager
 ----------------------
 
 Nephele provides a
-*[DefaultMemoryManager](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/services/memorymanager/spi/DefaultMemoryManager.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/services/memorymanager/spi/DefaultMemoryManager.java")*.
+*[DefaultMemoryManager](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/services/memorymanager/spi/DefaultMemoryManager.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/services/memorymanager/spi/DefaultMemoryManager.java")*.
 It is started with a certain memory size. The size may be exactly
 specified (in megabytes) in the Nephele configuration via the parameter
 `taskmanager.memory.size` (see [Configuration

@@ -31,7 +31,7 @@ PACT Program
 
 The weblog analysis example PACT program is implemented in the following
 Java class:
-[eu.stratosphere.pact.example.relational.WebLogAnalysis.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/WebLogAnalysis.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/WebLogAnalysis.java")
+[eu.stratosphere.pact.example.relational.WebLogAnalysis.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/WebLogAnalysis.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/WebLogAnalysis.java")
 in the pact-examples module.
 
 [![](media/wiki/weblog_pactprogram.png)](media/wiki/weblog_pactprogram.png "weblog_pactprogram.png")
@@ -77,7 +77,7 @@ Both generators produce identically structured test data.
 
 We provide a data set generator to generate the docs, ranks, and visits
 relations. The generator is implemented as Java class
-[eu.stratosphere.pact.example.relational.generator.WebLogGenerator.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/generator/WebLogGenerator.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/generator/WebLogGenerator.java")
+[eu.stratosphere.pact.example.relational.generator.WebLogGenerator.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/generator/WebLogGenerator.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/generator/WebLogGenerator.java")
 in the pact-examples module.   
  The parameters of the main method of the generator are:
 

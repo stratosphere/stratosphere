@@ -44,7 +44,7 @@ PACT Program
 
 The triangle enumeration example PACT program is implemented in the
 following Java class:
-[eu.stratosphere.pact.example.graph.EnumTriangles.java](https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/EnumTriangles.java "https://github.com/dimalabs/ozone/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/EnumTriangles.java")
+[eu.stratosphere.pact.example.graph.EnumTriangles.java](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/EnumTriangles.java "https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/graph/EnumTriangles.java")
 in the pact-examples module.
 
 [![](media/wiki/triangleenum_pactprogram.png)](media/wiki/triangleenum_pactprogram.png "triangleenum_pactprogram.png")

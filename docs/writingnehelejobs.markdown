@@ -361,7 +361,7 @@ In order to be able to receive events, and event listener implementing
 the interface *EventListener* (**not java.util.EventListener but the one
 from Nephele**)
 
-*[eu.stratosphere.nephele.event.task.EventListener](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/EventListener.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/EventListener.java")*
+*[eu.stratosphere.nephele.event.task.EventListener](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/EventListener.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/EventListener.java")*
 must be provided.
 
     import eu.stratosphere.nephele.event.task.EventListener;
@@ -432,9 +432,9 @@ place in case of *INMEMORY* channels.
 This is particularly of importance, if you plan to develop custom Record
 types or Events. All abstract classes/interfaces provided for custom
 Records (interface:
-*[eu.stratosphere.nephele.types.Record](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/types/Record.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/types/Record.java")*)
+*[eu.stratosphere.nephele.types.Record](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/types/Record.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/types/Record.java")*)
 or custom Events (abstract class:
-*[eu.stratosphere.nephele.event.task.AbstractTaskEvent](https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/AbstractTaskEvent.java "https://github.com/dimalabs/ozone/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/AbstractTaskEvent.java")*)
+*[eu.stratosphere.nephele.event.task.AbstractTaskEvent](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/AbstractTaskEvent.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/event/task/AbstractTaskEvent.java")*)
 implement or inherit the interface *IOReadableWritable*. Hence, a
 *write(DataOutput out)* and a *read(DataInput in)* method must be
 implemented for custom Records and Events.

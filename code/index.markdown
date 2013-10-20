@@ -9,13 +9,13 @@ title: Code
 We keep our development version always as stable as possible, so it's a viable option if you want to start using the system.
 
 Get the source:
-You can download the code here: [Download zip](https://github.com/dimalabs/ozone/archive/master.zip) or use Git, if you want to track our changes:
+You can download the code here: [Download zip](https://github.com/stratosphere/stratosphere/archive/master.zip) or use Git, if you want to track our changes:
 
-    git clone https://github.com/dimalabs/ozone.git
+    git clone https://github.com/stratosphere/stratosphere.git
 
 Go to the project directory:
 
-    cd ozone
+    cd stratosphere
 
 And build the project using Maven
 
@@ -25,7 +25,7 @@ The distribution binaries are assembled under
 
     stratosphere-dist/target/stratosphere-dist-0.2-ozone-bin/stratosphere-0.2-ozone/
 
-Please refer to our [README](https://github.com/dimalabs/ozone/blob/master/README.md) for further instructions on running your first code.
+Please refer to our [README](https://github.com/stratosphere/stratosphere/blob/master/README.md) for further instructions on running your first code.
 
 <div class="notice-important">
 	Under <code>stratosphere-dist/target/stratosphere-dist-0.2-ozone.deb</code> you will find a Debian package that can be used with your OS package manager if you are a Debian or Ubuntu user.
@@ -48,13 +48,13 @@ There are currently no official releases in the <em>Ozone</em> project. The most
 
 ## Support
 
-Don't hesitate to ask if you have any questions. The best way to get fast and good help is to [open an issue on GitHub](https://github.com/dimalabs/ozone/issues/new).
+Don't hesitate to ask if you have any questions. The best way to get fast and good help is to [open an issue on GitHub](https://github.com/stratosphere/stratosphere/issues/new).
 
 <!--
 
 <br>
  <div class="text-center">
-<a href="https://github.com/dimalabs/ozone/issues/new" class="btn btn-primary">Open an Issue on Github</a>
+<a href="https://github.com/stratosphere/stratosphere/issues/new" class="btn btn-primary">Open an Issue on Github</a>
 </div>
 <hr>
 
