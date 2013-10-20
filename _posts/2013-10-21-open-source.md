@@ -1,4 +1,10 @@
-# Introducing the New Open Source Stratosphere
+---
+layout: post
+title:  'Introducing the New Open Source Stratosphere'
+date:   2013-10-21 9:57:18
+categories: blog
+---
+
 
 In the past few weeks, we have have been working hard to make the system more accessible and developer-friendly. The changes include
 
