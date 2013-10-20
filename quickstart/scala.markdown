@@ -8,7 +8,7 @@ title: Quick Start - Scala
 
 ## Preparation
 
-You need to install [Maven](http://maven.apache.org/) and Java 7 first.
+You need to install [Maven](http://maven.apache.org/) (Version 3) and Java 7 first.
 
 ## Create Project files
 
@@ -50,7 +50,7 @@ Eclipse 3.7:
   * m2eclipse-scala: http://alchim31.free.fr/m2e-scala/update-site
   * build-helper-maven-plugin: https://repository.sonatype.org/content/repositories/forge-sites/m2e-extras/0.14.0/N/0.14.0.201109282148/
 
-With these you can import the maven project using the import dialog of eclipse.
+With these you can import the maven project using the import dialog for maven projects of eclipse.
 
 Browse to start writing your job.
 

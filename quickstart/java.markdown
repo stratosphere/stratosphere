@@ -8,7 +8,7 @@ title: Quick Start - Java
 
 ## Preparation
 
-You need to install [Maven](http://maven.apache.org/) and Java 7 first.
+You need to install [Maven](http://maven.apache.org/) (Version 3) and Java 7 first.
 
 ## Create Project files
 
@@ -33,7 +33,7 @@ mvn archetype:generate                              \
 Switch into the directory of your newly created project. If you've used the `curl` approach, the directory is called `quickstart`. Otherwise, it has the name of your artifactId.
 
 ```
-    cd quickstart
+cd quickstart
 ```
 
 The `quickstart` project is a Maven project. We strongly recommend to import this project into your IDE. If you use Eclipse, the [m2e](http://www.eclipse.org/m2e/) allows to [import Maven projects](http://books.sonatype.com/m2eclipse-book/reference/creating-sect-importing-projects.html#fig-creating-import). Other IDEs such as IntelliJ also support this.
