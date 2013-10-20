@@ -20,20 +20,20 @@ title: Quick Start - Overview
   <div class="col-md-4">
     <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','setup',this.href]); location.href='{{ site.baseurl }}/quickstart/build.html'">
       <i class="icon-cloud icon-4x"></i><br> <br>Set up Stratosphere
-      <br><br><small>Install on your computer or on a cluster to run jobs.</small>
     </button>
+    <br>Install on your computer or on a cluster to run jobs.
   </div>
   <div class="col-md-4">
   	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','scala',this.href]); location.href='{{ site.baseurl }}/quickstart/scala.html'">
   		<i class="icon-code icon-4x"></i><br> <br>Write job in Scala
-      <br><br><small>Develop Stratosphere jobs with Scala. Run and debug them locally.</small>
     </button>
+    <br>Develop Stratosphere jobs with Scala. Run and debug them locally.
   </div>
   <div class="col-md-4">
     <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','java',this.href]); location.href='{{ site.baseurl }}/quickstart/java.html'">
       <i class="icon-coffee icon-4x"></i><br> <br>Write job in Java
-      <br><br><small>You can alsow write jobs in Java, if you are not familar with Scala.</small>
     </button>
+    <br>You can alsow write jobs in Java, if you are not familar with Scala.
   </div>
 </div>
 
