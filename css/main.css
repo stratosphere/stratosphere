@@ -15,11 +15,11 @@ body {
 .jumbotron-teaser {
 	position: relative;
 	height: 400px;
-	display: block;
+/*  display: block;*/
 	color: #efefef;
-	background-position: center center;
-	background-size: cover;
-	background-repeat:no-repeat;
+/*  background-position: center center;*/
+/*  background-size: cover;*/
+/*  background-repeat: no-repeat;*/
 }
 
 .jumbotron-teaser h1 {
@@ -57,7 +57,7 @@ body {
 }
 
 .masthead {
-    background: url("../img/clouds5-clipped.jpg") bottom center no-repeat;
+    background: rgb(229, 238, 243) url("../img/clouds5-clipped.jpg") bottom center repeat;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2) inset, 0 -3px 7px rgba(0, 0, 0, 0.2) inset;
     text-align: center;
     margin-bottom:0;
