@@ -401,8 +401,7 @@ public class SWTVisualizationGUI implements SelectionListener, Runnable {
 	public void widgetSelected(SelectionEvent arg0) {
 
 		if (arg0.widget == this.jobTree) {
-
-			// Double click
+			
 			final Widget selectedWidget = arg0.widget;
 			if (!(selectedWidget instanceof Tree)) {
 				return;
