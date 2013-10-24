@@ -3,7 +3,16 @@ layout: inner_text
 title: Contact 
 ---
 
-If you have any troubles or questions about the system itself, please see our [Support page]({{ site.baseurl }}/code).
+### Mailing List
 
-For *project management issues, organizational questions, and collaboration requests*, please contact the speaker of the Stratosphere project, as found on our [Legal]({{ site.baseurl }}/legal) page
+We have a [Stratosphere-dev Google Group](https://groups.google.com/forum/#!forum/stratosphere-dev). 
+
+Contact us here for all general questions.
+
+### GitHub
+
+[Open an Issue](https://github.com/stratosphere/stratosphere/issues/new) on our [GitHub](https://github.com/stratosphere/stratosphere) page for bugs, documentation or website issues.
+
+### Official
+For *project management issues, organizational questions, and university/corperate collaboration requests*, please contact the speaker of the Stratosphere project, as found on our [Legal]({{ site.baseurl }}/legal) page
 

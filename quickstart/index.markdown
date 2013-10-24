@@ -1,55 +1,42 @@
 --- 
 layout: inner_simple
-title: Quick Start
+title: Quick Start - Overview
 ---
 
-<p class="lead">Three easy steps to Stratosphere: Build, Start &amp; Run.</p>
+<p style="font-size: 50px;margin-bottom:50px" class="text-center">What do you want to do?</p>
 
-<h3><a id="build"></a>1. Build</h3>
 
-Stratosphere runs on all *UNIX-like* environments: **Linux**, **Mac OS X**, **Cygwin** on **Windows**. The only requirements are Java (6 or 7), maven, and git.
+<div class="row">
+  <div class="col-md-2">
+  </div>
+  <div class="col-md-8">
+    <p>There are plenty of ways to start using Stratosphere. Install it, if you want to get to know the infrastructure. Application developers should start immediately with their favorite programming language.</p>
+  </div>
+  <div class="col-md-2">
+  </div>
+</div>
 
-We check out the latest version from GitHub and build it with maven.
+<div class="row" style="margin-top:20px">
+  <div class="col-md-4">
+    <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','setup',this.href]); location.href='{{ site.baseurl }}/quickstart/build.html'">
+      <i class="icon-cloud icon-4x"></i><br> <br>Set up Stratosphere
+    </button>
+    <br>Install on your computer or on a cluster to run jobs.
+  </div>
+  <div class="col-md-4">
+  	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','scala',this.href]); location.href='{{ site.baseurl }}/quickstart/scala.html'">
+  		<i class="icon-code icon-4x"></i><br> <br>Write job in Scala
+    </button>
+    <br>Develop Stratosphere jobs with Scala. Run and debug them locally.
+  </div>
+  <div class="col-md-4">
+    <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','java',this.href]); location.href='{{ site.baseurl }}/quickstart/java.html'">
+      <i class="icon-coffee icon-4x"></i><br> <br>Write job in Java
+    </button>
+    <br>You can alsow write jobs in Java, if you are not familar with Scala.
+  </div>
+</div>
 
-<pre class="prettyprint" style="padding-left:1em">
-git clone https://github.com/stratosphere/stratosphere.git
-cd stratosphere
-mvn clean package -DskipTests
-</pre>
 
-Stratosphere is now installed in `stratosphere-dist/target`.
-If you’re a Debian/Ubuntu user, you’ll also find a `.deb` package here.
 
-<h3><a id="start"></a>2. Start</h3>
 
-The newly created directory is identical to the contents of the official release distribution.
-
-We change to it with:
-
-<pre class="prettyprint" style="padding-left:1em">
-cd stratosphere-dist/target/stratosphere-dist-0.4-SNAPSHOT-bin/stratosphere-0.4-SNAPSHOT/
-</pre>
-
-Now, we can start Stratosphere in local mode:
-
-<pre class="prettyprint" style="padding-left:1em">
-./bin/start-local.sh
-</pre>
-
-<h3><a id="run"></a>3. Run</h3>
-
-We will run a simple “Word Count” example. Get some test data:
-
-<pre class="prettyprint" style="padding-left:1em">
-wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
-</pre>
-
-Start the job:
-
-<pre class="prettyprint" style="padding-left:1em">
-./bin/pact-client.sh run \
-    --jarfile ./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar \
-    --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
-</pre>
-
-You will find a file called `wordcount-result.txt` in your current directory.

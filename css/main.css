@@ -426,3 +426,8 @@ ul.posts span {
     padding:20px;
     width: 150px;
 }
+
+.gettingstarted-choices {
+    min-height: 250px;
+    white-space: normal;
+}
