@@ -49,7 +49,7 @@ Start the job:
 
 <pre class="prettyprint" style="padding-left:1em">
 ./bin/pact-client.sh run \
-    --jarfile ./examples/pact/pact-examples-0.2-ozone-WordCount.jar \
+    --jarfile ./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar \
     --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
 </pre>
 
