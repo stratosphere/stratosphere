@@ -4,7 +4,7 @@
 
 /* Global Reset */
 body {
-	padding-top: 50px;
+	padding-top: 52px;
 }
 
 
@@ -15,11 +15,11 @@ body {
 .jumbotron-teaser {
 	position: relative;
 	height: 400px;
-	display: block;
+/*  display: block;*/
 	color: #efefef;
-	background-position: center center;
-	background-size: cover;
-	background-repeat:no-repeat;
+/*  background-position: center center;*/
+/*  background-size: cover;*/
+/*  background-repeat: no-repeat;*/
 }
 
 .jumbotron-teaser h1 {
@@ -41,16 +41,12 @@ body {
     color: #000;
 }
 
-/*.summit {
-    font-size:2em;
-    padding-bottom:1em;
-}*/
 .summit {
-    font-size:2em;
+    font-size: 2em;
     text-align: center;
     background-color: #FAFAFA;
     border-bottom: 1px solid #E5E5E5;
-    border-top: 1px solid #FFFFFF;
+    border-top: 1px solid #E5E5E5;
     color: #777777;
     padding: 15px 20px;
     margin-bottom: 1em;
@@ -60,20 +56,13 @@ body {
     color: #555555;
 }
 
-.jumbotron {
-      background: url("../img/clouds5-clipped.jpg") bottom center no-repeat;
-/*      background: linear-gradient(45deg, #020031 0%, #6D3353 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);*/
-/*      background: linear-gradient(45deg, #6B95AF 0%, #036 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);*/
-      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2) inset, 0 -3px 7px rgba(0, 0, 0, 0.2) inset;
-/*      color: #FFF;*/
-/*      padding: 40px 0;z*/
-      position: relative;
-      text-align: center;
-/*      font-weight:bold;*/
-/*      text-shadow: 0 2px 2px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.3);*/
+.masthead {
+    background: rgb(229, 238, 243) url("../img/clouds5-clipped.jpg") bottom center repeat;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2) inset, 0 -3px 7px rgba(0, 0, 0, 0.2) inset;
+    text-align: center;
     margin-bottom:0;
-  }
-  
+}
+
 .sidebar {
     position: static;
     background-color: #F7F5FA;
@@ -111,7 +100,6 @@ body {
     padding-left: 30px;
     padding-top: 3px;
 }
-
 
 .sidenav {
     background-color: #F7F5FA;
@@ -393,7 +381,7 @@ ul.posts span {
   
     .subnav-fixed {
         position: fixed;
-        top: 50px;
+        top: 51px;
         left: 0;
         right: 0;
         z-index: 1020; /* 10 less than .navbar-fixed to prevent any overlap */

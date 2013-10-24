@@ -32,11 +32,6 @@
  @font-face {font-family: 'ProximaNova-Thin';src: url('http://jetstrap-site.s3.amazonaws.com/webfonts/ProximaNova_Thin.eot');src: url('http://jetstrap-site.s3.amazonaws.com/webfonts/ProximaNova_Thin.eot?#iefix') format('embedded-opentype'),url('http://jetstrap-site.s3.amazonaws.com/webfonts/ProximaNova_Thin.woff') format('woff'),url('http://jetstrap-site.s3.amazonaws.com/webfonts/ProximaNova_Thin.ttf') format('truetype');}
 */
 
-
-body {
-  padding-top: 80px;
-}
-
 .navbar-inner {
   padding: 5px 0px;
   background-image: none;

@@ -4,7 +4,7 @@
 
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-<meta name="description" content="Stratosphere is a DFG-funded research project investigating new paradigms for scalable, complex analytics on massively-parallel data sets. The Stratosphere System is available under the Apache License, Version 2.0." />
+<meta name="description" content="Stratosphere is a leading Open Source platform for Big Data Analytics. Its novel operator model allows to specify advanced processing jobs in Java and Scala. It is available under the Apache License, Version 2.0." />
 <meta name="keywords" content="stratosphere, big data, data analytics, scalable information management, massively-parallel data procesing" />
 <title>Stratosphere &raquo; {{ page.title }}</title>
 <meta name="viewport" content="width=device-width" />
@@ -14,9 +14,9 @@
 <link rel="stylesheet" href="{{ site.baseurl }}/css/syntax.css" />
 
 <!-- Bootstrap core CSS -->
-<link href="{{ site.baseurl }}/css/bootstrap.flatly.min.css" rel="stylesheet" />
+<link href="{{ site.baseurl }}/css/bootstrap.css" rel="stylesheet" />
 <link href="{{ site.baseurl }}/css/main.css" rel="stylesheet" />
-<link href="{{ site.baseurl }}/css/documentation.css" rel="stylesheet" />
+{% if page.url contains '/docs' %}<link href="{{ site.baseurl }}/css/documentation.css" rel="stylesheet" />{% endif %}
 <link rel="stylesheet" href="{{ site.baseurl }}/css/font-awesome/css/font-awesome.min.css">
 
 <link href="{{ site.baseurl }}/css/prettify.css" type="text/css" rel="stylesheet" />
@@ -26,7 +26,6 @@
 <script type="text/javascript" src="{{ site.baseurl }}/js/jquery.min.js"></script>
 <script type="text/javascript" src="{{ site.baseurl }}/js/bootstrap.min.js"></script>
 
-
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
 <script src="js/html5shiv.js"></script>
@@ -35,11 +34,6 @@
 
 <!-- Google Analytics -->
 <script type="text/javascript">
-
-  if (window.location.href.indexOf('http://dimalabs.github.io/ozone') === 0) {
-  	window.location.href = 'http://stratosphere.eu/';
-  }
-
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-22995440-1']);
   _gaq.push(['_trackPageview']);
@@ -52,24 +46,22 @@
 
 </script>	
 
-
-
 <!-- favicon -->
 <link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" />
 </head>
 
 <body data-offset='150' data-spy="scroll" onload="prettyPrint()" data-target="#navbar-inner">
 
-	{% include header.html %}
-	
-	{{ content }}
-	
-	{% include footer.html %}
-	
-	{% if page.smooth_scroll %}
-	<script src="{{ site.baseurl }}/js/jquery.smooth-scroll.js"></script>
-	<script src="{{ site.baseurl }}/js/subnav.js"></script>
-	{% endif %}
-	
+{% include header.html %}
+
+{{ content }}
+
+{% include footer.html %}
+
+{% if page.smooth_scroll %}
+<!-- <script src="{{ site.baseurl }}/js/jquery.smooth-scroll.js"></script> -->
+<script src="{{ site.baseurl }}/js/subnav.js"></script>
+{% endif %}
+
 </body>
 </html>

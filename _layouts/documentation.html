@@ -1,6 +1,5 @@
 ---
 layout: default
-smooth_scroll: true
 ---
 
 <!-- 
@@ -20,99 +19,46 @@ smooth_scroll: true
 	};
 </script>
 
-
-<div class="container">
- <div class="row">
-        
-
-        <div class="span3">
-<!--           <ul id="menu" class="nav nav-list" data-spy="affix">
-            <li class="nav-header">JETSTRAP DOCS</li>
-            <li data-section=""><a href="/">Home</a></li>
-            <li class="nav-header">USING JETSTRAP</li>
-            <li data-section="jetstrap/gettingstarted"><a href="/jetstrap/gettingstarted.html">Getting Started</a></li>
-            <li data-section="builder/components"><a href="/builder/components.html">Components</a></li>
-            <li class="nav-header">SUPPORT</li>
-            <li><a href="mailto:support@jetstrap.com">Contact Support</a></li>
-          </ul> -->
-
-		<ul id="menu" class="nav nav-list" data-spy="affix">
-		<li class="nav-header">Documentation Home</li>
-		<li><a href="gettingstarted.html">Getting Started</a></li>
-
-
-		<li class="nav-header">Setup &amp;  Configuration</li>
-		<li>  <a href="clustersetup.html" title="wiki:clustersetup">Cluster Setup</a></li>
-		<li>  <a href="cloudsetup.html" title="wiki:cloudsetup">Cloud Setup</a></li>
-		<li>  <a href="instancesandscheduling.html" title="wiki:instancesandscheduling">Resource Scheduling</a></li>
-		<li>  <a href="configreference.html" title="wiki:configreference">Configuration	Reference</a></li>
-		<li>  <a href="nephelecompression.html" title="wiki:nephelecompression">Channel Compression</a></li>
-
-		<li class="nav-header">Pact Programming  Model</li>
-		<li>  <a href="pactpm.html" title="wiki:pactpm">PACT Programming Model</a></li>
-		<li>  <a href="writepactprogram.html" title="wiki:writepactprogram">Write a PACT Program</a></li>
-		<li>  <a href="pactexamples.html" title="wiki:pactexamples">Example PACT Programs</a></li>
-		<li>  <a href="executepactprogram.html" title="wiki:executepactprogram">Execute a Program</a></li>
-		<li>  <a href="testpactprogram.html" title="wiki:testpactprogram">Test a PACT Program</a></li>
-		<li>  <a href="advancedpactprogramming.html" title="wiki:advancedpactprogramming">Best Practices</a></li>
-		<li>  <a href="antdeployment.html" title="wiki:antdeployment">Deployment with Ant</a></li>
-		
-		<li class="nav-header">Writing Nephele Jobs</li>
-		<li ><a href="writingnehelejobs.html" title="wiki:writingnehelejobs">Writing Nephele Jobs</a></li>
-
-		<li class="nav-header"><a href="meteorql.html" title="wiki:meteorql">Meteor Query Language</a></li>
-		<li>  <a href="meteorquery.html" title="wiki:meteorquery">Formulating a	Query</a></li>
-		<li>  <a href="meteorexecution.html" title="wiki:meteorexecution">Executing a Query</a></li>
-		<li>  <a href="meteorbaseoperators.html" title="wiki:meteorbaseoperators">Standard operators in	Meteor</a></li>
-		
-		<li class="nav-header">Sopremo Operator Model</li>
-		<li>  <a href="sopremoom.html" title="wiki:sopremoom">Operator Model</a></li>
-		<li>  <a href="sopremooperators.html" title="wiki:sopremooperators">Custom Operators &amp; Packages</a></li>
-		<li>  <a href="sopremoexpressions.html" title="wiki:sopremoexpressions">Evaluation	Expressions</a></li>
-		<li>  <a href="sopremopackages.html" title="wiki:sopremopackages">Existing Sopremo	Packages</a></li>
-		<li>  <a href="sopremoserialization.html" title="wiki:sopremoserialization">Serialization to PactRecords</a></li>
-
-		<li class="nav-header">Stratosphere	Development</li>
-		<li> <a href="http://github.com/stratosphere/stratosphere/wiki/">Wiki</a></li>
-
-<!-- 		<li>  <a href="systemarchitecture.html" title="wiki:systemarchitecture">The System's
-		Architecture</a></li>
-		<li>  <a href="sourcecodestructure.html" title="wiki:sourcecodestructure">Source Code
-		Structure</a></li>
-		<li>  <a href="buildthesystem.html" title="wiki:buildthesystem">Build
-		Stratosphere</a></li>
-		<li>  <a href="eclipseimport.html" title="wiki:eclipseimport">Stratosphere Development with
-		Eclipse</a></li>
-		<li>  <a href="testthesystem.html" title="wiki:testthesystem">Test
-		Stratosphere</a></li>
-		<li>  <a href="codingguidelines.html" title="wiki:codingguidelines">Coding
-		Guidelines</a></li>
-		<li>  <a href="licensing.html" title="wiki:licensing">Licensing</a></li>
- -->		
-<!-- 		<li class="nav-header">Updates and Changes</li>
-
-
-		<li>  <a href="updatechangepolicy.html" title="wiki:updatechangepolicy">Update and Change
-		Policy</a></li>
-		<li>  <a href="changelogs.html" title="wiki:changelogs">Changelogs and Updates of
-		Releases</a></li>
-		<li>  <a href="https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users" title="https://lists.tu-berlin.de/mailman/listinfo/stratosphere-users">Subscribe to User Mailing
-		List</a></li> -->
-		
-		</ul>
-
-
-        </div>
-
-        <div id="doc-content" class="span9" ><!--  style="padding-left: 30%" -->
-			{{content}}
-        </div>
-
-
-      </div>
+<div class="container" style="margin-top: 1em;">
+    <div class="span3">
+      <ul id="menu" class="nav nav-list" data-spy="affix">
+        <li class="nav-header">Documentation Home</li>
+        <li><a href="gettingstarted.html">Getting Started</a></li>
+        <li class="nav-header">Setup &amp;  Configuration</li>
+        <li><a href="clustersetup.html" title="wiki:clustersetup">Cluster Setup</a></li>
+        <li><a href="cloudsetup.html" title="wiki:cloudsetup">Cloud Setup</a></li>
+        <li><a href="instancesandscheduling.html" title="wiki:instancesandscheduling">Resource Scheduling</a></li>
+        <li><a href="configreference.html" title="wiki:configreference">Configuration	Reference</a></li>
+        <li><a href="nephelecompression.html" title="wiki:nephelecompression">Channel Compression</a></li>
+        <li class="nav-header">Pact Programming  Model</li>
+        <li><a href="pactpm.html" title="wiki:pactpm">PACT Programming Model</a></li>
+        <li><a href="writepactprogram.html" title="wiki:writepactprogram">Write a PACT Program</a></li>
+        <li><a href="pactexamples.html" title="wiki:pactexamples">Example PACT Programs</a></li>
+        <li><a href="executepactprogram.html" title="wiki:executepactprogram">Execute a Program</a></li>
+        <li><a href="testpactprogram.html" title="wiki:testpactprogram">Test a PACT Program</a></li>
+        <li><a href="advancedpactprogramming.html" title="wiki:advancedpactprogramming">Best Practices</a></li>
+        <li><a href="antdeployment.html" title="wiki:antdeployment">Deployment with Ant</a></li>
+        <li class="nav-header">Writing Nephele Jobs</li>
+        <li><a href="writingnehelejobs.html" title="wiki:writingnehelejobs">Writing Nephele Jobs</a></li>
+        <li class="nav-header"><a href="meteorql.html" title="wiki:meteorql">Meteor Query Language</a></li>
+        <li><a href="meteorquery.html" title="wiki:meteorquery">Formulating a	Query</a></li>
+        <li><a href="meteorexecution.html" title="wiki:meteorexecution">Executing a Query</a></li>
+        <li><a href="meteorbaseoperators.html" title="wiki:meteorbaseoperators">Standard operators in	Meteor</a></li>
+        <li class="nav-header">Sopremo Operator Model</li>
+        <li><a href="sopremoom.html" title="wiki:sopremoom">Operator Model</a></li>
+        <li><a href="sopremooperators.html" title="wiki:sopremooperators">Custom Operators &amp; Packages</a></li>
+        <li><a href="sopremoexpressions.html" title="wiki:sopremoexpressions">Evaluation	Expressions</a></li>
+        <li><a href="sopremopackages.html" title="wiki:sopremopackages">Existing Sopremo	Packages</a></li>
+        <li><a href="sopremoserialization.html" title="wiki:sopremoserialization">Serialization to PactRecords</a></li>
+        <li class="nav-header">Stratosphere Development</li>
+        <li><a href="http://github.com/stratosphere/stratosphere/wiki/">Wiki</a></li>
+      </ul>
+    </div>
+    <div id="doc-content" class="span9">
+{{content}}
+    </div>
 </div>
 
 <script>
     highlight_menu('{{page.url}}');
 </script>
-<!-- /.container -->

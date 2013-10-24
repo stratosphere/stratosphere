@@ -1,33 +1,29 @@
-<div class="navbar navbar-default navbar-fixed-top">
-  <!-- <a href="https://github.com/dimalabs/ozone" class="hidden-xs"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1000;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a> -->
+<div class="navbar-inverse navbar-default navbar-fixed-top">
   <div class="container">
-    <div class="navbar-header navbar-default">
-      <a class="navbar-brand" href="{{ site.baseurl }}/"><i class="icon-home"></i> Stratosphere</a>
+    <div class="navbar-header">
+      <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle" type="button">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="{{ site.baseurl }}/" class="navbar-brand"><i class="icon-home"></i> Stratosphere</a>
     </div>
-    <div class="collapse navbar-collapse">
+    <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quick Start</a></li>
-        <!-- <li class="{% if page.url contains '/examples/' %}active{% endif %}"><a href="{{ site.baseurl }}/examples">Examples</a></li> -->
-        <li class="dropdown {% if page.url contains '/docs/' %}active{% endif %}"">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a href="{{ site.baseurl }}/docs/" title="">Index</a></li>
-            <li><a href="{{ site.baseurl }}/docs/gettingstarted.html" title="">QuickStart Tutorial</a></li>
-            <li><a href="{{ site.baseurl }}/docs/faq.html" title="">FAQ</a></li>
-          </ul>
-        </li>
+        <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quickstart</a></li>
+        <li class="{% if page.url contains '/docs/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/">Documentation</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Blog</a></li>
+        <li class="{% if page.url contains '/blog' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Blog</a></li>
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Project <b class="caret"></b></a>
+          <a data-toggle="dropdown" class="dropdown-toggle" href="#">Project <b class="caret"></b></a>
           <ul class="dropdown-menu">
             <li class="{% if page.url contains '/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/funding">Funding</a></li>
             <li class="{% if page.url contains '/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/people">People</a></li>
             <li class="{% if page.url contains '/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/publications">Publications</a></li>
           </ul>
         </li>
-        <li  class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
+        <li class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
       </ul>
     </div>
   </div>
