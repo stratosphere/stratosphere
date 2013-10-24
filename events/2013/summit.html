@@ -3,9 +3,11 @@ layout: inner_complex
 title:  Stratosphere Summit 
 subtitle: Nov 14th 2013 @ DIMA Labs, TU Berlin 
 links: 
+  -       { anchor: schedule, title: Schedule }
   -       { anchor: program, title: Program }
   -       { anchor: registration, title: Registration }
   -       { anchor: location, title: Location } 
+  -       { anchor: accommodation, title: Accommodation }
 jumbotron:
   title:       Stratosphere Summit
   subtitle:    November 14-15th, Berlin
@@ -13,55 +15,275 @@ jumbotron:
   image:       summit_jumbotron.jpg
 ---
 
-<section id="program">
+<section id="schedule">
 	<!-- section title -->
-	<h2>Program</h2>
-	Please note that the agenda is subject to changes. 
+	<h2>Schedule</h2>
+	Please note that the agenda is subject to slight changes. 
 	<!-- section content -->
 	<div>
 	  <h3>Thursday, November 14</h3> 
 	  <table class="table">
 	    <tr>
-	      <td>9:00-10:00</td><td>Keynote by <a href="http://www.researchgate.net/profile/Ijad_Madisch/">Ijad Madisch, ResearchGate</a></td>
+	      <td>9:00-10:00</td><td><a href="#ijad_keynote">From an idea to a disruptive technology, Ijad Madisch, ResearchGate</a></td>
 	    </tr>
 	    <tr>
 	      <td>10:00-10:30</td><td>Coffee break</td> 
 	    </tr>
 	    <tr>
-	      <td>10:30-12:00</td><td>The Stratosphere Platform for Data Analytics and recent updates</td> 
+	      <td>10:30-12:00</td><td><a href="#stratosphere_talk">The Stratosphere Platform for Data Analytics and recent updates</a></td> 
 	    </tr>
 	    <tr>
 	      <td>12:00-14:00</td><td>Lunch</td> 
 	    </tr>
 	    <tr>
-	      <td>14:00-15:00</td><td>Keynote by <a href="http://www.laboratories.telekom.com/public/English/ueber_uns/Pages/Marten-Schoenherr.aspx">Marten Schoenherr, Deutsche Telekom</a></td> 
+	      <td>14:00-15:00</td><td><a href="#marten_keynote">Keynote by Marten Schoenherr, Deutsche Telekom</a></td> 
 	    </tr>
 	    <tr>
-	      <td>15:00-18:30</td><td>Hands-on session: Practical data analysis with Stratosphere</td>
-	    </tr>
-	    <tr>
-	      <td></td><td>Poster and demo session</td> 
+	      <td>15:00-18:30</td><td><a href="#handson_session">Hands-on session: Data analysis with Stratosphere</a></td>
 	    </tr>
 	  </table>
 	  <h3>Friday, November 15</h3> 
 	  <table class="table">
 	    <tr>
-	      <td>9:00-10:00</td><td>Keynote by <a href="https://infosys.uni-saarland.de/people/dittrich.php">Jens Dittrich, University of Saarland</a></td>
+	      <td>9:00-10:00</td><td><a href="#jens_keynote">Keynote by Jens Dittrich, University of Saarland</a></td>
 	    </tr>
 	    <tr>
-	      <td>10:00-11:00</td><td>Keynote by <a href="http://internetmemory.org/en/">Julen Masanes, Internet Memory Research</a></td> 
+	      <td>10:00-11:00</td><td><a href="#julien_keynote">Keynote by Julen Masanes, Internet Memory Research</a></td> 
 	    </tr>
 	    <tr>
-	      <td>11:00-14:00</td><td>Panel discussion and closing remarks</td> 
+	      <td>11:00-14:00</td><td><a href="#poster_session">Poster and demo session: Research with Stratosphere</a></td> 
 	    </tr>
 	  </table>
 	</div>
 </section>
 
+<section id="program">
+  <h2>Program</h2>
+  <div>
+    <p id="ijad_keynote"><h3>From an Idea to a Disruptive Technology, Ijad Madisch (ResearchGate)</h3>
+
+    <p> "A social network for researchers? Forget it, that’s
+      impossible. Researchers aren’t social" – that’s what Ijad Madisch’s
+      professor at the University in Hanover, Germany, told him when he
+      proposed his idea for ResearchGate. Five years later over three
+      million researchers use the network to collaborate worldwide, share
+      results and build a reputation to find cures for diseases and
+      solutions to the world energy crisis faster. Hear from Ijad Madisch,
+      CEO and co-founder of ResearchGate, on how he turned a crazy idea into
+      a disruptive technology that's changing the world of science - and why
+      we need smarter software frameworks to drive progress.
+
+      <table cellspacing="20">
+	<tr>
+	  <td>
+	    <p><img alt="Ijad Madisch" width="200" src="{{site.baseurl}}/img/events/ijad_madisch.jpg">
+	  </td>
+	  <td>
+	    <a href="https://www.researchgate.net/profile/Ijad_Madisch/">Dr. Ijad
+	      Madisch</a> is the CEO and co-founder of ResearchGate. The
+	    professional network for scientists helps more than 3 million
+	    researchers worldwide to collaborate, share their results and make a
+	    name for themselves. Madisch has a background in science himself; he
+	    studied medicine in Hannover and at Harvard Medical School. Afterwards
+	    he spent a few years in Boston, working on an interdisciplinary
+	    project at the Department of Radiology at Massachusetts General
+	    Hospital. Disappointed by inefficient practices in the research world,
+	    he founded ResearchGate together with fellow physician Dr. Sören
+	    Hofmayer and IT-specialist Horst Fickenscher in 2008. Since then,
+	    ResearchGate has attracted investments from several renown venture
+	    capitalists and private investors, among them Bill Gates, Benchmark
+	    and Founders Fund. Madisch serves as the company’s President of the
+	    Board of Directors.
+	  </td>
+	</tr>
+      </table>
+
+
+    <p id="stratosphere_talk"><h3>The Stratosphere Platform for Big Data Analytics, Kostas Tzoumas (TU Berlin)</h3>
+
+    <p>Big Data analysis is diversifying to use cases that require low
+      latency and go beyond functionality that naturally fits the MapReduce
+      paradigm. We created the Stratosphere platform to support the next
+      generation of data analysis needs. Stratosphere is a new parallel data
+      management engine that combines a unique set of features for Big Data
+      management: it provides a declarative language for the specification
+      of data analysis programs, analyzes data “in situ” by embracing
+      external data sources (including HDFS), features a rich
+      parallelization model that goes beyond MapReduce, and deeply embeds
+      user-defined code in the system’s query optimizer and runtime. In
+      addition, Stratosphere efficiently executes iterative algorithms,
+      widening the use case of such systems to fields such as Machine
+      Learning and graph analysis. Stratosphere is compatible with the
+      Hadoop ecosystem and is developed by three Universities in the Berlin
+      area in Germany, together with a growing open-source developer and
+      user community.
+
+      <table cellspacing="100">
+	<tr>
+	  <td>
+	    <p><img alt="Kostas Tzoumas" width="200" src="{{site.baseurl}}/img/events/kostas_tzoumas.jpg">
+	  </td>
+	  <td>
+	    <a href="http://www.user.tu-berlin.de/kostas.tzoumas/">Dr. Kostas
+	      Tzoumas</a> is a postdoctoral researcher at the Technical
+	    University of Berlin working on various system aspects of Big Data
+	    such as parallel data management, programming models, program
+	    optimization, system architectures, and benchmarking. He is
+	    co-leading the Stratosphere project, where a community of
+	    developers and researchers are creating a next-generation platform
+	    for Big Data analytics. Kostas received his PhD from Aalborg
+	    University, Denmark in 2011, he graduated from the National
+	    Technical University of Athens, Greece in 2007.
+	  </td>
+	</tr>
+      </table>
+
+
+    <p id="marten_keynote"><h3>Title TBA, Marten Schoenherr (Deutsche Telekom Laboratories)</h3>
+
+      <table cellspacing="20">
+	<tr>
+	  <td>
+	    <p><img alt="Marten Schoenherr" width="200" src="{{site.baseurl}}/img/events/marten_schoenherr.jpg">
+	  </td>
+	  <td>
+	    <a href="http://www.laboratories.telekom.com/public/English/ueber_uns/Pages/Marten-Schoenherr.aspx">Dr.-Ing. habil. Marten
+	      Schoenherr</a> is working for Deutsche Telekom Laboratories (R&D unit
+	    of DTAG) leading the project field IT-Architecture & Quality
+	    Assurance. As the founder and head of the Competence Center for
+	    Enterprise Architecture, Marten Schoenherr has been responsible for a
+	    wide range of industry-financed research at the Technical University
+	    of Berlin (TU Berlin). The research group focused on methods connected
+	    to service-oriented architectures, system-interoperability and the
+	    sustainability of enterprise architectures.  In the context of this
+	    work, Marten Schönherr publishes articles, edits the Enterprise
+	    Architecture book series and organizes conferences. In addition to his
+	    work in university research and teaching, he has more than eight
+	    years’ experience of working independently on selected
+	    projects. During the course of writing his dissertation, Marten
+	    Schönherr founded a spin-off business in which he was responsible for
+	    managerial tasks in the fields of implementing and launching standard
+	    software for knowledge and information management. Further to this,
+	    Marten Schönherr has been sharing his experience in the area of
+	    executive training for many years and has been able to build up a
+	    comprehensive international network in research and industry.
+	  </td>
+	</tr>
+      </table>
+
+    <p id="handson_session"><h3>Hands-on session: Data analysis with Stratosphere</h3>
+
+    <p>This session will introduce the attendants to the Scala language and
+      then go through example data analysis jobs using the Scala intergace
+      of the Stratosphere platform. The attendants will have the opportunity
+      to program Stratosphere programs with the help of the Stratosphere
+      team and get familiar with the basic operations of Big Data analysis
+      using Stratosphere.
+
+    <p><b>15:00 - 15:15 Development Environment Setup</b>
+
+    <p>The attendants will be provided a virtual machine that includes all
+      the software that will be needed in the hands on session. To expedite
+      the installation process, the attendants are advised to have already
+      installed the latest version of
+      <a href="https://www.virtualbox.org/">VirtualBox</a>. USB keys with
+      the virtual machines and the VirtualBox software will also be
+      available.
+
+    <p><b>15:15 - 16:00 Introduction to Scala for data analysis</b>
+
+    <p>This session will cover the basic aspects of
+      the <a href="http://www.scala-lang.org/">Scala language</a> and will
+      serve as a basis for all the sessions to follow. 
+
+    <p><b>16:00 - 17:00 Scalable data analysis with Stratosphere</b>
+
+    <p>This session will go through the basic primitive operations of
+      Stratosphere. The attendants will use the Scala language in order to
+      program basic data analysis jobs in Stratosphere.
+
+    <p><b>17:00 - 18:00 Scalable database querying with Stratosphere</b>
+
+    <p>This session go through the more advanced primitive operations of
+      Stratosphere. The attendants will be introduced to programming
+      database queries using the Stratosphere platform.
+
+    <p><b>18:00 - 18:30 Advanced Scala</b>
+
+    <p>This session covers more advanced features of Stratosphere. Namely,
+      iterative algorithm programming, the Java programming API and running
+      Stratosphere on clusters.
+
+
+    <p id="jens_keynote"><h3>Title TBA, Jens Dittrich (Saarland University)</h3>
+
+      <table cellspacing="20">
+	<tr>
+	  <td>
+	    <p><img alt="Jens Dittrich" width="200" src="{{site.baseurl}}/img/events/jens_dittrich.jpg">
+	  </td>
+	  <td>
+	    <a href="https://infosys.uni-saarland.de/people/dittrich.php">Jens
+	      Dittrich</a> is a Full Professor and chair of the Information Systems
+	    Group at Saarland University. His research has a strong focus on
+	    system building: during his Ph.D. he coauthored the open source
+	    project XXL - a library of advanced query processing algorithms. After
+	    that, he worked for SAP's OLAP engine (SAP BW) and SAP's enterprise
+	    search engine (TREX) on a joint project on high performance analytics
+	    (BI Accelerator, a distributed main-memory column-store). From
+	    2004-2008 he worked on the DataSpace Management System iMeMex
+	    (supported by the Swiss National Science Foundation (SNF) with a 3
+	    year fund). He is currently working on topics related to large scale
+	    systems, query processing, Hadoop/MapReduce, and One Size Fits All
+	    Database Systems.
+	  </td>
+	</tr>
+      </table>
+
+    <p id="julien_keynote"><h3>Title TBA, Julien Masanes (Internet Memory)</h3>
+
+      <table cellspacing="20">
+	<tr>
+	  <td>
+	    <p><img alt="Julien Masanes" width="200" src="{{site.baseurl}}/img/events/julien_masanes.jpg">
+	  </td>
+	  <td>
+	    <a href="http://internetmemory.org/en/index.php/about/the_board">Julien
+	      Masanès</a> has been involved in web archiving for the last 10 years. He
+	      first directed the Web Archiving Project at the Bibliothèque Nationale
+	      de France from 2000 to 2004. He also actively participated in the
+	      creation of the International Internet Preservation Consortium (IIPC),
+	      which he has coordinated during the first two years.  He has also
+	      launched and presently chairs the International Web Archiving Workshop
+	      (IWAW) series, the main international rendezvous in this field.
+	      Involved since the foundation of the European Archive, now Internet
+	      Memory Foundation, Julien Masanes has focused on developing a webscale
+	      archive that is both open to the large public and useful for research,
+	      gaining support from the various stakeholders in Europe (European
+	      Commission, Research labs, open access groups) to support this vision.
+	  </td>
+	</tr>
+      </table>
+
+    <p id="poster_session"><h3>Poster and Demo Session: Research with Stratosphere</h3>
+
+      <ul>
+	<li>Data Integration with Stratosphere, Arvid Heise, Humbold University of Berlin</li>
+	<li>Web Data Analytics, Astrid Rheinlaender, Humbold University of Berlin</li>
+	<li>PAXQuery: Efficient Parallel Processing of Complex XQuery, Jesus Camacho Rodriguez, Inria Saclay</li>
+	<li>HDFS/YARN under Stratosphere, Jim Dowling, KTH</li>
+	<li>Aura - Stratosphere II Runtime Execution Engine, Tobias Herb</li>
+	<li>Nephele Streaming: Stream Processing Under QoS Constraints at Scale</li>
+	<li>Iterative Parallel Data Processing with Stratosphere: An Inside Look</li>
+	<li>Peeking into the Optimization of Data Flow Programs with MapReduce-style UDFs</li>
+      </ul>
+  </div>
+</section>
+
 <section id="registration">
 	<!-- section title -->
 	<h2>Registration</h2>
-
+	
 	<!-- section content -->
 	<div>
 		The event is free of charge. Please register <a href="https://stratospheresummit.eventbrite.com/">here</a>.<br />
@@ -75,10 +297,34 @@ jumbotron:
 	<!-- section content -->
 	<div>
 		<p>
-		Wissenschafts- und Technologiepark Adlershof<br>
+		  <iframe width="425" height="350" frameborder="0"
+		  scrolling="no" marginheight="0" marginwidth="0"
+		  src="https://www.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=Max-Born-Stra%C3%9Fe+12489+Berlin.&amp;aq=&amp;sll=52.430774,13.528326&amp;sspn=0.008112,0.011169&amp;g=Max-Born-Stra%C3%9Fe++112489+Berlin.&amp;ie=UTF8&amp;hq=&amp;hnear=Max-Born-Stra%C3%9Fe,+Bezirk+Treptow-K%C3%B6penick+12489+Berlin,+Germany&amp;ll=52.430774,13.528326&amp;spn=0.008112,0.011169&amp;t=m&amp;z=14&amp;output=embed"></iframe><br /><small><a href="https://www.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Max-Born-Stra%C3%9Fe+12489+Berlin.&amp;aq=&amp;sll=52.430774,13.528326&amp;sspn=0.008112,0.011169&amp;g=Max-Born-Stra%C3%9Fe++112489+Berlin.&amp;ie=UTF8&amp;hq=&amp;hnear=Max-Born-Stra%C3%9Fe,+Bezirk+Treptow-K%C3%B6penick+12489+Berlin,+Germany&amp;ll=52.430774,13.528326&amp;spn=0.008112,0.011169&amp;t=m&amp;z=14"
+		  style="color:#0000FF;text-align:left">View Larger
+		  Map</a></small>
+
+		<p>Science and Technology Park Adlershof<br>
 		Max-Born-Hall<br>
 		Carl-Scheele-Straße/Max-Born-Straße<br>
 		12489 Berlin.</p>
 		<a href="http://www.mbi-berlin.de/en/general/map/index.html">Directions</a>
 	</div>
+</section>
+
+<section id="accommodation">
+  <h2>Accomodation</h2>
+  <div>
+    <p>The following hotels are in walking distance from the event
+    venue:
+
+    <p><a href="http://www.airporthotel-berlin-adlershof.de/">Airporthotel Berlin-Adlershof</a><br>
+      Rudower Chaussee 14<br>
+      12489 Berlin<br>
+      Tel.: +49 (0) 30/ 7202222 - 000<br>
+ 
+    <p><a href="http://www.dorint.com">Dorint Adlershof Berlin</a><br>
+      Rudower Chaussee 15<br>
+      12489 Berlin<br>
+      Tel.: +49 30 67 822-0<br>
+  </div>
 </section>
