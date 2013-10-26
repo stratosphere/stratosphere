@@ -8,7 +8,7 @@ title: Quick Start - Scala
 
 ## Preparation
 
-You need to install [Maven](http://maven.apache.org/) (Version 3) and Java 7 first.
+You need to install [Maven](http://maven.apache.org/) (Version 3.0.4 at least) and Java 7 first.
 
 ## Create Project files
 
