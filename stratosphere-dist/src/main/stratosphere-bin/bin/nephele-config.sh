@@ -66,7 +66,7 @@ DEFAULT_JOBM_HEAP_MB=256                            # Java heap size for the Job
 DEFAULT_TASKM_HEAP_MB=512                           # Java heap size for the TaskManager (in MB)
 DEFAULT_ENV_PID_DIR="/tmp"                          # Directory to store *.pid files to
 DEFAULT_ENV_LOG_MAX=5                               # Maximum number of old log files to keep
-DEFAULT_ENV_JAVA_HOME="/usr/lib/jvm/java-6-sun/"    # Java home
+DEFAULT_ENV_JAVA_HOME="/usr/lib/jvm/java-7-oracle"  # Java home
 DEFAULT_ENV_JAVA_OPTS=""                            # Optional JVM args
 DEFAULT_ENV_SSH_OPTS=""                             # Optional SSH parameters running in cluster mode
 
