@@ -215,7 +215,24 @@ jumbotron:
       Stratosphere on clusters.
 
 
-    <p id="jens_keynote"><h3>Title TBA, Jens Dittrich (Saarland University)</h3>
+    <p id="jens_keynote"><h3>Beyond HDFS Storage in NoSQL Systems, Jens Dittrich (Saarland University)</h3>
+
+    <p>The distributed file system HDFS is a building block for
+    several NoSQL systems suchs as Hadoop MapReduce, HBase, and
+    Stratosphere. The current version of HDFS, however, is basically a
+    block store providing replication-based failover and efficient
+    scale-out. In this talk I will give an overview on the HDFS
+    replacement HAIL (Hadoop Aggressive Indexing Library) developed at
+    Saarland University. HAIL is an extension of HDFS preserving the
+    failover and scaling properties of HDFS. However, in addition to
+    HDFS, we add automatic index creation at data upoad already,
+    adaptive indexing, early map phase execution, as well as storage
+    re-balancing. All these techniques come with little to zero
+    overhead and can be used with all software layers currently
+    operating on HDFS. I will show experimental results demonstrating
+    that HAIL provides for efficient index creation and query
+    processing simultaneously boosting query times by up to a factor
+    60.
 
       <table cellspacing="20">
 	<tr>
