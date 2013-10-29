@@ -229,7 +229,7 @@ public class BroadcastJob {
 		producer.connectTo(consumer, ChannelType.NETWORK);
 
 		// Attach jar file
-		jobGraph.addJar(new Path("file://" + JAR_FILE.getAbsolutePath()));
+		jobGraph.addJar(new Path(JAR_FILE.toURI().toString()));
 
 		// Submit job
 		Configuration conf = new Configuration();

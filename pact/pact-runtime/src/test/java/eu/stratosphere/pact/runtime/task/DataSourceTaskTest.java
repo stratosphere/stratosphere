@@ -42,7 +42,7 @@ public class DataSourceTaskTest extends TaskTestBase
 {
 	private List<PactRecord> outList;
 	
-	private String tempTestPath = System.getProperty("java.io.tmpdir")+"/dst_test";
+	private String tempTestPath = constructTestPath();
 	
 	@After
 	public void cleanUp() {
@@ -73,7 +73,7 @@ public class DataSourceTaskTest extends TaskTestBase
 		
 		DataSourceTask<PactRecord> testTask = new DataSourceTask<PactRecord>();
 		
-		super.registerFileInputTask(testTask, MockInputFormat.class, "file://"+this.tempTestPath, "\n");
+		super.registerFileInputTask(testTask, MockInputFormat.class, new File(tempTestPath).toURI().toString(), "\n");
 		
 		try {
 			testTask.invoke();
@@ -129,8 +129,7 @@ public class DataSourceTaskTest extends TaskTestBase
 		
 		DataSourceTask<PactRecord> testTask = new DataSourceTask<PactRecord>();
 
-		
-		super.registerFileInputTask(testTask, MockFailingInputFormat.class, "file://"+this.tempTestPath, "\n");
+		super.registerFileInputTask(testTask, MockFailingInputFormat.class, new File(tempTestPath).toURI().toString(), "\n");
 		
 		boolean stubFailed = false;
 		
@@ -165,8 +164,8 @@ public class DataSourceTaskTest extends TaskTestBase
 		}
 		
 		final DataSourceTask<PactRecord> testTask = new DataSourceTask<PactRecord>();
-		
-		super.registerFileInputTask(testTask, MockDelayingInputFormat.class,  "file://"+this.tempTestPath, "\n");
+
+		super.registerFileInputTask(testTask, MockDelayingInputFormat.class,  new File(tempTestPath).toURI().toString(), "\n");
 		
 		Thread taskRunner = new Thread() {
 			@Override
@@ -312,5 +311,14 @@ public class DataSourceTaskTest extends TaskTestBase
 			target.setField(1, this.value);
 			return true;
 		}
+	}
+	
+	private static String constructTestPath()
+	{
+		String path = System.getProperty("java.io.tmpdir");
+		if (!(path.endsWith("/") || path.endsWith("\\")) )
+			path += System.getProperty("file.separator");
+		path += "dst_test";
+		return path;
 	}
 }

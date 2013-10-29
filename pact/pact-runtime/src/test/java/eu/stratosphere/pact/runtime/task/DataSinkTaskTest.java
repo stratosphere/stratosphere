@@ -47,7 +47,7 @@ public class DataSinkTaskTest extends TaskTestBase
 {
 	private static final Log LOG = LogFactory.getLog(DataSinkTaskTest.class);
 	
-	private final String tempTestPath = System.getProperty("java.io.tmpdir")+"/dst_test";
+	private final String tempTestPath = constructTestPath();
 	
 	@After
 	public void cleanUp() {
@@ -67,8 +67,8 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.addInput(new UniformPactRecordGenerator(keyCnt, valCnt, false), 0);
 		
 		DataSinkTask<PactRecord> testTask = new DataSinkTask<PactRecord>();
-		
-		super.registerFileOutputTask(testTask, MockOutputFormat.class, "file://"+this.tempTestPath);
+
+		super.registerFileOutputTask(testTask, MockOutputFormat.class, new File(tempTestPath).toURI().toString());
 		
 		try {
 			testTask.invoke();
@@ -76,7 +76,7 @@ public class DataSinkTaskTest extends TaskTestBase
 			LOG.debug(e);
 			Assert.fail("Invoke method caused exception.");
 		}
-		
+
 		File tempTestFile = new File(this.tempTestPath);
 		
 		Assert.assertTrue("Temp output file does not exist",tempTestFile.exists());
@@ -143,8 +143,8 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setMemoryInput(0, 4 * 1024 * 1024);
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
-		
-		super.registerFileOutputTask(testTask, MockOutputFormat.class, "file://"+this.tempTestPath);
+
+		super.registerFileOutputTask(testTask, MockOutputFormat.class, new File(tempTestPath).toURI().toString());
 		
 		try {
 			testTask.invoke();
@@ -215,8 +215,8 @@ public class DataSinkTaskTest extends TaskTestBase
 		DataSinkTask<PactRecord> testTask = new DataSinkTask<PactRecord>();
 		Configuration stubParams = new Configuration();
 		super.getTaskConfig().setStubParameters(stubParams);
-		
-		super.registerFileOutputTask(testTask, MockFailingOutputFormat.class, "file://"+this.tempTestPath);
+
+		super.registerFileOutputTask(testTask, MockFailingOutputFormat.class, new File(tempTestPath).toURI().toString());
 		
 		boolean stubFailed = false;
 		
@@ -257,7 +257,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
 		
-		super.registerFileOutputTask(testTask, MockFailingOutputFormat.class, "file://"+this.tempTestPath);
+		super.registerFileOutputTask(testTask, MockFailingOutputFormat.class, new File(tempTestPath).toURI().toString());
 		
 		boolean stubFailed = false;
 		
@@ -285,7 +285,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		Configuration stubParams = new Configuration();
 		super.getTaskConfig().setStubParameters(stubParams);
 		
-		super.registerFileOutputTask(testTask, MockOutputFormat.class,  "file://"+this.tempTestPath);
+		super.registerFileOutputTask(testTask, MockOutputFormat.class,  new File(tempTestPath).toURI().toString());
 		
 		Thread taskRunner = new Thread() {
 			@Override
@@ -336,7 +336,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
 		
-		super.registerFileOutputTask(testTask, MockOutputFormat.class,  "file://"+this.tempTestPath);
+		super.registerFileOutputTask(testTask, MockOutputFormat.class,  new File(tempTestPath).toURI().toString());
 		
 		Thread taskRunner = new Thread() {
 			@Override
@@ -403,6 +403,15 @@ public class DataSinkTaskTest extends TaskTestBase
 			}
 			return super.serializeRecord(rec, target);
 		}
+	}
+	
+	private static String constructTestPath()
+	{
+		String path = System.getProperty("java.io.tmpdir");
+		if (!(path.endsWith("/") || path.endsWith("\\")) )
+			path += System.getProperty("file.separator");
+		path += "dst_test";
+		return path;
 	}
 }
 

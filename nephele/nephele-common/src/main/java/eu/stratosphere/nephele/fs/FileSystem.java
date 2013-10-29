@@ -164,7 +164,7 @@ public abstract class FileSystem {
 		URI localUri;
 
 		try {
-			localUri = new URI("file:///");
+			localUri = isWindows() ?  new URI("file:/") : new URI("file:///");
 		} catch (URISyntaxException e) {
 			throw new IOException("Cannot create URI for local file system");
 		}
@@ -442,5 +442,11 @@ public abstract class FileSystem {
 		} else {
 			return 1;
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	public static final boolean isWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
 	}
 }
