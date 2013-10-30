@@ -33,8 +33,8 @@ import eu.stratosphere.pact.generic.contract.GenericCrossContract;
 /**
  * The Optimizer representation of a <i>Cross</i> contract node.
  */
-public class CrossNode extends TwoInputNode
-{
+public class CrossNode extends TwoInputNode {
+	
 	/**
 	 * Creates a new CrossNode for the given contract.
 	 * 
@@ -56,33 +56,37 @@ public class CrossNode extends TwoInputNode
 		return (GenericCrossContract<?>) super.getPactContract();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.plan.OptimizerNode#getName()
-	 */
 	@Override
 	public String getName() {
 		return "Cross";
 	}
 	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.plan.TwoInputNode#getPossibleProperties()
-	 */
 	@Override
 	protected List<OperatorDescriptorDual> getPossibleProperties() {
-		Configuration conf = getPactContract().getParameters();
+		GenericCrossContract<?> operation = getPactContract();
+		boolean bcFirst = true;
+		boolean bcSecond = true;
+		
+		if (operation instanceof GenericCrossContract.CrossWithSmall) {
+			bcFirst = false;
+		}
+		else if (operation instanceof GenericCrossContract.CrossWithLarge) {
+			bcSecond = false;
+		}
+		
+		Configuration conf = operation.getParameters();
 		String localStrategy = conf.getString(PactCompiler.HINT_LOCAL_STRATEGY, null);
-
+	
 		if (localStrategy != null) {
 			final OperatorDescriptorDual fixedDriverStrat;
 			if (PactCompiler.HINT_LOCAL_STRATEGY_NESTEDLOOP_BLOCKED_OUTER_FIRST.equals(localStrategy)) {
-				fixedDriverStrat = new CrossBlockOuterFirstDescriptor();
+				fixedDriverStrat = new CrossBlockOuterFirstDescriptor(bcFirst, bcSecond);
 			} else if (PactCompiler.HINT_LOCAL_STRATEGY_NESTEDLOOP_BLOCKED_OUTER_SECOND.equals(localStrategy)) {
-				fixedDriverStrat = new CrossBlockOuterSecondDescriptor();
+				fixedDriverStrat = new CrossBlockOuterSecondDescriptor(bcFirst, bcSecond);
 			} else if (PactCompiler.HINT_LOCAL_STRATEGY_NESTEDLOOP_STREAMED_OUTER_FIRST.equals(localStrategy)) {
-				fixedDriverStrat = new CrossStreamOuterFirstDescriptor();
+				fixedDriverStrat = new CrossStreamOuterFirstDescriptor(bcFirst, bcSecond);
 			} else if (PactCompiler.HINT_LOCAL_STRATEGY_NESTEDLOOP_STREAMED_OUTER_SECOND.equals(localStrategy)) {
-				fixedDriverStrat = new CrossStreamOuterSecondDescriptor();
+				fixedDriverStrat = new CrossStreamOuterSecondDescriptor(bcFirst, bcSecond);
 			} else {
 				throw new CompilerException("Invalid local strategy hint for cross contract: " + localStrategy);
 			}
@@ -90,10 +94,10 @@ public class CrossNode extends TwoInputNode
 			return Collections.singletonList(fixedDriverStrat);
 		} else {
 			ArrayList<OperatorDescriptorDual> list = new ArrayList<OperatorDescriptorDual>();
-			list.add(new CrossBlockOuterFirstDescriptor());
-			list.add(new CrossBlockOuterSecondDescriptor());
-			list.add(new CrossStreamOuterFirstDescriptor());
-			list.add(new CrossStreamOuterSecondDescriptor());
+			list.add(new CrossBlockOuterFirstDescriptor(bcFirst, bcSecond));
+			list.add(new CrossBlockOuterSecondDescriptor(bcFirst, bcSecond));
+			list.add(new CrossStreamOuterFirstDescriptor(bcFirst, bcSecond));
+			list.add(new CrossStreamOuterSecondDescriptor(bcFirst, bcSecond));
 			return list;
 		}
 	}
