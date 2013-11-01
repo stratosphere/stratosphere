@@ -29,6 +29,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Test;
 
+import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.pact.common.io.DelimitedInputFormat;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
@@ -42,7 +43,7 @@ public class DataSourceTaskTest extends TaskTestBase
 {
 	private List<PactRecord> outList;
 	
-	private String tempTestPath = constructTestPath();
+	private String tempTestPath = Path.constructTestPath("dst_test");
 	
 	@After
 	public void cleanUp() {
@@ -313,12 +314,4 @@ public class DataSourceTaskTest extends TaskTestBase
 		}
 	}
 	
-	private static String constructTestPath()
-	{
-		String path = System.getProperty("java.io.tmpdir");
-		if (!(path.endsWith("/") || path.endsWith("\\")) )
-			path += System.getProperty("file.separator");
-		path += "dst_test";
-		return path;
-	}
 }

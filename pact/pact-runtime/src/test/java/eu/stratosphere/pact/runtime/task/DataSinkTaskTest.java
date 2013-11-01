@@ -32,6 +32,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.pact.common.io.DelimitedOutputFormat;
 import eu.stratosphere.pact.common.type.Key;
 import eu.stratosphere.pact.common.type.PactRecord;
@@ -47,7 +48,7 @@ public class DataSinkTaskTest extends TaskTestBase
 {
 	private static final Log LOG = LogFactory.getLog(DataSinkTaskTest.class);
 	
-	private final String tempTestPath = constructTestPath();
+	private final String tempTestPath = Path.constructTestPath("dst_test");
 	
 	@After
 	public void cleanUp() {
@@ -405,13 +406,5 @@ public class DataSinkTaskTest extends TaskTestBase
 		}
 	}
 	
-	private static String constructTestPath()
-	{
-		String path = System.getProperty("java.io.tmpdir");
-		if (!(path.endsWith("/") || path.endsWith("\\")) )
-			path += System.getProperty("file.separator");
-		path += "dst_test";
-		return path;
-	}
 }
 
