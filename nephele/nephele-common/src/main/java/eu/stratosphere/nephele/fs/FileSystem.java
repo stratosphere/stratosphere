@@ -50,6 +50,8 @@ public abstract class FileSystem {
 	 * Object used to protect calls to specific methods.
 	 */
 	private static final Object SYNCHRONIZATION_OBJECT = new Object();
+	
+	private static final boolean IS_WINDOWS =  System.getProperty("os.name").startsWith("Windows");
 
 	/**
 	 * An auxiliary class to identify a file system by its scheme
@@ -447,6 +449,6 @@ public abstract class FileSystem {
 	// ------------------------------------------------------------------------
 	
 	public static final boolean isWindows() {
-		return System.getProperty("os.name").startsWith("Windows");
+		return IS_WINDOWS;
 	}
 }

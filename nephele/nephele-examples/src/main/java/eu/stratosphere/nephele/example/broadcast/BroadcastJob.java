@@ -146,7 +146,8 @@ public class BroadcastJob {
 		OUTPUT_PATH = args[6];
 
 		// Prepare jar file
-		JAR_FILE = new File("/tmp/broadcastJob.jar");
+		JAR_FILE = new File(Path.constructTestPath("")+"broadcastJob.jar");
+		
 		final JarFileCreator jarFileCreator = new JarFileCreator(JAR_FILE);
 		jarFileCreator.addClass(BroadcastProducer.class);
 		jarFileCreator.addClass(BroadcastConsumer.class);
