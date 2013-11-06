@@ -1,0 +1,163 @@
+--- 
+layout: inner_with_sidebar
+title: Downloads
+links: 
+  -       { anchor: bin, title: "Ready to Run Package" }
+  -       { anchor: maven, title: "Maven Dependencies" }
+  -       { anchor: vm, title: "Virtual Machine" }
+  -       { anchor: vagrant, title: "Vagrant" }
+  -       { anchor: debian, title: "Debian Package" }
+  -       { anchor: source, title: "Source" }
+---
+
+<p class="lead">There are plenty of ways to get Stratosphere. Pick any of the following to start.</p>
+
+<div id="download">
+    <section id="bin">
+        <div class="page-header"><h2>Ready To Run Package</h2></div>
+        <p class="lead">Download the ready to run binary package if you want to use Stratosphere on your computer or cluster.</p>
+        <p>Stratosphere has dependencies to Hadoop (e.g. HDFS and HBase). Choose a Stratosphere distribution that <strong>matches your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.X.</p>
+        <p>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#bin-hadoop1" data-toggle="tab">Hadoop 1.2.x</a></li>
+            <li><a href="#bin-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
+        </ul>
+        <div class="tab-content text-center">
+            <div class="tab-pane active" id="bin-hadoop1">
+                <a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 1.2.x</a>
+            </div>
+            <div class="tab-pane" id="bin-hadoop2">
+                <a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-hadoop2-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 2 (YARN)</a>
+            </div>
+        </div>
+        </p>
+        <p>Make sure to checkout the <a href="{{ site.baseurl }}/docs">Documentation</a> for further help.</p>
+    </section>
+
+    <section id="maven">
+        <div class="page-header">
+            <h2>Maven Dependencies</h2>
+        </div>
+        <p class="lead">Use the Maven Dependencies to add Stratosphere to your project.</p>
+        <p>These dependencies also include a local execution environment. Therefore they are sufficient for local testing.</p>
+        <p>The current development version is not pushed to Maven central yet (this will change with the release), so please make sure to add the Sonatype snapshot repository to your Maven project between:</p>
+{% highlight xml %}
+<repositories>
+  <repository>
+    <id>snapshots-repo</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <releases><enabled>false</enabled></releases>
+    <snapshots><enabled>true</enabled></snapshots>
+  </repository>
+</repositories>
+{% endhighlight %}
+        <p>
+        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, make sure to pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.X.</p>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1.2.x</a></li>
+            <li><a href="#maven-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="maven-hadoop1">
+{% highlight xml %}
+<dependency>
+  <groupId>eu.stratosphere</groupId>
+  <artifactId>pact-common</artifactId>
+  <version>0.4-SNAPSHOT</version>
+</dependency>
+<dependency>
+  <groupId>eu.stratosphere</groupId>
+  <artifactId>pact-clients</artifactId>
+  <version>0.4-SNAPSHOT</version>
+</dependency>
+{% endhighlight %}
+            </div>
+            <div class="tab-pane" id="maven-hadoop2">
+{% highlight xml %}
+<dependency>
+  <groupId>eu.stratosphere</groupId>
+  <artifactId>pact-common</artifactId>
+  <version>0.4-hadoop2-SNAPSHOT</version>
+</dependency>
+<dependency>
+  <groupId>eu.stratosphere</groupId>
+  <artifactId>pact-clients</artifactId>
+  <version>0.4-hadoop2-SNAPSHOT</version>
+</dependency>
+{% endhighlight %}
+            </div>
+        </div>
+        </p>
+        <p>If you don't have a Maven project yet, we encourage you to use our <a href="{{ site.baseurl }}/quickstart">Quickstart scripts</a> to create one with all the Stratosphere dependencies already in place.</p>
+    </section>
+
+    <section id="vm">
+        <div class="page-header">
+            <h2>Virtual Machine</h2>
+        </div>
+        <p class="lead">Use a virtual machine if you don't want to run on your native system.</p>
+
+        <p>We provide a virtual machine image that comes with a fresh Stratosphere installation and small data sets to play around with. The image will run on both <strong><a href="https://www.virtualbox.org/">Virtual Box</a></strong> and <strong><a href="http://www.vmware.com/products/player/">VMWare</a></strong>.</p>
+
+        <p class="text-center"><a class="btn btn-info btn-lg" href="http://dev.stratosphere.eu/vm/"><i class="icon-download"> </i> Download VM Image</a></p>
+    </section>
+
+    <section id="vagrant">
+        <div class="page-header">
+            <h2>Vagrant</h2>
+        </div>
+        <p class="lead">Let <a href="http://www.vagrantup.com/">Vagrant</a> set up a virtual machine with Stratosphere installed for you.</p>
+{% highlight bash %}
+wget http://dev.stratosphere.eu/vm/Vagrantfile
+vagrant up
+vagrant ssh
+{% endhighlight %}
+    </section>
+
+    <section id="debian">
+        <div class="page-header">
+            <h2>Debian Package</h2>
+        </div>
+        <p class="lead">We have also prepared a Debian repository for Debian/Ubuntu systems.</p>
+{% highlight bash %}
+# vim /etc/apt/sources.list.d/stratosphere.list
+deb http://dev.stratosphere.eu/repo/binary precise main
+
+# apt-get update
+apt-get install stratosphere-dist
+{% endhighlight %}
+        </p>
+    </section>
+
+    <section id="source">
+        <div class="page-header">
+            <h2>Source</h2>
+        </div>
+        <p class="lead">Compile Stratosphere on your own machine.</p>
+        <p>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#source-hadoop1" data-toggle="tab">Hadoop 1.2.x</a></li>
+            <li><a href="#source-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="source-hadoop1">
+{% highlight bash %}
+git clone https://github.com/stratosphere/stratosphere.git
+cd stratosphere
+mvn clean package -DskipTests
+{% endhighlight %}
+            </div>
+            <div class="tab-pane" id="source-hadoop2">
+{% highlight bash %}
+git clone https://github.com/stratosphere/stratosphere.git
+cd stratosphere
+mvn clean package -DskipTests -Dhadoop.profile=2
+{% endhighlight %}
+            </div>
+        </div>
+        </p>
+        <p>Make sure to checkout the <a href="{{ site.baseurl }}/docs">Documentation</a> for further help.</p>
+    </section>
+
+    <p class="lead" style="margin-top: 2em">Feel free to <a href="{{ site.baseurl }}/contact">contact us</a> if you have any problems or suggestions.</p>
+</div>

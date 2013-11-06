@@ -63,54 +63,6 @@ body {
     margin-bottom:0;
 }
 
-.sidebar {
-    position: static;
-    background-color: #F7F5FA;
-    border-radius: 5px 5px 5px 5px;
-    margin-bottom: 30px;
-    margin-top: 30px;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    text-shadow: 0 1px 0 #FFFFFF;
-}
-
-.sidebar .nav > li > a {
-    color: #716B7A;
-    display: block;
-    padding: 5px 20px;
-}
-.sidebar .nav > li > a:hover, .sidebar .nav > li > a:focus {
-    background-color: #E5E3E9;
-    border-right: 1px solid #DBD8E0;
-    text-decoration: none;
-}
-.sidebar .nav > .active > a, .sidebar .nav > .active:hover > a, .sidebar .nav > .active:focus > a {
-    background-color: rgba(0, 0, 0, 0);
-    border-right: 1px solid #563D7C;
-    color: #563D7C;
-    font-weight: bold;
-}
-.sidebar .nav .nav {
-    display: none;
-    margin-bottom: 8px;
-}
-.sidebar .nav .nav > li > a {
-    font-size: 90%;
-    padding-bottom: 3px;
-    padding-left: 30px;
-    padding-top: 3px;
-}
-
-.sidenav {
-    background-color: #F7F5FA;
-    border-radius: 5px 5px 5px 5px;
-    margin-bottom: 30px;
-    margin-top: 30px;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    text-shadow: 0 1px 0 #FFFFFF;
-}
-
 /*****************************************************************************/
 /* Notices
 /*****************************************************************************/
@@ -430,4 +382,85 @@ ul.posts span {
 .gettingstarted-choices {
     min-height: 250px;
     white-space: normal;
+}
+
+/*
+Download page
+*/
+
+.sidenav {
+    width: 228px;
+}
+
+.sidenav > li {
+    line-height: 30px;
+}
+
+.sidenav > li:first-child > a {
+    border-radius: 6px 6px 0 0;
+}
+
+.sidenav > li:last-child > a {
+    border-radius: 0 0 6px 6px;
+}
+
+.sidenav > li > a {
+}
+
+.sidenav > li > a {
+    position: relative;
+    border: 1px solid #E5E5E5;
+    display: block;
+    margin: 0 0 -1px;
+    padding: 8px 14px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.sidenav > .active > a, .sidenav > li > a:hover {
+    color: #FFF;
+    background: rgb(21, 136, 204);
+    text-shadow: 0 0px 0 rgba(255, 255, 255, 0.5);
+}
+
+.nav .nav li {
+    line-height: 20px;
+    font-size: 90%;
+}
+
+
+.affix-top {
+    position: static;
+    width: auto;
+}
+
+.affix {
+    position: fixed;
+}
+
+.affix-bottom {
+    position: absolute;
+}
+
+
+#download h2 {
+    font-weight: bold;
+}
+
+#download .tab-content {
+    padding: 10px;
+    border-left: 1px solid #DDDDDD;
+    border-right: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+}
+
+#download section {
+    /* needed for correct positioning of anchor links */
+    padding-top: 60px;
+    margin-top: -60px;
+}
+
+.sidenav .icon-chevron-right {
+    float: right;
+    margin-top: 8px;
+    opacity: 0.75;
 }

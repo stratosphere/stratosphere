@@ -7,11 +7,13 @@ smooth_scroll: true
 
 <div class="container">
 	<div class="subnav" id="navbar-inner">
-		<ul class="nav nav-pills">
-		{% for link in page.links %}
-		 <li><a href="#{{ link.anchor }}">{{ link.title }}</a></li>
-		{% endfor %}
-		</ul>
+		<div id="scrollspy">
+			<ul class="nav nav-pills">
+			{% for link in page.links %}
+			 <li><a href="#{{ link.anchor }}">{{ link.title }}</a></li>
+			{% endfor %}
+			</ul>
+		</div>
 	</div>
 	
 	<div>
