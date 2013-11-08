@@ -55,8 +55,8 @@ abstract class BatchGradientDescent(eps: Double, eta: Double, lambda: Double, ex
 
   def getPlan() = {
 
-    val examples = DataSource(examplesInput, DelimitedDataSourceFormat(readVector))
-    val weights = DataSource(weightsInput, DelimitedDataSourceFormat(readVector))
+    val examples = DataSource(examplesInput, DelimitedInputFormat(readVector))
+    val weights = DataSource(weightsInput, DelimitedInputFormat(readVector))
 
     def gradientDescent = (s: DataSet[(Int, Array[Double])], ws: DataSet[(Int, Array[Double], Double)]) => {
 

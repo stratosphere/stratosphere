@@ -40,7 +40,7 @@ object Main1 {
     def formatOutput = (word: String, count: Int) => "%s %d".format(word, count)
     
     val input = TextFile("file:///home/aljoscha/dummy-input")
-    val inputNumbers = DataSource("file:///home/aljoscha/dummy-input-numbers", RecordDataSourceFormat[(Int, String)]("\n", ","))
+    val inputNumbers = DataSource("file:///home/aljoscha/dummy-input-numbers", RecordInputFormat[(Int, String)]("\n", ","))
     
     val counts = input.map { _.split("""\W+""") map { (_, 1) } }
       .flatMap { l => l }
@@ -108,8 +108,8 @@ object MainIterate {
 
   def main(args: Array[String]) {
 
-    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedDataSourceFormat(parseVertex))
-    val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedDataSourceFormat(parseEdge))
+    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedInputFormat(parseVertex))
+    val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedInputFormat(parseEdge))
 
     def createClosure(paths: DataSet[Path]) = {
 
@@ -170,8 +170,8 @@ object MainWorksetIterate {
 
   def main(args: Array[String]) {
 
-    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedDataSourceFormat(parseVertex))
-    val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedDataSourceFormat(parseEdge))
+    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedInputFormat(parseVertex))
+    val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedInputFormat(parseEdge))
 
     def createClosure = (c: DataSet[Path], x: DataSet[Path]) => {
 
@@ -220,8 +220,8 @@ object ConnectedComponents {
   def formatOutput = (vertex: Int, component: Int) => "%d|%d".format(vertex, component)
 
   def main(args: Array[String]) {
-    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedDataSourceFormat(parseVertex))
-    val directedEdges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedDataSourceFormat(parseEdge))
+    val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedInputFormat(parseVertex))
+    val directedEdges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedInputFormat(parseEdge))
 
     val undirectedEdges = directedEdges flatMap { case (from, to) => Seq(from -> to, to -> from) }
 

@@ -23,7 +23,7 @@ import eu.stratosphere.pact.common.contract.FileDataSource
 import eu.stratosphere.nephele.configuration.Configuration
 import eu.stratosphere.pact.generic.io.FileInputFormat
 import eu.stratosphere.pact.generic.io.GenericInputFormat
-import eu.stratosphere.scala.operators.TextDataSourceFormat
+import eu.stratosphere.scala.operators.TextInputFormat
 
 object DataSource {
 
@@ -68,5 +68,5 @@ trait DataSourceFormat[Out] { this: InputFormat[_, _] =>
 
 // convenience text file to look good in word count example :D
 object TextFile {
-  def apply(url: String): DataSet[String] with OutputHintable[String] = DataSource(url, TextDataSourceFormat())
+  def apply(url: String): DataSet[String] with OutputHintable[String] = DataSource(url, TextInputFormat())
 }

@@ -18,7 +18,7 @@ import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.scala.DataSource
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.operators.arrayToIterator
-import eu.stratosphere.scala.operators.DelimitedDataSourceFormat
+import eu.stratosphere.scala.operators.DelimitedInputFormat
 import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
 import eu.stratosphere.scala.TextFile
 import eu.stratosphere.pact.common.plan.PlanAssembler

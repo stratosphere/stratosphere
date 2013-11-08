@@ -39,8 +39,8 @@ class ConnectedComponents extends Serializable {
   
   def getPlan(verticesInput: String, edgesInput: String, componentsOutput: String) = {
 
-  val vertices = DataSource(verticesInput, DelimitedDataSourceFormat(parseVertex))
-  val directedEdges = DataSource(edgesInput, DelimitedDataSourceFormat(parseEdge))
+  val vertices = DataSource(verticesInput, DelimitedInputFormat(parseVertex))
+  val directedEdges = DataSource(edgesInput, DelimitedInputFormat(parseEdge))
 
   val undirectedEdges = directedEdges flatMap { case (from, to) => Seq(from -> to, to -> from) }
 

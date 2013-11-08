@@ -39,8 +39,8 @@ object RunTransitiveClosureNaive {
 class TransitiveClosureNaive extends Serializable {
 
   def getPlan(numIterations: Int, verticesInput: String, edgesInput: String, pathsOutput: String) = {
-    val vertices = DataSource(verticesInput, DelimitedDataSourceFormat(parseVertex))
-    val edges = DataSource(edgesInput, DelimitedDataSourceFormat(parseEdge))
+    val vertices = DataSource(verticesInput, DelimitedInputFormat(parseVertex))
+    val edges = DataSource(edgesInput, DelimitedInputFormat(parseEdge))
 
     def createClosure(paths: DataSet[Path]) = {
 

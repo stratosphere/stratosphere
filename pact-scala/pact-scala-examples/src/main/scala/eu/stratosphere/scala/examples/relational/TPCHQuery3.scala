@@ -58,8 +58,8 @@ class TPCHQuery3 extends PlanAssembler with PlanAssemblerDescription with Serial
   }
 
   def getScalaPlan(numSubTasks: Int, ordersInput: String, lineItemsInput: String, ordersOutput: String, status: Char = 'F', minYear: Int = 1993, priority: String = "5") = {
-    val orders = DataSource(ordersInput, DelimitedDataSourceFormat(parseOrder))
-    val lineItems = DataSource(lineItemsInput, DelimitedDataSourceFormat(parseLineItem))
+    val orders = DataSource(ordersInput, DelimitedInputFormat(parseOrder))
+    val lineItems = DataSource(lineItemsInput, DelimitedInputFormat(parseLineItem))
 
     val filteredOrders = orders filter { o => o.status == status && o.year > minYear && o.orderPriority.startsWith(priority) }
     val prioritizedItems = filteredOrders join lineItems where { _.orderId } isEqualTo { _.orderId } map { (o, li) => PrioritizedOrder(o.orderId, o.shipPriority, li.extendedPrice) }

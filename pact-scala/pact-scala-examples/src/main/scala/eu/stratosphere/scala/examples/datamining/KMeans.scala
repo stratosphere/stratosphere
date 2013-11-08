@@ -17,7 +17,7 @@ import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.scala.DataSource
 import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.scala.operators.DelimitedDataSourceFormat
+import eu.stratosphere.scala.operators.DelimitedInputFormat
 import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
 import eu.stratosphere.pact.common.plan.PlanAssembler
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
@@ -88,8 +88,8 @@ class KMeans extends PlanAssembler with PlanAssemblerDescription with Serializab
   }
 
   def getScalaPlan(numSubTasks: Int, dataPointInput: String, clusterInput: String, clusterOutput: String, numIterations: Int) = {
-    val dataPoints = DataSource(dataPointInput, DelimitedDataSourceFormat(parseInput))
-    val clusterPoints = DataSource(clusterInput, DelimitedDataSourceFormat(parseInput))
+    val dataPoints = DataSource(dataPointInput, DelimitedInputFormat(parseInput))
+    val clusterPoints = DataSource(clusterInput, DelimitedInputFormat(parseInput))
 
     def computeNewCenters(centers: DataSet[(Int, Point)]) = {
 
