@@ -17,7 +17,7 @@ import scala.math._
 import scala.math.Ordered._
 import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
-import eu.stratosphere.scala.DataStream
+import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.Args
 import eu.stratosphere.scala.DataSource
@@ -42,7 +42,7 @@ class TransitiveClosureNaive extends Serializable {
     val vertices = DataSource(verticesInput, DelimitedDataSourceFormat(parseVertex))
     val edges = DataSource(edgesInput, DelimitedDataSourceFormat(parseEdge))
 
-    def createClosure(paths: DataStream[Path]) = {
+    def createClosure(paths: DataSet[Path]) = {
 
       val allNewPaths = paths join edges where { p => p.to } isEqualTo { p => p.from } map joinPaths
       val shortestPaths = allNewPaths union paths groupBy { p => (p.from, p.to) } reduceGroup { _ minBy { _.dist } }

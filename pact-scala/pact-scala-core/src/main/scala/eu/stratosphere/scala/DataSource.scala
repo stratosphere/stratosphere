@@ -27,7 +27,7 @@ import eu.stratosphere.scala.operators.TextDataSourceFormat
 
 object DataSource {
 
-  def apply[Out](url: String, format: DataSourceFormat[Out]): DataStream[Out] with OutputHintable[Out] = {
+  def apply[Out](url: String, format: DataSourceFormat[Out]): DataSet[Out] with OutputHintable[Out] = {
     val uri = getUri(url)
     
     val ret = uri.getScheme match {
@@ -48,7 +48,7 @@ object DataSource {
       }
     }
     
-    new DataStream[Out](ret) with OutputHintable[Out] {}
+    new DataSet[Out](ret) with OutputHintable[Out] {}
   }
 
   private def getUri(url: String) = {
@@ -68,5 +68,5 @@ trait DataSourceFormat[Out] { this: InputFormat[_, _] =>
 
 // convenience text file to look good in word count example :D
 object TextFile {
-  def apply(url: String): DataStream[String] with OutputHintable[String] = DataSource(url, TextDataSourceFormat())
+  def apply(url: String): DataSet[String] with OutputHintable[String] = DataSource(url, TextDataSourceFormat())
 }

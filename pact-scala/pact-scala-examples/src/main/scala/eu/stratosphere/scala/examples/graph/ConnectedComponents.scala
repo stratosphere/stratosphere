@@ -17,7 +17,7 @@ import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
 import eu.stratosphere.scala.Args
 import eu.stratosphere.scala.DataSource
-import eu.stratosphere.scala.DataStream
+import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
@@ -44,7 +44,7 @@ class ConnectedComponents extends Serializable {
 
   val undirectedEdges = directedEdges flatMap { case (from, to) => Seq(from -> to, to -> from) }
 
-    def propagateComponent = (s: DataStream[(Int, Int)], ws: DataStream[(Int, Int)]) => {
+    def propagateComponent = (s: DataSet[(Int, Int)], ws: DataSet[(Int, Int)]) => {
 
       val allNeighbors = ws join undirectedEdges where { case (v, _) => v } isEqualTo { case (from, _) => from } map { (w, e) => e._2 -> w._2 }
       val minNeighbors = allNeighbors groupBy { case (to, _) => to } reduceGroup { cs => cs minBy { _._2 } }

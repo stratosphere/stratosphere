@@ -8,7 +8,7 @@ import eu.stratosphere.pact.common.`type`.base.PactInteger
 import eu.stratosphere.pact.common.`type`.base.PactString
 import eu.stratosphere.scala.operators._
 import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.scala.DataStream
+import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
 import eu.stratosphere.scala.DataSource
 import eu.stratosphere.scala.ScalaPlan
@@ -59,7 +59,7 @@ object Main1 {
     
     val bar2 = foo.isEqualTo { case (c, _) => c } map { (w1, w2) => (w1._1 + " is TWO " + w2._2, w1._2) }
     
-    val countsJoin = counts.join(inputNumbers) where { case (_, c) => c} isEqualTo { case (c, _) => c } map { (w1, w2) => (w1._1 + " isa " + w2._2, w1._2) } 
+    val countsJoin = counts.join(inputNumbers) where { case (_, c) => c} isEqualTo { case (c, _) => c } map { (w1, w2) => (w1._1 + " is " + w2._2, w1._2) }
     countsJoin.left preserves({ case (_, count) => count }, { case (_, count) => count })
     
     val un = countsCross union countsJoin map { x => x }
@@ -111,7 +111,7 @@ object MainIterate {
     val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedDataSourceFormat(parseVertex))
     val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedDataSourceFormat(parseEdge))
 
-    def createClosure(paths: DataStream[Path]) = {
+    def createClosure(paths: DataSet[Path]) = {
 
       val allNewPaths = paths join edges where { p => p.to } isEqualTo { p => p.from } map joinPaths
       
@@ -173,7 +173,7 @@ object MainWorksetIterate {
     val vertices = DataSource("file:///home/aljoscha/transclos-vertices", DelimitedDataSourceFormat(parseVertex))
     val edges = DataSource("file:///home/aljoscha/transclos-edges", DelimitedDataSourceFormat(parseEdge))
 
-    def createClosure = (c: DataStream[Path], x: DataStream[Path]) => {
+    def createClosure = (c: DataSet[Path], x: DataSet[Path]) => {
 
       val cNewPaths = x join c where { p => p.to } isEqualTo { p => p.from } map joinPaths
       val c1 = cNewPaths cogroup c where { p => (p.from, p.to) } isEqualTo { p => (p.from, p.to) } map selectShortestDistance
@@ -225,7 +225,7 @@ object ConnectedComponents {
 
     val undirectedEdges = directedEdges flatMap { case (from, to) => Seq(from -> to, to -> from) }
 
-    def propagateComponent = (s: DataStream[(Int, Int)], ws: DataStream[(Int, Int)]) => {
+    def propagateComponent = (s: DataSet[(Int, Int)], ws: DataSet[(Int, Int)]) => {
 
       val allNeighbors = ws join undirectedEdges where { case (v, _) => v } isEqualTo { case (from, _) => from } map { (w, e) => e._2 -> w._2 }
       val minNeighbors = allNeighbors groupBy { case (to, _) => to } reduceGroup { cs => cs minBy { _._2 } }

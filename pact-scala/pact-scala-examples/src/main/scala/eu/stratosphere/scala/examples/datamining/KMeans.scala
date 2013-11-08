@@ -15,7 +15,7 @@ package eu.stratosphere.scala.examples.datamining
 
 import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.scala.DataSource
-import eu.stratosphere.scala.DataStream
+import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.operators.DelimitedDataSourceFormat
 import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
@@ -91,7 +91,7 @@ class KMeans extends PlanAssembler with PlanAssemblerDescription with Serializab
     val dataPoints = DataSource(dataPointInput, DelimitedDataSourceFormat(parseInput))
     val clusterPoints = DataSource(clusterInput, DelimitedDataSourceFormat(parseInput))
 
-    def computeNewCenters(centers: DataStream[(Int, Point)]) = {
+    def computeNewCenters(centers: DataSet[(Int, Point)]) = {
 
       val distances = dataPoints cross centers map computeDistance
       val nearestCenters = distances groupBy { case (pid, _) => pid } reduceGroup { ds => ds.minBy(_._2.distance) } map asPointSum.tupled
