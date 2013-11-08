@@ -13,18 +13,12 @@
 
 package eu.stratosphere.scala.examples.relational;
 
-import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
-import eu.stratosphere.pact.common.plan.PlanAssembler
-import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.pact.client.LocalExecutor
-import eu.stratosphere.scala.DataSource
-import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
 import eu.stratosphere.pact.common.plan.PlanAssembler
-import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.pact.client.LocalExecutor
-import eu.stratosphere.scala.operators.DelimitedInputFormat
-import eu.stratosphere.scala.operators.DelimitedOutputFormat
-import eu.stratosphere.scala.operators.RecordInputFormat
+import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
+
+import eu.stratosphere.scala._
+import eu.stratosphere.scala.operators._
 
 object RunWebLogAnalysis {
   def main(args: Array[String]) {

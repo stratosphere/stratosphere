@@ -16,9 +16,7 @@ package eu.stratosphere.pact4s.examples.datamining
 import scala.math._
 import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
-import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.scala.DataSource
-import eu.stratosphere.scala.DataSet
+
 
 abstract class BatchGradientDescent(eps: Double, eta: Double, lambda: Double, examplesInput: String, weightsInput: String, weightsOutput: String) extends Serializable {
   def computeGradient(example: Array[Double], weight: Array[Double]): (Double, Array[Double])

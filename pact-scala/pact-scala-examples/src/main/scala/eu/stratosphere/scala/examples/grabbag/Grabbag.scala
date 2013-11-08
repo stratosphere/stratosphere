@@ -6,16 +6,13 @@ import scala.Array.canBuildFrom
 import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.pact.common.`type`.base.PactInteger
 import eu.stratosphere.pact.common.`type`.base.PactString
+
+import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
-import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.scala.DataSet
+
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
-import eu.stratosphere.scala.DataSource
-import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.scala.TextFile
 import eu.stratosphere.pact.example.util.AsciiUtils
-import eu.stratosphere.pact.common.`type`.base.PactInteger
-import eu.stratosphere.pact.common.`type`.base.PactString
+
 
 // Grab bag of random scala examples
 

@@ -13,10 +13,10 @@
 
 package eu.stratosphere.scala.examples.wordcount
 
-import scala.Array.canBuildFrom
 import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.pact.common.plan.PlanAssembler
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
+
 import eu.stratosphere.pact.common.`type`.base.PactInteger
 import eu.stratosphere.pact.common.`type`.base.PactString
 

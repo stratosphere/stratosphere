@@ -12,15 +12,16 @@ package eu.stratosphere.scala.examples.graph;
  * specific language governing permissions and limitations under the License.
  */
 
+
+import eu.stratosphere.pact.client.LocalExecutor
+import eu.stratosphere.pact.common.plan.PlanAssembler
+import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
+import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
+
 import scala.math._
+
 import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
-import eu.stratosphere.scala.Args
-import eu.stratosphere.scala.DataSource
-import eu.stratosphere.scala.DataSet
-import eu.stratosphere.scala.ScalaPlan
-import eu.stratosphere.pact.client.LocalExecutor
-import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
 
 object RunConnectedComponents {
  def main(pArgs: Array[String]) {
