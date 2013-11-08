@@ -127,8 +127,8 @@ if [ -z "${MY_JAVA_HOME}" ]; then
     # config did not specify JAVA_HOME. Use system JAVA_HOME
     MY_JAVA_HOME=${JAVA_HOME} 
 fi
-# check if we have a valid JAVA_HOME
-if [ -z "${MY_JAVA_HOME}" ]; then
+# check if we have a valid JAVA_HOME and if java is not available
+if [ -z "${MY_JAVA_HOME}" ] && ! type java > /dev/null 2> /dev/null; then
     echo "Please specify JAVA_HOME. Either in Stratosphere config ./conf/stratosphere-conf.yaml or as system-wide JAVA_HOME."
     exit 1
 else
