@@ -98,7 +98,6 @@ object BinaryDataSourceFormat {
   }
 }
 
-// TODO find out whether this stuff ever worked ...
 object SequentialDataSourceFormat {
   def apply[Out](): DataSourceFormat[Out] = macro implWithoutBlocksize[Out]
   def apply[Out](blockSize: Long): DataSourceFormat[Out] = macro implWithBlocksize[Out]

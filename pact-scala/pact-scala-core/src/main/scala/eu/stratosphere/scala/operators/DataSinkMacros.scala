@@ -104,7 +104,6 @@ object BinaryDataSinkFormat {
   }
 }
 
-// TODO check whether this ever worked ...
 object SequentialDataSinkFormat {
   
   def apply[In](): DataSinkFormat[In] = macro implWithoutBlocksize[In]
