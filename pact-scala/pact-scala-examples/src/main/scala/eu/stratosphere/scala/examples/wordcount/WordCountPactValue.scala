@@ -56,7 +56,7 @@ class WordCountPactValue extends PlanAssembler with PlanAssemblerDescription wit
 
     counts neglects { case (word, _) => word }
     counts preserves({ case (word, _) => word }, { case (word, _) => word })
-    val output = counts.write(wordsOutput, DelimitedDataSinkFormat(formatOutput.tupled))
+    val output = counts.write(wordsOutput, DelimitedOutputFormat(formatOutput.tupled))
   
     val plan = new ScalaPlan(Seq(output), "Word Count (immutable)")
     plan.setDefaultParallelism(numSubTasks)

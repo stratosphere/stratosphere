@@ -63,7 +63,7 @@ class ConnectedComponents extends Serializable {
     }
 
     val components = vertices.iterateWithWorkset(vertices, { _._1 }, propagateComponent)
-    val output = components.write(componentsOutput, DelimitedDataSinkFormat(formatOutput.tupled))
+    val output = components.write(componentsOutput, DelimitedOutputFormat(formatOutput.tupled))
 
     vertices.avgBytesPerRecord(8)
     directedEdges.avgBytesPerRecord(8)

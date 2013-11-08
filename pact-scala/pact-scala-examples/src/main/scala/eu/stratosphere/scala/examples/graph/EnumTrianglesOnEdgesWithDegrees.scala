@@ -17,7 +17,7 @@ import eu.stratosphere.pact.common.`type`.base.PactInteger
 import eu.stratosphere.scala.DataSource
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
-import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
+import eu.stratosphere.scala.operators.DelimitedOutputFormat
 import eu.stratosphere.scala.operators.RecordInputFormat
 import eu.stratosphere.scala.operators.optionToIterator
 import eu.stratosphere.pact.client.LocalExecutor
@@ -114,7 +114,7 @@ class EnumTrianglesOnEdgesWithDegrees extends PlanAssembler with PlanAssemblerDe
     /*
      * Emit triangles
      */
-    val output = triangles.write(triangleOutput, DelimitedDataSinkFormat(formatTriangle.tupled))
+    val output = triangles.write(triangleOutput, DelimitedOutputFormat(formatTriangle.tupled))
   
     val plan = new ScalaPlan(Seq(output), "Enumerate Triangles on Edges with Degrees")
     plan.setDefaultParallelism(numSubTasks)

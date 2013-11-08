@@ -23,7 +23,7 @@ import eu.stratosphere.pact.common.plan.PlanAssembler
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.pact.client.LocalExecutor
 import eu.stratosphere.scala.operators.DelimitedInputFormat
-import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
+import eu.stratosphere.scala.operators.DelimitedOutputFormat
 import eu.stratosphere.scala.operators.RecordInputFormat
 
 object RunWebLogAnalysis {
@@ -137,7 +137,7 @@ class WebLogAnalysis extends PlanAssembler with PlanAssemblerDescription with Se
     ranksFilteredByDocs.right.neglects( {v => v} )
     
     // emit the resulting ranks
-    val output = ranksFilteredByDocsAndVisits.write(ranksOutput, DelimitedDataSinkFormat(formatRank))
+    val output = ranksFilteredByDocsAndVisits.write(ranksOutput, DelimitedOutputFormat(formatRank))
 
     val plan = new ScalaPlan(Seq(output), "WebLog Analysis")
     plan.setDefaultParallelism(numSubTasks)

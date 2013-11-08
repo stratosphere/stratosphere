@@ -60,7 +60,7 @@ class TransitiveClosureNaive extends Serializable {
 
     val transitiveClosure = vertices.iterate(numIterations, createClosure)
 
-    val output = transitiveClosure.write(pathsOutput, DelimitedDataSinkFormat(formatOutput))
+    val output = transitiveClosure.write(pathsOutput, DelimitedOutputFormat(formatOutput))
 
     vertices.avgBytesPerRecord(16)
     edges.avgBytesPerRecord(16)

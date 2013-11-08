@@ -18,7 +18,7 @@ import eu.stratosphere.scala.DataSource
 import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.operators.DelimitedInputFormat
-import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
+import eu.stratosphere.scala.operators.DelimitedOutputFormat
 import eu.stratosphere.pact.common.plan.PlanAssembler
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
 
@@ -118,7 +118,7 @@ class KMeans extends PlanAssembler with PlanAssemblerDescription with Serializab
 
     val finalCenters = clusterPoints.iterate(numIterations, computeNewCenters)
 
-    val output = finalCenters.write(clusterOutput, DelimitedDataSinkFormat(formatOutput.tupled))
+    val output = finalCenters.write(clusterOutput, DelimitedOutputFormat(formatOutput.tupled))
 
     val plan = new ScalaPlan(Seq(output), "KMeans Iteration (Immutable)")
     plan.setDefaultParallelism(numSubTasks)

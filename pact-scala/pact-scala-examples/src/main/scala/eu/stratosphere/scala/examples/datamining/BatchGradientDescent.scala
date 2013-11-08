@@ -72,7 +72,7 @@ abstract class BatchGradientDescent(eps: Double, eta: Double, lambda: Double, ex
 
     val newWeights = weights.iterateWithWorkset(weights.map { case (id, w) => (id, w, eta) }, {_._1}, gradientDescent)
 
-    val output = newWeights.write(weightsOutput, DelimitedDataSinkFormat(formatOutput.tupled))
+    val output = newWeights.write(weightsOutput, DelimitedOutputFormat(formatOutput.tupled))
     new ScalaPlan(Seq(output), "Batch Gradient Descent")
   }
 }

@@ -65,15 +65,15 @@ object Main1 {
     val un = countsCross union countsJoin map { x => x }
     
     val sink0 = counts.reduce { (w1, w2) => ( "Total: " , w1._2 + w2._2) }
-      .write("file:///home/aljoscha/dummy-outputCounts-reduce", RecordDataSinkFormat("\n", ","))
+      .write("file:///home/aljoscha/dummy-outputCounts-reduce", RecordOutputFormat("\n", ","))
     val sinkm1 = counts.reduceAll { _.reduce { (w1, w2) => ( "Total: " , w1._2 + w2._2) } }
-      .write("file:///home/aljoscha/dummy-outputCounts-reduce-all", RecordDataSinkFormat("\n", ","))
-    val sink1 = counts.write("file:///home/aljoscha/dummy-outputCounts", RecordDataSinkFormat("\n", ","))
-    val sink2 = countsCross.write("file:///home/aljoscha/dummy-outputCross", RecordDataSinkFormat("\n", ","))
-    val sink3 = countsJoin.write("file:///home/aljoscha/dummy-outputJoin", RecordDataSinkFormat("\n", ","))
-    val sink4 = un.write("file:///home/aljoscha/dummy-outputUnion", RecordDataSinkFormat("\n", ","))
-    val sink5 = bar1.write("file:///home/aljoscha/dummy-outputbar1", RecordDataSinkFormat("\n", ","))
-    val sink6 = bar2.write("file:///home/aljoscha/dummy-outputbar2", RecordDataSinkFormat("\n", ","))
+      .write("file:///home/aljoscha/dummy-outputCounts-reduce-all", RecordOutputFormat("\n", ","))
+    val sink1 = counts.write("file:///home/aljoscha/dummy-outputCounts", RecordOutputFormat("\n", ","))
+    val sink2 = countsCross.write("file:///home/aljoscha/dummy-outputCross", RecordOutputFormat("\n", ","))
+    val sink3 = countsJoin.write("file:///home/aljoscha/dummy-outputJoin", RecordOutputFormat("\n", ","))
+    val sink4 = un.write("file:///home/aljoscha/dummy-outputUnion", RecordOutputFormat("\n", ","))
+    val sink5 = bar1.write("file:///home/aljoscha/dummy-outputbar1", RecordOutputFormat("\n", ","))
+    val sink6 = bar2.write("file:///home/aljoscha/dummy-outputbar2", RecordOutputFormat("\n", ","))
     
     val plan = new ScalaPlan(Seq(sinkm1, sink0, sink1, sink2, sink3, sink4, sink5, sink6), "SCALA DUMMY JOBB")
     GlobalSchemaPrinter.printSchema(plan)
@@ -127,7 +127,7 @@ object MainIterate {
 
     val transitiveClosure = vertices.iterate(5, createClosure)
     
-    val sink = transitiveClosure.write("file:///home/aljoscha/transclos-output", DelimitedDataSinkFormat(formatOutput))
+    val sink = transitiveClosure.write("file:///home/aljoscha/transclos-output", DelimitedOutputFormat(formatOutput))
 
 
 //    vertices.avgBytesPerRecord(16)
@@ -188,7 +188,7 @@ object MainWorksetIterate {
     val transitiveClosure = vertices.iterateWithWorkset(edges, { p => (p.from, p.to) }, createClosure)
 //    vertices iterateWithWorkset edges withKey { p => (p.from, p.to) } using createClosure
     
-    val sink = transitiveClosure.write("file:///home/aljoscha/transclos-output-workset", DelimitedDataSinkFormat(formatOutput))
+    val sink = transitiveClosure.write("file:///home/aljoscha/transclos-output-workset", DelimitedOutputFormat(formatOutput))
 
 
 //    vertices.avgBytesPerRecord(16)
@@ -249,7 +249,7 @@ object ConnectedComponents {
 
     val components = vertices.iterateWithWorkset(vertices, { _._1 }, propagateComponent)
 
-    val sink = components.write("file:///home/aljoscha/connected-components-output", DelimitedDataSinkFormat(formatOutput.tupled))
+    val sink = components.write("file:///home/aljoscha/connected-components-output", DelimitedOutputFormat(formatOutput.tupled))
     val plan = new ScalaPlan(Seq(sink), "SCALA TRANSITIVE CLOSURE")
     GlobalSchemaPrinter.printSchema(plan)
 

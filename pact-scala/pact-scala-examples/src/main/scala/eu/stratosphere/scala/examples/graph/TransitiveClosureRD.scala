@@ -54,7 +54,7 @@ class TransitiveClosureRD extends Serializable {
     }
     val transitiveClosure = vertices.iterateWithWorkset(edges, { p => (p.from, p.to) }, createClosure)
 
-    val output = transitiveClosure.write(pathsOutput, DelimitedDataSinkFormat(formatOutput))
+    val output = transitiveClosure.write(pathsOutput, DelimitedOutputFormat(formatOutput))
 
     vertices.avgBytesPerRecord(16)
     edges.avgBytesPerRecord(16)

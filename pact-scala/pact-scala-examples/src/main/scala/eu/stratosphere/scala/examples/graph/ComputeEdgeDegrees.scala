@@ -19,7 +19,7 @@ import eu.stratosphere.scala.ScalaPlan
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
 import eu.stratosphere.scala.operators.RecordInputFormat
 import eu.stratosphere.scala.operators.optionToIterator
-import eu.stratosphere.scala.operators.DelimitedDataSinkFormat
+import eu.stratosphere.scala.operators.DelimitedOutputFormat
 import eu.stratosphere.pact.common.plan.PlanAssembler
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription
 
@@ -111,7 +111,7 @@ class ComputeEdgeDegrees extends PlanAssembler with PlanAssemblerDescription wit
     /*
      * Emit annotated edges.
      */
-    val output = combinedVertexCnts.write(annotatedEdgeOutput, DelimitedDataSinkFormat(formatEdgeWithDegrees.tupled))
+    val output = combinedVertexCnts.write(annotatedEdgeOutput, DelimitedOutputFormat(formatEdgeWithDegrees.tupled))
   
     val plan = new ScalaPlan(Seq(output), "Compute Edge Degrees")
     plan.setDefaultParallelism(numSubTasks)
