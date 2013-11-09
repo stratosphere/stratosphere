@@ -1,0 +1,30 @@
+---
+layout: default
+---
+<div class="container" style="margin-top: 2em;">
+	<div class="row">
+		<div class="col-md-3">
+			<div data-spy="affix" data-offset-top="60" id="scrollspy">
+				<ul class="nav sidenav">
+					<li class="section"><a href="">Setup &amp; Configuration</a></li>
+					<li><a href="#{{ link.anchor }}">Test 1</a></li>
+					<li class=""><a href="#{{ link.anchor }}">Test 1</a></li>
+					<li class="section"><a href="">Programming Guides</a></li>
+					<li class=""><a href="#{{ link.anchor }}" class="subsection">Java</a>
+						<ul class="nav sidenav">
+							<li><a href="">Sub</a></li>
+						</ul>
+					</li>
+					<li class=""><a href="#{{ link.anchor }}">Scala</a></li>
+					<li>Internals</li>
+					<li class=""><a href="#{{ link.anchor }}">Test 1</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="col-md-9">
+			<h1>{{ page.title }}</h1>
+			{{ content }}
+		</div>
+	</div>
+</div>
