@@ -147,38 +147,54 @@ public class JDBCInputFormat extends GenericInputFormat {
                 //which types are necessary?
                 //all types that resultset has a get method for?
                 switch (type) {
+
                     case java.sql.Types.ARRAY:
                     //getArray
-                    case java.sql.Types.BIGINT:
-                    //resultSet.getBigDecimal(x)
-                    case java.sql.Types.BLOB:
-                    //record.setField(x,resultSet.getBlob(x));
-                    case java.sql.Types.BOOLEAN:
-                        record.setField(x, new PactBoolean(resultSet.getBoolean(x)));
-                    case java.sql.Types.CLOB:
-                    //getClob
-                    case java.sql.Types.CHAR:
-                        record.setField(x, new PactCharacter((char) resultSet.getByte(x)));
-                    case java.sql.Types.DATE:
-                    //getDate
-                    case java.sql.Types.DOUBLE:
-                        record.setField(x, new PactDouble(resultSet.getDouble(x)));
-                    case java.sql.Types.FLOAT:
-                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
-                    case java.sql.Types.INTEGER:
-                        record.setField(x, new PactInteger(resultSet.getInt(x)));
                     case java.sql.Types.JAVA_OBJECT:
                     //getObject
-                    case java.sql.Types.SMALLINT:
-                        record.setField(x, new PactShort(resultSet.getShort(x)));
-                    case java.sql.Types.VARCHAR:
+                    case java.sql.Types.NULL:
+                        record.setField(x, new PactNull());
+
+                    case java.sql.Types.BOOLEAN:
+                        record.setField(x, new PactBoolean(resultSet.getBoolean(x)));
+
+                    case java.sql.Types.CHAR:
+                        record.setField(x, new PactCharacter((char) resultSet.getByte(x)));
+                    case java.sql.Types.NCHAR:
                         record.setField(x, new PactString(resultSet.getString(x)));
-                    case java.sql.Types.TIME:
-                    //getTiime
-                    case java.sql.Types.TIMESTAMP:
-                    //getTimestamp
                     case java.sql.Types.LONGNVARCHAR:
                         record.setField(x, new PactString(resultSet.getString(x)));
+                    case java.sql.Types.VARCHAR:
+                        record.setField(x, new PactString(resultSet.getString(x)));
+
+                    case java.sql.Types.TINYINT:
+                        record.setField(x, new PactShort(resultSet.getShort(x)));
+                    case java.sql.Types.SMALLINT:
+                        record.setField(x, new PactShort(resultSet.getShort(x)));
+                    case java.sql.Types.BIGINT:
+                        record.setField(x, new PactLong(resultSet.getLong(x)));
+                    case java.sql.Types.INTEGER:
+                        record.setField(x, new PactInteger(resultSet.getInt(x)));
+                    case java.sql.Types.FLOAT:
+                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
+                    case java.sql.Types.DECIMAL:
+                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
+                    case java.sql.Types.REAL:
+                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
+                    case java.sql.Types.DOUBLE:
+                        record.setField(x, new PactDouble(resultSet.getDouble(x)));
+
+                     case java.sql.Types.DATE:
+                    //getDate
+                    case java.sql.Types.TIME:
+                    //getTime
+                    case java.sql.Types.TIMESTAMP:
+                    //getTimestamp
+
+                    case java.sql.Types.BLOB:
+                    //record.setField(x,resultSet.getBlob(x));
+                    case java.sql.Types.CLOB:
+                    //getClob
 
                 }
             }
