@@ -118,22 +118,11 @@ public class JDBCInputFormat extends GenericInputFormat {
             return false;
         }
     }
-    
+
     @Override
     public boolean reachedEnd() throws IOException {
-        int currentIndex;
-        int lastIndex;
-
         try {
-            currentIndex = resultSet.getRow();
-            resultSet.afterLast();
-            lastIndex = resultSet.getRow();
-            if (lastIndex == currentIndex) {
-                return true;
-            } else {
-                resultSet.absolute(currentIndex);
-                return false;
-            }
+            return resultSet.isAfterLast();
         } catch (SQLException e) {
             LOG.error("Couldn't evaluate reacedEnd():\t" + e.getMessage());
         }
