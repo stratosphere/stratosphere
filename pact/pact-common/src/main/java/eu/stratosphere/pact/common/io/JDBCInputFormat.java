@@ -183,9 +183,9 @@ public class JDBCInputFormat extends GenericInputFormat {
                     case java.sql.Types.DOUBLE:
                         record.setField(x, new PactDouble(resultSet.getDouble(x)));
                     case java.sql.Types.DECIMAL:
-                        record.setField(x, new PactString(resultSet.getBigDecimal(x).toString()));
+                        record.setField(x, new PactDouble(resultSet.getBigDecimal(x).doubleValue()));
                     case java.sql.Types.NUMERIC:
-                        record.setField(x, new PactString(resultSet.getBigDecimal(x).toString()));
+                        record.setField(x, new PactDouble(resultSet.getBigDecimal(x).doubleValue()));
 
                     case java.sql.Types.DATE:
                         record.setField(x, new PactString(resultSet.getDate(x).toString()));
@@ -200,7 +200,10 @@ public class JDBCInputFormat extends GenericInputFormat {
                     //need Pact compatible byte array, i.e. a PactList of bytes
                     case java.sql.Types.VARBINARY:
                     case java.sql.Types.LONGVARBINARY:
-
+                        
+                    case java.sql.Types.SQLXML:
+                        record.setField(x,new PactString(resultSet.getSQLXML(x).toString()));
+                        
                     //--------problematic----------
                     //PactList of array elements?
                     case java.sql.Types.ARRAY:
@@ -223,8 +226,9 @@ public class JDBCInputFormat extends GenericInputFormat {
                     case java.sql.Types.OTHER:
                     case java.sql.Types.REF:
                     case java.sql.Types.ROWID:
-                    case java.sql.Types.SQLXML:
+                        //no both-ways-type conversion implemented
                     case java.sql.Types.STRUCT:
+                        //no get method exists
                 }
             }
             return true;
