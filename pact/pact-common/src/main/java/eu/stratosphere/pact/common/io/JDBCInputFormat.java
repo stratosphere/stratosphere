@@ -118,15 +118,22 @@ public class JDBCInputFormat extends GenericInputFormat {
             return false;
         }
     }
-    /*
-    what exactly is reachedEnd supposed to do? 
-    if it is true, and we use nextRecord(), 
-    do we get the last entry on non at all?
-    */
+    
     @Override
     public boolean reachedEnd() throws IOException {
+        int currentIndex;
+        int lastIndex;
+
         try {
-            return resultSet.isLast();
+            currentIndex = resultSet.getRow();
+            resultSet.afterLast();
+            lastIndex = resultSet.getRow();
+            if (lastIndex == currentIndex) {
+                return true;
+            } else {
+                resultSet.absolute(currentIndex);
+                return false;
+            }
         } catch (SQLException e) {
             LOG.error("Couldn't evaluate reacedEnd():\t" + e.getMessage());
         }
