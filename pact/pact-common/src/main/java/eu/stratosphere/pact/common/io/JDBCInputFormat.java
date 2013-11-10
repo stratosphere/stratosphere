@@ -50,7 +50,7 @@ public class JDBCInputFormat extends GenericInputFormat {
         String dbType = parameters.getString("type", "mysql");
         String host = parameters.getString("host", "localhost");
         Integer port = parameters.getInteger("port", 3306);
-        String dbName = parameters.getString("database", "");
+        String dbName = parameters.getString("name", "");
         String username = parameters.getString("username", "");
         String password = parameters.getString("password", "");
 
@@ -84,7 +84,7 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
-    private boolean setClassForDBType(String dbType) {
+    boolean setClassForDBType(String dbType) {
         boolean hasSetClass = false;
 
         try {

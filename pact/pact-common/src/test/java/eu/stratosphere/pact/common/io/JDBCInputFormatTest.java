@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package eu.stratosphere.pact.common.io;
 
 import eu.stratosphere.nephele.configuration.Configuration;
@@ -30,25 +29,25 @@ import static org.junit.Assert.*;
  * @author Shiren
  */
 public class JDBCInputFormatTest {
-    
+
     static JDBCInputFormat format;
     static Configuration config;
-    
+
     public JDBCInputFormatTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -57,7 +56,35 @@ public class JDBCInputFormatTest {
      * Test of configure method, of class JDBCInputFormat.
      */
     @Test
-    public void testConfigure() {
+    public void testConfigure_dummy() {
+        config = new Configuration();
+        config.setString("type", "dummy");
+        config.setString("host", "localhost");
+        config.setInteger("port", 8080);
+        config.setString("name", "dummy");
+        config.setString("username", "test");
+        config.setString("password", "1234");
+        format.configure(config);
+    }
+
+    @Test
+    public void testsetClassForDBType_mysql() {
+        assertTrue(format.setClassForDBType("mysql"));
+    }
+
+    @Test
+    public void testsetClassForDBType_postgres() {
+        assertTrue(format.setClassForDBType("postgres"));
+    }
+
+    @Test
+    public void testsetClassForDBType_mariadb() {
+        assertTrue(format.setClassForDBType("mariadb"));
+    }
+
+    @Test
+    public void testsetClassForDBType_oracle() {
+        assertTrue(format.setClassForDBType("oracle"));
     }
 
     /**
@@ -65,15 +92,6 @@ public class JDBCInputFormatTest {
      */
     @Test
     public void testReachedEnd() throws Exception {
-        /*
-        System.out.println("reachedEnd");
-        JDBCInputFormat instance = null;
-        boolean expResult = false;
-        boolean result = instance.reachedEnd();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-        */
     }
 
     /**
@@ -81,16 +99,6 @@ public class JDBCInputFormatTest {
      */
     @Test
     public void testNextRecord() throws Exception {
-        /*
-        System.out.println("nextRecord");
-        PactRecord record = null;
-        JDBCInputFormat instance = null;
-        boolean expResult = false;
-        boolean result = instance.nextRecord(record);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-        */
     }
-    
+
 }
