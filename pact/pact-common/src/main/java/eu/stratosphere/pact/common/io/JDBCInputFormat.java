@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.*;
+import java.sql.Clob;
 import java.sql.ResultSetMetaData;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -148,23 +149,23 @@ public class JDBCInputFormat extends GenericInputFormat {
                 //all types that resultset has a get method for?
                 switch (type) {
 
-                    case java.sql.Types.ARRAY:
-                    //getArray
-                    case java.sql.Types.JAVA_OBJECT:
-                    //getObject
                     case java.sql.Types.NULL:
                         record.setField(x, new PactNull());
 
                     case java.sql.Types.BOOLEAN:
                         record.setField(x, new PactBoolean(resultSet.getBoolean(x)));
+                    case java.sql.Types.BIT:
+                        record.setField(x, new PactBoolean(resultSet.getBoolean(x)));
 
                     case java.sql.Types.CHAR:
-                        record.setField(x, new PactCharacter((char) resultSet.getByte(x)));
+                        record.setField(x, new PactString(resultSet.getString(x)));
                     case java.sql.Types.NCHAR:
                         record.setField(x, new PactString(resultSet.getString(x)));
-                    case java.sql.Types.LONGNVARCHAR:
-                        record.setField(x, new PactString(resultSet.getString(x)));
                     case java.sql.Types.VARCHAR:
+                        record.setField(x, new PactString(resultSet.getString(x)));
+                    case java.sql.Types.LONGVARCHAR:
+                        record.setField(x, new PactString(resultSet.getString(x)));
+                    case java.sql.Types.LONGNVARCHAR:
                         record.setField(x, new PactString(resultSet.getString(x)));
 
                     case java.sql.Types.TINYINT:
@@ -176,26 +177,54 @@ public class JDBCInputFormat extends GenericInputFormat {
                     case java.sql.Types.INTEGER:
                         record.setField(x, new PactInteger(resultSet.getInt(x)));
                     case java.sql.Types.FLOAT:
-                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
-                    case java.sql.Types.DECIMAL:
-                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
+                        record.setField(x, new PactDouble(resultSet.getDouble(x)));
                     case java.sql.Types.REAL:
                         record.setField(x, new PactFloat(resultSet.getFloat(x)));
                     case java.sql.Types.DOUBLE:
                         record.setField(x, new PactDouble(resultSet.getDouble(x)));
+                    case java.sql.Types.DECIMAL:
+                        record.setField(x, new PactString(resultSet.getBigDecimal(x).toString()));
+                    case java.sql.Types.NUMERIC:
+                        record.setField(x, new PactString(resultSet.getBigDecimal(x).toString()));
 
-                     case java.sql.Types.DATE:
-                    //getDate
+                    case java.sql.Types.DATE:
+                        record.setField(x, new PactString(resultSet.getDate(x).toString()));
                     case java.sql.Types.TIME:
-                    //getTime
+                        record.setField(x, new PactString(resultSet.getTime(x).toString()));
+                    //could be encoded as long aswell, stick to the options used by time?
                     case java.sql.Types.TIMESTAMP:
-                    //getTimestamp
+                        record.setField(x, new PactString(resultSet.getTimestamp(x).toString()));
 
+                    case java.sql.Types.BINARY:
+                    //getBytes(x);
+                    //need Pact compatible byte array, i.e. a PactList of bytes
+                    case java.sql.Types.VARBINARY:
+                    case java.sql.Types.LONGVARBINARY:
+
+                    //--------problematic----------
+                    //PactList of array elements?
+                    case java.sql.Types.ARRAY:
+                    //getArray
+
+                    //encode a string?
+                    case java.sql.Types.JAVA_OBJECT:
+                    //getObject
+
+                    //blob/clob/nclob can theoretically be encoded as strings
                     case java.sql.Types.BLOB:
-                    //record.setField(x,resultSet.getBlob(x));
+                    //resultSet.getBlob(x)
                     case java.sql.Types.CLOB:
-                    //getClob
+                    //resultSet.getClob(x);
+                    case java.sql.Types.NCLOB:
 
+                    case java.sql.Types.DATALINK:
+                    case java.sql.Types.DISTINCT:
+
+                    case java.sql.Types.OTHER:
+                    case java.sql.Types.REF:
+                    case java.sql.Types.ROWID:
+                    case java.sql.Types.SQLXML:
+                    case java.sql.Types.STRUCT:
                 }
             }
             return true;
