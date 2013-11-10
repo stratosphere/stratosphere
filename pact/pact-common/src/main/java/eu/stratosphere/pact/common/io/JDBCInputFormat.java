@@ -175,6 +175,8 @@ public class JDBCInputFormat extends GenericInputFormat {
 			return true;
 		} catch (SQLException e) {
 			LOG.error("Couldn't read data:\t" + e.getMessage());
+		} catch (NotTransformableSQLFieldException e) {
+			LOG.error("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
 		}
 		return false;
 	}
