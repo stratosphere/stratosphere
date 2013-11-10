@@ -135,13 +135,17 @@ public class JDBCInputFormat extends GenericInputFormat {
     public boolean nextRecord(PactRecord record) throws IOException {
         try {
             resultSet.next();
+            //may not be necessary to call this every time?
+            //could be moved to configure, not sure if you can use it
+            //before the first next() though
             ResultSetMetaData rsmd = resultSet.getMetaData();
             int column_count = rsmd.getColumnCount();
+            //iterate trough columns
+
             for (int x = 0; x < column_count; x++) {
                 int type = rsmd.getColumnType(x);
-                String name = rsmd.getColumnName(x);
-                //have to convert types Int/Array/etc. to type Value
-                //no clue how!!!
+                //which types are necessary?
+                //all types that resultset has a get method for?
                 switch (type) {
                     case java.sql.Types.ARRAY:
                     //getArray
@@ -166,7 +170,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                     case java.sql.Types.JAVA_OBJECT:
                     //getObject
                     case java.sql.Types.SMALLINT:
-                        record.setField(x,new PactShort(resultSet.getShort(x)));
+                        record.setField(x, new PactShort(resultSet.getShort(x)));
                     case java.sql.Types.VARCHAR:
                         record.setField(x, new PactString(resultSet.getString(x)));
                     case java.sql.Types.TIME:
@@ -178,11 +182,10 @@ public class JDBCInputFormat extends GenericInputFormat {
 
                 }
             }
+            return true;
         } catch (SQLException e) {
             LOG.error("Couldn't read data:\t" + e.getMessage());
         }
-
-        // TODO Auto-generated method stub
         return false;
     }
 
