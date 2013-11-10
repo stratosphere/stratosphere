@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
+import java.sql.ResultSetMetaData;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -131,6 +132,53 @@ public class JDBCInputFormat extends GenericInputFormat {
 
     @Override
     public boolean nextRecord(PactRecord record) throws IOException {
+        try {
+            resultSet.next();
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            int column_count = rsmd.getColumnCount();
+            for (int x = 0; x < column_count; x++) {
+                int type = rsmd.getColumnType(x);
+                String name = rsmd.getColumnName(x);
+                //have to convert types Int/Array/etc. to type Value
+                //no clue how!!!
+                switch (type) {
+                    case java.sql.Types.ARRAY:
+                        record.setField(x, null);
+                    case java.sql.Types.BIGINT:
+                    //record.setField(x,resultSet.getBigDecimal(x));
+                    case java.sql.Types.BLOB:
+                    //record.setFIeld(x,resultSet.getBlob(x));
+                    case java.sql.Types.BOOLEAN:
+                    //getBoolean
+                    case java.sql.Types.CLOB:
+                    //getClob
+                    case java.sql.Types.CHAR:
+                    //Byte
+                    case java.sql.Types.DATE:
+                    //getDate
+                    case java.sql.Types.DOUBLE:
+                    //getDouble
+                    case java.sql.Types.FLOAT:
+                    //getFLoat
+                    case java.sql.Types.INTEGER:
+                    //getInt
+                    case java.sql.Types.JAVA_OBJECT:
+                    //getObject
+                    case java.sql.Types.VARCHAR:
+                    //getString
+                    case java.sql.Types.TIME:
+                    //getTiime
+                    case java.sql.Types.TIMESTAMP:
+                    //getTimestamp
+                    case java.sql.Types.LONGNVARCHAR:
+                        //getString
+
+                }
+            }
+        } catch (SQLException e) {
+            LOG.error("Couldn't read data:\t" + e.getMessage());
+        }
+
         // TODO Auto-generated method stub
         return false;
     }
