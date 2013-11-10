@@ -1,6 +1,4 @@
-/*
- * Copyright 2013 Shiren.
- *
+/**
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,17 +22,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author Shiren
- */
 public class JDBCInputFormatTest {
 
-    static JDBCInputFormat format;
-    static Configuration config;
-
-    public JDBCInputFormatTest() {
-    }
+    JDBCInputFormat jdbcInputFormat;
+    Configuration config;
 
     @BeforeClass
     public static void setUpClass() {
@@ -64,27 +55,27 @@ public class JDBCInputFormatTest {
         config.setString("name", "dummy");
         config.setString("username", "test");
         config.setString("password", "1234");
-        format.configure(config);
+        jdbcInputFormat.configure(config);
     }
 
     @Test
     public void testsetClassForDBType_mysql() {
-        assertTrue(format.setClassForDBType("mysql"));
+        assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
     }
 
     @Test
     public void testsetClassForDBType_postgres() {
-        assertTrue(format.setClassForDBType("postgres"));
+        assertTrue(jdbcInputFormat.setClassForDBType("postgres"));
     }
 
     @Test
     public void testsetClassForDBType_mariadb() {
-        assertTrue(format.setClassForDBType("mariadb"));
+        assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
     }
 
     @Test
     public void testsetClassForDBType_oracle() {
-        assertTrue(format.setClassForDBType("oracle"));
+        assertTrue(jdbcInputFormat.setClassForDBType("oracle"));
     }
 
     /**
@@ -99,6 +90,7 @@ public class JDBCInputFormatTest {
      */
     @Test
     public void testNextRecord() throws Exception {
+    	
     }
 
 }
