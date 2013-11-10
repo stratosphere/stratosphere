@@ -47,36 +47,36 @@ public class JDBCInputFormat extends GenericInputFormat {
         String dbType = parameters.getString("type", "mysql");
         String host = parameters.getString("host", "localhost");
         Integer port = parameters.getInteger("port", 3306);
-        String database = parameters.getString("database", "");
+        String dbName = parameters.getString("database", "");
         String username = parameters.getString("username", "");
         String password = parameters.getString("password", "");
 
         if (setClassForDBType(dbType)) {
             String url = "";
             DBTypes type = DBTypes.valueOf(dbType);
-            Connection conn = null;
             switch (type) {
                 case mysql:
-                    url = String.format("jdbc:mysql://%s:%i/%s", host, port, database);
+                    url = String.format("jdbc:mysql://%s:%i/%s", host, port, dbName);
 
                 case postgresql:
-                    url = String.format("jdbc:postgresql://%s:%i/%s", host, port, database);
+                    url = String.format("jdbc:postgresql://%s:%i/%s", host, port, dbName);
 
                 case mariadb:
-                    url = String.format("jdbc:mysql://%s:%i/%s", host, port, database);
+                    url = String.format("jdbc:mysql://%s:%i/%s", host, port, dbName);
 
                 case oracle:
                     //needs drivertype, asumsed >thin< for now
-                    url = String.format("jdbc:oracle:thin:@%s:%i:%s", host, port, database);
+                    url = String.format("jdbc:oracle:thin:@%s:%i:%s", host, port, dbName);
 
             }
-            try {
-                conn = DriverManager.getConnection(url, username, password);
-                statement = conn.createStatement();
-                statement.execute(query);
-            } catch (SQLException ex) {
-                System.out.println("Establishing connection failed.");
-                //quit
+            if (prepareConnection(url, username, password)) {
+                try {
+                    statement = dbConn.createStatement();
+                    resultSet = statement.executeQuery(this.query);
+
+                } catch (SQLException e) {
+                    LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                }
             }
         }
     }
@@ -118,10 +118,18 @@ public class JDBCInputFormat extends GenericInputFormat {
             return false;
         }
     }
-
+    /*
+    what exactly is reachedEnd supposed to do? 
+    if it is true, and we use nextRecord(), 
+    do we get the last entry on non at all?
+    */
     @Override
     public boolean reachedEnd() throws IOException {
-        // TODO Auto-generated method stub
+        try {
+            return resultSet.isLast();
+        } catch (SQLException e) {
+            LOG.error("Couldn't evaluate reacedEnd():\t" + e.getMessage());
+        }
         return false;
     }
 
