@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.base.*;
 import java.sql.ResultSetMetaData;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -143,35 +144,37 @@ public class JDBCInputFormat extends GenericInputFormat {
                 //no clue how!!!
                 switch (type) {
                     case java.sql.Types.ARRAY:
-                        record.setField(x, null);
+                    //getArray
                     case java.sql.Types.BIGINT:
-                    //record.setField(x,resultSet.getBigDecimal(x));
+                    //resultSet.getBigDecimal(x)
                     case java.sql.Types.BLOB:
-                    //record.setFIeld(x,resultSet.getBlob(x));
+                    //record.setField(x,resultSet.getBlob(x));
                     case java.sql.Types.BOOLEAN:
-                    //getBoolean
+                        record.setField(x, new PactBoolean(resultSet.getBoolean(x)));
                     case java.sql.Types.CLOB:
                     //getClob
                     case java.sql.Types.CHAR:
-                    //Byte
+                        record.setField(x, new PactCharacter((char) resultSet.getByte(x)));
                     case java.sql.Types.DATE:
                     //getDate
                     case java.sql.Types.DOUBLE:
-                    //getDouble
+                        record.setField(x, new PactDouble(resultSet.getDouble(x)));
                     case java.sql.Types.FLOAT:
-                    //getFLoat
+                        record.setField(x, new PactFloat(resultSet.getFloat(x)));
                     case java.sql.Types.INTEGER:
-                    //getInt
+                        record.setField(x, new PactInteger(resultSet.getInt(x)));
                     case java.sql.Types.JAVA_OBJECT:
                     //getObject
+                    case java.sql.Types.SMALLINT:
+                        record.setField(x,new PactShort(resultSet.getShort(x)));
                     case java.sql.Types.VARCHAR:
-                    //getString
+                        record.setField(x, new PactString(resultSet.getString(x)));
                     case java.sql.Types.TIME:
                     //getTiime
                     case java.sql.Types.TIMESTAMP:
                     //getTimestamp
                     case java.sql.Types.LONGNVARCHAR:
-                        //getString
+                        record.setField(x, new PactString(resultSet.getString(x)));
 
                 }
             }
