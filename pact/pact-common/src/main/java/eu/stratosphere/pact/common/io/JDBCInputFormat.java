@@ -28,7 +28,8 @@ public class JDBCInputFormat extends GenericInputFormat {
 		MYSQL,
 		POSTGRESQL,
 		MARIADB,
-		ORACLE
+		ORACLE,
+		DERBY
 	}
 	
 	public static class NotTransformableSQLFieldException extends Exception {
@@ -57,7 +58,8 @@ public class JDBCInputFormat extends GenericInputFormat {
 		String dbName = parameters.getString("name", "");
 		String username = parameters.getString("username", "");
 		String password = parameters.getString("password", "");
-
+		String derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir"+"/test/resources/derby/db;create=true;"));
+		
 		DBTypes dbType = getDBType(dbTypeStr);
 		
 		if (setClassForDBType(dbType)) {
@@ -79,6 +81,10 @@ public class JDBCInputFormat extends GenericInputFormat {
 				case ORACLE:
 					//needs drivertype, asumsed >thin< for now
 					url = String.format("jdbc:oracle:thin:@%s:%i:%s", host, port, dbName);
+					break;
+					
+				case DERBY:
+					url = String.format("jdbc:derby://%s", derbyDBPath);
 					break;
 			}
 			if (prepareConnection(url, username, password)) {
@@ -117,21 +123,30 @@ public class JDBCInputFormat extends GenericInputFormat {
 		}
 		
 		try {
-			if (dbType.equals(DBTypes.MYSQL)) {
-				Class.forName("com.mysql.jdbc.Driver");
-				hasSetClass = true;
-			} else if (dbType.equals(DBTypes.POSTGRESQL)) {
-				Class.forName("org.postgresql.Driver");
-				hasSetClass = true;
-			} else if (dbType.equals(DBTypes.MYSQL)) {
-				Class.forName("com.mysql.jdbc.Driver");
-				hasSetClass = true;
-			} else if (dbType.equals(DBTypes.ORACLE)) {
-				Class.forName("oracle.jdbc.OracleDriver");
-				hasSetClass = true;
-			} else {
-				LOG.info("Database type is not supported yet:\t" + dbType);
-				hasSetClass = false;
+			switch(dbType) {
+				case MYSQL:
+					Class.forName("com.mysql.jdbc.Driver");
+					hasSetClass = true;
+					break;
+				
+				case POSTGRESQL:
+					Class.forName("org.postgresql.Driver");
+					hasSetClass = true;
+					break;
+					
+				case ORACLE:
+					Class.forName("oracle.jdbc.OracleDriver");
+					hasSetClass = true;
+					break;
+					
+				case DERBY:
+					Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+					hasSetClass = true;
+					break;
+					
+				default:
+					LOG.info("Database type is not supported yet:\t" + dbType);
+					hasSetClass = false;	
 			}
 		} catch (ClassNotFoundException cnfe) {
 			LOG.error("JDBC-Class not found:\t" + cnfe.getLocalizedMessage());

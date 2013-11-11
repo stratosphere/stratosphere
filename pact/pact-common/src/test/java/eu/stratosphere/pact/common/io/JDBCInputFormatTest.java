@@ -37,6 +37,7 @@ public class JDBCInputFormatTest {
 
     @Before
     public void setUp() {
+    	testConfigure_dummy();
     }
 
     @After
@@ -55,7 +56,12 @@ public class JDBCInputFormatTest {
         config.setString("name", "dummy");
         config.setString("username", "test");
         config.setString("password", "1234");
-        jdbcInputFormat.configure(config);
+        config.setString("type", "derby");
+    	jdbcInputFormat = new JDBCInputFormat(config, "");
+    }
+    
+    public void testsetClassForDBType_derby() {
+    	assertTrue(jdbcInputFormat.setClassForDBType("derby"));
     }
 
     @Test
