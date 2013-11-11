@@ -123,7 +123,7 @@ public class JDBCInputFormat extends GenericInputFormat {
 			} else if (dbType.equals(DBTypes.POSTGRESQL)) {
 				Class.forName("org.postgresql.Driver");
 				hasSetClass = true;
-			} else if (dbType.equals(DBTypes.MYSQL)) {
+			} else if (dbType.equals(DBTypes.MARIADB)) {
 				Class.forName("com.mysql.jdbc.Driver");
 				hasSetClass = true;
 			} else if (dbType.equals(DBTypes.ORACLE)) {
