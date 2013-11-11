@@ -48,7 +48,7 @@ public class JDBCInputFormat extends GenericInputFormat {
 		configure(parameters);
 		this.query = query;
 	}
-
+              
 	@Override
 	public void configure(Configuration parameters) {
 		String dbTypeStr = parameters.getString("type", "mysql");
@@ -65,20 +65,20 @@ public class JDBCInputFormat extends GenericInputFormat {
 			
 			switch (dbType) {
 				case MYSQL:
-					url = String.format("jdbc:mysql://%s:%i/%s", host, port, dbName);
+					url = "jdbc:mysql://%s:%i/%s".format(host, port, dbName);
 					break;
 	
 				case POSTGRESQL:
-					url = String.format("jdbc:postgresql://%s:%i/%s", host, port, dbName);
+					url = "jdbc:postgresql://%s:%i/%s".format(host, port, dbName);
 					break;
 	
 				case MARIADB:
-					url = String.format("jdbc:mysql://%s:%i/%s", host, port, dbName);
+					url ="jdbc:mysql://%s:%i/%s".format(host, port, dbName);
 					break;
 	
 				case ORACLE:
 					//needs drivertype, asumsed >thin< for now
-					url = String.format("jdbc:oracle:thin:@%s:%i:%s", host, port, dbName);
+					url = "jdbc:oracle:thin:@%s:%i:%s".format(host, port, dbName);
 					break;
 			}
 			if (prepareConnection(url, username, password)) {
@@ -95,7 +95,7 @@ public class JDBCInputFormat extends GenericInputFormat {
 	
 	private DBTypes getDBType(String dbTypeStr) {
 		if(dbTypeStr != null) {
-			dbTypeStr = dbTypeStr.toLowerCase().trim();
+			dbTypeStr = dbTypeStr.toUpperCase().trim();
 			DBTypes dbType = DBTypes.valueOf(dbTypeStr);
 			return dbType;
 		}
