@@ -52,7 +52,7 @@ public class JDBCInputFormatTest {
                 config.setString("name", "ebookshop");
                 config.setString("username", "root");
                 config.setString("password", "");
-                jdbcInputFormat = new JDBCInputFormat(config,"");
+                jdbcInputFormat = new JDBCInputFormat(config, "");
                 assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
         }
 
@@ -65,7 +65,7 @@ public class JDBCInputFormatTest {
                 config.setString("name", "ebookshop");
                 config.setString("username", "root");
                 config.setString("password", "");
-                jdbcInputFormat = new JDBCInputFormat(config,"");
+                jdbcInputFormat = new JDBCInputFormat(config, "");
                 assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
         }
 
@@ -78,7 +78,7 @@ public class JDBCInputFormatTest {
                 config.setString("name", "ebookshop");
                 config.setString("username", "root");
                 config.setString("password", "");
-                jdbcInputFormat = new JDBCInputFormat(config,"");
+                jdbcInputFormat = new JDBCInputFormat(config, "");
                 assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
         }
 
@@ -91,7 +91,7 @@ public class JDBCInputFormatTest {
                 config.setString("name", "ebookshop");
                 config.setString("username", "root");
                 config.setString("password", "");
-                jdbcInputFormat = new JDBCInputFormat(config,"");
+                jdbcInputFormat = new JDBCInputFormat(config, "");
                 assertTrue(jdbcInputFormat.setClassForDBType("oracle"));
         }
 

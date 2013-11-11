@@ -28,7 +28,7 @@ public class JDBCInputFormat extends GenericInputFormat {
 		MYSQL,
 		POSTGRESQL,
 		MARIADB,
-		ORACLE
+                ORACLE
 	}
 	
 	public static class NotTransformableSQLFieldException extends Exception {
