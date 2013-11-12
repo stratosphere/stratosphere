@@ -17,12 +17,15 @@ links:
 <br/>
 <br/>
 <br/>
+<br/>
 </section>
+
 
 ## Part II: Stratosphere programming in Scala
 <section id="scala-programming">
 
 <iframe src="https://docs.google.com/presentation/d/1OL3vlQ1HjE0lmC_dZp5mEveFuybd8RzkRBvEky77Ff4/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+<br/>
 <br/>
 <br/>
 <br/>
@@ -47,7 +50,10 @@ The following figure gives an overview of what we are going to do in each task:
 The following figure gives some details on what each tasks performs:
 
 <img id="plan-example" src="plan-example.svg" onerror="this.onerror=null; this.src='plan-example.svg'" class="img-rounded">
-
+<br/>
+<br/>
+<br/>
+<br/>
 </section>
 
 <section id="task1">
@@ -109,6 +115,9 @@ The code required for this is very similar to the code for Task 1. This time,
 though, you have to accumulate a count for the words in some sort of
 Map structure. The output of this operation should be a collection of tuples
 of `(docId, word, count)`.
+<br/>
+<br/>
+<br/>
 
 <section id="task3">
 ### Task 3: Join
@@ -185,7 +194,9 @@ the first element in the iterator. You can use this to retrieve the `docId`
 to retrieve the document id (which is the same for all tuples). Then you
 can use methods on the buffered iterator to arrive at the collection of
 `(word, tf-idf)` tuples.
-
+<br/>
+<br/>
+<br/>
 </section>
 
 ### Congratulations!
