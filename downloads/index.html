@@ -52,9 +52,9 @@ links:
 </repositories>
 {% endhighlight %}
         <p>
-        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, make sure to pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.X.</p>
+        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, make sure to pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.</p>
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1.2.x</a></li>
+            <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1.2</a></li>
             <li><a href="#maven-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
         </ul>
         <div class="tab-content">
@@ -103,15 +103,15 @@ links:
     </section>
 
     <section id="vagrant">
-        <div class="page-header">
-            <h2>Vagrant</h2>
-        </div>
+        <div class="page-header"><h2>Vagrant</h2></div>
         <p class="lead">Let <a href="http://www.vagrantup.com/">Vagrant</a> set up a virtual machine with Stratosphere installed for you.</p>
 {% highlight bash %}
 wget http://dev.stratosphere.eu/vm/Vagrantfile
 vagrant up
 vagrant ssh
 {% endhighlight %}
+
+        <p class="lead">Use <strong>vagrant</strong> as username and password.</p>
     </section>
 
     <section id="debian">
