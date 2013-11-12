@@ -277,6 +277,16 @@ public final class ManagementGroupVertex extends ManagementAttachment implements
 
 		return null;
 	}
+	
+	/**
+	 * Returns alle management vertices containted in this group
+	 * 
+	 * @return the management vertex with the given index or <code>null</code> if no such vertex exists
+	 */
+	public List<ManagementVertex> getGroupMembers() {
+
+		return this.groupMembers;
+	}
 
 	/**
 	 * Checks if this vertex is an input vertex in its stage, i.e. has either no
