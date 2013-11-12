@@ -68,17 +68,14 @@ public class JDBCInputFormat extends GenericInputFormat {
 
                         switch (dbType) {
                                 case MYSQL:
-                                        url = "jdbc:mysql://%s:%i/%s".format(host, port, dbName);
+                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
                                         break;
-
                                 case POSTGRESQL:
-                                        url = "jdbc:postgresql://%s:%i/%s".format(host, port, dbName);
+                                        url = String.format("jdbc:postgresql://%s:%d/%s",host, port, dbName);
                                         break;
-
                                 case MARIADB:
-                                        url = "jdbc:mysql://%s:%i/%s".format(host, port, dbName);
+                                        url = String.format("jdbc:mysql://%s:%d/%s",host, port, dbName);
                                         break;
-
                                 case DERBY:
                                         url = String.format("jdbc:derby://%s", derbyDBPath);
                                         break;
@@ -142,6 +139,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                                 default:
                                         LOG.info("Database type is not supported yet:\t" + dbType);
                                         hasSetClass = false;
+                                        break;
                         }
                 } catch (ClassNotFoundException cnfe) {
                         LOG.error("JDBC-Class not found:\t" + cnfe.getLocalizedMessage());
@@ -177,9 +175,10 @@ public class JDBCInputFormat extends GenericInputFormat {
                         resultSet.next();
                         ResultSetMetaData rsmd = resultSet.getMetaData();
                         int column_count = rsmd.getColumnCount();
+                        record.setNumFields(column_count);
 
                         for (int pos = 0; pos < column_count; pos++) {
-                                int type = rsmd.getColumnType(pos);
+                                int type = rsmd.getColumnType(pos+1);
                                 retrieveTypeAndFillRecord(pos, type, record);
                         }
                         return true;
@@ -197,65 +196,66 @@ public class JDBCInputFormat extends GenericInputFormat {
                                 record.setField(pos, new PactNull());
                                 break;
                         case java.sql.Types.BOOLEAN:
-                                record.setField(pos, new PactBoolean(resultSet.getBoolean(pos)));
+                                record.setField(pos, new PactBoolean(resultSet.getBoolean(pos+1)));
                                 break;
                         case java.sql.Types.BIT:
-                                record.setField(pos, new PactBoolean(resultSet.getBoolean(pos)));
+                                record.setField(pos, new PactBoolean(resultSet.getBoolean(pos+1)));
                                 break;
                         case java.sql.Types.CHAR:
-                                record.setField(pos, new PactString(resultSet.getString(pos)));
+                                record.setField(pos, new PactString(resultSet.getString(pos+1)));
                                 break;
                         case java.sql.Types.NCHAR:
-                                record.setField(pos, new PactString(resultSet.getString(pos)));
+                                record.setField(pos, new PactString(resultSet.getString(pos+1)));
                                 break;
                         case java.sql.Types.VARCHAR:
-                                record.setField(pos, new PactString(resultSet.getString(pos)));
+                                record.setField(pos, new PactString(resultSet.getString(pos+1)));
                                 break;
                         case java.sql.Types.LONGVARCHAR:
-                                record.setField(pos, new PactString(resultSet.getString(pos)));
+                                record.setField(pos, new PactString(resultSet.getString(pos+1)));
                                 break;
                         case java.sql.Types.LONGNVARCHAR:
-                                record.setField(pos, new PactString(resultSet.getString(pos)));
+                                record.setField(pos, new PactString(resultSet.getString(pos+1)));
                                 break;
                         case java.sql.Types.TINYINT:
-                                record.setField(pos, new PactShort(resultSet.getShort(pos)));
+                                record.setField(pos, new PactShort(resultSet.getShort(pos+1)));
                                 break;
                         case java.sql.Types.SMALLINT:
-                                record.setField(pos, new PactShort(resultSet.getShort(pos)));
+                                record.setField(pos, new PactShort(resultSet.getShort(pos+1)));
                                 break;
                         case java.sql.Types.BIGINT:
-                                record.setField(pos, new PactLong(resultSet.getLong(pos)));
+                                record.setField(pos, new PactLong(resultSet.getLong(pos+1)));
                                 break;
                         case java.sql.Types.INTEGER:
-                                record.setField(pos, new PactInteger(resultSet.getInt(pos)));
+                                record.setField(pos, new PactInteger(resultSet.getInt(pos+1)));
                                 break;
                         case java.sql.Types.FLOAT:
-                                record.setField(pos, new PactDouble(resultSet.getDouble(pos)));
+                                record.setField(pos, new PactDouble(resultSet.getDouble(pos+1)));
                                 break;
                         case java.sql.Types.REAL:
-                                record.setField(pos, new PactFloat(resultSet.getFloat(pos)));
+                                record.setField(pos, new PactFloat(resultSet.getFloat(pos+1)));
                                 break;
                         case java.sql.Types.DOUBLE:
-                                record.setField(pos, new PactDouble(resultSet.getDouble(pos)));
+                                record.setField(pos, new PactDouble(resultSet.getDouble(pos+1)));
                                 break;
                         case java.sql.Types.DECIMAL:
-                                record.setField(pos, new PactDouble(resultSet.getBigDecimal(pos).doubleValue()));
+                                record.setField(pos, new PactDouble(resultSet.getBigDecimal(pos+1).doubleValue()));
                                 break;
                         case java.sql.Types.NUMERIC:
-                                record.setField(pos, new PactDouble(resultSet.getBigDecimal(pos).doubleValue()));
+                                record.setField(pos, new PactDouble(resultSet.getBigDecimal(pos+1).doubleValue()));
                                 break;
                         case java.sql.Types.DATE:
-                                record.setField(pos, new PactString(resultSet.getDate(pos).toString()));
+                                record.setField(pos, new PactString(resultSet.getDate(pos+1).toString()));
                                 break;
                         case java.sql.Types.TIME:
 //				record.setField(pos, new PactString(resultSet.getTime(pos).toString()));
-                                record.setField(pos, new PactLong(resultSet.getTime(pos).getTime()));
+                                record.setField(pos, new PactLong(resultSet.getTime(pos+1).getTime()));
                                 break;
                         case java.sql.Types.TIMESTAMP:
-                                record.setField(pos, new PactString(resultSet.getTimestamp(pos).toString()));
+                                record.setField(pos, new PactString(resultSet.getTimestamp(pos+1).toString()));
                                 break;
                         case java.sql.Types.SQLXML:
-                                record.setField(pos, new PactString(resultSet.getSQLXML(pos).toString()));
+                                record.setField(pos, new PactString(resultSet.getSQLXML(pos+1).toString()));
+                                break;
                         default:
                                 throw new NotTransformableSQLFieldException("Unknown sql-type [" + type + "]on column [" + pos + "]");
 

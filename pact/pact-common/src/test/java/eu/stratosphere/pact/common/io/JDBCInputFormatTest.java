@@ -15,6 +15,8 @@ package eu.stratosphere.pact.common.io;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.base.PactString;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,111 +26,92 @@ import static org.junit.Assert.*;
 
 public class JDBCInputFormatTest {
 
-	JDBCInputFormat jdbcInputFormat;
-	Configuration config;
+        JDBCInputFormat jdbcInputFormat;
+        Configuration config;
 
-	@BeforeClass
-	public static void setUpClass() {
-	}
+        @BeforeClass
+        public static void setUpClass() {
+        }
 
-	@AfterClass
-	public static void tearDownClass() {
-	}
+        @AfterClass
+        public static void tearDownClass() {
+        }
 
-	@Before
-	public void setUp() {
-		testConfigure_dummy();
-	}
+        @Before
+        public void setUp() {
+        }
 
-	@After
-	public void tearDown() {
-	}
+        @After
+        public void tearDown() {
+        }
 
-	/**
-	 * Test of configure method, of class JDBCInputFormat.
-	 */
-	 @Test
-	 public void testConfigure_dummy() {
-		 config = new Configuration();
-		 config.setString("type", "dummy");
-		 config.setString("host", "localhost");
-		 config.setInteger("port", 8080);
-		 config.setString("name", "dummy");
-		 config.setString("username", "test");
-		 config.setString("password", "1234");
-		 config.setString("type", "derby");
-		 jdbcInputFormat = new JDBCInputFormat(config, "");
-	 }
+        public void testConfigure_dummy() {
+                config = new Configuration();
+                config.setString("type", "mysql");
+                config.setString("host", "127.0.0.1");
+                config.setInteger("port", 3306);
+                config.setString("name", "ebookshop");
+                config.setString("username", "root");
+                config.setString("password", "1111");
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+        }
 
-	 public void testsetClassForDBType_derby() {
-		 assertTrue(jdbcInputFormat.setClassForDBType("derby"));
-	 }
+        @Test
+        public void test_data_retrieve_mysql() {
+                config = new Configuration();
+                config.setString("type", "mysql");
+                config.setString("host", "127.0.0.1");
+                config.setInteger("port", 3306);
+                config.setString("name", "ebookshop");
+                config.setString("username", "root");
+                config.setString("password", "1111");
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                PactRecord r = new PactRecord();
+                try {
+                        jdbcInputFormat.nextRecord(r);
+                } catch (IOException e) {
+                }
 
-	 @Test
-	 public void testsetClassForDBType_mysql() {
-		 config = new Configuration();
-		 config.setString("type", "mysql");
-		 config.setString("host", "localhost");
-		 config.setInteger("port", 3306);
-		 config.setString("name", "ebookshop");
-		 config.setString("username", "root");
-		 config.setString("password", "");
-		 jdbcInputFormat = new JDBCInputFormat(config, "");
-		 assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
-	 }
+                assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
+        }
 
-	 @Test
-	 public void testsetClassForDBType_postgres() {
-		 config = new Configuration();
-		 config.setString("type", "postgresql");
-		 config.setString("host", "localhost");
-		 config.setInteger("port", 3306);
-		 config.setString("name", "ebookshop");
-		 config.setString("username", "root");
-		 config.setString("password", "");
-		 jdbcInputFormat = new JDBCInputFormat(config, "");
-		 assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
-	 }
+        @Test
+        public void test_reached_end_mysql() {
+                config = new Configuration();
+                config.setString("type", "mysql");
+                config.setString("host", "127.0.0.1");
+                config.setInteger("port", 3306);
+                config.setString("name", "ebookshop");
+                config.setString("username", "root");
+                config.setString("password", "1111");
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                try {
+                        assertFalse(jdbcInputFormat.reachedEnd());
+                } catch (IOException e) {
+                }
+        }
 
-	 @Test
-	 public void testsetClassForDBType_mariadb() {
-		 config = new Configuration();
-		 config.setString("type", "mariadb");
-		 config.setString("host", "localhost");
-		 config.setInteger("port", 3306);
-		 config.setString("name", "ebookshop");
-		 config.setString("username", "root");
-		 config.setString("password", "");
-		 jdbcInputFormat = new JDBCInputFormat(config, "");
-		 assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
-	 }
+        @Test
+        public void testsetClassForDBType_derby() {
+                testConfigure_dummy();
+                assertTrue(jdbcInputFormat.setClassForDBType("derby"));
+        }
 
-	 @Test
-	 public void testsetClassForDBType_oracle() {
-		 config = new Configuration();
-		 config.setString("type", "oracle");
-		 config.setString("host", "localhost");
-		 config.setInteger("port", 3306);
-		 config.setString("name", "ebookshop");
-		 config.setString("username", "root");
-		 config.setString("password", "");
-		 jdbcInputFormat = new JDBCInputFormat(config, "");
-		 assertTrue(jdbcInputFormat.setClassForDBType("oracle"));
-	 }
+        @Test
+        public void testsetClassForDBType_mysql() {
+                testConfigure_dummy();
+                assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
+        }
 
-	 /**
-	  * Test of reachedEnd method, of class JDBCInputFormat.
-	  */
-	 @Test
-	 public void testReachedEnd() throws Exception {
-	 }
+        @Test
+        public void testsetClassForDBType_postgres() {
+                testConfigure_dummy();
+                assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
+        }
 
-	 /**
-	  * Test of nextRecord method, of class JDBCInputFormat.
-	  */
-	 @Test
-	 public void testNextRecord() throws Exception {
-
-	 }
-
+        @Test
+        public void testsetClassForDBType_mariadb() {
+                testConfigure_dummy();
+                assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
+        }
 }
