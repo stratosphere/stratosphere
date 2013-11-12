@@ -8,6 +8,7 @@ links:
   -       { anchor: registration, title: Registration }
   -       { anchor: location, title: Location } 
   -       { anchor: accommodation, title: Accommodation }
+  -       { anchor: twitter, title: Twitter }
 jumbotron:
   title:       Stratosphere Summit
   subtitle:    November 14-15th, Berlin
@@ -18,11 +19,13 @@ jumbotron:
 <section id="schedule">
 	<!-- section title -->
 	<h2>Schedule</h2>
-	Please note that the agenda is subject to slight changes. 
 	<!-- section content -->
 	<div>
 	  <h3>Thursday, November 14</h3> 
 	  <table class="table">
+	    <tr>
+	      <td>8:45-9:00</td><td>Opening</td>
+	    </tr>
 	    <tr>
 	      <td>9:00-10:00</td><td><a href="#ijad_keynote">From an idea to a disruptive technology, Ijad Madisch, ResearchGate</a></td>
 	    </tr>
@@ -39,25 +42,33 @@ jumbotron:
 	      <td>14:00-15:00</td><td><a href="#marten_keynote">Industry Convergence towards Data Driven Approaches  - a Telco Carrier Perspective by Marten Schoenherr, Deutsche Telekom</a></td> 
 	    </tr>
 	    <tr>
-	      <td>15:00-18:30</td><td><a href="#handson_session">Hands-on session: Data analysis with Stratosphere</a></td>
+	      <td>15:00-15:30</td><td>Coffee break and laptop set-up</td>
+	    </tr>
+	    <tr>
+	      <td>15:30-18:30</td><td><a href="#handson_session">Hands-on session: Data analysis with Stratosphere</a></td>
 	    </tr>
 	  </table>
+	  <b>Tip:</b> The <a href="http://recommenders.de/">Recommender Stammtisch</a> is taking place on Thursday, November 14, starting at 19:30 at the offices of ResearchGate.
+	<br>
 	  <h3>Friday, November 15</h3> 
 	  <table class="table">
 	    <tr>
 	      <td>9:00-10:00</td><td><a href="#jens_keynote">Beyond HDFS Storage in NoSQL Systems, Jens Dittrich, University of Saarland</a></td>
 	    </tr>
 	    <tr>
-	      <td>10:00-11:00</td><td><a href="#julien_keynote">Keynote by Julen Masanes, Internet Memory Research</a></td> 
+	      <td>10:00-10:30</td><td>Coffee break</td>
 	    </tr>
 	    <tr>
-	      <td>11:00-14:00</td><td><a href="#poster_session">Poster and demo session: Research with Stratosphere</a></td> 
+	      <td>10:30-11:30</td><td><a href="#julien_keynote">Keynote by Julen Masanes, Internet Memory Research</a></td> 
+	    </tr>
+	    <tr>
+	      <td>11:30-12:00</td><td>Closing remarks</td>
+	    </tr>
+	    <tr>
+	      <td>12:00-14:00</td><td><a href="#poster_session">Poster and demo session: Research with Stratosphere</a>. Buffet lunch will be served.</td> 
 	    </tr>
 	  </table>
 	</div>
-	<b>Tip:</b> If you are interested in Recommender Systems, the <a href="http://recommenders.de/">Recommender Stammtisch</a> is taking place on Friday, starting at 7:30 pm at ResearchGate’s offices at Invalidenstraße 115, 10115 Berlin. <br>
-	Some Stratosphere team members will also be there.
-	<br>
 </section>
 
 <section id="program">
@@ -139,6 +150,21 @@ jumbotron:
 	    Technical University of Athens, Greece in 2007.
 	  </td>
 	</tr>
+	<tr>
+	  <td>
+	    <p><img alt="Stephan Ewen" width="200" src="{{site.baseurl}}/img/events/stephan_ewen.jpg">
+	  </td>
+	  <td>
+	    Stephan Ewen is a Ph.D. student at the Berlin University of Technology.
+	    He is working on the Stratosphere project that creates a next-generation
+	    system for BigData analysis. Stephan has  architeced and co-architected
+	    many components of Stratosphere, including programming abstractions,
+	    compiler and optimizer, query runtime and the support for iterative algorithms.
+	    Aside from his work on Stratosphere, Stephan was an intern in the field of
+	    data analytics at Microsoft Research, IBM Research, and IBM Germnany Development.
+	    He holds a masters degree in computer science from the University of Stuttgart.
+	  </td>
+	</tr>
       </table>
 
 
@@ -170,7 +196,7 @@ jumbotron:
       team and get familiar with the basic operations of Big Data analysis
       using Stratosphere.
 
-    <p><b>15:00 - 15:15 Development Environment Setup</b>
+    <p><b>15:00 - 15:30 Development Environment Setup</b>
 
     <p>The attendants will be provided a virtual machine that includes all
       the software that will be needed in the hands on session. To expedite
@@ -180,7 +206,7 @@ jumbotron:
       the virtual machines and the VirtualBox software will also be
       available.
 
-    <p><b>15:15 - 16:00 Introduction to Scala for data analysis</b>
+    <p><b>15:30 - 16:00 Introduction to Scala for data analysis</b>
 
     <p>This session will cover the basic aspects of
       the <a href="http://www.scala-lang.org/">Scala language</a> and will
@@ -274,14 +300,15 @@ jumbotron:
     <p id="poster_session"><h3>Poster and Demo Session: Research with Stratosphere</h3>
 
       <ul>
-	<li>Data Integration with Stratosphere, Arvid Heise, Humbold University of Berlin</li>
-	<li>Web Data Analytics, Astrid Rheinlaender, Humbold University of Berlin</li>
-	<li>PAXQuery: Efficient Parallel Processing of Complex XQuery, Jesus Camacho Rodriguez, Inria Saclay</li>
-	<li>HDFS/YARN under Stratosphere, Jim Dowling, KTH</li>
-	<li>Aura - Stratosphere II Runtime Execution Engine, Tobias Herb</li>
-	<li>Nephele Streaming: Stream Processing Under QoS Constraints at Scale</li>
-	<li>Iterative Parallel Data Processing with Stratosphere: An Inside Look</li>
-	<li>Peeking into the Optimization of Data Flow Programs with MapReduce-style UDFs</li>
+	<li>Data Integration with Stratosphere. Arvid Heise, Hasso-Plattner Institute</li>
+	<li>Web Data Analytics. Astrid Rheinlaender, Humbold University of Berlin</li>
+	<li>PAXQuery: Efficient Parallel Processing of Complex XQuery. Jesus Camacho Rodriguez, Inria Saclay</li>
+	<li>HDFS/YARN under Stratosphere. Jim Dowling, KTH</li>
+	<li>Aura - Stratosphere II Runtime Execution Engine. Tobias Herb, TU Berlin</li>
+	<li>The Nephele Livescale Toolkit: Real-Time Video Processing At Scale. Bjoern Lohrmann, TU Berlin</li>
+	<li>Iterative Parallel Data Processing with Stratosphere: An Inside Look. Stephan Ewen, TU Berlin</li>
+	<li>Peeking into the Optimization of Data Flow Programs with MapReduce-style UDFs. Fabian Hueske, TU Berlin</li>
+	<li>Stratosphere: Past, present, and future. Asterios Katsifodimos, TU Berlin</li>
       </ul>
   </div>
 </section>
@@ -334,3 +361,10 @@ jumbotron:
       Tel.: +49 30 67 822-0<br>
   </div>
 </section>
+
+<section id="twitter">
+	<h2>#StratoSummit on Twitter</h2>
+<a class="twitter-timeline" href="https://twitter.com/search?q=%23StratoSummit+OR+stratosphere+summit" data-widget-id="399990008511094784">Tweets about "#StratoSummit OR stratosphere summit"</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
