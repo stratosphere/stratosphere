@@ -14,12 +14,18 @@ links:
 <section id="scala-introduction">
 ## Part I: Scala Introduction
 <iframe src="https://docs.google.com/presentation/d/1mzhjO-hb_ZNTHPaPiGPWDRyYufOig2CwNysW57eyQLU/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+<br/>
+<br/>
+<br/>
 </section>
 
 ## Part II: Stratosphere programming in Scala
 <section id="scala-programming">
 
 <iframe src="https://docs.google.com/presentation/d/1OL3vlQ1HjE0lmC_dZp5mEveFuybd8RzkRBvEky77Ff4/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+<br/>
+<br/>
+<br/>
 </section>
 
 
