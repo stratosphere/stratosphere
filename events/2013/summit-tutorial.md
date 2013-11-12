@@ -6,7 +6,7 @@ links:
   -       { anchor: scala-programming, title: "Stratosphere & Scala"}
   -       { anchor: overview, title: "Assignment"}
   -       { anchor: task1, title: "1: Document Frequency" }
-  -       { anchor: task2", title: "2: Term Frequency" }
+  -       { anchor: task2, title: "2: Term Frequency" }
   -       { anchor: task3, title: "3: Join" }
   -       { anchor: task4, title: "4: WeightVector per Document" }
 ---
@@ -21,9 +21,8 @@ links:
 </section>
 
 
-## Part II: Stratosphere programming in Scala
 <section id="scala-programming">
-
+## Part II: Stratosphere programming in Scala
 <iframe src="https://docs.google.com/presentation/d/1OL3vlQ1HjE0lmC_dZp5mEveFuybd8RzkRBvEky77Ff4/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 <br/>
 <br/>
@@ -98,10 +97,15 @@ Use the provided `main()` method to test your code.
 
 Task #1 is quite similar to the classical WordCount example, which is something
 like the "Hello World" of Big Data.
+<br/>
+<br/>
+<br/>
+<br/>
 </section>
 
-<a name="task2"></a>
-<h3 class="page-header">Task 2: Term Frequency</h3>
+
+<section id="task2">
+### Task 2: Term Frequency
 <div class="progress">
   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 20%;">
     <span class="sr-only">20% Complete</span>
@@ -118,6 +122,9 @@ of `(docId, word, count)`.
 <br/>
 <br/>
 <br/>
+<br/>
+</section>
+
 
 <section id="task3">
 ### Task 3: Join
@@ -163,7 +170,10 @@ join( (word, df), (docid, word, tf)) {
 ```
 
 The output from the join should be a tuple of `(docId, word, tf-idf)`.
-
+<br/>
+<br/>
+<br/>
+<br/>
 </section>
 
 <section id="task4">
@@ -194,6 +204,7 @@ the first element in the iterator. You can use this to retrieve the `docId`
 to retrieve the document id (which is the same for all tuples). Then you
 can use methods on the buffered iterator to arrive at the collection of
 `(word, tf-idf)` tuples.
+<br/>
 <br/>
 <br/>
 <br/>
