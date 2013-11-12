@@ -9,15 +9,18 @@ links:
   -       { anchor: task4, title: "4: WeightVector per Document" }
 ---
 
-
+## Part I: Scala Introduction
 <iframe src="https://docs.google.com/presentation/d/1mzhjO-hb_ZNTHPaPiGPWDRyYufOig2CwNysW57eyQLU/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
 
+## Part II: Stratosphere programming in Scala
+
+<iframe src="https://docs.google.com/presentation/d/1OL3vlQ1HjE0lmC_dZp5mEveFuybd8RzkRBvEky77Ff4/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
 
-
+## Part III: Assignment: Information Retrieval using Stratosphere
 <section id="overview">
-## Overview
+### Overview
 
 In this programming assignment, you are going to compute
 [tf-idf](http://en.wikipedia.org/wiki/Tf%E2%80%93idf) again, but this time using
@@ -36,7 +39,7 @@ The following figure gives an overview of what we are going to do in each task:
 </section>
 
 <section id="task1">
-## Task 1: Document Frequency
+### Task 1: Document Frequency
 <div class="progress">
   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 1%;">
     <span class="sr-only">1% Complete</span>
@@ -80,7 +83,7 @@ like the "Hello World" of Big Data.
 </section>
 
 <a name="task2"></a>
-<h2 class="page-header">Task 2: Term Frequency</h2>
+<h3 class="page-header">Task 2: Term Frequency</h3>
 <div class="progress">
   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 20%;">
     <span class="sr-only">20% Complete</span>
@@ -96,7 +99,7 @@ Map structure. The output of this operation should be a collection of tuples
 of `(docId, word, count)`.
 
 <section id="task3">
-## Task 3: Join
+### Task 3: Join
 
 <div class="progress">
   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 40%;">
@@ -151,14 +154,14 @@ The output from the join should be a tuple of `(docId, word, tf-idf)`.
   </div>
 </div>
 
-### Preparation
+#### Preparation
 
 In this task we are going to use a custom data type, `WeightVector`. This
 stores a document id and an Iterator of tuples of `(word, tf-idf)`. Using
 a reducer you should collect all the tuples `(docId, word, tf-idf)` and
 create a single WeightVector that contains them all.
 
-### Term Weights per Document
+#### Term Weights per Document
 
 This reduce task takes the output of the join and groups it by the document ids
 (`docid`). Write the document id and the terms including their weight into the
@@ -173,7 +176,7 @@ can use methods on the buffered iterator to arrive at the collection of
 
 </section>
 
-## Congratulations!
+### Congratulations!
 
 <div class="progress">
   <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
