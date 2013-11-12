@@ -1,6 +1,6 @@
 --- 
 layout: inner_complex
-title:  "Exercise 2: Tf-Idf (Scala)"
+title:  "Summit 2013: Hands-on Session"
 links: 
   -       { anchor: scala-introduction, title: "Scala Intro"}
   -       { anchor: scala-programming, title: "Stratosphere & Scala"}
