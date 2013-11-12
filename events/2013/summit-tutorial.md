@@ -1,7 +1,7 @@
 --- 
-layout: default_exercise
+layout: inner_complex
 title:  "Exercise 2: Tf-Idf (Scala)"
-tasks: 
+links: 
   -       { anchor: overview, title: "Overview"}
   -       { anchor: task1, title: "1: Document Frequency" }
   -       { anchor: task2", title: "2: Term Frequency" }
