@@ -6,25 +6,27 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="{{ site.baseurl }}/" class="navbar-brand"><i class="icon-home"></i> Stratosphere</a>
+      <a href="{{ site.baseurl }}/" class="navbar-brand">
+        <i class="icon-home"></i> Stratosphere</a>
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quickstart</a></li>
         <li class="{% if page.url contains '/downloads/' %}active{% endif %}"><a href="{{ site.baseurl }}/downloads/">Downloads</a></li>
         <li class="{% if page.url contains '/docs/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/">Documentation</a></li>
+        <li class="{% if page.url contains '/faq/' %}active{% endif %}"><a href="{{ site.baseurl }}/faq/">FAQ</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li class="{% if page.url contains '/blog' %}active{% endif %}"><a href="{{ site.baseurl }}/blog">Blog</a></li>
+        <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog/">Blog</a></li>
         <li class="dropdown">
           <a data-toggle="dropdown" class="dropdown-toggle" href="#">Project <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li class="{% if page.url contains '/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/funding">Funding</a></li>
-            <li class="{% if page.url contains '/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/people">People</a></li>
-            <li class="{% if page.url contains '/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/publications">Publications</a></li>
+            <li class="{% if page.url contains '/project/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/project/funding/">Funding</a></li>
+            <li class="{% if page.url contains '/project/people/' %}active{% endif %}"><a href="{{ site.baseurl }}/project/people/">People</a></li>
+            <li class="{% if page.url contains '/project/publications/' %}active{% endif %}"><a href="{{ site.baseurl }}/project/publications/">Publications</a></li>
+            <li class="{% if page.url contains '/project/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/project/contact/">Contact</a></li>
           </ul>
         </li>
-        <li class="{% if page.url contains '/contact/' %}active{% endif %}"><a href="{{ site.baseurl }}/contact">Contact</a></li>
       </ul>
     </div>
   </div>

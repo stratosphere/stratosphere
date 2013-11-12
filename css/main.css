@@ -309,53 +309,18 @@ ul.posts span {
     white-space: normal;
 }
 
+code {
+    background-color: #E5E5E5;
+    color: #333;
+    padding: 1px 4px;
+}
+
 /*
 Download page
 */
 
-.sidenav {
-    width: 228px;
-}
-
-.sidenav > li {
-    line-height: 25px;
-}
-
-.sidenav > li:first-child > a {
-    border-radius: 6px 6px 0 0;
-}
-
-.sidenav > li:last-child > a {
-    border-radius: 0 0 6px 6px;
-}
-
-.sidenav > li > a {
-}
-
-.sidenav > li > a {
-    position: relative;
-    border: 1px solid #E5E5E5;
-    display: block;
-    margin: 0 0 -1px;
-    padding: 8px 14px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.sidenav > .active > a, .sidenav > li > a:hover {
-    color: #FFF;
-    background: rgb(21, 136, 204);
-    text-shadow: 0 0px 0 rgba(255, 255, 255, 0.5);
-}
-
-.nav .nav li {
-    line-height: 20px;
-    font-size: 90%;
-}
-
-
 .affix-top {
     position: static;
-    width: auto;
 }
 
 .affix {
@@ -364,11 +329,9 @@ Download page
 
 .affix-bottom {
     position: absolute;
-    top: auto;
-    bottom: 400px;
 }
 
-#download h2 {
+.page-header h2 {
     font-weight: bold;
 }
 
@@ -379,25 +342,92 @@ Download page
     border-bottom: 1px solid #DDDDDD;
 }
 
-#download section {
+section {
     /* needed for correct positioning of anchor links */
     padding-top: 60px;
     margin-top: -60px;
 }
 
-.sidenav .icon-chevron-right {
+/* SIZE */
+
+.sidenav-col-md3 {
+    width: 235px;
+}
+
+.sidenav-col-md4 {
+    width: 320px;
+}
+
+.sidenav-row {
+    width: 100%;
+}
+
+.sidenav > li:first-child > a {
+    border-radius: 6px 6px 0 0;
+}
+
+.sidenav > li:last-child > a {
+    border-radius: 0 0 6px 6px;
+}
+
+.sidenav li a {
+    position: relative;
+    border: 1px solid #E5E5E5;
+    display: block;
+    margin: 0 0 -1px;
+    padding: 8px 14px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.sidenav li[class~="active"] > a, .sidenav li > a:hover {
+    color: #FFF;
+    background: rgb(21, 136, 204);
+    text-shadow: 0 0px 0 rgba(255, 255, 255, 0.5);
+}
+
+.sidenav li[class~="active"] > a {
+    font-weight: bold;
+}
+
+.sidenav .icon-chevron-right, .sidenav .icon-chevron-down {
     float: right;
-    margin-top: 8px;
     opacity: 0.75;
 }
 
-.sidenav .section a {
-    background-color: #000;
+.sidenav-lg > li {
+    line-height: 30px;
 }
 
-.sidenav .subsection a {
-    font-weight: bold;
+.sidenav-lg .icon-chevron-right, .sidenav-lg .icon-chevron-down {
+    margin-top: 8px;
 }
+
+.sidenav-md > li {
+    line-height: 20px;
+}
+
+.sidenav-md .icon-chevron-right, .sidenav-md .icon-chevron-down {
+    margin-top: 4px;
+}
+
+.sidenav li[class~="section"] > a, .sidenav li[class~="section"] > a:hover {
+    font-variant: small-caps;
+    font-weight: bold;
+    color: #FFF;
+    background: rgb(62, 101, 142);
+    text-shadow: none;
+}
+
+.sidenav li[class~="subsubsection"] > a {
+    /*background-color: #E5E5E5;*/
+    font-weight: bold;
+    font-size: 90%;
+    line-height: 90%;
+}
+
+/*.sidenav li[class~="subsection"][class~="active"] a {
+    font-weight: bold;
+}*/
 
 @media (max-width: 767px) {
  

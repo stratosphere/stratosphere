@@ -1,0 +1,19 @@
+---
+layout: default
+---
+<div class="container" style="margin-top: 2em;">
+  <div class="row">
+    <ul class="nav sidenav sidenav-md sidenav-row">
+{% for question in page.questions %}
+  {% if question('section')? %}
+      <li class="section"><a href="#{{ question.anchor }}">{{ question.title }}</a></li>
+  {% else %}
+      <li class="subsection"><a href="#{{ question.anchor }}">{{ question.title }}</a></li>
+  {% endif %}
+{% endfor %}
+    </ul>
+  </div>
+  <div class="row">
+{{ content }}
+  </div>
+</div>
