@@ -9,6 +9,13 @@ links:
   -       { anchor: task4, title: "4: WeightVector per Document" }
 ---
 
+
+<iframe src="https://docs.google.com/presentation/d/1mzhjO-hb_ZNTHPaPiGPWDRyYufOig2CwNysW57eyQLU/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
+
+
+
+
 <section id="overview">
 ## Overview
 
