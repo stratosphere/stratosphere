@@ -29,7 +29,6 @@ public class JDBCInputFormat extends GenericInputFormat {
                 MYSQL,
                 POSTGRESQL,
                 MARIADB,
-                ORACLE,
                 DERBY
         }
 
@@ -48,7 +47,6 @@ public class JDBCInputFormat extends GenericInputFormat {
         private String query;
 
         public JDBCInputFormat(Configuration parameters, String query) {
-
                 this.query = query;
                 configure(parameters);
         }
@@ -79,11 +77,6 @@ public class JDBCInputFormat extends GenericInputFormat {
 
                                 case MARIADB:
                                         url = "jdbc:mysql://%s:%i/%s".format(host, port, dbName);
-                                        break;
-
-                                case ORACLE:
-                                        //needs drivertype, asumsed >thin< for now
-                                        url = "jdbc:oracle:thin:@%s:%i:%s".format(host, port, dbName);
                                         break;
 
                                 case DERBY:
@@ -136,8 +129,8 @@ public class JDBCInputFormat extends GenericInputFormat {
                                         hasSetClass = true;
                                         break;
 
-                                case ORACLE:
-                                        Class.forName("oracle.jdbc.OracleDriver");
+                                case MARIADB:
+                                        Class.forName("com.mysql.jdbc.Driver");
                                         hasSetClass = true;
                                         break;
 
