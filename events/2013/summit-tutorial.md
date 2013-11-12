@@ -38,6 +38,7 @@ The following figure gives an overview of what we are going to do in each task:
 
 <img src="plan.svg" onerror="this.onerror=null; this.src='plan.svg'" class="img-rounded">
 
+The following figure gives some details on what each tasks performs:
 
 <img id="plan-example" src="plan-example.svg" onerror="this.onerror=null; this.src='plan-example.svg'" class="img-rounded">
 
