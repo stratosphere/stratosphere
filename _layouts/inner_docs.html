@@ -1,0 +1,78 @@
+---
+layout: default
+links:
+  # Section: Setup & Configuration
+  - { section: true, anchor: "setup", title: "Setup &amp; Configuration"}
+  - { anchor: "local", title: "Local Setup" }
+  - { anchor: "cluster", title: "Cluster Setup" }
+  - { anchor: "config", title: "Configuration" }
+  # Section: Background
+  #- { section: true, anchor: "background", title: "Background"}
+  #- { anchor: "data_flows", title: "Data Flows"}
+  #- { anchor: "iterations", title: "Iterations"}
+  # Section: Programming Guides
+  - { section: true, anchor: "programming_guides", title: "Programming Guides"}
+  - { anchor: "java", title: "Java"}
+  - { anchor: "scala", title: "Scala"}
+  - { anchor: "examples", title: "Example Programs"}
+  # Section: Internals
+  - { section: true, anchor: "internals", title: "Internals"}
+  - { anchor: "dev", title: "Development"}
+  - { anchor: "pact", title: "PACT Runtime"}
+  - { anchor: "nephele", title: "Nephele Execution Engine"}
+---
+{% assign current_section = nil %}
+<div class="container" style="margin-top: 2em;">
+  <div class="row">
+    <div class="col-md-3">
+      <div data-spy="affix" data-offset-top="40" data-offset-bottom="150">
+        <ul class="nav sidenav sidenav-md sidenav-col-md3">
+{% for link in page.links %}
+{% if link('section')? %}
+{% assign current_section = link.anchor %}
+          <li class="section"><a href="{{ site.baseurl }}/docs/{{ link.anchor }}">{{ link.title }}</a></li>
+{% else %}
+  {% capture current_link %}{{ site.baseurl }}/docs/{{ current_section }}/{{ link.anchor }}.html{% endcapture %}
+  {% if page.url contains current_link %}
+    {% if page('sublinks')? %}
+      <li class="subsection active"><a href="{{ current_link }}"><i class="icon-chevron-down"></i> {{ link.title }}</a>
+        <div id="scrollspy">
+          <ol class="nav">
+          {% for sublink in page.sublinks %}
+            <li class="subsubsection"><a href="#{{ sublink.anchor }}">{{ forloop.index }}. {{ sublink.title }}</a></li>
+          {% endfor %}
+          </ol>
+        </div>
+      </li>
+    {% else %}
+      <li class="subsection active"><a href="{{ current_link }}"><i class="icon-chevron-right"></i> {{ link.title }}</a></li>
+    {% endif %}
+  {% else %}
+    <li class="subsection"><a href="{{ current_link }}"><i class="icon-chevron-right"></i> {{ link.title }}</a></li>
+  {% endif %}
+{% endif %}
+{% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-9">
+      {% if page.url != "/docs/index.html" %}
+      <ol class="breadcrumb">
+        <li><a href="{{ site.baseurl }}/docs">Documentation</a></li>
+        {% for link in page.links %}
+        {% if page.url contains link.anchor %}
+          {% if link('section')? %}
+          {% assign current_section = link.anchor %}
+          <li><a href="{{ site.baseurl }}/docs/{{ link.anchor }}/">{{ link.title }}</a></li>
+          {% else %}
+          <li><a href="{{ site.baseurl }}/docs/{{ current_section }}/{{ link.anchor }}.html">{{ link.title }}</a></li>
+          {% endif %}
+        {% endif %}
+        {% endfor %}
+      </ol>
+      {% endif %}
+      {{ content }}
+    </div>
+  </div>
+</div>
