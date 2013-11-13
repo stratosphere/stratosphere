@@ -20,7 +20,6 @@ to develop Stratosphere programs with the help of the Stratosphere
 team and get familiar with the basic operations of Big Data analysis
 using Stratosphere.</p>
 
-
 ### Detailed Schedule
 
 <p><b>15:30 - 16:30 Development Environment Setup</b></p>
