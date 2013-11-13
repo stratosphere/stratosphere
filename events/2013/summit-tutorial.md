@@ -51,6 +51,11 @@ editor and use the provided scripts (for example `./run-task1.sh`) to compile an
 <section id="scala-introduction">
 ## Part I: Scala Introduction
 <iframe src="https://docs.google.com/presentation/d/1mzhjO-hb_ZNTHPaPiGPWDRyYufOig2CwNysW57eyQLU/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
+
+<a href="scala-cheatsheet.html" class="btn btn-info btn-lg" style="width:12em">
+<i class="icon-align-justify"> </i> Scala Cheatsheet</a>
+
 <br/>
 <br/>
 <br/>
