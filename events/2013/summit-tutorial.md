@@ -15,11 +15,14 @@ links:
 <p id="handson_session"><h1>Hands-on session: Data analysis with Stratosphere</h1>
 
 <p>This session will introduce the attendants to the Scala language and
-then go through example data analysis jobs using the Scala intergace
+then go through example data analysis jobs using the Scala interface
 of the Stratosphere platform. The attendants will have the opportunity
-to program Stratosphere programs with the help of the Stratosphere
+to develop Stratosphere programs with the help of the Stratosphere
 team and get familiar with the basic operations of Big Data analysis
 using Stratosphere.</p>
+
+
+### Detailed Schedule
 
 <p><b>15:30 - 15:30 Development Environment Setup</b></p>
 
