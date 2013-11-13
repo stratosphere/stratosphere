@@ -57,6 +57,7 @@ links:
     </div>
 
     <div class="col-md-9">
+      {% if page.url != "/docs/index.html" %}
       <ol class="breadcrumb">
         <li><a href="{{ site.baseurl }}/docs">Documentation</a></li>
         {% for link in page.links %}
@@ -70,6 +71,7 @@ links:
         {% endif %}
         {% endfor %}
       </ol>
+      {% endif %}
       {{ content }}
     </div>
   </div>
