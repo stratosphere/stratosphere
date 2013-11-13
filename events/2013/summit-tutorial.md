@@ -46,7 +46,7 @@ serve as a basis for all the sessions to follow. </p>
 If you don't want to use the provided VM you can check out the hands-on exercise code from
 [https://github.com/stratosphere/stratosphere-summit](https://github.com/stratosphere/stratosphere-summit).
 It comes as a maven project that you can import from Eclipse or Intellij. Or you could just use any text
-editor and use the provided scripts (for example `./run-task1.sh`) to compile and run the example.
+editor and use the provided scripts (for example `./run-task1.sh`) to compile and run the examples.
 
 
 <section id="scala-introduction">
