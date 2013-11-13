@@ -27,70 +27,78 @@ import static org.junit.Assert.*;
 
 public class JDBCInputFormatTest {
 
-	JDBCInputFormat jdbcInputFormat;
-	Configuration config;
+        JDBCInputFormat jdbcInputFormat;
+        Configuration config;
 
-	@BeforeClass
-	public static void setUpClass() {
-		
-	}
+        @BeforeClass
+        public static void setUpClass() {
 
-	@AfterClass
-	public static void tearDownClass() {
-	}
+        }
 
-	@Before
-	public void setUp() {
-		testConfigure_dummy();
-	}
+        @AfterClass
+        public static void tearDownClass() {
+        }
 
-	@After
-	public void tearDown() {
-	}
+        @Before
+        public void setUp() {
+                testConfigure_dummy();
+        }
 
-	public void testConfigure_dummy() {
-		config = new Configuration();
-		config.setString("type", "mysql");
-		config.setString("host", "127.0.0.1");
-		config.setInteger("port", 3306);
-		config.setString("name", "ebookshop");
-		config.setString("username", "root");
-		config.setString("password", "1111");
-		jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-	}
+        @After
+        public void tearDown() {
+        }
 
-	@Test
-	public void test_data_retrieve_mysql() throws IOException {
-		jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-		PactRecord r = new PactRecord();
+        public void testConfigure_dummy() {
+                config = new Configuration();
+                config.setString("type", "mysql");
+                config.setString("host", "127.0.0.1");
+                config.setInteger("port", 3306);
+                config.setString("name", "ebookshop");
+                config.setString("username", "root");
+                config.setString("password", "1111");
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+        }
 
-		assertTrue(jdbcInputFormat.nextRecord(r));
-		assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
-	}
+        @Test
+        public void test_data_retrieve_mysql() throws IOException {
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                PactRecord r = new PactRecord();
 
-	@Test
-	public void test_reached_end_mysql() throws IOException {
-		jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-		assertFalse(jdbcInputFormat.reachedEnd());
-	}
+                assertTrue(jdbcInputFormat.nextRecord(r));
+                assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
+        }
 
-	@Test
-	public void testsetClassForDBType_derby() {
-		assertTrue(jdbcInputFormat.setClassForDBType("derby"));
-	}
+        @Test
+        public void test_data_reachedend_mysql() throws IOException {
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                PactRecord r = new PactRecord();
+                while(jdbcInputFormat.nextRecord(r)){}
+                assertTrue(jdbcInputFormat.reachedEnd());
+        }
 
-	@Test
-	public void testsetClassForDBType_mysql() {
-		assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
-	}
+        @Test
+        public void test_reached_end_mysql() throws IOException {
+                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                assertFalse(jdbcInputFormat.reachedEnd());
+        }
 
-	@Test
-	public void testsetClassForDBType_postgres() {
-		assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
-	}
+        @Test
+        public void testsetClassForDBType_derby() {
+                assertTrue(jdbcInputFormat.setClassForDBType("derby"));
+        }
 
-	@Test
-	public void testsetClassForDBType_mariadb() {
-		assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
-	}
+        @Test
+        public void testsetClassForDBType_mysql() {
+                assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
+        }
+
+        @Test
+        public void testsetClassForDBType_postgres() {
+                assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
+        }
+
+        @Test
+        public void testsetClassForDBType_mariadb() {
+                assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
+        }
 }
