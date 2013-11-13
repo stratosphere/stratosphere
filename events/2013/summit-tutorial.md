@@ -11,6 +11,34 @@ links:
   -       { anchor: task4, title: "4: WeightVector per Document" }
 ---
 
+
+<p id="handson_session"><h1>Hands-on session: Data analysis with Stratosphere</h1>
+
+<p>This session will introduce the attendants to the Scala language and
+then go through example data analysis jobs using the Scala intergace
+of the Stratosphere platform. The attendants will have the opportunity
+to program Stratosphere programs with the help of the Stratosphere
+team and get familiar with the basic operations of Big Data analysis
+using Stratosphere.</p>
+
+<p><b>15:30 - 15:30 Development Environment Setup</b></p>
+
+<p>The attendants will be provided a virtual machine that includes all
+the software that will be needed in the hands on session. To expedite
+the installation process, the attendants are advised to have already
+installed the latest version of
+<a href="https://www.virtualbox.org/">VirtualBox</a>. USB keys with
+the virtual machines and the VirtualBox software will also be
+available.</p>
+
+<p><b>15:30 - 16:00 Part I: Introduction to the Scala Programming Language</b></p>
+
+<p>This session will cover the basic aspects of
+the <a href="http://www.scala-lang.org/">Scala language</a> and will
+serve as a basis for all the sessions to follow. </p>
+
+<p><b>17:00 - 18:30 Part II: Scalable data analysis with Stratosphere</b></p>
+
 <section id="scala-introduction">
 ## Part I: Scala Introduction
 <iframe src="https://docs.google.com/presentation/d/1mzhjO-hb_ZNTHPaPiGPWDRyYufOig2CwNysW57eyQLU/embed?start=false&loop=false&delayms=3000" frameborder="0" width="800" height="400" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
@@ -36,11 +64,9 @@ links:
 ### Overview
 
 In this programming assignment, you are going to compute
-[tf-idf](http://en.wikipedia.org/wiki/Tf%E2%80%93idf) again, but this time using
+[tf-idf](http://en.wikipedia.org/wiki/Tf%E2%80%93idf) using
 Scala. We will show you how to write Stratosphere Operators in Scala in the
-respective subtasks. The explanations concerning the workings of tf-idf are the
-same as in Exercise 1, if you already did Exercise 1 you can skip them an go
-directly to the scala specifc part.
+respective subtasks.
 
 The following figure gives an overview of what we are going to do in each task:
 
