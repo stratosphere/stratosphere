@@ -1,6 +1,6 @@
 --- 
 layout: inner_with_sidebar
-title: "Quickstart: Java"
+title: "Quick Start: Scala"
 links:
   - {anchor: "requirements", title: "Requirements"}
   - {anchor: "create_project", title: "Create Project"}
@@ -9,7 +9,7 @@ links:
   - {anchor: "next_steps", title: "Next Steps"}
 ---
 
-<p class="lead">Start working on your Stratosphere Java program in a few simple steps.</p>
+<p class="lead">Start working on your Stratosphere Scala program in a few simple steps.</p>
 
 <section id="requirements">
   <div class="page-header"><h2>Requirements</h2></div>
@@ -19,18 +19,17 @@ links:
 <section id="create_project">
   <div class="page-header"><h2>Create Project</h2></div>
   <p class="lead">Use one of the following commands to <strong>create a project</strong>:</p>
-
   <ol>
     <li class="lead">Run the <strong>quickstart script</strong>:
 {% highlight bash %}
-$ curl https://raw.github.com/stratosphere/stratosphere-quickstart/master/quickstart.sh | bash
+$ curl https://raw.github.com/stratosphere/stratosphere-quickstart/master/quickstart-scala.sh | bash
 {% endhighlight %}
     </li>
     <li class="lead">Use <strong>Maven archetypes</strong>:
 {% highlight bash %}
 $ mvn archetype:generate                             \
     -DarchetypeGroupId=eu.stratosphere               \
-    -DarchetypeArtifactId=quickstart-java            \
+    -DarchetypeArtifactId=quickstart-scala           \
     -DarchetypeVersion=0.4-SNAPSHOT                  \
     -DarchetypeCatalog=https://oss.sonatype.org/content/repositories/snapshots/
 {% endhighlight %}
@@ -42,8 +41,26 @@ $ mvn archetype:generate                             \
 <section id="inspect_project">
   <div class="page-header"><h2>Inspect Project</h2></div>
   <p class="lead">There will be a <strong>new directory in your working directory</strong>. If you've used the <em>curl</em> approach, the directory is called <code>quickstart</code>. Otherwise, it has the name of your artifactId.</p>
-  <p class="lead">The sample project is a <strong>Maven project</strong>, which contains two classes. <em>Job</em> is a basic skeleton program and <em>WordCountJob</em> a working example. Please note that the <em>main</em> method of both classes allow you to start Stratosphere in a development/testing mode.</p>
-  <p class="lead">We strongly recommend to <strong>import this project into your IDE</strong>. If you use Eclipse, the <a href="http://www.eclipse.org/m2e/">m2e plugin</a> allows to <a href="http://books.sonatype.com/m2eclipse-book/reference/creating-sect-importing-projects.html#fig-creating-import">import Maven projects</a>. Other IDEs such as IntelliJ also support this.</p>
+  <p class="lead">The sample project is a <strong>Maven project</strong>, which contains a sample scala <em>Job</em> that implements Word Count. Please note that the <em>RunJobLocal</em> and <em>RunJobRemote</em> objects allow you to start Stratosphere in a development/testing mode.</p>
+  <p class="lead">We strongly recommend to <strong>import this project into your IDE</strong>. For Eclipse, you need the following plugins, which you can install from the provided Eclipse Update Sites.
+    <ul>
+      <li class="lead"><strong>Eclipse 4.x</strong>:
+        <ul>
+          <li><strong>Scala IDE</strong> <small>(http://download.scala-ide.org/sdk/e38/scala210/stable/site)</small></li>
+          <li><strong>m2eclipse-scala</strong> <small>(http://alchim31.free.fr/m2e-scala/update-site)</small></li>
+          <li><strong>Build Helper Maven Plugin</strong> <small>(https://repository.sonatype.org/content/repositories/forge-sites/m2e-extras/0.15.0/N/0.15.0.201206251206/)</small></li>
+        </ul>
+      </li>
+      <li class="lead"><strong>Eclipse 3.7</strong>:
+        <ul>
+          <li><strong>Scala IDE</strong> <small>(http://download.scala-ide.org/sdk/e37/scala210/stable/site)</small></li>
+          <li><strong>m2eclipse-scala</strong> <small>(http://alchim31.free.fr/m2e-scala/update-site)</small></li>
+          <li><strong>Build Helper Maven Plugin</strong> <small>(https://repository.sonatype.org/content/repositories/forge-sites/m2e-extras/0.14.0/N/0.14.0.201109282148/)</small></li>
+        </ul>
+      </li>
+    </ul>
+  </p>
+  <p class="lead">Other IDEs such as IntelliJ also support this.</p>
 </section>
 
 <section id="build_project">
@@ -54,5 +71,4 @@ $ mvn archetype:generate                             \
 <section id="next_steps">
   <div class="page-header"><h2>Next Steps</h2></div>
   <p class="lead"><strong>Write your application!</strong> If you have any troubles, ask on our <a href="https://github.com/stratosphere/stratosphere/issues">GitHub page</a> (open an issue) or on our <a href="https://groups.google.com/forum/#!forum/stratosphere-dev">Mailing list</a>. We are happy to provide help.</p>
-  </p>
-</section>
+</p>
