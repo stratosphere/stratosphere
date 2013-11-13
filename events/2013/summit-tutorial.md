@@ -22,7 +22,7 @@ using Stratosphere.</p>
 
 ### Detailed Schedule
 
-<p><b>15:30 - 16:30 Development Environment Setup</b></p>
+**15:30 - 16:30 Development Environment Setup**
 
 <p>The attendants will be provided a virtual machine that includes all
 the software that will be needed in the hands on session. To expedite
@@ -32,13 +32,21 @@ installed the latest version of
 the virtual machines and the VirtualBox software will also be
 available.</p>
 
-<p><b>16:00 - 17:00 Part I: Introduction to the Scala Programming Language</b></p>
+**16:00 - 17:00 Part I: Introduction to the Scala Programming Language**
 
 <p>This session will cover the basic aspects of
 the <a href="http://www.scala-lang.org/">Scala language</a> and will
 serve as a basis for all the sessions to follow. </p>
 
-<p><b>17:00 - 18:30 Part II: Scalable data analysis with Stratosphere</b></p>
+**17:00 - 18:30 Part II: Scalable data analysis with Stratosphere**
+
+### Hands-On setup
+
+If you don't want to use the provided VM you can check out the hands-on exercise code from
+[https://github.com/stratosphere/stratosphere-summit](https://github.com/stratosphere/stratosphere-summit).
+It comes as a maven project that you can import from Eclipse or Intellij. Or you could just use any text
+editor and use the provided scripts (for example `./run-task1.sh`) to compile and run the examples.
+
 
 <section id="scala-introduction">
 ## Part I: Scala Introduction
