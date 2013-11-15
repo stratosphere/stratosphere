@@ -15,12 +15,11 @@
 
 package eu.stratosphere.pact.test.scalaPactPrograms;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.scala.examples.wordcount.WordCountWithCount;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class WordCountWithCountFunctionITCase extends eu.stratosphere.pact.test.pactPrograms.WordCountITCase {
@@ -31,6 +30,9 @@ public class WordCountWithCountFunctionITCase extends eu.stratosphere.pact.test.
 
 	@Override
 	protected Plan getPactPlan() {
-		return new WordCountWithCount().getScalaPlan(config.getInteger("WordCountTest#NumSubtasks", 1), textPath, resultPath);
-	}
+        WordCountWithCount wc = new WordCountWithCount();
+        Plan plan = wc.getScalaPlan(textPath, resultPath);
+        plan.setDefaultParallelism(config.getInteger("WordCountTest#NumSubtasks", 1));
+        return plan;
+    }
 }
