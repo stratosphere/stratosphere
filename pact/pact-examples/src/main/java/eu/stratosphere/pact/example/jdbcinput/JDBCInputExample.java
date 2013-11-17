@@ -16,7 +16,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
 /**
  * DB Schema
  *
- * ID  | title   | author  | price | qty
+ * ID  | title   | author  | price | qty 
  * int | varchar | varchar | float | int
  */
 public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription {
@@ -31,10 +31,10 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
 
         @Override
         public Plan getPlan(String[] args) {
-                //String output = args[0];
-                String output = "file://c:/TEST/output.txt";
-                //String query = args[1];
+                //String query = args[0];
                 String query = "select * from books;";
+                //String output = args[1];
+                String output = "file://c:/TEST/output.txt";
 
                 GenericDataSource source = new GenericDataSource(new JDBCInputFormat(query), "Data Source");
                 source.setParameter("type", "mysql");
@@ -60,7 +60,7 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
 
         @Override
         public String getDescription() {
-                return "Parameter: [Output File]"; // TODO
+                return "Parameter: [Query] [Output File]"; // TODO
         }
 
         // You can run this using:
