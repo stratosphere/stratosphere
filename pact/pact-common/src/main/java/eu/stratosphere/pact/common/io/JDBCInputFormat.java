@@ -45,7 +45,7 @@ public class JDBCInputFormat extends GenericInputFormat {
         private Statement statement;
         private ResultSet resultSet;
         private String query;
-        
+
         private String dbTypeStr;
         private String host;
         private Integer port;
@@ -53,11 +53,12 @@ public class JDBCInputFormat extends GenericInputFormat {
         private String username;
         private String password;
         private String derbyDBPath;
-        
-        public JDBCInputFormat(){}
-        
-        public JDBCInputFormat(String query){
-                this.query=query;
+
+        public JDBCInputFormat() {
+        }
+
+        public JDBCInputFormat(String query) {
+                this.query = query;
         }
 
         public JDBCInputFormat(Configuration parameters, String query) {
@@ -71,69 +72,13 @@ public class JDBCInputFormat extends GenericInputFormat {
                 this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
         }
 
-        @Override
-        public void configure(Configuration parameters) {
-                /*
-                this.query = parameter.getString("query","");
-                this.dbTypeStr = parameters.getString("type", "mysql");
-                this.host = parameters.getString("host", "localhost");
-                this.port = parameters.getInteger("port", 3306);
-                this.dbName = parameters.getString("name", "");
-                this.username = parameters.getString("username", "");
-                this.password = parameters.getString("password", "");
-                this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
-        
-                */
-                
-                DBTypes dbType = getDBType(dbTypeStr);
-
-                if (setClassForDBType(dbType)) {
-                        String url = "";
-
-                        switch (dbType) {
-                                case MYSQL:
-                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case POSTGRESQL:
-                                        url = String.format("jdbc:postgresql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case MARIADB:
-                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case DERBY:
-                                        url = String.format("jdbc:derby://%s", derbyDBPath);
-                                        break;
-                        }
-                        if (prepareConnection(url, username, password)) {
-                                try {
-                                        statement = dbConn.createStatement();
-                                        resultSet = statement.executeQuery(this.query);
-
-                                } catch (SQLException e) {
-                                        LOG.error("Couldn't execute query:\t!" + e.getMessage());
-                                }
-                        }
-                }
-        }
-
         private DBTypes getDBType(String dbTypeStr) {
-                if (dbTypeStr != null) {
-                        dbTypeStr = dbTypeStr.toUpperCase().trim();
-                        DBTypes dbType = DBTypes.valueOf(dbTypeStr);
-                        return dbType;
-                } else {
-                        return null;
-                }
-        }
-        
-        //why do we have 2 setClassForDBType methods?
-        public boolean setClassForDBType(String dbTypeIdentifier) {
-                DBTypes dbType = getDBType(dbTypeIdentifier);
-                return setClassForDBType(dbType);
+                dbTypeStr = dbTypeStr.toUpperCase().trim();
+                DBTypes dbType = DBTypes.valueOf(dbTypeStr);
+                return dbType;
         }
 
-        public boolean setClassForDBType(DBTypes dbType) {
-                boolean hasSetClass = false;
+        private boolean setClassForDBType(DBTypes dbType) {
 
                 if (dbType == null) {
                         return false;
@@ -143,35 +88,28 @@ public class JDBCInputFormat extends GenericInputFormat {
                         switch (dbType) {
                                 case MYSQL:
                                         Class.forName("com.mysql.jdbc.Driver");
-                                        hasSetClass = true;
-                                        break;
+                                        return true;
 
                                 case POSTGRESQL:
                                         Class.forName("org.postgresql.Driver");
-                                        hasSetClass = true;
-                                        break;
+                                        return true;
 
                                 case MARIADB:
                                         Class.forName("com.mysql.jdbc.Driver");
-                                        hasSetClass = true;
-                                        break;
+                                        return true;
 
                                 case DERBY:
                                         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-                                        hasSetClass = true;
-                                        break;
+                                        return true;
 
                                 default:
                                         LOG.info("Database type is not supported yet:\t" + dbType);
-                                        hasSetClass = false;
-                                        break;
+                                        return false;
                         }
                 } catch (ClassNotFoundException cnfe) {
                         LOG.error("JDBC-Class not found:\t" + cnfe.getLocalizedMessage());
-                        hasSetClass = false;
+                        return false;
                 }
-
-                return hasSetClass;
         }
 
         private boolean prepareConnection(String dbURL, String username, String password) {
@@ -182,41 +120,6 @@ public class JDBCInputFormat extends GenericInputFormat {
                         LOG.error("Couldn't create db-connection:\t" + e.getMessage());
                         return false;
                 }
-        }
-
-        @Override
-        public boolean reachedEnd() throws IOException {
-                try {
-                        return resultSet.isAfterLast();
-                } catch (SQLException e) {
-                        LOG.error("Couldn't evaluate reachedEnd():\t" + e.getMessage());
-                } catch (NullPointerException e) {
-                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
-                }
-                return false;
-        }
-
-        @Override
-        public boolean nextRecord(PactRecord record) throws IOException {
-                try {
-                        resultSet.next();
-                        ResultSetMetaData rsmd = resultSet.getMetaData();
-                        int column_count = rsmd.getColumnCount();
-                        record.setNumFields(column_count);
-
-                        for (int pos = 0; pos < column_count; pos++) {
-                                int type = rsmd.getColumnType(pos + 1);
-                                retrieveTypeAndFillRecord(pos, type, record);
-                        }
-                        return true;
-                } catch (SQLException e) {
-                        LOG.error("Couldn't read data:\t" + e.getMessage());
-                } catch (NotTransformableSQLFieldException e) {
-                        LOG.error("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
-                } catch (NullPointerException e){
-                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
-                }
-                return false;
         }
 
         private void retrieveTypeAndFillRecord(int pos, int type, PactRecord record) throws SQLException, NotTransformableSQLFieldException {
@@ -303,6 +206,86 @@ public class JDBCInputFormat extends GenericInputFormat {
                         //			case java.sql.Types.ROWID:
                         //			case java.sql.Types.STRUCT:
                 }
+        }
+
+        @Override
+        public void configure(Configuration parameters) {
+                /*
+                 this.dbTypeStr = parameters.getString("type", "mysql");
+                 this.host = parameters.getString("host", "localhost");
+                 this.port = parameters.getInteger("port", 3306);
+                 this.dbName = parameters.getString("name", "");
+                 this.username = parameters.getString("username", "");
+                 this.password = parameters.getString("password", "");
+                 this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
+                 this.query = parameter.getString("query","");
+
+                 */
+
+                DBTypes dbType = getDBType(dbTypeStr);
+
+                if (setClassForDBType(dbType)) {
+                        String url = "";
+
+                        switch (dbType) {
+                                case MYSQL:
+                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
+                                        break;
+                                case POSTGRESQL:
+                                        url = String.format("jdbc:postgresql://%s:%d/%s", host, port, dbName);
+                                        break;
+                                case MARIADB:
+                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
+                                        break;
+                                case DERBY:
+                                        url = String.format("jdbc:derby://%s", derbyDBPath);
+                                        break;
+                        }
+                        if (prepareConnection(url, username, password)) {
+                                try {
+                                        statement = dbConn.createStatement();
+                                        resultSet = statement.executeQuery(this.query);
+
+                                } catch (SQLException e) {
+                                        LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                                }
+                        }
+                }
+        }
+
+        @Override
+        public boolean reachedEnd() throws IOException {
+                try {
+                        return resultSet.isAfterLast();
+                } catch (SQLException e) {
+                        LOG.error("Couldn't evaluate reachedEnd():\t" + e.getMessage());
+                } catch (NullPointerException e) {
+                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
+                }
+                return false;
+        }
+
+        @Override
+        public boolean nextRecord(PactRecord record) throws IOException {
+                try {
+                        resultSet.next();
+                        ResultSetMetaData rsmd = resultSet.getMetaData();
+                        int column_count = rsmd.getColumnCount();
+                        record.setNumFields(column_count);
+
+                        for (int pos = 0; pos < column_count; pos++) {
+                                int type = rsmd.getColumnType(pos + 1);
+                                retrieveTypeAndFillRecord(pos, type, record);
+                        }
+                        return true;
+                } catch (SQLException e) {
+                        LOG.error("Couldn't read data:\t" + e.getMessage());
+                } catch (NotTransformableSQLFieldException e) {
+                        LOG.error("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
+                } catch (NullPointerException e) {
+                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
+                }
+                return false;
         }
 
 }
