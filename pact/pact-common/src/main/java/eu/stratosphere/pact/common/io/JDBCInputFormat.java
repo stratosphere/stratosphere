@@ -56,6 +56,12 @@ public class JDBCInputFormat extends GenericInputFormat {
 
         private String dbURL = null;
 
+        private boolean need_configure=false;
+
+        public JDBCInputFormat() {
+                this.need_configure = true;
+        }
+
         public JDBCInputFormat(String dbURL, String query) {
                 this.query = query;
                 this.dbURL = dbURL;
@@ -235,6 +241,16 @@ public class JDBCInputFormat extends GenericInputFormat {
 
         @Override
         public void configure(Configuration parameters) {
+                if (need_configure) {
+                        this.dbTypeStr = parameters.getString("type", "mysql");
+                        this.host = parameters.getString("host", "localhost");
+                        this.port = parameters.getInteger("port", 3306);
+                        this.dbName = parameters.getString("name", "");
+                        this.username = parameters.getString("username", "");
+                        this.password = parameters.getString("password", "");
+                        this.query = parameters.getString("query", "");
+                        this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
+                }
 
                 DBTypes dbType = getDBType(dbTypeStr);
 
