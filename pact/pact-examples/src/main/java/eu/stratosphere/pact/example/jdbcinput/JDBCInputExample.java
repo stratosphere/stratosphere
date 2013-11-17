@@ -3,26 +3,21 @@ package eu.stratosphere.pact.example.jdbcinput;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
-import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
-import eu.stratosphere.pact.common.io.DelimitedOutputFormat;
 import eu.stratosphere.pact.common.io.JDBCInputFormat;
+import eu.stratosphere.pact.common.io.RecordOutputFormat;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.plan.PlanAssembler;
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
+import eu.stratosphere.pact.common.type.base.PactFloat;
+import eu.stratosphere.pact.common.type.base.PactInteger;
+import eu.stratosphere.pact.common.type.base.PactString;
 
 /**
- * This is a outline for a Stratosphere job.
+ * DB Schema
  *
- * See the comments in getPlan() below on how to start with your job!
- *
- * You can run it out of your IDE using the main() method. This will use the
- * LocalExecutor to start a little Stratosphere instance out of your IDE.
- *
- * You can also generate a .jar file that you can submit on your Stratosphere
- * cluster. Just type mvn clean package in the projects root directory. You will
- * find the jar in target/stratosphere-quickstart-0.1-SNAPSHOT-Sample.jar
- *
+ * ID  | title   | author  | price | qty
+ * int | varchar | varchar | float | int
  */
 public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription {
 
@@ -34,37 +29,45 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
                 executor.stop();
         }
 
-        public Plan getPlan() {
-                String output = "output.txt";
-                Configuration config = new Configuration();
-                config.setString("type", "mysql");
-                config.setString("host", "127.0.0.1");
-                config.setInteger("port", 3306);
-                config.setString("name", "ebookshop");
-                config.setString("username", "root");
-                config.setString("password", "1111");
-                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config, "select * from books;"), "Data Source");
+        @Override
+        public Plan getPlan(String[] args) {
+                //String output = args[0];
+                String output = "file://c:/TEST/output.txt";
+                //String query = args[1];
+                String query = "select * from books;";
 
-                GenericDataSink sink = new FileDataSink(DelimitedOutputFormat.class, output);
+                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(query), "Data Source");
+                source.setParameter("type", "mysql");
+                source.setParameter("host", "127.0.0.1");
+                source.setParameter("port", 3306);
+                source.setParameter("name", "ebookshop");
+                source.setParameter("username", "root");
+                source.setParameter("password", "1111");
+
+                FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
+                RecordOutputFormat.configureRecordFormat(sink)
+                        .recordDelimiter('\n')
+                        .fieldDelimiter(' ')
+                        .field(PactInteger.class, 0)
+                        .field(PactString.class, 1)
+                        .field(PactString.class, 2)
+                        .field(PactFloat.class, 3)
+                        .field(PactInteger.class, 4);
 
                 sink.addInput(source);
                 return new Plan(sink, "JDBC Input Example Job");
         }
 
+        @Override
         public String getDescription() {
-                return "Usage: ... "; // TODO
+                return "Parameter: [Output File]"; // TODO
         }
 
         // You can run this using:
         // mvn exec:exec -Dexec.executable="java" -Dexec.args="-cp %classpath eu.stratosphere.quickstart.RunJob <args>"
         public static void main(String[] args) throws Exception {
                 JDBCInputExample tut = new JDBCInputExample();
-                Plan toExecute = tut.getPlan();
+                Plan toExecute = tut.getPlan(args);
                 execute(toExecute);
-        }
-
-        @Override
-        public Plan getPlan(String... args) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 }
