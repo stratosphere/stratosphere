@@ -46,7 +46,7 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
                 
                 GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config,query), "Data Source");
                 /*
-                //GenericDataSource source = new GenericDataSOurce(new JDBCInputFormat(),"Data Source");
+                //GenericDataSource source = new GenericDataSource(new JDBCInputFormat(),"Data Source");
                 source.setParameter("type", "mysql");
                 source.setParameter("host", "127.0.0.1");
                 source.setParameter("port", 3306);
