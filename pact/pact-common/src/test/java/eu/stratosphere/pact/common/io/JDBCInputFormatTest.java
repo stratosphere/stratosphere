@@ -57,11 +57,13 @@ public class JDBCInputFormatTest {
                 config.setString("username", "root");
                 config.setString("password", "1111");
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                jdbcInputFormat.configure(config);
         }
 
         @Test
         public void test_data_retrieve_mysql() throws IOException {
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                jdbcInputFormat.configure(config);
                 PactRecord r = new PactRecord();
 
                 assertTrue(jdbcInputFormat.nextRecord(r));
@@ -71,8 +73,10 @@ public class JDBCInputFormatTest {
         @Test
         public void test_data_reachedend_mysql() throws IOException {
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+                jdbcInputFormat.configure(config);
                 PactRecord r = new PactRecord();
-                while(jdbcInputFormat.nextRecord(r)){}
+                while (jdbcInputFormat.nextRecord(r)) {
+                }
                 assertTrue(jdbcInputFormat.reachedEnd());
         }
 
@@ -82,23 +86,4 @@ public class JDBCInputFormatTest {
                 assertFalse(jdbcInputFormat.reachedEnd());
         }
 
-        @Test
-        public void testsetClassForDBType_derby() {
-                assertTrue(jdbcInputFormat.setClassForDBType("derby"));
-        }
-
-        @Test
-        public void testsetClassForDBType_mysql() {
-                assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
-        }
-
-        @Test
-        public void testsetClassForDBType_postgres() {
-                assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
-        }
-
-        @Test
-        public void testsetClassForDBType_mariadb() {
-                assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
-        }
 }
