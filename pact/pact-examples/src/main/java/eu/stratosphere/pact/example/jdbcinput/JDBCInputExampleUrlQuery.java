@@ -1,6 +1,5 @@
 package eu.stratosphere.pact.example.jdbcinput;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
@@ -16,8 +15,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
 /**
  * DB Schema
  *
- * ID  | title   | author  | price | qty 
- * int | varchar | varchar | float | int
+ * ID | title | author | price | qty / int | varchar | varchar | float | int
  */
 public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDescription {
 
@@ -34,11 +32,11 @@ public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDes
                 //String url = args [0];
                 String url = "jdbc:mysql://127.0.0.1:3306/ebookshop";
                 //String query = args[1];
-                String query = "select * from books;";                
+                String query = "select * from books;";
                 //String output = args[2];
                 String output = "file://c:/TEST/output.txt";
-                
-                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(url,query), "Data Source");
+
+                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(url, query), "Data Source");
 
                 FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
                 RecordOutputFormat.configureRecordFormat(sink)

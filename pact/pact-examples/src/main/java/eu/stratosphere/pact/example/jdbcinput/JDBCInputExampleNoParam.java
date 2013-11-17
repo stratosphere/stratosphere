@@ -1,6 +1,5 @@
 package eu.stratosphere.pact.example.jdbcinput;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
@@ -16,7 +15,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
 /**
  * DB Schema
  *
- * ID | title | author | price | qty int | varchar | varchar | float | int
+ * ID | title | author | price | qty / int | varchar | varchar | float | int
  */
 public class JDBCInputExampleNoParam implements PlanAssembler, PlanAssemblerDescription {
 

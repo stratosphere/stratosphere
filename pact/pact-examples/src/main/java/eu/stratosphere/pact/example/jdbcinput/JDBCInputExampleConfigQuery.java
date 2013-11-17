@@ -16,8 +16,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
 /**
  * DB Schema
  *
- * ID  | title   | author  | price | qty 
- * int | varchar | varchar | float | int
+ * ID | title | author | price | qty / int | varchar | varchar | float | int
  */
 public class JDBCInputExampleConfigQuery implements PlanAssembler, PlanAssemblerDescription {
 
@@ -35,7 +34,7 @@ public class JDBCInputExampleConfigQuery implements PlanAssembler, PlanAssembler
                 String query = "select * from books;";
                 //String output = args[1];
                 String output = "file://c:/TEST/output.txt";
-                
+
                 Configuration config = new Configuration();
                 config.setString("type", "mysql");
                 config.setString("host", "127.0.0.1");
@@ -43,8 +42,8 @@ public class JDBCInputExampleConfigQuery implements PlanAssembler, PlanAssembler
                 config.setString("name", "ebookshop");
                 config.setString("username", "root");
                 config.setString("password", "1111");
-                
-                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config,query), "Data Source");
+
+                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config, query), "Data Source");
 
                 FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
                 RecordOutputFormat.configureRecordFormat(sink)
