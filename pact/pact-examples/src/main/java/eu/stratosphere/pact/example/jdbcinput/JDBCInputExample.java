@@ -1,6 +1,5 @@
 package eu.stratosphere.pact.example.jdbcinput;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
