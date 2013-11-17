@@ -1,5 +1,6 @@
 package eu.stratosphere.pact.example.jdbcinput;
 
+import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
@@ -34,15 +35,26 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
                 String query = "select * from books;";
                 //String output = args[1];
                 String output = "file://c:/TEST/output.txt";
-
-                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(query), "Data Source");
+                
+                Configuration config = new Configuration();
+                config.setString("type", "mysql");
+                config.setString("host", "127.0.0.1");
+                config.setInteger("port", 3306);
+                config.setString("name", "ebookshop");
+                config.setString("username", "root");
+                config.setString("password", "1111");
+                
+                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config,query), "Data Source");
+                /*
+                //GenericDataSource source = new GenericDataSOurce(new JDBCInputFormat(),"Data Source");
                 source.setParameter("type", "mysql");
                 source.setParameter("host", "127.0.0.1");
                 source.setParameter("port", 3306);
                 source.setParameter("name", "ebookshop");
                 source.setParameter("username", "root");
                 source.setParameter("password", "1111");
-
+                source.setParameter("query","select * from books;");
+*/
                 FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
                 RecordOutputFormat.configureRecordFormat(sink)
                         .recordDelimiter('\n')
