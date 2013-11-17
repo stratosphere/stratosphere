@@ -54,11 +54,11 @@ public class JDBCInputFormat extends GenericInputFormat {
         private String password;
         private String derbyDBPath;
 
-        public JDBCInputFormat() {
-        }
+        private String dbURL = null;
 
-        public JDBCInputFormat(String query) {
+        public JDBCInputFormat(String dbURL, String query) {
                 this.query = query;
+                this.dbURL = dbURL;
         }
 
         public JDBCInputFormat(Configuration parameters, String query) {
@@ -112,7 +112,32 @@ public class JDBCInputFormat extends GenericInputFormat {
                 }
         }
 
-        private boolean prepareConnection(String dbURL, String username, String password) {
+        private boolean prepareConnection(String dbURL) {
+                try {
+                        dbConn = DriverManager.getConnection(dbURL);
+                        return true;
+
+                } catch (SQLException e) {
+                        LOG.error("Couldn't create db-connection:\t" + e.getMessage());
+                        return false;
+                }
+        }
+
+        private boolean prepareConnection(DBTypes dbType, String username, String password) {
+                switch (dbType) {
+                        case MYSQL:
+                                dbURL = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
+                                break;
+                        case POSTGRESQL:
+                                dbURL = String.format("jdbc:postgresql://%s:%d/%s", host, port, dbName);
+                                break;
+                        case MARIADB:
+                                dbURL = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
+                                break;
+                        case DERBY:
+                                dbURL = String.format("jdbc:derby://%s", derbyDBPath);
+                                break;
+                }
                 try {
                         dbConn = DriverManager.getConnection(dbURL, username, password);
                         return true;
@@ -210,44 +235,29 @@ public class JDBCInputFormat extends GenericInputFormat {
 
         @Override
         public void configure(Configuration parameters) {
-                /*
-                 this.dbTypeStr = parameters.getString("type", "mysql");
-                 this.host = parameters.getString("host", "localhost");
-                 this.port = parameters.getInteger("port", 3306);
-                 this.dbName = parameters.getString("name", "");
-                 this.username = parameters.getString("username", "");
-                 this.password = parameters.getString("password", "");
-                 this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
-                 this.query = parameter.getString("query","");
-
-                 */
 
                 DBTypes dbType = getDBType(dbTypeStr);
 
                 if (setClassForDBType(dbType)) {
-                        String url = "";
+                        if (dbURL == null) {
+                                if (prepareConnection(dbType, username, password)) {
+                                        try {
+                                                statement = dbConn.createStatement();
+                                                resultSet = statement.executeQuery(this.query);
 
-                        switch (dbType) {
-                                case MYSQL:
-                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case POSTGRESQL:
-                                        url = String.format("jdbc:postgresql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case MARIADB:
-                                        url = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
-                                        break;
-                                case DERBY:
-                                        url = String.format("jdbc:derby://%s", derbyDBPath);
-                                        break;
-                        }
-                        if (prepareConnection(url, username, password)) {
-                                try {
-                                        statement = dbConn.createStatement();
-                                        resultSet = statement.executeQuery(this.query);
+                                        } catch (SQLException e) {
+                                                LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                                        }
+                                }
+                        } else {
+                                if (prepareConnection(dbURL)) {
+                                        try {
+                                                statement = dbConn.createStatement();
+                                                resultSet = statement.executeQuery(this.query);
 
-                                } catch (SQLException e) {
-                                        LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                                        } catch (SQLException e) {
+                                                LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                                        }
                                 }
                         }
                 }
