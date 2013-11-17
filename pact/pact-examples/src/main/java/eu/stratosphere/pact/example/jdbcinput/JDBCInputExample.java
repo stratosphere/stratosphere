@@ -45,16 +45,7 @@ public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription
                 config.setString("password", "1111");
                 
                 GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config,query), "Data Source");
-                /*
-                //GenericDataSource source = new GenericDataSource(new JDBCInputFormat(),"Data Source");
-                source.setParameter("type", "mysql");
-                source.setParameter("host", "127.0.0.1");
-                source.setParameter("port", 3306);
-                source.setParameter("name", "ebookshop");
-                source.setParameter("username", "root");
-                source.setParameter("password", "1111");
-                source.setParameter("query","select * from books;");
-*/
+
                 FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
                 RecordOutputFormat.configureRecordFormat(sink)
                         .recordDelimiter('\n')
