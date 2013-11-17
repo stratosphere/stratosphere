@@ -56,7 +56,7 @@ public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDes
 
         @Override
         public String getDescription() {
-                return "Parameter: [Query] [Output File]"; // TODO
+                return "Parameter: [URL] [Query] [Output File]"; // TODO
         }
 
         // You can run this using:
