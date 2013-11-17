@@ -14,7 +14,6 @@
 package eu.stratosphere.pact.common.io;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.testutils.TestConfigUtils;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactString;
 import java.io.IOException;
@@ -57,13 +56,13 @@ public class JDBCInputFormatTest {
                 config.setString("username", "root");
                 config.setString("password", "1111");
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(config);
+                jdbcInputFormat.configure(new Configuration());
         }
 
         @Test
         public void test_data_retrieve_mysql() throws IOException {
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(config);
+                jdbcInputFormat.configure(new Configuration());
                 PactRecord r = new PactRecord();
 
                 assertTrue(jdbcInputFormat.nextRecord(r));
@@ -73,17 +72,11 @@ public class JDBCInputFormatTest {
         @Test
         public void test_data_reachedend_mysql() throws IOException {
                 jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(config);
+                jdbcInputFormat.configure(new Configuration());
                 PactRecord r = new PactRecord();
                 while (jdbcInputFormat.nextRecord(r)) {
                 }
                 assertTrue(jdbcInputFormat.reachedEnd());
-        }
-
-        @Test
-        public void test_reached_end_mysql() throws IOException {
-                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                assertFalse(jdbcInputFormat.reachedEnd());
         }
 
 }
