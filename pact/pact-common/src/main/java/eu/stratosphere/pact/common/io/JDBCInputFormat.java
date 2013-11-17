@@ -46,27 +46,45 @@ public class JDBCInputFormat extends GenericInputFormat {
         private ResultSet resultSet;
         private String query;
         
-        //necessary for example, you can't pass a configuration to a constructor
-        //Configurations can't be serialized
+        private String dbTypeStr;
+        private String host;
+        private Integer port;
+        private String dbName;
+        private String username;
+        private String password;
+        private String derbyDBPath;
+        
+        public JDBCInputFormat(){}
+        
         public JDBCInputFormat(String query){
                 this.query=query;
         }
 
         public JDBCInputFormat(Configuration parameters, String query) {
                 this.query = query;
-                configure(parameters);
+                this.dbTypeStr = parameters.getString("type", "mysql");
+                this.host = parameters.getString("host", "localhost");
+                this.port = parameters.getInteger("port", 3306);
+                this.dbName = parameters.getString("name", "");
+                this.username = parameters.getString("username", "");
+                this.password = parameters.getString("password", "");
+                this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
         }
 
         @Override
         public void configure(Configuration parameters) {
-                String dbTypeStr = parameters.getString("type", "mysql");
-                String host = parameters.getString("host", "localhost");
-                Integer port = parameters.getInteger("port", 3306);
-                String dbName = parameters.getString("name", "");
-                String username = parameters.getString("username", "");
-                String password = parameters.getString("password", "");
-                String derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
-
+                /*
+                this.query = parameter.getString("query","");
+                this.dbTypeStr = parameters.getString("type", "mysql");
+                this.host = parameters.getString("host", "localhost");
+                this.port = parameters.getInteger("port", 3306);
+                this.dbName = parameters.getString("name", "");
+                this.username = parameters.getString("username", "");
+                this.password = parameters.getString("password", "");
+                this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
+        
+                */
+                
                 DBTypes dbType = getDBType(dbTypeStr);
 
                 if (setClassForDBType(dbType)) {
@@ -107,7 +125,8 @@ public class JDBCInputFormat extends GenericInputFormat {
                         return null;
                 }
         }
-
+        
+        //why do we have 2 setClassForDBType methods?
         public boolean setClassForDBType(String dbTypeIdentifier) {
                 DBTypes dbType = getDBType(dbTypeIdentifier);
                 return setClassForDBType(dbType);
@@ -172,7 +191,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                 } catch (SQLException e) {
                         LOG.error("Couldn't evaluate reachedEnd():\t" + e.getMessage());
                 } catch (NullPointerException e) {
-                        System.out.println("resultSet doesn't exist:\t" + e.getMessage());
+                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
                 }
                 return false;
         }
@@ -194,6 +213,8 @@ public class JDBCInputFormat extends GenericInputFormat {
                         LOG.error("Couldn't read data:\t" + e.getMessage());
                 } catch (NotTransformableSQLFieldException e) {
                         LOG.error("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
+                } catch (NullPointerException e){
+                        LOG.error("Couldn't access resultSet:\t" + e.getMessage());
                 }
                 return false;
         }
