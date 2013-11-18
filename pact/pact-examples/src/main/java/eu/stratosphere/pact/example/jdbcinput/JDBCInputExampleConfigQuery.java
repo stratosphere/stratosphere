@@ -34,7 +34,7 @@ public class JDBCInputExampleConfigQuery implements PlanAssembler, PlanAssembler
                 String query = "select * from books;";
                 //String output = args[1];
                 String output = "file://c:/TEST/output.txt";
-
+                
                 Configuration config = new Configuration();
                 config.setString("type", "mysql");
                 config.setString("host", "127.0.0.1");
