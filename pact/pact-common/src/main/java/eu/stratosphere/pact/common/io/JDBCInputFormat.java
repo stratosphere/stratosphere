@@ -80,7 +80,12 @@ public class JDBCInputFormat extends GenericInputFormat {
 
     private DBTypes getDBType(String dbTypeStr) {
         dbTypeStr = dbTypeStr.toUpperCase().trim();
-        DBTypes dbType = DBTypes.valueOf(dbTypeStr);
+        DBTypes dbType = null;
+        try {
+            dbType = DBTypes.valueOf(dbTypeStr);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Database type is not supported yet:\t" + dbType);
+        }
         return dbType;
     }
 
@@ -107,9 +112,8 @@ public class JDBCInputFormat extends GenericInputFormat {
                 case DERBY:
                     Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
                     return true;
-
+                    
                 default:
-                    LOG.info("Database type is not supported yet:\t" + dbType);
                     return false;
             }
         } catch (ClassNotFoundException cnfe) {
@@ -222,7 +226,7 @@ public class JDBCInputFormat extends GenericInputFormat {
             default:
                 throw new NotTransformableSQLFieldException("Unknown sql-type [" + type + "]on column [" + pos + "]");
 
-                        //			case java.sql.Types.BINARY:
+            //			case java.sql.Types.BINARY:
             //			case java.sql.Types.VARBINARY:
             //			case java.sql.Types.LONGVARBINARY:
             //			case java.sql.Types.ARRAY:
@@ -283,6 +287,7 @@ public class JDBCInputFormat extends GenericInputFormat {
         try {
             if (resultSet.isLast()) {
                 statement.close();
+                resultSet.close();
                 return true;
             } else {
                 return false;
