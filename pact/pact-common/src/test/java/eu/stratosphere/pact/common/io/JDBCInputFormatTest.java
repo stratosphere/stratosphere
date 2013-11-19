@@ -13,10 +13,6 @@
  */
 package eu.stratosphere.pact.common.io;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -55,11 +51,17 @@ public class JDBCInputFormatTest {
         }
     }
 
+    /*
+     Sets Derby Database URL
+     */
     private static void prepareDerbyDatabase() throws ClassNotFoundException {
-        String dbURL = "jdbc:derby:tmp/ebookshop;create=true;user=me;password=mine";
+        String dbURL = "jdbc:derby:memory:ebookshop;create=true;user=me;password=mine";
         createConnection(dbURL);
     }
 
+    /*
+     Loads JDBC derby driver ; creates(if necessary) and populates database.
+     */
     private static void createConnection(String dbURL) {
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -67,11 +69,16 @@ public class JDBCInputFormatTest {
             createTable();
             insertData();
             conn.close();
-        } catch (Exception except) {
+        } catch (ClassNotFoundException except) {
+            except.printStackTrace();
+        } catch (SQLException except) {
             except.printStackTrace();
         }
     }
 
+    /*
+     Creates tables.
+     */
     private static void createTable() throws SQLException {
         StringBuilder sqlQueryBuilder = new StringBuilder("CREATE TABLE books (");
         sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
@@ -96,6 +103,9 @@ public class JDBCInputFormatTest {
         stat.close();
     }
 
+    /*
+     Populates tables.
+     */
     private static void insertData() throws SQLException {
         StringBuilder sqlQueryBuilder = new StringBuilder("INSERT INTO books (id, title, author, price, qty) VALUES ");
         sqlQueryBuilder.append("(1001, 'Java for dummies', 'Tan Ah Teck', 11.11, 11),");
@@ -121,20 +131,7 @@ public class JDBCInputFormatTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws SQLException, IOException {
-        File tmpFolder = new File("tmp");
-        deleteRecursively(tmpFolder);
-    }
-
-    private static void deleteRecursively(File folder) throws IOException {
-        if (folder.isDirectory()) {
-            for (File c : folder.listFiles()) {
-                deleteRecursively(c);
-            }
-        }
-        if (!folder.delete()) {
-            throw new FileNotFoundException("Failed to delete file: " + folder);
-        }
+    public static void tearDownClass() {
     }
 
     @Before
@@ -163,53 +160,6 @@ public class JDBCInputFormatTest {
         jdbcInputFormat.configure(null);
     }
 
-//        @Test
-//        public void test_data_retrieve_mysql() throws IOException {
-//                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-//                PactRecord r = new PactRecord();
-//
-//                assertTrue(jdbcInputFormat.nextRecord(r));
-//                assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
-//        }
-//
-//        @Test
-//        public void test_data_reachedend_mysql() throws IOException {
-//                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-//                PactRecord r = new PactRecord();
-//                while(jdbcInputFormat.nextRecord(r)){}
-//                assertTrue(jdbcInputFormat.reachedEnd());
-//        }
-//
-//        @Test
-//        public void test_reached_end_mysql() throws IOException {
-//                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-//                assertFalse(jdbcInputFormat.reachedEnd());
-//        }
-    @Test
-    public void testsetClassForDBTypeApacheDerby() {
-        assertTrue(jdbcInputFormat.setClassForDBType("derby"));
-    }
-
-    @Test
-    public void testsetClassForDBTypeMySQL() {
-        assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
-    }
-
-    @Test
-    public void testsetClassForDBTypePostgres() {
-        assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
-    }
-
-    @Test
-    public void testsetClassForDBTypeMariaDB() {
-        assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testsetClassForNonAvailableDBType() {
-        jdbcInputFormat.setClassForDBType("oracle");
-    }
-
     @Test
     public void testJDBCInputFormatSettingPactRecordNormally() throws IOException {
         PactRecord buffRecord;
@@ -234,7 +184,7 @@ public class JDBCInputFormatTest {
     }
 
     @Test
-    public void testJDBCInputFormatNotDefinedSQLType() throws IOException {
+    public void testUnsupportedSQLType() throws IOException {
         configureForBooksContentTable();
 
         PactRecord buffRecord;
