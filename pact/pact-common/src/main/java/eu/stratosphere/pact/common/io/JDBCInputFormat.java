@@ -1,3 +1,16 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package eu.stratosphere.pact.common.io;
 
 import java.io.IOException;
@@ -40,12 +53,15 @@ public class JDBCInputFormat extends GenericInputFormat {
     }
 
     private static final Log LOG = LogFactory.getLog(JDBCInputFormat.class);
-
+    
+    //Connection objects
     private Connection dbConn;
     private Statement statement;
     private ResultSet resultSet;
+    
     private String query;
 
+    //Connection parameters
     private String dbTypeStr;
     private String host;
     private Integer port;
@@ -58,15 +74,31 @@ public class JDBCInputFormat extends GenericInputFormat {
 
     private boolean need_configure = false;
 
+    /**
+     * Creates a non-configured JDBCInputFormat. This format has to be
+     * configured using configure(configuration).
+     */
     public JDBCInputFormat() {
         this.need_configure = true;
     }
 
+    /**
+     * Creates a JDBCInputFormat and configures it.
+     *
+     * @param dbURL Formatted URL containing all connection parameters.
+     * @param query Query to execute.
+     */
     public JDBCInputFormat(String dbURL, String query) {
         this.query = query;
         this.dbURL = dbURL;
     }
 
+    /**
+     * Creates a JDBCInputFormat and configures it.
+     *
+     * @param parameters Configuration with all connection parameters.
+     * @param query Query to execute.
+     */
     public JDBCInputFormat(Configuration parameters, String query) {
         this.query = query;
         this.dbTypeStr = parameters.getString("type", "mysql");
@@ -78,6 +110,12 @@ public class JDBCInputFormat extends GenericInputFormat {
         this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/tmp/derby/db;create=true;"));
     }
 
+    /**
+     * Converts given database type string to dbTypes.
+     *
+     * @param dbTypeStr Database type as string.
+     * @return Database type as dbTypes.
+     */
     private DBTypes getDBType(String dbTypeStr) {
         dbTypeStr = dbTypeStr.toUpperCase().trim();
         DBTypes dbType = null;
@@ -89,6 +127,13 @@ public class JDBCInputFormat extends GenericInputFormat {
         return dbType;
     }
 
+    /**
+     * Loads appropriate JDBC driver.
+     *
+     * @param dbType Type of the database.
+     * @return boolean value, indication whether an appropriate driver could be
+     * found.
+     */
     private boolean setClassForDBType(DBTypes dbType) {
 
         if (dbType == null) {
@@ -112,7 +157,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                 case DERBY:
                     Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
                     return true;
-                    
+
                 default:
                     return false;
             }
@@ -122,6 +167,13 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
+    /**
+     * Establishes a connection to a database.
+     *
+     * @param dbURL Assembled URL containing all connection parameters.
+     * @return boolean value, indicating whether a connection could be
+     * established
+     */
     private boolean prepareConnection(String dbURL) {
         try {
             dbConn = DriverManager.getConnection(dbURL);
@@ -133,6 +185,15 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
+    /**
+     * Assembles the Database URL and establishes a connection.
+     *
+     * @param dbType Type of the database.
+     * @param username Login username.
+     * @param password Login password.
+     * @return boolean value, indicating whether a connection could be
+     * established
+     */
     private boolean prepareConnection(DBTypes dbType, String username, String password) {
         switch (dbType) {
             case MYSQL:
@@ -157,6 +218,16 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
+    /**
+     * Enters data value from the current resultSet into a PactRecord.
+     *
+     * @param pos PactRecord position to be set.
+     * @param type SQL type of the resultSet value.
+     * @param record Target PactRecord.
+     * @throws SQLException
+     * @throws
+     * eu.stratosphere.pact.common.io.JDBCInputFormat.NotTransformableSQLFieldException
+     */
     private void retrieveTypeAndFillRecord(int pos, int type, PactRecord record) throws SQLException, NotTransformableSQLFieldException {
         switch (type) {
             case java.sql.Types.NULL:
@@ -214,7 +285,6 @@ public class JDBCInputFormat extends GenericInputFormat {
                 record.setField(pos, new PactString(resultSet.getDate(pos + 1).toString()));
                 break;
             case java.sql.Types.TIME:
-                //				record.setField(pos, new PactString(resultSet.getTime(pos).toString()));
                 record.setField(pos, new PactLong(resultSet.getTime(pos + 1).getTime()));
                 break;
             case java.sql.Types.TIMESTAMP:
@@ -243,6 +313,13 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
+    /**
+     * Configures this JDBCInputFormat. This includes setting the connection
+     * parameters (if necessary), establishing the connection and executing the
+     * query.
+     *
+     * @param parameters Configuration containing all or no parameters.
+     */
     @Override
     public void configure(Configuration parameters) {
         if (need_configure) {
@@ -282,13 +359,16 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see eu.stratosphere.pact.generic.io.InputFormat
+     */
     @Override
     public boolean reachedEnd() throws IOException {
         try {
             if (resultSet.isLast()) {
-                //multiple inputSPlits might require this bit to be changed
-                statement.close();
                 resultSet.close();
+                statement.close();
                 dbConn.close();
                 return true;
             } else {
@@ -302,6 +382,10 @@ public class JDBCInputFormat extends GenericInputFormat {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see eu.stratosphere.pact.generic.io.InputFormat
+     */
     @Override
     public boolean nextRecord(PactRecord record) throws IOException {
         try {
