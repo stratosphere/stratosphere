@@ -26,57 +26,58 @@ import static org.junit.Assert.*;
 
 public class JDBCInputFormatTest {
 
-        JDBCInputFormat jdbcInputFormat;
-        Configuration config;
+    JDBCInputFormat jdbcInputFormat;
+    Configuration config;
 
-        @BeforeClass
-        public static void setUpClass() {
+    @BeforeClass
+    public static void setUpClass() {
 
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    @Before
+    public void setUp() {
+        testConfigure_dummy();
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    public void testConfigure_dummy() {
+        config = new Configuration();
+        config.setString("type", "mysql");
+        config.setString("host", "127.0.0.1");
+        config.setInteger("port", 3306);
+        config.setString("name", "ebookshop");
+        config.setString("username", "root");
+        config.setString("password", "1111");
+        jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+        jdbcInputFormat.configure(new Configuration());
+    }
+
+    @Test
+    public void test_data_retrieve_mysql() throws IOException {
+        jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+        jdbcInputFormat.configure(new Configuration());
+        PactRecord r = new PactRecord();
+
+        assertTrue(jdbcInputFormat.nextRecord(r));
+        assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
+    }
+
+    @Test
+    public void test_data_reachedend_mysql() throws IOException {
+        jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
+        jdbcInputFormat.configure(new Configuration());
+        PactRecord r = new PactRecord();
+        while (!jdbcInputFormat.reachedEnd()) {
+            jdbcInputFormat.nextRecord(r);
         }
-
-        @AfterClass
-        public static void tearDownClass() {
-        }
-
-        @Before
-        public void setUp() {
-                testConfigure_dummy();
-        }
-
-        @After
-        public void tearDown() {
-        }
-
-        public void testConfigure_dummy() {
-                config = new Configuration();
-                config.setString("type", "mysql");
-                config.setString("host", "127.0.0.1");
-                config.setInteger("port", 3306);
-                config.setString("name", "ebookshop");
-                config.setString("username", "root");
-                config.setString("password", "1111");
-                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(new Configuration());
-        }
-
-        @Test
-        public void test_data_retrieve_mysql() throws IOException {
-                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(new Configuration());
-                PactRecord r = new PactRecord();
-
-                assertTrue(jdbcInputFormat.nextRecord(r));
-                assertEquals("Java for dummies", r.getField(1, PactString.class).getValue());
-        }
-
-        @Test
-        public void test_data_reachedend_mysql() throws IOException {
-                jdbcInputFormat = new JDBCInputFormat(config, "select * from books;");
-                jdbcInputFormat.configure(new Configuration());
-                PactRecord r = new PactRecord();
-                while (jdbcInputFormat.nextRecord(r)) {
-                }
-                assertTrue(jdbcInputFormat.reachedEnd());
-        }
+        assertTrue(jdbcInputFormat.reachedEnd());
+    }
 
 }
