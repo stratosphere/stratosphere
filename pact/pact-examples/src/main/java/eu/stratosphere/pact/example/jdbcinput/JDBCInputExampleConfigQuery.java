@@ -20,55 +20,55 @@ import eu.stratosphere.pact.common.type.base.PactString;
  */
 public class JDBCInputExampleConfigQuery implements PlanAssembler, PlanAssemblerDescription {
 
-        public static void execute(Plan toExecute) throws Exception {
-                LocalExecutor executor = new LocalExecutor();
-                executor.start();
-                long runtime = executor.executePlan(toExecute);
-                System.out.println("runtime:  " + runtime);
-                executor.stop();
-        }
+    public static void execute(Plan toExecute) throws Exception {
+        LocalExecutor executor = new LocalExecutor();
+        executor.start();
+        long runtime = executor.executePlan(toExecute);
+        System.out.println("runtime:  " + runtime);
+        executor.stop();
+    }
 
-        @Override
-        public Plan getPlan(String[] args) {
-                //String query = args[0];
-                String query = "select * from books;";
-                //String output = args[1];
-                String output = "file://c:/TEST/output.txt";
-                
-                Configuration config = new Configuration();
-                config.setString("type", "mysql");
-                config.setString("host", "127.0.0.1");
-                config.setInteger("port", 3306);
-                config.setString("name", "ebookshop");
-                config.setString("username", "root");
-                config.setString("password", "1111");
+    @Override
+    public Plan getPlan(String[] args) {
+        //String query = args[0];
+        String query = "select * from books;";
+        //String output = args[1];
+        String output = "file://c:/TEST/output.txt";
 
-                GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config, query), "Data Source");
+        Configuration config = new Configuration();
+        config.setString("type", "mysql");
+        config.setString("host", "127.0.0.1");
+        config.setInteger("port", 3306);
+        config.setString("name", "ebookshop");
+        config.setString("username", "root");
+        config.setString("password", "1111");
 
-                FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
-                RecordOutputFormat.configureRecordFormat(sink)
-                        .recordDelimiter('\n')
-                        .fieldDelimiter(' ')
-                        .field(PactInteger.class, 0)
-                        .field(PactString.class, 1)
-                        .field(PactString.class, 2)
-                        .field(PactFloat.class, 3)
-                        .field(PactInteger.class, 4);
+        GenericDataSource source = new GenericDataSource(new JDBCInputFormat(config, query), "Data Source");
 
-                sink.addInput(source);
-                return new Plan(sink, "JDBC Input Example Job");
-        }
+        FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
+        RecordOutputFormat.configureRecordFormat(sink)
+                .recordDelimiter('\n')
+                .fieldDelimiter(' ')
+                .field(PactInteger.class, 0)
+                .field(PactString.class, 1)
+                .field(PactString.class, 2)
+                .field(PactFloat.class, 3)
+                .field(PactInteger.class, 4);
 
-        @Override
-        public String getDescription() {
-                return "Parameter: [Query] [Output File]"; // TODO
-        }
+        sink.addInput(source);
+        return new Plan(sink, "JDBC Input Example Job");
+    }
 
-        // You can run this using:
-        // mvn exec:exec -Dexec.executable="java" -Dexec.args="-cp %classpath eu.stratosphere.quickstart.RunJob <args>"
-        public static void main(String[] args) throws Exception {
-                JDBCInputExampleConfigQuery tut = new JDBCInputExampleConfigQuery();
-                Plan toExecute = tut.getPlan(args);
-                execute(toExecute);
-        }
+    @Override
+    public String getDescription() {
+        return "Parameter: [Query] [Output File]"; // TODO
+    }
+
+    // You can run this using:
+    // mvn exec:exec -Dexec.executable="java" -Dexec.args="-cp %classpath eu.stratosphere.quickstart.RunJob <args>"
+    public static void main(String[] args) throws Exception {
+        JDBCInputExampleConfigQuery tut = new JDBCInputExampleConfigQuery();
+        Plan toExecute = tut.getPlan(args);
+        execute(toExecute);
+    }
 }
