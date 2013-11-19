@@ -136,14 +136,6 @@ public class JDBCInputFormat extends GenericInputFormat {
     }
     
     /**
-     * @See {@link JDBCInputFormat#setClassForDBType(DBTypes)}
-     * */
-    protected boolean setClassForDBType(String dbTypeStr) {
-		DBTypes dbType = getDBType(dbTypeStr);
-		return setClassForDBType(dbType);
-	}
-
-    /**
      * Loads appropriate JDBC driver.
      *
      * @param dbType Type of the database.
