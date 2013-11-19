@@ -13,6 +13,8 @@
  */
 package eu.stratosphere.pact.common.io;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,7 +26,6 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,9 +52,6 @@ public class JDBCInputFormatTest {
         }
     }
 
-    /*
-     Sets Derby Database URL
-     */
     private static void prepareDerbyDatabase() throws ClassNotFoundException {
         String dbURL = "jdbc:derby:memory:ebookshop;create=true;user=me;password=mine";
         createConnection(dbURL);
@@ -67,7 +65,7 @@ public class JDBCInputFormatTest {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             conn = DriverManager.getConnection(dbURL);
             createTable();
-            insertData();
+            insertDataToSQLTables();
             conn.close();
         } catch (ClassNotFoundException except) {
             except.printStackTrace();
@@ -76,9 +74,6 @@ public class JDBCInputFormatTest {
         }
     }
 
-    /*
-     Creates tables.
-     */
     private static void createTable() throws SQLException {
         StringBuilder sqlQueryBuilder = new StringBuilder("CREATE TABLE books (");
         sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
@@ -103,10 +98,7 @@ public class JDBCInputFormatTest {
         stat.close();
     }
 
-    /*
-     Populates tables.
-     */
-    private static void insertData() throws SQLException {
+    private static void insertDataToSQLTables() throws SQLException {
         StringBuilder sqlQueryBuilder = new StringBuilder("INSERT INTO books (id, title, author, price, qty) VALUES ");
         sqlQueryBuilder.append("(1001, 'Java for dummies', 'Tan Ah Teck', 11.11, 11),");
         sqlQueryBuilder.append("(1002, 'More Java for dummies', 'Tan Ah Teck', 22.22, 22),");
@@ -130,10 +122,6 @@ public class JDBCInputFormatTest {
         stat.close();
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
     @Before
     public void setUp() {
         configureEmbeddedDerbyConfig();
@@ -150,7 +138,7 @@ public class JDBCInputFormatTest {
         config.setString("name", "ebookshop");
         config.setString("username", "me");
         config.setString("password", "mine");
-        config.setString("derbydbpath", "tmp/ebookshop");
+        config.setString("derbydbpath", "memory:ebookshop");
         jdbcInputFormat = new JDBCInputFormat(config, "select * from books");
         jdbcInputFormat.configure(null);
     }
@@ -200,5 +188,30 @@ public class JDBCInputFormatTest {
 
         Assert.assertEquals(0, records.size());
         Assert.assertFalse(setRecordsSuccessfully);
+    }
+    
+    @Test
+    public void testsetClassForDBTypeApacheDerby() {
+        assertTrue(jdbcInputFormat.setClassForDBType("derby"));
+    }
+
+    @Test
+    public void testsetClassForDBTypeMySQL() {
+        assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
+    }
+
+    @Test
+    public void testsetClassForDBTypePostgres() {
+        assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
+    }
+
+    @Test
+    public void testsetClassForDBTypeMariaDB() {
+        assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testsetClassForNonAvailableDBType() {
+        jdbcInputFormat.setClassForDBType("oracle");
     }
 }
