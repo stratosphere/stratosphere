@@ -13,9 +13,6 @@
  */
 package eu.stratosphere.pact.common.io;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -36,6 +33,8 @@ import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactDouble;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JDBCInputFormatTest {
 
@@ -54,7 +53,7 @@ public class JDBCInputFormatTest {
     }
 
     private static void prepareDerbyDatabase() throws ClassNotFoundException {
-        String dbURL = "jdbc:derby:memory:ebookshop;create=true;user=me;password=mine";
+        String dbURL = "jdbc:derby:memory:ebookshop;create=true";
         createConnection(dbURL);
     }
 
@@ -134,19 +133,12 @@ public class JDBCInputFormatTest {
     }
 
     public void configureEmbeddedDerbyConfig() {
-        config = new Configuration();
-        config.setString("type", "derby");
-        config.setString("name", "ebookshop");
-        config.setString("username", "me");
-        config.setString("password", "mine");
-        config.setString("derbydbpath", "memory:ebookshop");
-//        String dbURL = "jdbc:derby:memory:ebookshop;create=true;user=me;password=mine";
-        jdbcInputFormat = new JDBCInputFormat(config, "select * from books");
+        jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from books");
         jdbcInputFormat.configure(null);
     }
 
     private void configureForBooksContentTable() {
-        jdbcInputFormat = new JDBCInputFormat(config, "select * from bookscontent");
+        jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from bookscontent");
         jdbcInputFormat.configure(null);
     }
 
@@ -191,7 +183,7 @@ public class JDBCInputFormatTest {
         Assert.assertEquals(0, records.size());
         Assert.assertFalse(setRecordsSuccessfully);
     }
-    
+
     @Test
     public void testsetClassForDBTypeApacheDerby() {
         assertTrue(jdbcInputFormat.setClassForDBType("derby"));
