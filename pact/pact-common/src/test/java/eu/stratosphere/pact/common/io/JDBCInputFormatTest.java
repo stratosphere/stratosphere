@@ -14,6 +14,7 @@
 package eu.stratosphere.pact.common.io;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -139,6 +140,7 @@ public class JDBCInputFormatTest {
         config.setString("username", "me");
         config.setString("password", "mine");
         config.setString("derbydbpath", "memory:ebookshop");
+//        String dbURL = "jdbc:derby:memory:ebookshop;create=true;user=me;password=mine";
         jdbcInputFormat = new JDBCInputFormat(config, "select * from books");
         jdbcInputFormat.configure(null);
     }
@@ -210,8 +212,8 @@ public class JDBCInputFormatTest {
         assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testsetClassForNonAvailableDBType() {
-        jdbcInputFormat.setClassForDBType("oracle");
+        assertFalse(jdbcInputFormat.setClassForDBType("oracle"));
     }
 }
