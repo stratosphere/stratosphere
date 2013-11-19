@@ -53,12 +53,12 @@ public class JDBCInputFormat extends GenericInputFormat {
     }
 
     private static final Log LOG = LogFactory.getLog(JDBCInputFormat.class);
-    
+
     //Connection objects
     private Connection dbConn;
     private Statement statement;
     private ResultSet resultSet;
-    
+
     private String query;
 
     //Connection parameters
@@ -107,7 +107,7 @@ public class JDBCInputFormat extends GenericInputFormat {
         this.dbName = parameters.getString("name", "");
         this.username = parameters.getString("username", "");
         this.password = parameters.getString("password", "");
-        this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/tmp/derby/db;create=true;"));
+        this.derbyDBPath = parameters.getString("derbydbpath", "");
     }
 
     /**
@@ -125,6 +125,14 @@ public class JDBCInputFormat extends GenericInputFormat {
             LOG.info("Database type is not supported yet:\t" + dbType);
         }
         return dbType;
+    }
+    
+    /**
+     * @See {@link JDBCInputFormat#setClassForDBType(DBTypes)}
+     * */
+    protected boolean setClassForDBType(String dbTypeStr) {
+        DBTypes dbType = getDBType(dbTypeStr);
+        return setClassForDBType(dbType);
     }
     
     /**
@@ -341,10 +349,10 @@ public class JDBCInputFormat extends GenericInputFormat {
             this.derbyDBPath = parameters.getString("derbydbpath", System.getProperty("user.dir" + "/test/resources/derby/db;create=true;"));
         }
 
-        DBTypes dbType = getDBType(dbTypeStr);
+        if (dbURL == null) {
+            DBTypes dbType = getDBType(dbTypeStr);
+            if (setClassForDBType(dbType)) {
 
-        if (setClassForDBType(dbType)) {
-            if (dbURL == null) {
                 if (prepareConnection(dbType, username, password)) {
                     try {
                         statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -353,15 +361,15 @@ public class JDBCInputFormat extends GenericInputFormat {
                         LOG.error("Couldn't execute query:\t!" + e.getMessage());
                     }
                 }
-            } else {
-                if (prepareConnection(dbURL)) {
-                    try {
-                        statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                        resultSet = statement.executeQuery(this.query);
+            }
+        } else {
+            if (prepareConnection(dbURL)) {
+                try {
+                    statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                    resultSet = statement.executeQuery(this.query);
 
-                    } catch (SQLException e) {
-                        LOG.error("Couldn't execute query:\t!" + e.getMessage());
-                    }
+                } catch (SQLException e) {
+                    LOG.error("Couldn't execute query:\t!" + e.getMessage());
                 }
             }
         }
