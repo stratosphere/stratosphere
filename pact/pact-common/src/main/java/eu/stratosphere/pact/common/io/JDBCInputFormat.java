@@ -286,8 +286,10 @@ public class JDBCInputFormat extends GenericInputFormat {
     public boolean reachedEnd() throws IOException {
         try {
             if (resultSet.isLast()) {
+                //multiple inputSPlits might require this bit to be changed
                 statement.close();
                 resultSet.close();
+                dbConn.close();
                 return true;
             } else {
                 return false;
