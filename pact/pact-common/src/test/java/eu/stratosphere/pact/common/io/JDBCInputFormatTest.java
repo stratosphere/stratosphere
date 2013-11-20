@@ -141,7 +141,35 @@ public class JDBCInputFormatTest {
         jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from bookscontent");
         jdbcInputFormat.configure(null);
     }
-
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnsupportedDBType(){
+        config= new Configuration();
+        config.setString("type", "oracle");
+        config.setString("host", "127.0.0.1");
+        config.setInteger("port", 3076);
+        config.setString("name", "idontexist");
+        JDBCInputFormat typeformat = new JDBCInputFormat(config,"select * from books");
+        typeformat.configure(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidConnection(){
+        config = new Configuration();
+        config.setString("type","mysql");
+        config.setString("host", "127.0.0.1");
+        config.setInteger("port", 3076);
+        config.setString("name", "idontexist");
+        JDBCInputFormat conformat = new JDBCInputFormat(config,"select * from books");
+        conformat.configure(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidQuery(){
+        JDBCInputFormat conformat = new JDBCInputFormat("jdbc:derby:memory:ebookshop","abc");
+        conformat.configure(null);
+    }
+    
     @Test
     public void testJDBCInputFormatSettingPactRecordNormally() throws IOException {
         PactRecord buffRecord;
@@ -204,7 +232,7 @@ public class JDBCInputFormatTest {
         assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testsetClassForNonAvailableDBType() {
         assertFalse(jdbcInputFormat.setClassForDBType("oracle"));
     }
