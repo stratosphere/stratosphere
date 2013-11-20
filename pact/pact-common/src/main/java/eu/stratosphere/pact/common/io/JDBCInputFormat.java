@@ -187,14 +187,9 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @return boolean value, indicating whether a connection could be
      * established
      */
-    private boolean prepareConnection(String dbURL) {
-        try {
-            dbConn = DriverManager.getConnection(dbURL);
-            return true;
-
-        } catch (SQLException e) {
-            throw new IllegalArgumentException("Couldn't create db-connection:\t" + e.getMessage());
-        }
+    private boolean prepareConnection(String dbURL) throws SQLException {
+        dbConn = DriverManager.getConnection(dbURL);
+        return true;
     }
 
     /**
@@ -206,7 +201,7 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @return boolean value, indicating whether a connection could be
      * established
      */
-    private boolean prepareConnection(DBTypes dbType, String username, String password) {
+    private boolean prepareConnection(DBTypes dbType, String username, String password) throws SQLException {
         switch (dbType) {
             case MYSQL:
                 dbURL = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
@@ -221,12 +216,8 @@ public class JDBCInputFormat extends GenericInputFormat {
                 dbURL = String.format("jdbc:derby://%s", derbyDBPath);
                 break;
         }
-        try {
-            dbConn = DriverManager.getConnection(dbURL, username, password);
-            return true;
-        } catch (SQLException e) {
-            throw new IllegalArgumentException("Couldn't create db-connection:\t" + e.getMessage());
-        }
+        dbConn = DriverManager.getConnection(dbURL, username, password);
+        return true;
     }
 
     /**
@@ -235,7 +226,7 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @param pos PactRecord position to be set.
      * @param type SQL type of the resultSet value.
      * @param record Target PactRecord.
-     * 
+     *
      */
     private void retrieveTypeAndFillRecord(int pos, int type, PactRecord record) throws SQLException, NotTransformableSQLFieldException {
         switch (type) {
@@ -345,28 +336,29 @@ public class JDBCInputFormat extends GenericInputFormat {
         if (dbURL == null) {
             DBTypes dbType = getDBType(dbTypeStr);
             if (setClassForDBType(dbType)) {
-
-                if (prepareConnection(dbType, username, password)) {
-                    try {
+                try {
+                    if (prepareConnection(dbType, username, password)) {
                         statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                         resultSet = statement.executeQuery(this.query);
-                    } catch (SQLException e) {
-                        throw new IllegalArgumentException("Couldn't execute query:\t!" + e.getMessage());
                     }
-                }
-            }
-        } else {
-            if (prepareConnection(dbURL)) {
-                try {
-                    statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                    resultSet = statement.executeQuery(this.query);
-
                 } catch (SQLException e) {
                     throw new IllegalArgumentException("Couldn't execute query:\t!" + e.getMessage());
                 }
             }
+        } else {
+
+            try {
+                if (prepareConnection(dbURL)) {
+                    statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                    resultSet = statement.executeQuery(this.query);
+                }
+
+            } catch (SQLException e) {
+                throw new IllegalArgumentException("Couldn't execute query:\t!" + e.getMessage());
+            }
         }
     }
+
 
     /*
      * (non-Javadoc)
@@ -384,11 +376,10 @@ public class JDBCInputFormat extends GenericInputFormat {
                 return false;
             }
         } catch (SQLException e) {
-            LOG.error("Couldn't evaluate reachedEnd():\t" + e.getMessage());
+            throw new IllegalArgumentException("Couldn't evaluate reachedEnd():\t" + e.getMessage());
         } catch (NullPointerException e) {
-            LOG.error("Couldn't access resultSet:\t" + e.getMessage());
+            throw new IllegalArgumentException("Couldn't access resultSet:\t" + e.getMessage());
         }
-        return true;
     }
 
     /*
@@ -396,7 +387,7 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @see eu.stratosphere.pact.generic.io.InputFormat
      */
     @Override
-    public boolean nextRecord(PactRecord record) throws IOException {
+    public boolean nextRecord(PactRecord record) {
         try {
             resultSet.next();
             ResultSetMetaData rsmd = resultSet.getMetaData();
@@ -409,13 +400,12 @@ public class JDBCInputFormat extends GenericInputFormat {
             }
             return true;
         } catch (SQLException e) {
-            LOG.error("Couldn't read data:\t" + e.getMessage());
+            throw new IllegalArgumentException("Couldn't read data:\t" + e.getMessage());
         } catch (NotTransformableSQLFieldException e) {
-            LOG.error("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
+            throw new IllegalArgumentException("Couldn't read data because of unknown column sql-type:\t" + e.getMessage());
         } catch (NullPointerException e) {
-            LOG.error("Couldn't access resultSet:\t" + e.getMessage());
+            throw new IllegalArgumentException("Couldn't access resultSet:\t" + e.getMessage());
         }
-        return false;
     }
 
 }
