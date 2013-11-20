@@ -33,7 +33,6 @@ import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFieldsExcept;
 import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFieldsFirstExcept;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextIntParser;
 
 public class MergeOnlyJoin implements PlanAssembler, PlanAssemblerDescription {
 
@@ -75,8 +74,8 @@ public class MergeOnlyJoin implements PlanAssembler, PlanAssemblerDescription {
 		RecordInputFormat.configureRecordFormat(input1)
 			.recordDelimiter('\n')
 			.fieldDelimiter('|')
-			.field(DecimalTextIntParser.class, 0)
-			.field(DecimalTextIntParser.class, 1);
+			.field(PactInteger.class, 0)
+			.field(PactInteger.class, 1);
 		
 		ReduceContract aggInput1 = ReduceContract.builder(DummyReduce.class, PactInteger.class, 0)
 			.input(input1)
@@ -91,8 +90,8 @@ public class MergeOnlyJoin implements PlanAssembler, PlanAssemblerDescription {
 		RecordInputFormat.configureRecordFormat(input2)
 			.recordDelimiter('\n')
 			.fieldDelimiter('|')
-			.field(DecimalTextIntParser.class, 0)
-			.field(DecimalTextIntParser.class, 1);
+			.field(PactInteger.class, 0)
+			.field(PactInteger.class, 1);
 
 		ReduceContract aggInput2 = ReduceContract.builder(DummyReduce.class, PactInteger.class, 0)
 			.input(input2)

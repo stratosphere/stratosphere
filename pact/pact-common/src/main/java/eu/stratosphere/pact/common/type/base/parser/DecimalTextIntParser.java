@@ -15,22 +15,14 @@
 
 package eu.stratosphere.pact.common.type.base.parser;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 
 /**
  * Parses a decimal text field into a PactInteger.
  * Only characters '1' to '0' and '-' are allowed.
  * The parser does not check for the maximum value.
- * 
- * @author Fabian Hueske (fabian.hueske@tu-berlin.de)
- *
  */
-public class DecimalTextIntParser  implements FieldParser<PactInteger> {
-
-	@Override
-	public void configure(Configuration config) { }
-	
+public class DecimalTextIntParser extends FieldParser<PactInteger> {
 
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delim, PactInteger field) {
@@ -58,7 +50,7 @@ public class DecimalTextIntParser  implements FieldParser<PactInteger> {
 	}
 	
 	@Override
-	public PactInteger getValue() {
+	public PactInteger createValue() {
 		return new PactInteger();
 	}
 }

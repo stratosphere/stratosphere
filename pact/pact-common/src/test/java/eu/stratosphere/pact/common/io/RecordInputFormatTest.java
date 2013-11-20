@@ -18,7 +18,6 @@ package eu.stratosphere.pact.common.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -27,10 +26,11 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FileInputSplit;
@@ -43,7 +43,6 @@ import eu.stratosphere.pact.common.util.LogUtils;
 
 public class RecordInputFormatTest {
 
-	@Mock
 	protected Configuration config;
 	
 	protected File tempFile;
@@ -51,11 +50,15 @@ public class RecordInputFormatTest {
 	private final RecordInputFormat format = new RecordInputFormat();
 	
 	// --------------------------------------------------------------------------------------------
+
+	@BeforeClass
+	public static void initialize() {
+		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
+	}
 	
 	@Before
 	public void setup() {
-		initMocks(this);
-		LogUtils.initializeDefaultConsoleLogger();
+		format.setFilePath("file:///some/file/that/will/not/be/read");
 	}
 	
 	@After
@@ -72,7 +75,6 @@ public class RecordInputFormatTest {
 	public void testConfigure() {
 		try {
 			Configuration config = new Configuration();
-			config.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			
 			// check missing number of fields
 			boolean validConfig = true;
@@ -183,13 +185,17 @@ public class RecordInputFormatTest {
 	}
 	
 	@Test
+	public void readWithEmptyField() {
+		Assert.fail("implement me");
+	}
+	
+	@Test
 	public void testReadNoPosAll() throws IOException {
 		try {
 			final String fileContent = "111|222|333|444|555\n666|777|888|999|000|";
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 5);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -233,7 +239,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 2);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -283,7 +288,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 3);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -346,7 +350,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 3);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -409,7 +412,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 5);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -464,7 +466,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 5);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");
@@ -493,7 +494,6 @@ public class RecordInputFormatTest {
 			final FileInputSplit split = createTempFile(fileContent);	
 		
 			final Configuration parameters = new Configuration();
-			parameters.setString(RecordInputFormat.FILE_PARAMETER_KEY, "file:///some/file/that/will/not/be/read");
 			parameters.setInteger(RecordInputFormat.NUM_FIELDS_PARAMETER, 4);
 			parameters.setString(RecordInputFormat.RECORD_DELIMITER_PARAMETER, "\n");
 			parameters.setString(RecordInputFormat.FIELD_DELIMITER_PARAMETER, "|");

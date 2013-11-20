@@ -33,7 +33,6 @@ import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFieldsExcept;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextIntParser;
 
 /**
  * This job shows how to define ordered input for a Reduce contract.
@@ -81,8 +80,8 @@ public class ReduceGroupSort implements PlanAssembler, PlanAssemblerDescription 
 		RecordInputFormat.configureRecordFormat(input)
 			.recordDelimiter('\n')
 			.fieldDelimiter(' ')
-			.field(DecimalTextIntParser.class, 0)
-			.field(DecimalTextIntParser.class, 1);
+			.field(PactInteger.class, 0)
+			.field(PactInteger.class, 1);
 		
 		// create the reduce contract and sets the key to the first field
 		ReduceContract sorter = ReduceContract.builder(new IdentityReducer(), PactInteger.class, 0)

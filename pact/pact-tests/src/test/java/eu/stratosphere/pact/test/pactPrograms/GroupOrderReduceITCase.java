@@ -36,7 +36,6 @@ import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextIntParser;
 import eu.stratosphere.pact.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
@@ -81,8 +80,8 @@ public class GroupOrderReduceITCase extends TestBase2 {
 		RecordInputFormat.configureRecordFormat(source)
 			.recordDelimiter('\n')
 			.fieldDelimiter(',')
-			.field(DecimalTextIntParser.class, 0)
-			.field(DecimalTextIntParser.class, 1);
+			.field(PactInteger.class, 0)
+			.field(PactInteger.class, 1);
 		
 		ReduceContract reducer = ReduceContract.builder(CheckingReducer.class)
 			.keyField(PactInteger.class, 0)

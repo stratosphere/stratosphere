@@ -38,8 +38,6 @@ import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFieldsSecondExce
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextIntParser;
-import eu.stratosphere.pact.common.type.base.parser.VarLengthStringParser;
 import eu.stratosphere.pact.common.util.FieldSet;
 
 /**
@@ -254,8 +252,8 @@ public class WebLogAnalysis implements PlanAssembler, PlanAssemblerDescription
 		RecordInputFormat.configureRecordFormat(docs)
 			.recordDelimiter('\n')
 			.fieldDelimiter('|')
-			.field(VarLengthStringParser.class, 0)
-			.field(VarLengthStringParser.class, 1);
+			.field(PactString.class, 0)
+			.field(PactString.class, 1);
 		
 		/*
 		 * Output Format:
@@ -269,9 +267,9 @@ public class WebLogAnalysis implements PlanAssembler, PlanAssemblerDescription
 		RecordInputFormat.configureRecordFormat(ranks)
 			.recordDelimiter('\n')
 			.fieldDelimiter('|')
-			.field(VarLengthStringParser.class, 1)
-			.field(DecimalTextIntParser.class, 0)
-			.field(DecimalTextIntParser.class, 2);
+			.field(PactString.class, 1)
+			.field(PactInteger.class, 0)
+			.field(PactInteger.class, 2);
 
 		/*
 		 * Output Format:
@@ -284,8 +282,8 @@ public class WebLogAnalysis implements PlanAssembler, PlanAssemblerDescription
 		RecordInputFormat.configureRecordFormat(visits)
 			.recordDelimiter('\n')
 			.fieldDelimiter('|')
-			.field(VarLengthStringParser.class, 1)
-			.field(VarLengthStringParser.class, 2);
+			.field(PactString.class, 1)
+			.field(PactString.class, 2);
 
 		// Create MapContract for filtering the entries from the documents
 		// relation

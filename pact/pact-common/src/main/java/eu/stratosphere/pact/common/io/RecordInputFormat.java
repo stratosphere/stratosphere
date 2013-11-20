@@ -15,22 +15,23 @@
 
 package eu.stratosphere.pact.common.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.io.IOException;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.fs.FileInputSplit;
 import eu.stratosphere.pact.common.contract.CompilerHints;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.Value;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextDoubleParser;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextIntParser;
-import eu.stratosphere.pact.common.type.base.parser.DecimalTextLongParser;
+import eu.stratosphere.pact.common.type.base.PactDouble;
+import eu.stratosphere.pact.common.type.base.PactInteger;
+import eu.stratosphere.pact.common.type.base.PactLong;
 import eu.stratosphere.pact.common.type.base.parser.FieldParser;
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.io.GenericCsvInputFormat;
 
 /**
- * Inputformat to parse ASCII text files and generate PactRecords. 
+ * Input format to parse text files and generate PactRecords. 
  * The input file is structured by record delimiters and field delimiters (CSV files are common).
  * Record delimiter separate records from each other ('\n' is common).
  * Field delimiters separate fields within a record. 
@@ -41,214 +42,217 @@ import eu.stratosphere.pact.generic.contract.Contract;
  * FieldParsers can be configured by adding config entries to the InputFormat configuration. The InputFormat forwards its configuration to each {@link FieldParser}.
  * 
  * The position within the text record can be configured for each field using the {@link RecordInputFormat#TEXT_POSITION_PARAMETER_PREFIX} config key.
- * Either all text postions must be configured or none. If none is configured, the index of the config key is used.
+ * Either all text positions must be configured or none. If none is configured, the index of the config key is used.
  * 
  * The position within the {@link PactRecord} can be configured for each field using the {@link RecordInputFormat#RECORD_POSITION_PARAMETER_PREFIX} config key.
- * Either all {@link PactRecord} postions must be configured or none. If none is configured, the index of the config key is used.
+ * Either all {@link PactRecord} positions must be configured or none. If none is configured, the index of the config key is used.
  * 
  * @see FieldParser
  * @see Configuration
  * @see PactRecord
  */
-public class RecordInputFormat extends DelimitedInputFormat {
-	private static final long serialVersionUID = 1L;
+public class RecordInputFormat extends GenericCsvInputFormat<PactRecord> {
+	
+	private static final long serialVersionUID = 5892337953840605822L;
+	
 
-	// -------------------------------------- Constants -------------------------------------------
+	private int[] targetPositions;
 	
-	@SuppressWarnings("unused")
-	private static final Log LOG = LogFactory.getLog(RecordInputFormat.class);
+	private transient Value[] parsedValues;
 	
-	// ------------------------------------- Config Keys ------------------------------------------
-	
-	public static final String FIELD_DELIMITER_PARAMETER = "recordinformat.delimiter.field";
-	
-	public static final String NUM_FIELDS_PARAMETER = "recordinformat.field.number";
-	
-	public static final String FIELD_PARSER_PARAMETER_PREFIX = "recordinformat.field.parser_";
-	
-	public static final String TEXT_POSITION_PARAMETER_PREFIX = "recordinformat.text.position_";
-	
-	public static final String RECORD_POSITION_PARAMETER_PREFIX = "recordinformat.record.position_";
-	
-	public static final String RECORD_DELIMITER_PARAMETER = DelimitedInputFormat.RECORD_DELIMITER;
 	
 	// --------------------------------------------------------------------------------------------
+	//  Constructors and getters/setters for the configurable parameters
+	// --------------------------------------------------------------------------------------------
 	
-	private FieldParser<Value>[] fieldParsers;
-	private Value[] fieldValues;
-	private int[] recordPositions;
-	private int numFields;
-		
-	private char fieldDelim;
+	public RecordInputFormat() {
+		super();
+	}
 	
+	public RecordInputFormat(char fieldDelimiter) {
+		super(fieldDelimiter);
+	}
+	
+	public RecordInputFormat(Class<? extends Value> ... fields) {
+		super(fields);
+	}
+	
+	public RecordInputFormat(char fieldDelimiter, Class<? extends Value> ... fields) {
+		super(fieldDelimiter, fields);
+	}
 
-	@SuppressWarnings("unchecked")
+	// --------------------------------------------------------------------------------------------
+	
+	public int[] getTargetPositions() {
+		return targetPositions;
+	}
+	
+	public void setTargetPositions(int[] targetPositions) {
+		this.targetPositions = targetPositions;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	//  Pre-flight: Configuration
+	// --------------------------------------------------------------------------------------------
+
 	@Override
 	public void configure(Configuration config) {
-		
 		super.configure(config);
 		
-		// read number of fields to parse
-		numFields = config.getInteger(NUM_FIELDS_PARAMETER, -1);
-		if (numFields < 1) {
-			throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-					"Need to specify number of fields > 0.");
-		}
-		
-		int[] textPosIdx = new int[numFields];
-		boolean anyTextPosSet = false;
-		boolean allTextPosSet = true;
-		int maxTextPos = -1;
-		
-		// parse text positions
-		for (int i = 0; i < numFields; i++)
-		{
-			int pos = config.getInteger(TEXT_POSITION_PARAMETER_PREFIX + i, -1);
-			if (pos == -1) {
-				allTextPosSet = false;
-				textPosIdx[i] = i;
-				maxTextPos = i;
-			} else {
-				anyTextPosSet = true;
-				textPosIdx[i] = pos;
-				maxTextPos = pos > maxTextPos ? pos : maxTextPos;
-			}
-		}
-		// check if either none or all text positions have been set
-		if(anyTextPosSet && !allTextPosSet) {
-			throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-					"Not all text positions set");
-		}
-		
-		int[] recPosIdx = new int[numFields];
-		boolean anyRecPosSet = false;
-		boolean allRecPosSet = true;
-		
-		// parse record positions
-		for (int i = 0; i < numFields; i++)
-		{
-			int pos = config.getInteger(RECORD_POSITION_PARAMETER_PREFIX + i, -1);
-			if (pos == -1) {
-				allRecPosSet = false;
-				recPosIdx[i] = i;
-			} else {
-				anyRecPosSet = true;
-				recPosIdx[i] = pos;
-			}
-		}
-		// check if either none or all record positions have been set
-		if(anyRecPosSet && !allRecPosSet) {
-			throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-					"Not all record positions set");
-		}
-		
-		// init parse and position arrays
-		this.fieldParsers = (FieldParser<Value>[]) new FieldParser[maxTextPos+1];
-		this.fieldValues = new Value[maxTextPos+1];
-		this.recordPositions = new int[maxTextPos+1];
-		for (int j = 0; j < maxTextPos; j++) 
-		{
-			fieldParsers[j] = null;
-			fieldValues[j] = null;
-			recordPositions[j] = -1;
-		}
-		
-		for (int i = 0; i < numFields; i++)
-		{
-			int pos = textPosIdx[i];
-			recordPositions[pos] = recPosIdx[i];
-			Class<FieldParser<Value>> clazz = (Class<FieldParser<Value>>) config.getClass(FIELD_PARSER_PARAMETER_PREFIX + i, null);
-			if (clazz == null) {
+		final String fieldDelimStr = config.getString(FIELD_DELIMITER_PARAMETER, null);
+		if (fieldDelimStr != null) {
+			if (fieldDelimStr.length() != 1) {
 				throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-					"No field parser class for parameter " + i);
+						"Field delimiter must be a single character");
+			} else {
+				setFieldDelim(fieldDelimStr.charAt(0));
+			}
+		}
+		
+		// read number of field configured via configuration
+		int numConfigFields = config.getInteger(NUM_FIELDS_PARAMETER, -1);
+		if (numConfigFields != -1) {
+		
+			int[] textPosIdx = new int[numFields];
+			boolean anyTextPosSet = false;
+			boolean allTextPosSet = true;
+			int maxTextPos = -1;
+			
+			// parse text positions
+			for (int i = 0; i < numFields; i++)
+			{
+				int pos = config.getInteger(TEXT_POSITION_PARAMETER_PREFIX + i, -1);
+				if (pos == -1) {
+					allTextPosSet = false;
+					textPosIdx[i] = i;
+					maxTextPos = i;
+				} else {
+					anyTextPosSet = true;
+					textPosIdx[i] = pos;
+					maxTextPos = pos > maxTextPos ? pos : maxTextPos;
+				}
+			}
+			// check if either none or all text positions have been set
+			if(anyTextPosSet && !allTextPosSet) {
+				throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
+						"Not all text positions set");
 			}
 			
-			try {
-				fieldParsers[pos] = clazz.newInstance();
-			} catch(InstantiationException ie) {
-				throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-						"No field parser could not be instanciated for parameter " + i);
-			} catch (IllegalAccessException e) {
-				throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-						"No field parser could not be instanciated for parameter " + i);
+			int[] recPosIdx = new int[numFields];
+			boolean anyRecPosSet = false;
+			boolean allRecPosSet = true;
+			
+			// parse record positions
+			for (int i = 0; i < numFields; i++)
+			{
+				int pos = config.getInteger(RECORD_POSITION_PARAMETER_PREFIX + i, -1);
+				if (pos == -1) {
+					allRecPosSet = false;
+					recPosIdx[i] = i;
+				} else {
+					anyRecPosSet = true;
+					recPosIdx[i] = pos;
+				}
 			}
-			fieldValues[pos] = fieldParsers[pos].getValue();
+			// check if either none or all record positions have been set
+			if(anyRecPosSet && !allRecPosSet) {
+				throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
+						"Not all record positions set");
+			}
+			
+			// init parse and position arrays
+			this.fieldParsers = (FieldParser<Value>[]) new FieldParser[maxTextPos+1];
+			this.fieldValues = new Value[maxTextPos+1];
+			this.recordPositions = new int[maxTextPos+1];
+			for (int j = 0; j < maxTextPos; j++) 
+			{
+				fieldParsers[j] = null;
+				fieldValues[j] = null;
+				recordPositions[j] = -1;
+			}
+			
+			for (int i = 0; i < numFields; i++)
+			{
+				int pos = textPosIdx[i];
+				recordPositions[pos] = recPosIdx[i];
+				Class<FieldParser<Value>> clazz = (Class<FieldParser<Value>>) config.getClass(FIELD_TYPE_PARAMETER_PREFIX + i, null);
+				if (clazz == null) {
+					throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
+						"No field parser class for parameter " + i);
+				}
+				
+				try {
+					fieldParsers[pos] = clazz.newInstance();
+				} catch(InstantiationException ie) {
+					throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
+							"No field parser could not be instanciated for parameter " + i);
+				} catch (IllegalAccessException e) {
+					throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
+							"No field parser could not be instanciated for parameter " + i);
+				}
+				fieldValues[pos] = fieldParsers[pos].createValue();
+			}
+		}
+	}
+	
+	
+	@Override
+	public void open(FileInputSplit split) throws IOException {
+		super.open(split);
+		
+		FieldParser<Value>[] fieldParsers = getFieldParsers();
+		
+		// create the value holders
+		this.parsedValues = new Value[fieldParsers.length];
+		for (int i = 0; i < fieldParsers.length; i++) {
+			this.parsedValues[i] = fieldParsers[i].createValue();
 		}
 		
-		final String fieldDelimStr = config.getString(FIELD_DELIMITER_PARAMETER, ",");
-		if (fieldDelimStr.length() != 1) {
-			throw new IllegalArgumentException("Invalid configuration for RecordInputFormat: " +
-					"Field delimiter must be a single character");
+		// adjust the output positions
+		if (this.targetPositions == null) {
+			this.targetPositions = new int[0];
 		}
-		this.fieldDelim = fieldDelimStr.charAt(0);
+		
+		// if we do not have enough target positions, fill the positions with x->x values
+		if (this.targetPositions.length < fieldParsers.length) {
+			int[] newTargets = new int[fieldParsers.length];
+			System.arraycopy(this.targetPositions, 0, newTargets, 0, this.targetPositions.length);
+			
+			for (int i = this.targetPositions.length; i < fieldParsers.length; i++) {
+				newTargets[i] = i;
+			}
+			this.targetPositions = newTargets;
+		}
 	}
 	
 	@Override
 	public boolean readRecord(PactRecord target, byte[] bytes, int offset, int numBytes) throws ParseException {
-
-		FieldParser<Value> parser;
-		Value val;
-		int startPos = offset;
-		final int limit = offset + numBytes;
-		
-		if (bytes[startPos] == this.fieldDelim)
-			startPos++;
-		
-		for (int i = 0; i < this.recordPositions.length; i++) {
-			
-			// check valid start position
-			if (startPos >= limit) {
-				return false;
+		if (parseRecord(parsedValues, bytes, offset, numBytes)) {
+			// valid parse, map values into pact record
+			for (int i = 0; i < targetPositions.length; i++) {
+				target.setField(targetPositions[i], parsedValues[i]);
 			}
-			
-			if (this.recordPositions[i] > -1) {
-				// parse field
-				parser = this.fieldParsers[i];
-				val = this.fieldValues[i];
-				startPos = parser.parseField(bytes, startPos, limit, this.fieldDelim, val);
-				// check parse result
-				if (startPos >= 0) {
-					target.setField(this.recordPositions[i], val);
-				} else {
-					String lineAsString = new String(bytes, offset, numBytes);
-					throw new ParseException("Line could not be parsed: " + lineAsString);
-				}
-			} else {
-				// skip field(s)
-				int skipCnt = 1;
-				while (this.recordPositions[i + skipCnt] == -1) {
-					skipCnt++;
-				}
-				startPos = skipFields(bytes, startPos, limit, this.fieldDelim, skipCnt);
-				if (startPos >= 0) {
-					i += (skipCnt - 1);
-				}
-				else {
-					String lineAsString = new String(bytes, offset, numBytes);
-					throw new ParseException("Line could not be parsed: " + lineAsString);
-				}
-			}
-		}
-		return true;
-	}
-	
-	protected int skipFields(byte[] bytes, int startPos, int limit, char delim, int skipCnt) {
-		int i = startPos;
-		
-		while (i < limit && skipCnt > 0) {
-			if (bytes[i] == delim) {
-				skipCnt--;
-			}
-			i++;
-		}
-		if (skipCnt == 0) {
-			return i;
+			return true;
 		} else {
-			return -1;
+			return false;
 		}
 	}
 	
 	// ============================================================================================
+	//  Parameterization via configuration
+	// ============================================================================================
+	
+	// ------------------------------------- Config Keys ------------------------------------------
+	
+	private static final String FIELD_DELIMITER_PARAMETER = "recordinformat.delimiter.field";
+	
+	private static final String NUM_FIELDS_PARAMETER = "recordinformat.field.number";
+	
+	private static final String FIELD_TYPE_PARAMETER_PREFIX = "recordinformat.field.parser_";
+	
+	private static final String TEXT_POSITION_PARAMETER_PREFIX = "recordinformat.text.position_";
+	
+	private static final String RECORD_POSITION_PARAMETER_PREFIX = "recordinformat.record.position_";
 	
 	/**
 	 * Creates a configuration builder that can be used to set the input format's parameters to the config in a fluent
@@ -296,23 +300,23 @@ public class RecordInputFormat extends DelimitedInputFormat {
 			return ret;
 		}
 		
-		public T field(Class<? extends FieldParser<?>> parser, int textPosition) {
-			return field(parser, textPosition, Float.NEGATIVE_INFINITY);
+		public T field(Class<? extends Value> type, int textPosition) {
+			return field(type, textPosition, Float.NEGATIVE_INFINITY);
 
 		}
 		
-		public T field(Class<? extends FieldParser<?>> parser, int textPosition, float avgLen) {
+		public T field(Class<? extends Value> type, int textPosition, float avgLen) {
 			// register field
 			final int numYet = this.config.getInteger(NUM_FIELDS_PARAMETER, 0);
-			this.config.setClass(FIELD_PARSER_PARAMETER_PREFIX + numYet, parser);
+			this.config.setClass(FIELD_TYPE_PARAMETER_PREFIX + numYet, type);
 			this.config.setInteger(TEXT_POSITION_PARAMETER_PREFIX + numYet, textPosition);
 			this.config.setInteger(NUM_FIELDS_PARAMETER, numYet + 1);
 			
 			// register length
 			if (avgLen == Float.NEGATIVE_INFINITY) {
-				if (parser == DecimalTextIntParser.class) {
+				if (type == PactInteger.class) {
 					avgLen = 4f;
-				} else if (parser == DecimalTextDoubleParser.class || parser == DecimalTextLongParser.class) {
+				} else if (type == PactDouble.class || type == PactLong.class) {
 					avgLen = 8f;
 				}
 			}
