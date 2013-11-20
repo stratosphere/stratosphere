@@ -193,7 +193,7 @@ public class JDBCInputFormatTest {
         }
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testUnsupportedSQLType() throws IOException {
         configureForBooksContentTable();
 
