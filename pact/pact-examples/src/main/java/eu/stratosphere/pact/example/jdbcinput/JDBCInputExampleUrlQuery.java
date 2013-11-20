@@ -30,7 +30,7 @@ public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDes
     @Override
     public Plan getPlan(String[] args) {
         //String url = args [0];
-        String url = "jdbc:mysql://127.0.0.1:3306/ebookshop";
+        String url = "jdbc:mysql://127.0.0.1:3306/ebookshop?user=root&password=1111";
         //String query = args[1];
         String query = "select * from books;";
         //String output = args[2];
