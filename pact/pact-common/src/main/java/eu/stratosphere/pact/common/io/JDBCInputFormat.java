@@ -43,7 +43,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
  *
  * The position of a value inside a PactRecord is determined by the table
  * returned.
- * 
+ *
  * @see Configuration
  * @see PactRecord
  * @see DriverManager
@@ -131,13 +131,11 @@ public class JDBCInputFormat extends GenericInputFormat {
      */
     private DBTypes getDBType(String dbTypeStr) {
         dbTypeStr = dbTypeStr.toUpperCase().trim();
-        DBTypes dbType = null;
         try {
-            dbType = DBTypes.valueOf(dbTypeStr);
+            return DBTypes.valueOf(dbTypeStr);
         } catch (IllegalArgumentException e) {
-            LOG.info("Database type is not supported yet:\t" + dbType);
+            throw new IllegalArgumentException("Database type is not supported yet:\t" + e.getMessage());
         }
-        return dbType;
     }
 
     protected boolean setClassForDBType(String dbTypeStr) {
@@ -177,8 +175,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                     return true;
             }
         } catch (ClassNotFoundException cnfe) {
-            LOG.error("JDBC-Class not found:\t" + cnfe.getLocalizedMessage());
-            return false;
+            throw new IllegalArgumentException("JDBC-CLass not found:\t" + cnfe.getLocalizedMessage());
         }
         return false;
     }
@@ -196,8 +193,7 @@ public class JDBCInputFormat extends GenericInputFormat {
             return true;
 
         } catch (SQLException e) {
-            LOG.error("Couldn't create db-connection:\t" + e.getMessage());
-            return false;
+            throw new IllegalArgumentException("Couldn't create db-connection:\t" + e.getMessage());
         }
     }
 
@@ -229,8 +225,7 @@ public class JDBCInputFormat extends GenericInputFormat {
             dbConn = DriverManager.getConnection(dbURL, username, password);
             return true;
         } catch (SQLException e) {
-            LOG.error("Couldn't create db-connection:\t" + e.getMessage());
-            return false;
+            throw new IllegalArgumentException("Couldn't create db-connection:\t" + e.getMessage());
         }
     }
 
@@ -240,9 +235,7 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @param pos PactRecord position to be set.
      * @param type SQL type of the resultSet value.
      * @param record Target PactRecord.
-     * @throws SQLException
-     * @throws
-     * eu.stratosphere.pact.common.io.JDBCInputFormat.NotTransformableSQLFieldException
+     * 
      */
     private void retrieveTypeAndFillRecord(int pos, int type, PactRecord record) throws SQLException, NotTransformableSQLFieldException {
         switch (type) {
@@ -358,7 +351,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                         statement = dbConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                         resultSet = statement.executeQuery(this.query);
                     } catch (SQLException e) {
-                        LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                        throw new IllegalArgumentException("Couldn't execute query:\t!" + e.getMessage());
                     }
                 }
             }
@@ -369,7 +362,7 @@ public class JDBCInputFormat extends GenericInputFormat {
                     resultSet = statement.executeQuery(this.query);
 
                 } catch (SQLException e) {
-                    LOG.error("Couldn't execute query:\t!" + e.getMessage());
+                    throw new IllegalArgumentException("Couldn't execute query:\t!" + e.getMessage());
                 }
             }
         }
