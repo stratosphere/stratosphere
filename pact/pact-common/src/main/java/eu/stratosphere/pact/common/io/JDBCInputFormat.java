@@ -58,13 +58,6 @@ public class JDBCInputFormat extends GenericInputFormat {
         DERBY
     }
 
-    public static class NotSupportedDBTypeException extends Exception {
-
-        public NotSupportedDBTypeException(String message) {
-            super(message);
-        }
-    }
-
     public static class NotTransformableSQLFieldException extends Exception {
 
         public NotTransformableSQLFieldException(String message) {
@@ -182,15 +175,10 @@ public class JDBCInputFormat extends GenericInputFormat {
                 case DERBY:
                     Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
                     return true;
-
-                default:
-                    throw new NotSupportedDBTypeException("Type not supported");
             }
         } catch (ClassNotFoundException cnfe) {
             LOG.error("JDBC-Class not found:\t" + cnfe.getLocalizedMessage());
             return false;
-        } catch (NotSupportedDBTypeException nste) {
-            LOG.error("DBType not supported:\t" + nste.getLocalizedMessage());
         }
         return false;
     }
