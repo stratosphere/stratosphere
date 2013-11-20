@@ -35,6 +35,19 @@ import eu.stratosphere.pact.common.type.base.PactNull;
 import eu.stratosphere.pact.common.type.base.PactShort;
 import eu.stratosphere.pact.common.type.base.PactString;
 
+/**
+ * InputFormat to read data from a database an generate PactReords.
+ *
+ * The InputFormat has to be configured with the query, and either all
+ * connection parameters or a complete database URL.{@link Configuration}
+ *
+ * The position of a value inside a PactRecord is determined by the table
+ * returned.
+ * 
+ * @see Configuration
+ * @see PactRecord
+ * @see DriverManager
+ */
 public class JDBCInputFormat extends GenericInputFormat {
 
     private enum DBTypes {
@@ -133,12 +146,12 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
         return dbType;
     }
-    
+
     protected boolean setClassForDBType(String dbTypeStr) {
         DBTypes dbType = getDBType(dbTypeStr);
         return setClassForDBType(dbType);
     }
-    
+
     /**
      * Loads appropriate JDBC driver.
      *
