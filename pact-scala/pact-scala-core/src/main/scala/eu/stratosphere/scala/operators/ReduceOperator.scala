@@ -13,41 +13,48 @@
 
 package eu.stratosphere.scala.operators
 
+import java.util.{ Iterator => JIterator }
+
 import language.experimental.macros
 import scala.reflect.macros.Context
-import eu.stratosphere.scala.codegen.MacroContextHolder
-import eu.stratosphere.scala.ScalaContract
+
+import eu.stratosphere.nephele.configuration.Configuration
+
+import eu.stratosphere.pact.generic.contract.Contract
 import eu.stratosphere.pact.common.contract.MapContract
-import eu.stratosphere.scala.analysis.UDT
 import eu.stratosphere.pact.common.`type`.PactRecord
+import eu.stratosphere.pact.common.`type`.base.PactInteger
 import eu.stratosphere.pact.common.stubs.MapStub
 import eu.stratosphere.pact.common.stubs.Collector
-import eu.stratosphere.pact.generic.contract.Contract
-import eu.stratosphere.scala.contracts.Annotations
 import eu.stratosphere.pact.common.contract.ReduceContract
 import eu.stratosphere.pact.common.stubs.ReduceStub
+
+import eu.stratosphere.scala.contracts.Annotations
 import eu.stratosphere.scala.analysis.UDTSerializer
 import eu.stratosphere.scala.analysis.UDF1
 import eu.stratosphere.scala.operators.stubs.DeserializingIterator
-import eu.stratosphere.nephele.configuration.Configuration
-import java.util.{ Iterator => JIterator }
+import eu.stratosphere.scala.codegen.MacroContextHolder
+import eu.stratosphere.scala.ScalaContract
+import eu.stratosphere.scala.analysis.UDT
 import eu.stratosphere.scala.analysis.FieldSelector
 import eu.stratosphere.scala.analysis.FieldSelector
 import eu.stratosphere.scala.OneInputKeyedScalaContract
-import eu.stratosphere.scala.DataStream
+import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.OneInputHintable
 import eu.stratosphere.scala.OneInputScalaContract
 
-class GroupByDataStream[In](val keySelection: List[Int], val input: DataStream[In]) {
-  def reduceGroup[Out](fun: Iterator[In] => Out): DataStream[Out] with OneInputHintable[In, Out] = macro ReduceMacros.reduceGroup[In, Out]
+class GroupByDataStream[In](val keySelection: List[Int], val input: DataSet[In]) {
+  def reduceGroup[Out](fun: Iterator[In] => Out): DataSet[Out] with OneInputHintable[In, Out] = macro ReduceMacros.reduceGroup[In, Out]
   // def combinableReduceGroup(fun: Iterator[In] => In): DataStream[In] with OneInputHintable[In, In] = macro ReduceMacros.combinableReduce[In]
   
-  def reduce(fun: (In, In) => In): DataStream[In] with OneInputHintable[In, In] = macro ReduceMacros.reduce[In]
+  def reduce(fun: (In, In) => In): DataSet[In] with OneInputHintable[In, In] = macro ReduceMacros.reduce[In]
+  
+  def count() : DataSet[(In, Int)] with OneInputHintable[In, (In, Int)] = macro ReduceMacros.count[In]
 }
 
 object ReduceMacros {
   
-  def groupBy[In: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = DataStream[In] })(keyFun: c.Expr[In => Key]): c.Expr[GroupByDataStream[In]] = {
+  def groupBy[In: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = DataSet[In] })(keyFun: c.Expr[In => Key]): c.Expr[GroupByDataStream[In]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -61,7 +68,7 @@ object ReduceMacros {
     return helper
   }
   
-  def reduce[In: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[(In, In) => In]): c.Expr[DataStream[In] with OneInputHintable[In, In]] = {
+  def reduce[In: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[(In, In) => In]): c.Expr[DataSet[In] with OneInputHintable[In, In]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -154,15 +161,15 @@ object ReduceMacros {
         override def getUDF = generatedStub.udf
         override def annotations = Annotations.getCombinable() +: Seq(Annotations.getConstantFields(generatedStub.udf.getForwardIndexArray))
       }
-      new DataStream[In](ret) with OneInputHintable[In, In] {}
+      new DataSet[In](ret) with OneInputHintable[In, In] {}
     }
 
-    val result = c.Expr[DataStream[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
+    val result = c.Expr[DataSet[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
     
     return result
   }
 
-  def reduceGroup[In: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[Iterator[In] => Out]): c.Expr[DataStream[Out] with OneInputHintable[In, Out]] = {
+  def reduceGroup[In: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[Iterator[In] => Out]): c.Expr[DataSet[Out] with OneInputHintable[In, Out]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -219,15 +226,15 @@ object ReduceMacros {
         override def getUDF = generatedStub.udf
         override def annotations = Seq(Annotations.getConstantFields(generatedStub.udf.getForwardIndexArray))
       }
-      new DataStream[Out](ret) with OneInputHintable[In, Out] {}
+      new DataSet[Out](ret) with OneInputHintable[In, Out] {}
     }
 
-    val result = c.Expr[DataStream[Out] with OneInputHintable[In, Out]](Block(List(udtIn, udtOut), contract.tree))
+    val result = c.Expr[DataSet[Out] with OneInputHintable[In, Out]](Block(List(udtIn, udtOut), contract.tree))
     
     return result
   }
   
-  def combinableReduce[In: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[Iterator[In] => In]): c.Expr[DataStream[In] with OneInputHintable[In, In]] = {
+  def combinableReduce[In: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })(fun: c.Expr[Iterator[In] => In]): c.Expr[DataSet[In] with OneInputHintable[In, In]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -320,15 +327,15 @@ object ReduceMacros {
         override def getUDF = generatedStub.udf
         override def annotations = Annotations.getCombinable() +: Seq(Annotations.getConstantFields(generatedStub.udf.getForwardIndexArray))
       }
-      new DataStream[In](ret) with OneInputHintable[In, In] {}
+      new DataSet[In](ret) with OneInputHintable[In, In] {}
     }
 
-    val result = c.Expr[DataStream[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
+    val result = c.Expr[DataSet[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
     
     return result
   }
 
-  def globalReduce[In: c.WeakTypeTag](c: Context { type PrefixType = DataStream[In] })(fun: c.Expr[(In, In) => In]): c.Expr[DataStream[In] with OneInputHintable[In, In]] = {
+  def globalReduce[In: c.WeakTypeTag](c: Context { type PrefixType = DataSet[In] })(fun: c.Expr[(In, In) => In]): c.Expr[DataSet[In] with OneInputHintable[In, In]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -413,15 +420,15 @@ object ReduceMacros {
         override def getUDF = generatedStub.udf
         override def annotations = Annotations.getCombinable() +: Seq(Annotations.getConstantFields(generatedStub.udf.getForwardIndexArray))
       }
-      new DataStream[In](ret) with OneInputHintable[In, In] {}
+      new DataSet[In](ret) with OneInputHintable[In, In] {}
     }
 
-    val result = c.Expr[DataStream[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
+    val result = c.Expr[DataSet[In] with OneInputHintable[In, In]](Block(List(udtIn), contract.tree))
     
     return result
   }
 
-  def globalReduceAll[In: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = DataStream[In] })(fun: c.Expr[Iterator[In] => Out]): c.Expr[DataStream[Out] with OneInputHintable[In, Out]] = {
+  def globalReduceAll[In: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = DataSet[In] })(fun: c.Expr[Iterator[In] => Out]): c.Expr[DataSet[Out] with OneInputHintable[In, Out]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -471,10 +478,78 @@ object ReduceMacros {
         override def getUDF = generatedStub.udf
         override def annotations = Seq(Annotations.getConstantFields(generatedStub.udf.getForwardIndexArray))
       }
-      new DataStream[Out](ret) with OneInputHintable[In, Out] {}
+      new DataSet[Out](ret) with OneInputHintable[In, Out] {}
     }
 
-    val result = c.Expr[DataStream[Out] with OneInputHintable[In, Out]](Block(List(udtIn, udtOut), contract.tree))
+    val result = c.Expr[DataSet[Out] with OneInputHintable[In, Out]](Block(List(udtIn, udtOut), contract.tree))
+    
+    return result
+  }
+  
+  
+  def count[In: c.WeakTypeTag](c: Context { type PrefixType = GroupByDataStream[In] })() : c.Expr[DataSet[(In, Int)] with OneInputHintable[In, (In, Int)]] = {
+    import c.universe._
+
+    val slave = MacroContextHolder.newMacroHelper(c)
+
+    val (udtIn, createUdtIn) = slave.mkUdtClass[In]
+    val (udtOut, createUdtOut) = slave.mkUdtClass[(In, Int)]
+    
+    val contract = reify {
+      val helper: GroupByDataStream[In] = c.prefix.splice
+      val keySelection = helper.keySelection
+
+      val generatedStub = new ReduceStub with Serializable {
+        val inputUDT = c.Expr[UDT[In]](createUdtIn).splice
+        val outputUDT = c.Expr[UDT[(In, Int)]](createUdtOut).splice
+        val keySelector = new FieldSelector(inputUDT, keySelection)
+        val udf: UDF1[In, (In, Int)] = new UDF1(inputUDT, outputUDT)
+        
+        private val reduceRecord = new PactRecord()
+        private val pactInt = new PactInteger()
+
+        private var countPosition: Int = 0;
+
+        override def open(config: Configuration) = {
+          super.open(config)
+          this.countPosition = udf.getOutputLength - 1;
+        }
+        
+        override def reduce(records: JIterator[PactRecord], result: Collector[PactRecord]) : Unit = {
+          
+          var record : PactRecord = null
+          var counter: Int = 0
+          while (records.hasNext()) {
+            record = records.next()
+            val count = if (record.getNumFields() <= countPosition || record.isNull(countPosition)) 1 else record.getField(countPosition, pactInt).getValue()
+            counter = counter + count
+          }
+          
+          pactInt.setValue(counter)
+          record.setField(countPosition, pactInt)
+          result.collect(record)
+        }
+        
+        override def combine(records: JIterator[PactRecord], result: Collector[PactRecord]) : Unit = {
+          reduce(records, result)
+        }
+
+      }
+      
+      val builder = ReduceContract.builder(generatedStub).input(helper.input.contract)
+      
+      val keyTypes = generatedStub.inputUDT.getKeySet(generatedStub.keySelector.selectedFields map { _.localPos })
+      keyTypes.foreach { builder.keyField(_, -1) } // global indexes haven't been computed yet...
+      
+      val ret = new ReduceContract(builder) with OneInputKeyedScalaContract[In, (In, Int)] {
+        override val key: FieldSelector = generatedStub.keySelector
+        override def getUDF = generatedStub.udf
+        override def annotations = Annotations.getCombinable() +: Seq(Annotations.getConstantFieldsExcept(Array[Int]()))
+      }
+      new DataSet[(In, Int)](ret) with OneInputHintable[In, (In, Int)] {}
+    }
+
+    val result = c.Expr[DataSet[(In, Int)] with OneInputHintable[In, (In, Int)]](Block(List(udtIn, udtOut), contract.tree))
     
     return result
   }

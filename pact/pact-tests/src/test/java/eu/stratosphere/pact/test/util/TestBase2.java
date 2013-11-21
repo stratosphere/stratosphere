@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -111,7 +113,7 @@ public abstract class TestBase2 {
 			e.printStackTrace();
 			Assert.fail("Pre-submit work caused an error: " + e.getMessage());
 		}
-
+		
 		// submit job
 		JobGraph jobGraph = null;
 		try {
@@ -128,6 +130,7 @@ public abstract class TestBase2 {
 			JobClient client = this.executer.getJobClient(jobGraph);
 			client.setConsoleStreamForReporting(getNullPrintStream());
 			client.submitJobAndWait();
+			
 		} catch(Exception e) {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
@@ -146,18 +149,18 @@ public abstract class TestBase2 {
 	
 	public String getTempDirPath(String dirName) throws IOException {
 		File f = createAndRegisterTempFile(dirName);
-		return "file://" + f.getAbsolutePath();
+		return f.toURI().toString();
 	}
 	
 	public String getTempFilePath(String fileName) throws IOException {
 		File f = createAndRegisterTempFile(fileName);
-		return "file://" + f.getAbsolutePath();
+		return f.toURI().toString();
 	}
 	
 	public String createTempFile(String fileName, String contents) throws IOException {
 		File f = createAndRegisterTempFile(fileName);
 		Files.write(contents, f, Charsets.UTF_8);
-		return "file://" + f.getAbsolutePath();
+		return f.toURI().toString();
 	}
 	
 	private File createAndRegisterTempFile(String fileName) throws IOException {
@@ -239,10 +242,15 @@ public abstract class TestBase2 {
 	}
 	
 	public File asFile(String path) {
-		if (path.startsWith("file://")) {
-			return new File(path.substring(7));
-		} else {
-			throw new IllegalArgumentException("This path does not denote a local file.");
+		try {
+			URI uri = new URI(path);
+			if (uri.getScheme().equals("file")) {
+				return new File(uri.getPath());
+			} else {
+				throw new IllegalArgumentException("This path does not denote a local file.");
+			}
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException("This path does not describe a valid local file URI.");
 		}
 	}
 	

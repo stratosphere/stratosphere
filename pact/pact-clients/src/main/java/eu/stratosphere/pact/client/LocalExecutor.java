@@ -17,6 +17,11 @@ package eu.stratosphere.pact.client;
 
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.pact.client.minicluster.NepheleMiniCluster;
@@ -45,6 +50,13 @@ public class LocalExecutor implements PlanExecutor {
 	private NepheleMiniCluster nephele;
 
 	
+	public LocalExecutor() {
+		Logger root = Logger.getRootLogger();
+		PatternLayout layout = new PatternLayout("%d{HH:mm:ss,SSS} %-5p %-60c %x - %m%n");
+		ConsoleAppender appender = new ConsoleAppender(layout, "System.err");
+		root.addAppender(appender);
+		root.setLevel(Level.WARN);
+	}
 	
 	public void start() throws Exception {
 		synchronized (this.lock) {
@@ -52,7 +64,7 @@ public class LocalExecutor implements PlanExecutor {
 			this.nephele.start();
 		}
 	}
-	
+
 	/**
 	 * Stop the local executor instance. You should not call executePlan after this.
 	 */
@@ -63,10 +75,16 @@ public class LocalExecutor implements PlanExecutor {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.client.PlanExecutor#executePlan(eu.stratosphere.pact.common.plan.Plan)
+	/**
+	 * Execute the given plan on the local Nephele instance, wait for the job to
+	 * finish and return the runtime in milliseconds.
+	 * 
+	 * @param plan The plan of the program to execute.
+	 * @return The net runtime of the program, in milliseconds.
+	 * 
+	 * @throws Exception Thrown, if either the startup of the local execution context, or the execution
+	 *                   caused an exception.
 	 */
-	@Override
 	public long executePlan(Plan plan) throws Exception {
 		synchronized (this.lock) {
 			if (this.nephele == null) {
@@ -83,7 +101,7 @@ public class LocalExecutor implements PlanExecutor {
 			return jobClient.submitJobAndWait();
 		}
 	}
-	
+
 	/**
 	 * Returns a JSON dump of the optimized plan.
 	 * 
@@ -103,7 +121,7 @@ public class LocalExecutor implements PlanExecutor {
 
 		return gen.getOptimizerPlanAsJSON(op);
 	}
-	
+
 	/**
 	 * Executes the program described by the given plan assembler.
 	 * 
@@ -133,12 +151,10 @@ public class LocalExecutor implements PlanExecutor {
 			exec.start();
 			return exec.executePlan(plan);
 		} finally {
-			if (exec != null) {
-				exec.stop();
-			}
+			exec.stop();
 		}
 	}
-	
+
 	/**
 	 * Returns a JSON dump of the optimized plan.
 	 * 
@@ -157,12 +173,10 @@ public class LocalExecutor implements PlanExecutor {
 
 			return gen.getOptimizerPlanAsJSON(op);
 		} finally {
-			if (exec != null) {
-				exec.stop();
-			}
+			exec.stop();
 		}
 	}
-	
+
 	/**
 	 * Return unoptimized plan as JSON.
 	 * @return
