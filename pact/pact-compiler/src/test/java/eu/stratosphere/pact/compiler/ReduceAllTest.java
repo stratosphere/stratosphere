@@ -28,9 +28,10 @@ import eu.stratosphere.pact.compiler.plantranslate.NepheleJobGraphGenerator;
 import eu.stratosphere.pact.compiler.util.DummyInputFormat;
 import eu.stratosphere.pact.compiler.util.DummyOutputFormat;
 import eu.stratosphere.pact.compiler.util.IdentityReduce;
+import eu.stratosphere.pact.generic.contract.BulkIteration;
 
 /**
- * This test case has been created to validate a bug that occurred when
+ * This test case has been created to validate bugs that occurred when
  * the ReduceContract was used without a grouping key.
  */
 public class ReduceAllTest extends CompilerTestBase {
@@ -55,4 +56,34 @@ public class ReduceAllTest extends CompilerTestBase {
 			fail("The pact compiler is unable to compile this plan correctly");
 		}
 	}
+	
+	@Test
+	public void testAllReduceIterations() {
+		// construct a plan that uses an all reducer inside iterations
+		FileDataSource source = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source");
+
+		BulkIteration iteration = new BulkIteration("Bulk Iteration AllReduce Test");
+		iteration.setMaximumNumberOfIterations(2);
+		iteration.setInput(source);
+		
+		ReduceContract reduce1 = ReduceContract.builder(IdentityReduce.class)
+			.name("Reduce1").input(iteration.getPartialSolution()).build();
+		iteration.setNextPartialSolution(reduce1);
+		
+		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, "Sink");
+		sink.setInput(iteration);
+		Plan plan = new Plan(sink, "Test Temp Task");
+		
+		// Explicitly defined this to be > 1. This caused the compiler to report an error.
+		plan.setDefaultParallelism(2);
+		
+		try {
+			OptimizedPlan oPlan = compileNoStats(plan);
+			NepheleJobGraphGenerator jobGen = new NepheleJobGraphGenerator();
+			jobGen.compileJobGraph(oPlan);
+		} catch(CompilerException ce) {
+			ce.printStackTrace();
+			fail("The pact compiler is unable to compile this plan correctly");
+		}
+	}	
 }
