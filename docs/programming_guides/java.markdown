@@ -1,6 +1,6 @@
 --- 
 layout: inner_docs
-title: Documentation
+title: Java Programming Guide
 sublinks:
   - {anchor: "basic", title: "Basic Programs"}
   - {anchor: "advanced", title: "Advanced Programs"}
