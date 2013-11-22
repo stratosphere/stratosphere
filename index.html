@@ -16,10 +16,10 @@ title:  Overview
   </p>
 </div>
 <div class="container features">
-  <div class="row">
+  <div class="row" style="padding-top:40px;padding-bottom:40px;">
     <div class="col-md-12">
       <h2><strong>Stratosphere is the next-generation Big Data Analytics Platform</strong>.</h2>
-      <p class="lead">It combines the strenghts of MapReduce/Hadoop with powerful programming abstractions in Java and Scala and a high performance runtime. Stratosphere has native support for iterations, incremental iterations, and programs consisting of large DAGs of operations.</p>
+      <p class="lead">It combines the strengths of MapReduce/Hadoop with powerful programming abstractions in Java and Scala and a high performance runtime. Stratosphere has native support for iterations, incremental iterations, and programs consisting of large DAGs of operations.</p>
     </div>
   </div>
   <div class="row">
@@ -48,4 +48,157 @@ title:  Overview
       <p>Our optimizer automatically parallelizes and optimizes your programs.</p>
     </div>
   </div>
+</div>
+
+<hr>
+
+<div class="container features-detail" style="padding-top:40px;padding-bottom:40px;">
+   <div class="row">
+    <div class="col-md-12">
+     <h1 class="text-center">Features</h1>
+    </div>
+</div>
+
+<div class="container features-detail">
+  <div class="row">
+    <div class="col-md-12">
+      <h3>More Operators</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <p>Stratosphere extends the known Map Reduce paradigm by new operators. These operators more natually fit common data analysis tasks.</p>
+    </div>
+    <div class="col-md-6">
+        <img src="{{ site.baseurl }}/img/Stratosphere_Operators.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators.svg'" class="img-rounded img-responsive">
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-md-12">
+        <h3>Advanced Data Flow Graphs</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-rounded img-responsive">
+    </div>
+    <div class="col-md-6">
+        <p>MapReduce only supports one kind of data flow: from map to reduce. Very few use cases and real world application fit that model. Stratosphere allows to build complex data flow graphs using directed acyclic graphs (DAGs). This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Powerful programming interfaces</h3>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-md-6">
+      <p>You can write your parallel, distributed applications for Stratosphere with both Java and Scala. The Java interface is similar to Hadoop's MapReduce implementation, just more powerful. <br>
+Scala (Scalable Language) is a functional object oriented programming language that is very efficient for both programming and execution. Scala programs are much more compact than their Java counterparts. Its functional nature allows to parallelize the execution.</p>
+    </div>
+    <div class="col-md-6">
+      <b>Word count</b> in Stratosphere using Scala: <br><br>
+{% highlight scala %}
+val input = TextFile(textInput)
+val words = input.flatMap { line => line.split(" ") }
+val counts = words
+.groupBy { word => word }
+.count()
+val output = counts.write(wordsOutput, CsvOutputFormat())
+val plan = new ScalaPlan(Seq(output))
+{% endhighlight %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+        <h3>Support for Iterative Algorithms</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <img src="{{ site.baseurl }}/img/Stratosphere_Iteration.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Iteration.svg'" class="img-rounded img-responsive">
+    </div>
+    <div class="col-md-6">
+        <p>Data Mining, Machine Learning and Graph processing algorithms often require to pass over their working data multiple times.<br>
+        Stratosphere is the only system that natively supports iterative algorithms in a distributed database.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Build-In Optimizer</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <p>Stratosphere comes with an optimizer that is independent of the actual programming interface. Its cost-based approach chooses the right execution strategy depending on the inputs and operations. For example the "Join" operator has two strategies available: Sort-merge-join and hybrid hash join.</p>
+    </div>
+    <div class="col-md-6">
+      <h4>Features</h4>
+      <p>
+        <ul>
+          <li>Cost-based optimizer</li>
+          <li>In-memory chaining of operators</li>
+          <li>Global memory distribution</li>
+          <li>Input Sampling to determine cardinalities</li>
+        </ul>
+        <i class="icon-arrow-right"></i>  Focus on your application logic rather than parallel execution.
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>System Stack</h3>
+    </div>
+  </div>
+
+   <div class="row">
+    <div class="col-md-6">
+      <img src="{{ site.baseurl }}/img/Stratosphere_Stack.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Stack.svg'" class="img-rounded img-responsive">
+    </div>
+    <div class="col-md-6">
+      <p>Stratosphere seamlessly integrates into existing Hadoop setups. It runs side-by-side with Hadoop's TaskTracker and DataNodes. Stratosphere is not another system that runs on top of MapReduce, we have our own runtime. Similar to Hadoop, Stratosphere scales by adding more machines to the cluster.
+      <br>
+      Support for Hadoop 2.2 (YARN) is currently under development, so you can run Stratosphere without changing your infrastructure.
+      <br>
+      The Local execution mode allows to debug and analyze your application right from your favorite IDE, without having Stratosphere installed.
+      </p>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Open Source Community and Support</h3>
+    </div>
+  </div>
+
+   <div class="row">
+    <div class="col-md-6">
+      <p>Stratosphere is an active, community driven open-source project. It is licensed under the Apache Licence. <br>
+      Our friendly community is always open to new users and developers.
+      </p>
+    </div>
+    <div class="col-md-2">
+     <a href="https://groups.google.com/forum/#!forum/stratosphere-dev" target="_blanc" onclick="_gaq.push(['_trackEvent','Action','mailinglist',this.href]);" class="btn btn-default btn-lg">
+      <i class="icon-plus-sign-alt"> </i>Mailing List
+    </a>
+    </div>
+    <div class="col-md-2">
+     <a href="https://github.com/stratosphere/stratosphere" target="_blanc" onclick="_gaq.push(['_trackEvent','Action','github',this.href]);" class="btn btn-default btn-lg">
+      <i class="icon-github"> </i>Open an Issue on GitHub
+    </a>
+    </div>
+    
+  </div>
+
+  
+
+</div>
 </div>

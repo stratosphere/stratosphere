@@ -512,3 +512,27 @@ section {
         width: 1168px; /* 2px less to account for left/right borders being removed when in fixed mode */
     }
 }
+
+
+
+/**
+Custom Stuff
+**/
+
+.features-detail p {
+  font-size: 16.099999999999998px;
+  font-weight: 200;
+}
+
+
+
+@media (min-width: 768px) {
+  .features-detail p {
+    font-size: 19px;
+  }
+}
+
+/*.features-detail p {
+    font-size:21px;
+}
+ */
