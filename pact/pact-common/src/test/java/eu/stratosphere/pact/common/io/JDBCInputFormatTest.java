@@ -37,7 +37,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class JDBCInputFormatTest {
-
     JDBCInputFormat jdbcInputFormat;
     Configuration config;
     static Connection conn;
@@ -45,7 +44,6 @@ public class JDBCInputFormatTest {
     @BeforeClass
     public static void setUpClass() {
         try {
-            System.out.println("Before class");
             prepareDerbyDatabase();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -141,59 +139,52 @@ public class JDBCInputFormatTest {
         jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from bookscontent");
         jdbcInputFormat.configure(null);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
-    public void testUnsupportedDBType(){
-        config= new Configuration();
+    public void testUnsupportedDBType() {
+        config = new Configuration();
         config.setString("type", "oracle");
         config.setString("host", "127.0.0.1");
         config.setInteger("port", 3076);
         config.setString("name", "idontexist");
-        JDBCInputFormat typeformat = new JDBCInputFormat(config,"select * from books");
+        JDBCInputFormat typeformat = new JDBCInputFormat(config, "select * from books");
         typeformat.configure(null);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
-    public void testInvalidConnection(){
+    public void testInvalidConnection() {
         config = new Configuration();
-        config.setString("type","mysql");
+        config.setString("type", "mysql");
         config.setString("host", "127.0.0.1");
         config.setInteger("port", 3076);
         config.setString("name", "idontexist");
-        JDBCInputFormat conformat = new JDBCInputFormat(config,"select * from books");
+        JDBCInputFormat conformat = new JDBCInputFormat(config, "select * from books");
         conformat.configure(null);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
-    public void testInvalidQuery(){
-        JDBCInputFormat conformat = new JDBCInputFormat("jdbc:derby:memory:ebookshop","abc");
+    public void testInvalidQuery() {
+        JDBCInputFormat conformat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "abc");
         conformat.configure(null);
     }
-    
+
     @Test
     public void testJDBCInputFormatSettingPactRecordNormally() throws IOException {
-        PactRecord buffRecord;
-        List<PactRecord> records = new ArrayList<PactRecord>();
+        PactRecord record = new PactRecord();
+        int recordCount = 0;
         while (!jdbcInputFormat.reachedEnd()) {
-            buffRecord = new PactRecord();
-            jdbcInputFormat.nextRecord(buffRecord);
-            records.add(buffRecord);
-        }
-
-        Assert.assertEquals(5, records.size());
-
-        for (PactRecord prec : records) {
-            Assert.assertNotNull(prec);
-            Assert.assertEquals(5, prec.getNumFields());
-            Assert.assertEquals("Field 0 should be int", PactInteger.class, prec.getField(0, PactInteger.class).getClass());
-            Assert.assertEquals("Field 1 should be String", PactString.class, prec.getField(1, PactString.class).getClass());
-            Assert.assertEquals("Field 2 should be String", PactString.class, prec.getField(2, PactString.class).getClass());
-            Assert.assertEquals("Field 3 should be float", PactDouble.class, prec.getField(3, PactDouble.class).getClass());
-            Assert.assertEquals("Field 4 should be int", PactInteger.class, prec.getField(4, PactInteger.class).getClass());
+            jdbcInputFormat.nextRecord(record);
+            Assert.assertEquals(5, record.getNumFields());
+            Assert.assertEquals("Field 0 should be int", PactInteger.class, record.getField(0, PactInteger.class).getClass());
+            Assert.assertEquals("Field 1 should be String", PactString.class, record.getField(1, PactString.class).getClass());
+            Assert.assertEquals("Field 2 should be String", PactString.class, record.getField(2, PactString.class).getClass());
+            Assert.assertEquals("Field 3 should be float", PactDouble.class, record.getField(3, PactDouble.class).getClass());
+            Assert.assertEquals("Field 4 should be int", PactInteger.class, record.getField(4, PactInteger.class).getClass());
+            recordCount++;
         }
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testUnsupportedSQLType() throws IOException {
         configureForBooksContentTable();
 
@@ -232,7 +223,7 @@ public class JDBCInputFormatTest {
         assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testsetClassForNonAvailableDBType() {
         assertFalse(jdbcInputFormat.setClassForDBType("oracle"));
     }
