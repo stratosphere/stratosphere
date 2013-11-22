@@ -15,34 +15,25 @@
 
 package eu.stratosphere.pact.test.scalaPactPrograms;
 
+import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.common.plan.Plan;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.jobgraph.JobGraph;
-import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.compiler.DataStatistics;
-import eu.stratosphere.pact.compiler.PactCompiler;
-import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
-import eu.stratosphere.pact.compiler.plantranslate.NepheleJobGraphGenerator;
-import eu.stratosphere.scala.examples.relational.TPCHQuery3;
+import eu.stratosphere.scala.examples.graph.ConnectedComponents;
 
 @RunWith(Parameterized.class)
-public class TPCHQuery3ITCase extends eu.stratosphere.pact.test.pactPrograms.TPCHQuery3ITCase {
+public class ConnectedComponentsITCase extends eu.stratosphere.pact.test.iterative.ConnectedComponentsITCase {
+    public ConnectedComponentsITCase(Configuration config) {
+        super(config);
+    }
 
-	public TPCHQuery3ITCase(Configuration config) {
-		super(config);
-	}
-
-	@Override
-	protected Plan getPactPlan()  {
-
-		TPCHQuery3 tpch3 = new TPCHQuery3();
-		return tpch3.getScalaPlan(
-				config.getInteger("TPCHQuery3Test#NoSubtasks", 1),
-				ordersPath,
-				lineitemsPath,
-				resultPath,
-				'F', 1993, "5");
-	}
+    @Override
+    protected Plan getPactPlan() {
+        int dop = config.getInteger("ConnectedComponents#NumSubtasks", 1);
+        int maxIterations = config.getInteger("ConnectedComponents#NumIterations", 1);
+        ConnectedComponents cc = new ConnectedComponents();
+        Plan plan = cc.getPlan(verticesPath, edgesPath, resultPath, maxIterations);
+        plan.setDefaultParallelism(dop);
+        return plan;
+    }
 }
