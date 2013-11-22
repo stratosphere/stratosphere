@@ -36,7 +36,7 @@ import eu.stratosphere.pact.common.type.base.PactShort;
 import eu.stratosphere.pact.common.type.base.PactString;
 
 /**
- * InputFormat to read data from a database an generate PactReords.
+ * InputFormat to read data from a database and generate PactReords.
  *
  * The InputFormat has to be configured with the query, and either all
  * connection parameters or a complete database URL.{@link Configuration}
@@ -49,9 +49,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
  * @see DriverManager
  */
 public class JDBCInputFormat extends GenericInputFormat {
-
     private enum DBTypes {
-
         MYSQL,
         POSTGRESQL,
         MARIADB,
@@ -151,7 +149,6 @@ public class JDBCInputFormat extends GenericInputFormat {
      * found.
      */
     private boolean setClassForDBType(DBTypes dbType) {
-
         if (dbType == null) {
             return false;
         }
@@ -359,13 +356,13 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
-
-    /*
-     * (non-Javadoc)
-     * @see eu.stratosphere.pact.generic.io.InputFormat
+    /**
+     * Checks whether all data has been read.
+     *
+     * @return boolean value indication whether all data has been read.
      */
     @Override
-    public boolean reachedEnd() throws IOException {
+    public boolean reachedEnd() {
         try {
             if (resultSet.isLast()) {
                 resultSet.close();
@@ -382,9 +379,11 @@ public class JDBCInputFormat extends GenericInputFormat {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see eu.stratosphere.pact.generic.io.InputFormat
+    /**
+     * Stores the next resultSet row in a PactRecord
+     *
+     * @param record target PactRecord
+     * @return boolean value indicating that the operation was successful
      */
     @Override
     public boolean nextRecord(PactRecord record) {
