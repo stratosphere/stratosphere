@@ -109,7 +109,7 @@ $( document ).ready(function() {
       <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-rounded img-responsive">
     </div>
     <div class="col-md-6">
-        <p>MapReduce only supports one kind of data flow: from map to reduce. Very few use cases and real world application fit that model. Stratosphere allows to build advanced data flow graphs using directed acyclic graphs (DAGs). This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
+        <p>MapReduce only supports one kind of data flow: from map to reduce. Very few use cases and real world application fit that model. Stratosphere allows to build advanced data flow graphs. This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
         <a class="text-small" id="see-how-hadoop-link">See how Hadoop does complex data flows</a>
     </div>
   </div>
@@ -255,7 +255,7 @@ val plan = new ScalaPlan(Seq(output))
     </a>
     </div>
     <div class="col-md-2">
-     <a href="https://github.com/stratosphere/stratosphere/issues/new" target="_blanc" onclick="_gaq.push(['_trackEvent','Action','github-issue',this.href]);" class="btn btn-default btn-lg">
+     <a href="https://github.com/stratosphere/stratosphere/issues" target="_blanc" onclick="_gaq.push(['_trackEvent','Action','github-issue',this.href]);" class="btn btn-default btn-lg">
       <i class="icon-github"> </i>Open an Issue on GitHub
     </a>
     </div>
