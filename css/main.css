@@ -532,6 +532,20 @@ Custom Stuff
   }
 }
 
+.bs-callout-info {
+background-color: #f4f8fa;
+border-color: #bce8f1;
+}
+.bs-callout {
+margin: 20px 0;
+padding: 20px;
+border-left: 3px solid #eee;
+}
+.bs-callout-info h4 {
+color: #3a87ad;
+}
+
+
 /*.features-detail p {
     font-size:21px;
 }

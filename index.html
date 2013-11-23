@@ -3,6 +3,28 @@ layout: default
 title:  Overview
 ---
 
+<script type="text/javascript">
+$( document ).ready(function() {
+  // hide element (for js users)
+  $( "#see-how-hadoop" ).hide();
+  $( "#see-how-hadoop-iterations" ).hide();
+  
+ 
+ $( "#see-how-hadoop-iterations-link" ).click(function() {
+    $( "#see-how-hadoop-iterations" ).slideToggle( "slow", function() {
+      // Animation complete.
+    });
+  });
+
+  $( "#see-how-hadoop-link" ).click(function() {
+    $( "#see-how-hadoop" ).slideToggle( "slow", function() {
+      // Animation complete.
+    });
+  });
+
+});
+</script>
+
 <div class="jumbotron masthead">
   <h1>Stratosphere</h1>
   <p style="padding-bottom:2em">Big Data looks tiny from here.</p>
@@ -86,8 +108,19 @@ title:  Overview
     </div>
     <div class="col-md-6">
         <p>MapReduce only supports one kind of data flow: from map to reduce. Very few use cases and real world application fit that model. Stratosphere allows to build complex data flow graphs using directed acyclic graphs (DAGs). This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
+        <a class="text-small" id="see-how-hadoop-link">See how Hadoop does complex data flows</a>
     </div>
   </div>
+  <div class="row" id="see-how-hadoop">
+    <div class="col-md-12 bs-callout-info bs-callout">
+      <h4>Complex data flows in Hadoop</h4>
+      <img src="{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg'" class="img-rounded img-responsive">
+      <p>Executing the plan shown on the left using MapReduce leads to a composition of multiple MapReduce jobs. Intermediate results are stored to HDFS after each job. This causes a lot of network and disk I/O. Remember also that a MapReduce job spends around 30 seconds just for setup tasks.
+      This example shows that most real world applications do not fit the MapReduce model. The implementation of complex data flows using MapReduce is very time-consuming.</p>
+      <p>Stratosphere is able to natively execute the job. Everything is processed in-memory. Only if the data does not fit into the memory anymore, it starts using the local hard disks.</p>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-md-12">
       <h3>Powerful programming interfaces</h3>
@@ -97,8 +130,9 @@ title:  Overview
 
   <div class="row">
     <div class="col-md-6">
-      <p>You can write your parallel, distributed applications for Stratosphere with both Java and Scala. The Java interface is similar to Hadoop's MapReduce implementation, just more powerful. <br>
+      <p>You can write your parallel, distributed applications for Stratosphere with both Java and <a href="http://scala-lang.org">Scala</a>. The Java interface is similar to Hadoop's MapReduce implementation, just more powerful. <br>
 Scala (Scalable Language) is a functional object oriented programming language that is very efficient for both programming and execution. Scala programs are much more compact than their Java counterparts. Its functional nature allows to parallelize the execution.</p>
+    <i class="icon-arrow-right"></i> <a href="{{ site.baseurl }}/quickstart">See our Quickstart guides for Scala and Java</a>
     </div>
     <div class="col-md-6">
       <b>Word count</b> in Stratosphere using Scala: <br><br>
@@ -106,8 +140,8 @@ Scala (Scalable Language) is a functional object oriented programming language t
 val input = TextFile(textInput)
 val words = input.flatMap { line => line.split(" ") }
 val counts = words
-.groupBy { word => word }
-.count()
+  .groupBy { word => word }
+  .count()
 val output = counts.write(wordsOutput, CsvOutputFormat())
 val plan = new ScalaPlan(Seq(output))
 {% endhighlight %}
@@ -126,8 +160,26 @@ val plan = new ScalaPlan(Seq(output))
     <div class="col-md-6">
         <p>Data Mining, Machine Learning and Graph processing algorithms often require to pass over their working data multiple times.<br>
         Stratosphere is the only system that natively supports iterative algorithms in a distributed database.</p>
+        <a class="text-small" id="see-how-hadoop-iterations-link">Iterative algorithms with Hadoop</a>
     </div>
   </div>
+
+  <div class="row" id="see-how-hadoop-iterations">
+    <div class="col-md-12 bs-callout-info bs-callout">
+      <h4>Iterations with Hadoop</h4>
+      <img src="{{ site.baseurl }}/img/Hadoop_Iterations.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Hadoop_Iterations.svg'" class="img-rounded img-responsive">
+      <p>Iterative algorithms are implemented in Hadoop MapReduce using a central driver that spawns MapReduce jobs until the result has been computed. This approach has many disadvantages:
+        <ul>
+          <li>Each MapReduce Job needs at least 30 seconds for setup</li>
+          <li>Data is only transferred between jobs using HDFS (in-memory would be much faster)</li>
+          <li>Everything has to be read over and over again, even if it has already finished</li>
+          <li>Very time onsuming to implement</li>
+        </ul>
+      </p>
+      <p>Stratosphere natively executes iterative algorithms. The result of the last operator is fed back to the input of the first operator (in-memory). It is not required to start a new job on each iteration. Stratosphere detects which parts of the data need processing for further iterations. Only those are loaded.</p>
+    </div>
+  </div>
+
 
   <div class="row">
     <div class="col-md-12">
@@ -195,10 +247,17 @@ val plan = new ScalaPlan(Seq(output))
       <i class="icon-github"> </i>Open an Issue on GitHub
     </a>
     </div>
-    
   </div>
 
-  
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Next Steps</h3>
+      <p><a href="{{ site.baseurl }}/download">Download</a> Stratosphere today. There are different ways to start. Developers should use our Quickstart scripts to create an empty Stratosphere Job structure. It is not necessary to manually download or install anything because we are in <a href="{{ site.baseurl }}/downloads/#maven">Maven repositories</a>. <br>
+      We also have binaries that are ready to run on your server.
+      </p>
+      <p>Visit <a href="http://bigdataclass.org" target="_blanc">bigdataclass.org</a> for Stratosphere programming exercises </p>
+    </div>
+  </div>
 
 </div>
 </div>
