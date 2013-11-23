@@ -36,7 +36,12 @@ public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDes
         //String output = args[2];
         String output = "file://c:/TEST/output.txt";
 
-        GenericDataSource source = new GenericDataSource(new JDBCInputFormat(url, query), "Data Source");
+        /*
+         * In this example we use the constructor where the url contains all the settings that are needed.
+         * You could also use the default constructor and deliver a Configuration with all the needed settings.
+         * You also could set the settings to the source-instance.
+         * */
+        GenericDataSource source = new GenericDataSource(new JDBCInputFormat("com.mysql.jdbc.Driver", url, query), "Data Source");
 
         FileDataSink sink = new FileDataSink(new RecordOutputFormat(), output, "Data Output");
         RecordOutputFormat.configureRecordFormat(sink)
