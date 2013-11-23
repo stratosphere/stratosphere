@@ -524,10 +524,17 @@ Custom Stuff
   font-weight: 200;
 }
 
+.features-detail li {
+  font-size: 16.099999999999998px;
+  font-weight: 200;
+}
 
 
 @media (min-width: 768px) {
   .features-detail p {
+    font-size: 19px;
+  }
+  .features-detail li {
     font-size: 19px;
   }
 }

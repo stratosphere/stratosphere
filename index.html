@@ -72,7 +72,8 @@ $( document ).ready(function() {
   </div>
 </div>
 
-<hr>
+<hr style="border-top: 10px solid #eeeeee;">
+
 
 <div class="container features-detail" style="padding-top:40px;padding-bottom:40px;">
    <div class="row">
@@ -92,10 +93,11 @@ $( document ).ready(function() {
       <p>Stratosphere extends the known Map Reduce paradigm by new operators. These operators more natually fit common data analysis tasks.</p>
     </div>
     <div class="col-md-6">
-        <img src="{{ site.baseurl }}/img/Stratosphere_Operators.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators.svg'" class="img-rounded img-responsive">
+        <img src="{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg'" class="img-rounded img-responsive">
     </div>
   </div>
 
+<hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -111,6 +113,8 @@ $( document ).ready(function() {
         <a class="text-small" id="see-how-hadoop-link">See how Hadoop does complex data flows</a>
     </div>
   </div>
+
+
   <div class="row" id="see-how-hadoop">
     <div class="col-md-12 bs-callout-info bs-callout">
       <h4>Complex data flows in Hadoop</h4>
@@ -120,6 +124,8 @@ $( document ).ready(function() {
       <p>Stratosphere is able to natively execute the job. Everything is processed in-memory. Only if the data does not fit into the memory anymore, it starts using the local hard disks.</p>
     </div>
   </div>
+
+  <hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -131,7 +137,7 @@ $( document ).ready(function() {
   <div class="row">
     <div class="col-md-6">
       <p>You can write your parallel, distributed applications for Stratosphere with both Java and <a href="http://scala-lang.org">Scala</a>. The Java interface is similar to Hadoop's MapReduce implementation, just more powerful. <br>
-Scala (Scalable Language) is a functional object oriented programming language that is very efficient for both programming and execution. Scala programs are much more compact than their Java counterparts. Its functional nature allows to parallelize the execution.</p>
+Scala (Scalable Language) is a functional object oriented programming language that is very efficient for both programming and execution. Scala programs are much more compact than their Java counterparts. </p>
     <i class="icon-arrow-right"></i> <a href="{{ site.baseurl }}/quickstart">See our Quickstart guides for Scala and Java</a>
     </div>
     <div class="col-md-6">
@@ -147,6 +153,8 @@ val plan = new ScalaPlan(Seq(output))
 {% endhighlight %}
     </div>
   </div>
+
+  <hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -180,6 +188,7 @@ val plan = new ScalaPlan(Seq(output))
     </div>
   </div>
 
+  <hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -191,18 +200,19 @@ val plan = new ScalaPlan(Seq(output))
       <p>Stratosphere comes with an optimizer that is independent of the actual programming interface. Its cost-based approach chooses the right execution strategy depending on the inputs and operations. For example the "Join" operator has two strategies available: Sort-merge-join and hybrid hash join.</p>
     </div>
     <div class="col-md-6">
-      <h4>Features</h4>
-      <p>
-        <ul>
-          <li>Cost-based optimizer</li>
-          <li>In-memory chaining of operators</li>
+        <ul style="padding-top:0;margin-top:0">
+          <li>Cost-based optimizer choice of operators and shipping strategies.</li>
+          <li>In-memory pipelining of operators</li>
+          <li>Reduction of shipped and written data volume</li>
           <li>Global memory distribution</li>
           <li>Input Sampling to determine cardinalities</li>
         </ul>
-        <i class="icon-arrow-right"></i>  Focus on your application logic rather than parallel execution.
-      </p>
+        <p><i class="icon-arrow-right"></i>  Focus on your application logic rather than parallel execution.</p>
+     
     </div>
   </div>
+
+  <hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -224,6 +234,7 @@ val plan = new ScalaPlan(Seq(output))
     </div>
   </div>
 
+<hr>
 
   <div class="row">
     <div class="col-md-12">
@@ -234,7 +245,8 @@ val plan = new ScalaPlan(Seq(output))
    <div class="row">
     <div class="col-md-6">
       <p>Stratosphere is an active, community driven open-source project. It is licensed under the Apache Licence. <br>
-      Our friendly community is always open to new users and developers.
+      Our friendly community is always open to new users and developers. Join us and shape the future of Big Data.
+      
       </p>
     </div>
     <div class="col-md-2">
@@ -249,13 +261,15 @@ val plan = new ScalaPlan(Seq(output))
     </div>
   </div>
 
+  <hr>
+
   <div class="row">
     <div class="col-md-12">
       <h3>Next Steps</h3>
       <p><a href="{{ site.baseurl }}/download">Download</a> Stratosphere today. There are different ways to start. Developers should use our Quickstart scripts to create an empty Stratosphere Job structure. It is not necessary to manually download or install anything because we are in <a href="{{ site.baseurl }}/downloads/#maven">Maven repositories</a>. <br>
       We also have binaries that are ready to run on your server.
       </p>
-      <p>Visit <a href="http://bigdataclass.org" target="_blanc">bigdataclass.org</a> for Stratosphere programming exercises </p>
+      <p>Visit <a href="http://bigdataclass.org" target="_blanc">bigdataclass.org</a> for Stratosphere programming exercises.</p>
     </div>
   </div>
 
