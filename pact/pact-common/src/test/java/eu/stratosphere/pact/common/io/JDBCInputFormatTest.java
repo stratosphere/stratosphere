@@ -33,8 +33,6 @@ import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactDouble;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class JDBCInputFormatTest {
     JDBCInputFormat jdbcInputFormat;
@@ -131,41 +129,38 @@ public class JDBCInputFormatTest {
     }
 
     public void configureEmbeddedDerbyConfig() {
-        jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from books");
-        jdbcInputFormat.configure(null);
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
     }
 
     private void configureForBooksContentTable() {
-        jdbcInputFormat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "select * from bookscontent");
-        jdbcInputFormat.configure(null);
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from bookscontent");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnsupportedDBType() {
         config = new Configuration();
+        config.setString("drivername", "oracle.jdbc.driver.OracleDriver");
         config.setString("type", "oracle");
         config.setString("host", "127.0.0.1");
         config.setInteger("port", 3076);
         config.setString("name", "idontexist");
-        JDBCInputFormat typeformat = new JDBCInputFormat(config, "select * from books");
-        typeformat.configure(null);
+        new JDBCInputFormat(config, "select * from books");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidConnection() {
         config = new Configuration();
+        config.setString("drivername", "com.mysql.jdbc.Driver");
         config.setString("type", "mysql");
         config.setString("host", "127.0.0.1");
         config.setInteger("port", 3076);
         config.setString("name", "idontexist");
-        JDBCInputFormat conformat = new JDBCInputFormat(config, "select * from books");
-        conformat.configure(null);
+        new JDBCInputFormat(config, "select * from books");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidQuery() {
-        JDBCInputFormat conformat = new JDBCInputFormat("jdbc:derby:memory:ebookshop", "abc");
-        conformat.configure(null);
+        new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "abc");
     }
 
     @Test
@@ -182,6 +177,7 @@ public class JDBCInputFormatTest {
             Assert.assertEquals("Field 4 should be int", PactInteger.class, record.getField(4, PactInteger.class).getClass());
             recordCount++;
         }
+        Assert.assertEquals(5, recordCount);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -201,30 +197,5 @@ public class JDBCInputFormatTest {
 
         Assert.assertEquals(0, records.size());
         Assert.assertFalse(setRecordsSuccessfully);
-    }
-
-    @Test
-    public void testsetClassForDBTypeApacheDerby() {
-        assertTrue(jdbcInputFormat.setClassForDBType("derby"));
-    }
-
-    @Test
-    public void testsetClassForDBTypeMySQL() {
-        assertTrue(jdbcInputFormat.setClassForDBType("mysql"));
-    }
-
-    @Test
-    public void testsetClassForDBTypePostgres() {
-        assertTrue(jdbcInputFormat.setClassForDBType("postgresql"));
-    }
-
-    @Test
-    public void testsetClassForDBTypeMariaDB() {
-        assertTrue(jdbcInputFormat.setClassForDBType("mariadb"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testsetClassForNonAvailableDBType() {
-        assertFalse(jdbcInputFormat.setClassForDBType("oracle"));
     }
 }
