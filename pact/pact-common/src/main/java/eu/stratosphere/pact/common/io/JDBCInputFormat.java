@@ -13,7 +13,6 @@
  */
 package eu.stratosphere.pact.common.io;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -261,7 +260,7 @@ public class JDBCInputFormat extends GenericInputFormat {
     }
 
     private void prepareCredentialsAndExecute() throws SQLException {
-        if (isNullOrEmpty(username)) {
+        if (isFieldNullOrEmpty(username)) {
             prepareConnection(dbURL);
         } else {
             prepareConnection();
