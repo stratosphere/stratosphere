@@ -130,37 +130,30 @@ public class JDBCInputFormatTest {
 
     public void configureEmbeddedDerbyConfig() {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
+        jdbcInputFormat.configure(null);
     }
 
     private void configureForBooksContentTable() {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from bookscontent");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testUnsupportedDBType() {
-        config = new Configuration();
-        config.setString("drivername", "oracle.jdbc.driver.OracleDriver");
-        config.setString("type", "oracle");
-        config.setString("host", "127.0.0.1");
-        config.setInteger("port", 3076);
-        config.setString("name", "idontexist");
-        new JDBCInputFormat(config, "select * from books");
+        jdbcInputFormat.configure(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidConnection() {
-        config = new Configuration();
-        config.setString("drivername", "com.mysql.jdbc.Driver");
-        config.setString("type", "mysql");
-        config.setString("host", "127.0.0.1");
-        config.setInteger("port", 3076);
-        config.setString("name", "idontexist");
-        new JDBCInputFormat(config, "select * from books");
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:idontexist", "select * from books;");
+        jdbcInputFormat.configure(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidQuery() {
-        new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "abc");
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "abc");
+        jdbcInputFormat.configure(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidDBType(){
+        jdbcInputFormat = new JDBCInputFormat("idontexist.Driver", "jdbc:derby:memory:ebookshop", "select * from books;");
+        jdbcInputFormat.configure(null);
     }
 
     @Test
