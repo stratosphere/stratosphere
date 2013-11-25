@@ -3,11 +3,17 @@ layout: default
 title:  Overview
 ---
 
+<script src="{{ site.baseurl }}/js/jquery.scrollTo.min.js"></script>
+<script src="{{ site.baseurl }}/js/jquery.localScroll.min.js"></script>
+
 <script type="text/javascript">
 $( document ).ready(function() {
   // hide element (for js users)
   $( "#see-how-hadoop" ).hide();
   $( "#see-how-hadoop-iterations" ).hide();
+
+  $.localScroll({ offset: { top:-150 }});
+
   
  
  $( "#see-how-hadoop-iterations-link" ).click(function() {
@@ -25,7 +31,7 @@ $( document ).ready(function() {
 });
 </script>
 
-<div class="jumbotron masthead">
+<div class="jumbotron masthead" id="top">
   <h1>Stratosphere</h1>
   <p style="padding-bottom:2em">Big Data looks tiny from here.</p>
   <p>
@@ -44,21 +50,21 @@ $( document ).ready(function() {
       <p class="lead">It combines the strengths of MapReduce/Hadoop with powerful programming abstractions in Java and Scala and a high performance runtime. Stratosphere has native support for iterations, incremental iterations, and programs consisting of large DAGs of operations.</p>
     </div>
   </div>
-  <div class="row">
+  <div class="row feature-highlights">
     <div class="col-md-4">
-      <h3><i class="icon-file-alt"></i> Easy to Install </h3>
+      <h3><i class="icon-file-alt"></i> <a href="{{ site.baseurl }}/quickstart/setup.html">Easy to Install</a> </h3>
       <p>Download and run Stratosphere programs in less than 5 minutes.</p>
     </div>
     <div class="col-md-4">
-      <h3><i class="icon-code"></i> Easy to Use </h3>
+      <h3><i class="icon-code"></i> <a href="{{ site.baseurl }}/quickstart">Easy to Use</a></h3>
       <p>Beauty of Scala programming: specify what you want out of the data, not how the job is executed.</p>
     </div>
     <div class="col-md-4">
-      <h3><i class="icon-rocket"></i> Advanced Analytics </h3>
+      <h3><i class="icon-rocket"></i> <a href="#feature_operators" class="smsc">Advanced Analytics</a></h3>
       <p>Iterative, arbitrarily large programs with multiple inputs and outputs.</p>
     </div>
     <div class="col-md-4">
-      <h3><i class="icon-cloud"></i> Run in the Cloud </h3>
+      <h3><i class="icon-cloud"></i> <a href="#feature_stack">Run in the Cloud</a></h3>
       <p>Instantly deploy Stratosphere on Amazon's EC2 and run your data analysis in the cloud.</p>
     </div>
     <div class="col-md-4">
@@ -66,7 +72,7 @@ $( document ).ready(function() {
       <p>Scale out to large clusters, exploit multi-core processors and in-memory processing.</p>
     </div>
     <div class="col-md-4">
-      <h3><i class="icon-puzzle-piece"></i> Empowering Data Scientists </h3>
+      <h3><i class="icon-puzzle-piece"></i> <a href="#feature_optimizer">Empowering Data Scientists</a></h3>
       <p>Our optimizer automatically parallelizes and optimizes your programs.</p>
     </div>
   </div>
@@ -83,7 +89,7 @@ $( document ).ready(function() {
 </div>
 
 <div class="container features-detail">
-  <div class="row">
+  <div class="row" id="feature_operators">
     <div class="col-md-12">
       <h3>More Operators</h3>
     </div>
@@ -109,7 +115,7 @@ $( document ).ready(function() {
       <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-rounded img-responsive">
     </div>
     <div class="col-md-6">
-        <p>MapReduce only supports one kind of data flow: from map to reduce. Very few use cases and real world application fit that model. Stratosphere allows to build advanced data flow graphs. This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
+        <p>MapReduce only supports one kind of data flow: from map to reduce. There are several applications that do not naturally fit in this programming model. Stratosphere allows to build advanced data flow graphs. This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
         <a class="text-small" id="see-how-hadoop-link">See how Hadoop does complex data flows</a>
     </div>
   </div>
@@ -167,7 +173,7 @@ val plan = new ScalaPlan(Seq(output))
     </div>
     <div class="col-md-6">
         <p>Data Mining, Machine Learning and Graph processing algorithms often require to pass over their working data multiple times.<br>
-        Stratosphere is <b>the only runtime</b> that natively supports iterative algorithms inside the system.</p>
+        Stratosphere natively supports iterative algorithms in the runtime and optimizer.</p>
         <a class="text-small" id="see-how-hadoop-iterations-link">Iterative algorithms with Hadoop</a>
     </div>
   </div>
@@ -190,7 +196,7 @@ val plan = new ScalaPlan(Seq(output))
 
   <hr>
 
-  <div class="row">
+  <div class="row" id="feature_optimizer">
     <div class="col-md-12">
       <h3>Build-In Optimizer</h3>
     </div>
@@ -214,7 +220,7 @@ val plan = new ScalaPlan(Seq(output))
 
   <hr>
 
-  <div class="row">
+  <div class="row" id="feature_stack">
     <div class="col-md-12">
       <h3>System Stack</h3>
     </div>
@@ -273,5 +279,14 @@ val plan = new ScalaPlan(Seq(output))
     </div>
   </div>
 
+
+  <div class="row">
+    <div class="col-md-12">
+      <p class="text-center" style="padding-top:60px"><a href="#top"><i class="icon-collapse-top"></i> Back to top</a></p>
+    </div>
+  </div>
+
 </div>
+
+
 </div>

@@ -552,7 +552,14 @@ border-left: 3px solid #eee;
 color: #3a87ad;
 }
 
+.feature-highlights a {
+    color: black !important;
+}
 
+.anchor_only,  .anchor_only:hover{
+    color:black !important;
+    text-decoration: none;
+}
 /*.features-detail p {
     font-size:21px;
 }
