@@ -125,8 +125,8 @@ $( document ).ready(function() {
     <div class="col-md-12 bs-callout-info bs-callout">
       <h4>Complex Data Flows in Hadoop</h4>
       <img src="{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg'" class="img-rounded img-responsive">
-      <p>Executing the plan shown on the left using MapReduce leads to a composition of multiple MapReduce jobs. Intermediate results are stored in HDFS after each job. This causes <b>a lot of network and disk I/O</b>. Remember also that a MapReduce job spends around 30 seconds just for job setup.
-      This example shows that most real world applications do not fit the MapReduce model. The implementation of complex data flows using MapReduce is very time-consuming.</p>
+      <p>Executing the plan shown on the left using MapReduce leads to a composition of multiple MapReduce jobs. Intermediate results are stored in HDFS after each job. This causes <b>a lot of network and disk I/O</b>. Remember also that a just the setup of a MapReduce job itself takes some time.
+      This example shows that many real world applications do not fit the MapReduce model. Also, the implementation of complex data flows using MapReduce is very time-consuming.</p>
       <p>Stratosphere is able to natively execute the job. Everything is processed in-memory. Only if the data does not fit into the memory anymore, it starts using the local hard disks.</p>
     </div>
   </div>
