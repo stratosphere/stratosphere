@@ -273,7 +273,7 @@ public class WebLogAnalysis implements PlanAssembler, PlanAssemblerDescription
 		 */
 		// Create DataSourceContract for visits relation
 		@SuppressWarnings("unchecked")
-		RecordInputFormat visitsFormat = new RecordInputFormat('|', PactString.class, PactString.class);
+		RecordInputFormat visitsFormat = new RecordInputFormat('|', null, PactString.class, PactString.class);
 		FileDataSource visits = new FileDataSource(visitsFormat, visitsInput, "Visits input:q");
 
 		// Create MapContract for filtering the entries from the documents
