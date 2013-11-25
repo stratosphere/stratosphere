@@ -31,6 +31,7 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 	
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends Value>[] EMPTY_TYPES = new Class[0];
+	
 	private static final boolean[] EMPTY_INCLUDED = new boolean[0];
 	
 	private static final char DEFAULT_FIELD_DELIMITER = ',';
@@ -81,7 +82,28 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 	// --------------------------------------------------------------------------------------------
 
 	public Class<? extends Value>[] getFieldTypes() {
-		return fieldTypes;
+		// check if we are dense, ie, we read all fields
+		if (this.fieldIncluded.length == this.fieldTypes.length) {
+			return this.fieldTypes;
+		}
+		else {
+			// sparse type array which we made dense for internal bookkeeping.
+			// create a sparse copy to return
+			@SuppressWarnings("unchecked")
+			Class<? extends Value>[] types = new Class[this.fieldIncluded.length];
+			
+			for (int i = 0, k = 0; i < this.fieldIncluded.length; i++) {
+				if (this.fieldIncluded[i]) {
+					types[i] = this.fieldTypes[k++];
+				}
+			}
+			
+			return types;
+		}
+	}
+	
+	public void setFieldTypesArray(Class<? extends Value>[] fieldTypes) {
+		setFieldTypes(fieldTypes);
 	}
 
 	public void setFieldTypes(Class<? extends Value> ... fieldTypes) {
@@ -107,6 +129,14 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 		@SuppressWarnings("unchecked")
 		Class<? extends Value>[] denseTypeArray = (Class<? extends Value>[]) types.toArray(new Class[types.size()]);
 		this.fieldTypes = denseTypeArray;
+	}
+	
+	public int getNumberOfFieldsTotal() {
+		return this.fieldIncluded.length;
+	}
+	
+	public int getNumberOfNonNullFields() {
+		return this.fieldTypes.length;
 	}
 
 	public char getFieldDelim() {

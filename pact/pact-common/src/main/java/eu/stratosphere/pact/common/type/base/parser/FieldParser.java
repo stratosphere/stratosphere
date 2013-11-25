@@ -19,9 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import eu.stratosphere.pact.common.type.Value;
+import eu.stratosphere.pact.common.type.base.PactByte;
 import eu.stratosphere.pact.common.type.base.PactDouble;
+import eu.stratosphere.pact.common.type.base.PactFloat;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactLong;
+import eu.stratosphere.pact.common.type.base.PactShort;
 import eu.stratosphere.pact.common.type.base.PactString;
 
 /**
@@ -73,9 +76,12 @@ public abstract class FieldParser<T extends Value> {
 			new HashMap<Class<? extends Value>, Class<? extends FieldParser<?>>>();
 	
 	static {
+		PARSERS.put(PactByte.class, DecimalTextByteParser.class);
+		PARSERS.put(PactShort.class, DecimalTextShortParser.class);
 		PARSERS.put(PactInteger.class, DecimalTextIntParser.class);
 		PARSERS.put(PactLong.class, DecimalTextLongParser.class);
 		PARSERS.put(PactString.class, VarLengthStringParser.class);
+		PARSERS.put(PactFloat.class, DecimalTextFloatParser.class);
 		PARSERS.put(PactDouble.class, DecimalTextDoubleParser.class);
 	}
 }

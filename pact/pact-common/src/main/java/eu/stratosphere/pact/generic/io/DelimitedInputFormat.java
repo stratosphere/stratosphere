@@ -45,7 +45,7 @@ import eu.stratosphere.pact.common.util.PactConfigConstants;
  */
 public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 	
-	private static final long serialVersionUID = -596234203711583707L;
+	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------- Constants -------------------------------------------
 	

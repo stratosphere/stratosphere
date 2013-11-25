@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.io;
+package eu.stratosphere.pact.generic.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import junit.framework.Assert;
 
@@ -35,7 +36,9 @@ import org.junit.Test;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FileInputSplit;
 import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.pact.common.io.ParseException;
 import eu.stratosphere.pact.common.type.Value;
+import eu.stratosphere.pact.common.type.base.PactDouble;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.common.util.LogUtils;
@@ -68,6 +71,19 @@ public class GenericCsvInputFormatTest {
 		if (this.tempFile != null) {
 			this.tempFile.delete();
 		}
+	}
+	
+	@Test
+	public void testSparseFieldArray() {
+		
+		@SuppressWarnings("unchecked")
+		Class<? extends Value>[] originalTypes = new Class[] { PactInteger.class, null, null, PactString.class, null, PactDouble.class };
+		
+		format.setFieldTypes(originalTypes);
+		assertEquals(3, format.getNumberOfNonNullFields());
+		assertEquals(6, format.getNumberOfFieldsTotal());
+		
+		assertTrue(Arrays.equals(originalTypes, format.getFieldTypes()));
 	}
 	
 	@Test

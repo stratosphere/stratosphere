@@ -76,12 +76,9 @@ public class GroupOrderReduceITCase extends TestBase2 {
 		
 		int dop = this.config.getInteger("GroupOrderTest#NumSubtasks", 1);
 		
-		FileDataSource source = new FileDataSource(RecordInputFormat.class, this.textPath, "Source");
-		RecordInputFormat.configureRecordFormat(source)
-			.recordDelimiter('\n')
-			.fieldDelimiter(',')
-			.field(PactInteger.class, 0)
-			.field(PactInteger.class, 1);
+		@SuppressWarnings("unchecked")
+		RecordInputFormat format = new RecordInputFormat(',', PactInteger.class, PactInteger.class);
+		FileDataSource source = new FileDataSource(format, this.textPath, "Source");
 		
 		ReduceContract reducer = ReduceContract.builder(CheckingReducer.class)
 			.keyField(PactInteger.class, 0)
