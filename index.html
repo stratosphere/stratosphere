@@ -96,7 +96,7 @@ $( document ).ready(function() {
   </div>
   <div class="row">
     <div class="col-md-6">
-      <p>Stratosphere extends the known MapReduce model by <b>new operators</b>. These operators more naturally fit common data analysis tasks.</p>
+      <p>Stratosphere extends the well-known MapReduce model with new operators. These operators represent many common data analysis tasks more naturally and efficiently. All operators will start working in memory and gracefully go <a href="http://en.wikipedia.org/wiki/Out-of-core_algorithm" target="_blanc">out of core</a> under memory pressure.</p>
     </div>
     <div class="col-md-6">
         <img src="{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg'" class="img-rounded img-responsive">
@@ -115,7 +115,7 @@ $( document ).ready(function() {
       <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-rounded img-responsive">
     </div>
     <div class="col-md-6">
-        <p>MapReduce only supports one kind of data flow: from map to reduce. There are several applications that do not naturally fit in this programming model. Stratosphere allows to build advanced data flow graphs. This approach drastically reduces the required disk and network I/O since data is often pipelined between the operators.</p>
+        <p>Stratosphere allows to model analysis programs as advanced data flow graphs. For many applications, this is a more natural fit than the constraint MapReduce interface (strictly Map followed by Reduce). Furthermore, data pipelining and in-memory data transfers increase performance by drastically reducing disk and network I/O.</p>
         <a class="text-small" id="see-how-hadoop-link">See how Hadoop does complex data flows</a>
     </div>
   </div>
@@ -142,8 +142,7 @@ $( document ).ready(function() {
 
   <div class="row">
     <div class="col-md-6">
-      <p>You can write your parallel, distributed applications for Stratosphere with both Java and <a href="http://scala-lang.org" target="_blanc">Scala</a>. The Java interface is similar to Hadoop's MapReduce implementation, just more powerful. <br>
-      Scala is a functional object oriented programming language that is very efficient for both programming and execution. Scala programs are much more compact than their Java counterparts. </p>
+      <p>You can write your parallel, distributed applications for Stratosphere in Java or <a href="http://scala-lang.org" target="_blanc">Scala</a>. The Java API will feel similar to Hadoop's MapReduce abstraction, but offers more functions and a more flexible data model. Scala is a functional object oriented programming language with powerful language features. Stratosphere's Scala API supports fluent and concise, yet efficient, analysis programs. Behind the scenes, Stratosphere uses code generation techniques to bridge between the Scala language and the runtime.</p>
     <i class="icon-arrow-right"></i> <a href="{{ site.baseurl }}/quickstart">See our Quickstart guides for Scala and Java</a>
     </div>
     <div class="col-md-6">
@@ -172,8 +171,9 @@ val plan = new ScalaPlan(Seq(output))
       <img src="{{ site.baseurl }}/img/Stratosphere_Iteration.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Iteration.svg'" class="img-rounded img-responsive">
     </div>
     <div class="col-md-6">
-        <p>Data Mining, Machine Learning and Graph processing algorithms often require to pass over their working data multiple times.<br>
-        Stratosphere natively supports iterative algorithms in the runtime and optimizer.</p>
+        <p>Data Mining, Machine Learning and Graph processing algorithms often require to loop over the working data multiple times.
+        Stratosphere supports iterative algorithms in its core. (The runtime allows for very fast iteration times and the optimizer deals with caching loop-invariant data.) The advanced <i>incremental iterations</i> support algorithms that focus on the "hot part" of the evolving solution and may converge even faster.
+        </p>
         <a class="text-small" id="see-how-hadoop-iterations-link">Iterative algorithms with Hadoop</a>
     </div>
   </div>
@@ -203,7 +203,7 @@ val plan = new ScalaPlan(Seq(output))
   </div>
   <div class="row">
     <div class="col-md-6">
-      <p>Stratosphere comes with an optimizer that is independent of the actual programming interface. Its cost-based approach chooses the right execution strategy depending on the inputs and operations. For example the "Join" operator has two strategies available: Sort-merge-join and hybrid hash join.</p>
+      <p>Stratosphere comes with an optimizer that is independent of the actual programming interface. It chooses a fitting execution strategy depending on the inputs and operations. For example the "Join" operator will choose between partitioning and broadcasting the data, as well as between running a sort-merge-join or a hybrid hash join algorithm.</p>
     </div>
     <div class="col-md-6">
         <ul style="padding-top:0;margin-top:0">
@@ -231,11 +231,9 @@ val plan = new ScalaPlan(Seq(output))
       <img src="{{ site.baseurl }}/img/Stratosphere_Stack.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Stack.svg'" class="img-rounded img-responsive">
     </div>
     <div class="col-md-6">
-      <p>Stratosphere seamlessly <b>integrates into existing Hadoop setups</b>. It runs side-by-side with Hadoop's TaskTracker and DataNodes. Stratosphere is not another system that runs on top of MapReduce, we have our own runtime. Similar to Hadoop, Stratosphere scales by adding more machines to the cluster.
-      <br>
-      Support for Hadoop 2.2 (<b>YARN</b>) is currently under development, so you can run Stratosphere without changing your infrastructure.
-      <br>
-      The Local execution mode allows to <b>debug and analyze</b> your application right from your favorite IDE, without having Stratosphere installed.
+      <p>Stratosphere seamlessly integrates into existing Hadoop setups and runs side-by-side with Hadoop's TaskTrackers and DataNodes. Stratosphere can read data from Hadoop sources, but comes with its own efficient runtime. Similar to Hadoop, Stratosphere scales by adding more machines to the cluster. <br>
+    We are currently developing support for Hadoop 2.2 (YARN) is currently under development, in order to allow running Stratosphere without changing your infrastructure.  <br>
+    The Local execution mode allows to debug and analyze your application right from your favorite IDE, without having Stratosphere installed.</p>
       </p>
     </div>
   </div>
@@ -252,7 +250,6 @@ val plan = new ScalaPlan(Seq(output))
     <div class="col-md-6">
       <p>Stratosphere is an active, community driven open-source project. It is licensed under the Apache License. <br>
       Our friendly community is always open to new users and developers. Join us and shape the future of Big Data.
-      
       </p>
     </div>
     <div class="col-md-2">

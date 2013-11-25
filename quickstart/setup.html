@@ -81,7 +81,7 @@ $ bin/pact-client.sh run \
   <div class="page-header"><h2>Cluster Setup</h2></div>
   <p class="lead"><strong>Running Stratosphere on a cluster</strong> is as easy as running it locally. Having <strong>passwordless SSH</strong> and a <strong>the same directory structure</strong> on all your cluster nodes lets you use our scripts to control everything.</p>
   <ol>
-  	<li class="lead">Put <strong>Stratosphere</strong> into all your cluster nodes,</li>
+  	<li class="lead">Copy <strong>Stratosphere</strong> to the same file system path on each node of your setup,</li>
   	<li class="lead">Choose a <strong>master node</strong> (JobManager) and set the <code>jobmanager.rpc.address</code> key in <code>conf/stratosphere-conf.yaml</code> to its IP or hostname. Make sure that all nodes in your cluster have the same <code>jobmanager.rpc.address</code> configured.</li>
   	<li class="lead">Add the IPs or hostnames (one per line) of all <strong>worker nodes</strong> (TaskManager) to the slaves files in <code>conf/slaves</code>.</li>
   </ol>
