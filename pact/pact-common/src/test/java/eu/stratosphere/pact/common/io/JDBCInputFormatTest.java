@@ -37,7 +37,6 @@ public class JDBCInputFormatTest {
     JDBCInputFormat jdbcInputFormat;
     Configuration config;
     static Connection conn;
-
     static final Value[][] dbData = {
         {new PactInteger(1001), new PactString("Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(11.11), new PactInteger(11)},
         {new PactInteger(1002), new PactString("More Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(22.22), new PactInteger(22)},
@@ -129,22 +128,11 @@ public class JDBCInputFormatTest {
 
     @Before
     public void setUp() {
-        configureEmbeddedDerbyConfig();
     }
 
     @After
     public void tearDown() {
         jdbcInputFormat = null;
-    }
-
-    public void configureEmbeddedDerbyConfig() {
-        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
-        jdbcInputFormat.configure(null);
-    }
-
-    private void configureForBooksContentTable() {
-        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from bookscontent");
-        jdbcInputFormat.configure(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -186,6 +174,8 @@ public class JDBCInputFormatTest {
 
     @Test
     public void testJDBCInputFormat() throws IOException {
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
+        jdbcInputFormat.configure(null);
         PactRecord record = new PactRecord();
         int recordCount = 0;
         while (!jdbcInputFormat.reachedEnd()) {
