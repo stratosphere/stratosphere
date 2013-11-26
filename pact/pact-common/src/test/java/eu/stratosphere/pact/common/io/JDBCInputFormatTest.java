@@ -18,8 +18,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 import junit.framework.Assert;
 
@@ -30,6 +28,7 @@ import org.junit.Test;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.pact.common.type.base.PactDouble;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
@@ -39,12 +38,23 @@ public class JDBCInputFormatTest {
     Configuration config;
     static Connection conn;
 
+    static final Value[][] dbData = {
+        {new PactInteger(1001), new PactString("Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(11.11), new PactInteger(11)},
+        {new PactInteger(1002), new PactString("More Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(22.22), new PactInteger(22)},
+        {new PactInteger(1003), new PactString("More Java for more dummies"), new PactString("Mohammad Ali"), new PactDouble(33.33), new PactInteger(33)},
+        {new PactInteger(1004), new PactString("A Cup of Java"), new PactString("Kumar"), new PactDouble(44.44), new PactInteger(44)},
+        {new PactInteger(1005), new PactString("A Teaspoon of Java"), new PactString("Kevin Jones"), new PactDouble(55.55), new PactInteger(55)}};
+
+    public JDBCInputFormatTest() {
+    }
+
     @BeforeClass
     public static void setUpClass() {
         try {
             prepareDerbyDatabase();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            Assert.fail();
         }
     }
 
@@ -56,17 +66,19 @@ public class JDBCInputFormatTest {
     /*
      Loads JDBC derby driver ; creates(if necessary) and populates database.
      */
-    private static void createConnection(String dbURL) {
+    private static void createConnection(String dbURL){
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             conn = DriverManager.getConnection(dbURL);
             createTable();
             insertDataToSQLTables();
             conn.close();
-        } catch (ClassNotFoundException except) {
-            except.printStackTrace();
-        } catch (SQLException except) {
-            except.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            Assert.fail();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Assert.fail();
         }
     }
 
@@ -149,15 +161,34 @@ public class JDBCInputFormatTest {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "abc");
         jdbcInputFormat.configure(null);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
-    public void testInvalidDBType(){
+    public void testInvalidDBType() {
         jdbcInputFormat = new JDBCInputFormat("idontexist.Driver", "jdbc:derby:memory:ebookshop", "select * from books;");
         jdbcInputFormat.configure(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnsupportedSQLType() {
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from bookscontent");
+        jdbcInputFormat.configure(null);
+        jdbcInputFormat.nextRecord(new PactRecord());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotConfiguredFormatNext() {
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
+        jdbcInputFormat.nextRecord(new PactRecord());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotConfiguredFormatEnd() {
+        jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
+        jdbcInputFormat.reachedEnd();
+    }
+
     @Test
-    public void testJDBCInputFormatSettingPactRecordNormally() throws IOException {
+    public void testJDBCInputFormat() throws IOException {
         PactRecord record = new PactRecord();
         int recordCount = 0;
         while (!jdbcInputFormat.reachedEnd()) {
@@ -168,27 +199,14 @@ public class JDBCInputFormatTest {
             Assert.assertEquals("Field 2 should be String", PactString.class, record.getField(2, PactString.class).getClass());
             Assert.assertEquals("Field 3 should be float", PactDouble.class, record.getField(3, PactDouble.class).getClass());
             Assert.assertEquals("Field 4 should be int", PactInteger.class, record.getField(4, PactInteger.class).getClass());
+
+            int[] pos = {0, 1, 2, 3, 4};
+            Value[] values = {new PactInteger(), new PactString(), new PactString(), new PactDouble(), new PactInteger()};
+            Assert.assertTrue(record.equalsFields(pos, dbData[recordCount], values));
+
             recordCount++;
         }
         Assert.assertEquals(5, recordCount);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testUnsupportedSQLType() throws IOException {
-        configureForBooksContentTable();
-
-        PactRecord buffRecord;
-        boolean setRecordsSuccessfully = true;
-        List<PactRecord> records = new ArrayList<PactRecord>();
-        while (!jdbcInputFormat.reachedEnd()) {
-            buffRecord = new PactRecord();
-            setRecordsSuccessfully = jdbcInputFormat.nextRecord(buffRecord) && setRecordsSuccessfully;
-            if (setRecordsSuccessfully) {
-                records.add(buffRecord);
-            }
-        }
-
-        Assert.assertEquals(0, records.size());
-        Assert.assertFalse(setRecordsSuccessfully);
-    }
 }
