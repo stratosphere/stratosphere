@@ -82,9 +82,6 @@ public class GenericDataSource<T extends InputFormat<?, ?>> extends Contract imp
 
 	// --------------------------------------------------------------------------------------------
 	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.recordcontract.OutputContractConfigurable#addOutputContract(java.lang.Class)
-	 */
 	@Override
 	public void addStubAnnotation(Class<? extends Annotation> oc) {
 		if (!oc.getEnclosingClass().equals(StubAnnotation.class)) {
@@ -94,9 +91,6 @@ public class GenericDataSource<T extends InputFormat<?, ?>> extends Contract imp
 		this.ocs.add(oc);
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.recordcontract.OutputContractConfigurable#getOutputContracts()
-	 */
 	@Override
 	public Class<? extends Annotation>[] getStubAnnotation() {
 		@SuppressWarnings("unchecked")
@@ -166,9 +160,6 @@ public class GenericDataSource<T extends InputFormat<?, ?>> extends Contract imp
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		return this.name;
 	}
