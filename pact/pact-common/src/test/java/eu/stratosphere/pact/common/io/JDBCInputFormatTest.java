@@ -45,9 +45,6 @@ public class JDBCInputFormatTest {
         {new PactInteger(1004), new PactString("A Cup of Java"), new PactString("Kumar"), new PactDouble(44.44), new PactInteger(44)},
         {new PactInteger(1005), new PactString("A Teaspoon of Java"), new PactString("Kevin Jones"), new PactDouble(55.55), new PactInteger(55)}};
 
-    public JDBCInputFormatTest() {
-    }
-
     @BeforeClass
     public static void setUpClass() {
         try {
@@ -66,7 +63,7 @@ public class JDBCInputFormatTest {
     /*
      Loads JDBC derby driver ; creates(if necessary) and populates database.
      */
-    private static void createConnection(String dbURL){
+    private static void createConnection(String dbURL) {
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             conn = DriverManager.getConnection(dbURL);
