@@ -32,9 +32,9 @@ public class WordCountITCase extends eu.stratosphere.pact.test.pactPrograms.Word
 	@Override
 	protected Plan getPactPlan() {
 		WordCount wc = new WordCount();
-		return wc.getScalaPlan(
-			config.getInteger("WordCountTest#NumSubtasks", 1),
-			textPath, resultPath);
+        Plan plan = wc.getScalaPlan(textPath, resultPath);
+        plan.setDefaultParallelism(config.getInteger("WordCountTest#NumSubtasks", 1));
+		return plan;
 	}
 
 	

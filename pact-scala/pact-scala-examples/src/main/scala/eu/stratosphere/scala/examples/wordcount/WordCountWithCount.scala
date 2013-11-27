@@ -27,7 +27,8 @@ object RunWordCountWithCount {
       println(wc.getDescription)
       return
     }
-    val plan = wc.getScalaPlan(args(0).toInt, args(1), args(2))
+    val plan = wc.getScalaPlan(args(1), args(2))
+    plan.setDefaultParallelism(args(0).toInt)
     LocalExecutor.execute(plan)
     System.exit(0)
   }
@@ -35,16 +36,16 @@ object RunWordCountWithCount {
 
 class WordCountWithCount extends WordCount {
 
-  override def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
-    val input = TextFile(textInput)
+  override def getScalaPlan(textInput: String, wordsOutput: String) = {
+    query {
+      val input = TextFile(textInput)
 
-    val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } }
-    val counts = words groupBy { x => x } count()
+      val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } }
+      val counts = words groupBy { x => x } count()
 
-    val output = counts.write(wordsOutput, CsvOutputFormat[(String, Int)]("\n", " "))
-  
-    val plan = new ScalaPlan(Seq(output), "Word Count")
-    plan.setDefaultParallelism(numSubTasks)
-    plan
+      val output = counts.write(wordsOutput, CsvOutputFormat[(String, Int)]("\n", " "))
+
+      Seq(output)
+    }
   }
 }

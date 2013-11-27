@@ -27,7 +27,8 @@ object RunWordCount {
       println(wc.getDescription)
       return
     }
-    val plan = wc.getScalaPlan(args(0).toInt, args(1), args(2))
+    val plan = wc.getScalaPlan(args(1), args(2))
+    plan.setDefaultParallelism(args(0).toInt)
     LocalExecutor.execute(plan)
     System.exit(0)
   }
@@ -38,23 +39,25 @@ class WordCount extends PlanAssembler with PlanAssemblerDescription with Seriali
     "Parameters: [numSubStasks] [input] [output]"
   }
   override def getPlan(args: String*) = {
-    getScalaPlan(args(0).toInt, args(1), args(2))
+    val plan = getScalaPlan(args(1), args(2))
+    plan.setDefaultParallelism(args(0).toInt)
+    plan
   }
 
   def formatOutput = (word: String, count: Int) => "%s %d".format(word, count)
 
-  def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
-    val input = TextFile(textInput)
+  def getScalaPlan(textInput: String, wordsOutput: String) = {
+    query {
+      val input = TextFile(textInput)
 
-    val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } map { (_, 1) } }
-    val counts = words groupBy { case (word, _) => word } reduce { (w1, w2) => (w1._1, w1._2 + w2._2) }
+      val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } map { (_, 1) } }
+      val counts = words groupBy { case (word, _) => word } reduce { (w1, w2) => (w1._1, w1._2 + w2._2) }
 
-    counts neglects { case (word, _) => word }
-    counts preserves({ case (word, _) => word }, { case (word, _) => word })
-    val output = counts.write(wordsOutput, DelimitedOutputFormat(formatOutput.tupled))
-  
-    val plan = new ScalaPlan(Seq(output), "Word Count (immutable)")
-    plan.setDefaultParallelism(numSubTasks)
-    plan
+      counts neglects { case (word, _) => word }
+      counts preserves({ case (word, _) => word }, { case (word, _) => word })
+      val output = counts.write(wordsOutput, DelimitedOutputFormat(formatOutput.tupled))
+
+      Seq(output)
+    }
   }
 }
