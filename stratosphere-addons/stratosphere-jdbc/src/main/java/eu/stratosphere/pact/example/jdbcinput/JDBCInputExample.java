@@ -17,7 +17,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
  *
  * ID | title | author | price | qty / int | varchar | varchar | float | int
  */
-public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDescription {
+public class JDBCInputExample implements PlanAssembler, PlanAssemblerDescription {
 
     public static void execute(Plan toExecute) throws Exception {
         LocalExecutor executor = new LocalExecutor();
@@ -65,7 +65,7 @@ public class JDBCInputExampleUrlQuery implements PlanAssembler, PlanAssemblerDes
         // You can run this using:
     // mvn exec:exec -Dexec.executable="java" -Dexec.args="-cp %classpath eu.stratosphere.quickstart.RunJob <args>"
     public static void main(String[] args) throws Exception {
-        JDBCInputExampleUrlQuery tut = new JDBCInputExampleUrlQuery();
+        JDBCInputExample tut = new JDBCInputExample();
         Plan toExecute = tut.getPlan(args);
         execute(toExecute);
     }
