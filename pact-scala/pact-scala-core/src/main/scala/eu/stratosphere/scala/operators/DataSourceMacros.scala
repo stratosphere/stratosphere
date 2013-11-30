@@ -18,6 +18,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import eu.stratosphere.nephele.configuration.Configuration
 import eu.stratosphere.pact.common.`type`.PactRecord
+import eu.stratosphere.pact.common.`type`.Value
 import eu.stratosphere.pact.common.`type`.base.PactDouble
 import eu.stratosphere.pact.common.`type`.base.PactDouble
 import eu.stratosphere.pact.common.`type`.base.PactInteger
@@ -35,16 +36,9 @@ import eu.stratosphere.pact.common.`type`.base.parser.DecimalTextLongParser
 import eu.stratosphere.pact.common.`type`.base.parser.FieldParser
 import eu.stratosphere.pact.common.`type`.base.parser.VarLengthStringParser
 import eu.stratosphere.pact.common.`type`.base.parser.VarLengthStringParser
-
-import eu.stratosphere.scala.DataSourceFormat
-import eu.stratosphere.scala.analysis.OutputField
-import eu.stratosphere.scala.analysis.UDF0
-import eu.stratosphere.scala.analysis.UDT
-import eu.stratosphere.scala.operators.stubs.ScalaInputFormat
-import eu.stratosphere.scala.operators.stubs.FixedLengthInputFormat
-import eu.stratosphere.scala.operators.stubs.BinaryInputFormat
-import eu.stratosphere.scala.operators.stubs.DelimitedInputFormat
-import eu.stratosphere.scala.operators.stubs.FixedLengthInputFormat
+import eu.stratosphere.scala.ScalaInputFormat
+import eu.stratosphere.scala.analysis.{UDTSerializer, OutputField, UDF0, UDT}
+import eu.stratosphere.pact.generic.io.{InputFormat => JavaInputFormat}
 import eu.stratosphere.pact.generic.io.{BinaryInputFormat => JavaBinaryInputFormat}
 import eu.stratosphere.pact.generic.io.{SequentialInputFormat => JavaSequentialInputFormat}
 import eu.stratosphere.pact.common.io.{DelimitedInputFormat => JavaDelimitedInputFormat}
@@ -53,23 +47,39 @@ import eu.stratosphere.pact.common.io.{RecordInputFormat => JavaRecordInputForma
 import eu.stratosphere.pact.common.io.{TextInputFormat => JavaTextInputFormat}
 import eu.stratosphere.scala.codegen.MacroContextHolder
 
+
+trait ScalaInputFormatBase[Out] extends ScalaInputFormat[Out] { this: JavaInputFormat[_, _] =>
+  protected val udt: UDT[Out]
+  lazy val udf: UDF0[Out] = new UDF0(udt)
+  def getUDF: UDF0[Out] = udf
+  protected var serializer: UDTSerializer[Out] = _
+  protected var outputLength: Int = _
+
+  abstract override def configure(config: Configuration) {
+    super.configure(config)
+    this.outputLength = udf.getOutputLength
+    this.serializer = udf.getOutputSerializer
+  }
+}
+
 object BinaryInputFormat {
+  
   // We need to do the "optional parameters" manually here (and in all other formats) because scala macros
   // do (not yet?) support optional parameters in macros.
   
-  def apply[Out](readFunction: DataInput => Out): DataSourceFormat[Out] = macro implWithoutBlocksize[Out]
-  def apply[Out](readFunction: DataInput => Out, blockSize: Long): DataSourceFormat[Out] = macro implWithBlocksize[Out]
+  def apply[Out](readFunction: DataInput => Out): ScalaInputFormat[Out] = macro implWithoutBlocksize[Out]
+  def apply[Out](readFunction: DataInput => Out, blockSize: Long): ScalaInputFormat[Out] = macro implWithBlocksize[Out]
   
-  def implWithoutBlocksize[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out]) : c.Expr[DataSourceFormat[Out]] = {
+  def implWithoutBlocksize[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     impl(c)(readFunction, reify { None })
   }
-  def implWithBlocksize[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out], blockSize: c.Expr[Long]) : c.Expr[DataSourceFormat[Out]] = {
+  def implWithBlocksize[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out], blockSize: c.Expr[Long]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     impl(c)(readFunction, reify { Some(blockSize.splice) })
   }
   
-  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out], blockSize: c.Expr[Option[Long]]) : c.Expr[DataSourceFormat[Out]] = {
+  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[DataInput => Out], blockSize: c.Expr[Option[Long]]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -78,19 +88,23 @@ object BinaryInputFormat {
     
     val pact4sFormat = reify {
       
-      new BinaryInputFormat[Out] with DataSourceFormat[Out] {
-        val udt = c.Expr(createUdtOut).splice
-        override val userFunction = readFunction.splice
+      new JavaBinaryInputFormat[PactRecord] with ScalaInputFormatBase[Out] {
+        override val udt = c.Expr(createUdtOut).splice
 
         override def persistConfiguration(config: Configuration) {
           super.persistConfiguration(config)
           blockSize.splice map { config.setLong(JavaBinaryInputFormat.BLOCK_SIZE_PARAMETER_KEY, _) }
         }
-        override def getUDF = this.udf
+
+        override def deserialize(record: PactRecord, source: DataInput) = {
+          val output = readFunction.splice.apply(source)
+          record.setNumFields(outputLength)
+          serializer.serialize(output, record)
+        }
       }
     }
     
-    val result = c.Expr[DataSourceFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
+    val result = c.Expr[ScalaInputFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
 
 //    c.info(c.enclosingPosition, s"GENERATED Pact4s DataSource Format: ${show(result)}", true)
 
@@ -100,19 +114,19 @@ object BinaryInputFormat {
 }
 
 object SequentialInputFormat {
-  def apply[Out](): DataSourceFormat[Out] = macro implWithoutBlocksize[Out]
-  def apply[Out](blockSize: Long): DataSourceFormat[Out] = macro implWithBlocksize[Out]
+  def apply[Out](): ScalaInputFormat[Out] = macro implWithoutBlocksize[Out]
+  def apply[Out](blockSize: Long): ScalaInputFormat[Out] = macro implWithBlocksize[Out]
   
-  def implWithoutBlocksize[Out: c.WeakTypeTag](c: Context)() : c.Expr[DataSourceFormat[Out]] = {
+  def implWithoutBlocksize[Out: c.WeakTypeTag](c: Context)() : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     impl(c)(reify { None })
   }
-  def implWithBlocksize[Out: c.WeakTypeTag](c: Context)(blockSize: c.Expr[Long]) : c.Expr[DataSourceFormat[Out]] = {
+  def implWithBlocksize[Out: c.WeakTypeTag](c: Context)(blockSize: c.Expr[Long]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     impl(c)(reify { Some(blockSize.splice) })
   }
   
-  def impl[Out: c.WeakTypeTag](c: Context)(blockSize: c.Expr[Option[Long]]) : c.Expr[DataSourceFormat[Out]] = {
+  def impl[Out: c.WeakTypeTag](c: Context)(blockSize: c.Expr[Option[Long]]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -121,7 +135,7 @@ object SequentialInputFormat {
     
     val pact4sFormat = reify {
       
-      new JavaSequentialInputFormat[PactRecord] with DataSourceFormat[Out] {
+      new JavaSequentialInputFormat[PactRecord] with ScalaInputFormat[Out] {
         override def persistConfiguration(config: Configuration) {
           super.persistConfiguration(config)
           blockSize.splice map { config.setLong(JavaBinaryInputFormat.BLOCK_SIZE_PARAMETER_KEY, _) }
@@ -134,7 +148,7 @@ object SequentialInputFormat {
       
     }
     
-    val result = c.Expr[DataSourceFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
+    val result = c.Expr[ScalaInputFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
 
 //    c.info(c.enclosingPosition, s"GENERATED Pact4s DataSource Format: ${show(result)}", true)
 
@@ -150,18 +164,18 @@ object DelimitedInputFormat {
     }
   }
   
-  def apply[Out](readFunction: (Array[Byte], Int, Int) => Out, delim: Option[String]): DataSourceFormat[Out] = macro impl[Out]
-  def apply[Out](parseFunction: String => Out): DataSourceFormat[Out] = macro parseFunctionImplWithoutDelim[Out]
-  def apply[Out](parseFunction: String => Out, delim: String): DataSourceFormat[Out] = macro parseFunctionImplWithDelim[Out]
+  def apply[Out](readFunction: (Array[Byte], Int, Int) => Out, delim: Option[String]): ScalaInputFormat[Out] = macro impl[Out]
+  def apply[Out](parseFunction: String => Out): ScalaInputFormat[Out] = macro parseFunctionImplWithoutDelim[Out]
+  def apply[Out](parseFunction: String => Out, delim: String): ScalaInputFormat[Out] = macro parseFunctionImplWithDelim[Out]
   
-  def parseFunctionImplWithoutDelim[Out: c.WeakTypeTag](c: Context)(parseFunction: c.Expr[String => Out]) : c.Expr[DataSourceFormat[Out]] = {
+  def parseFunctionImplWithoutDelim[Out: c.WeakTypeTag](c: Context)(parseFunction: c.Expr[String => Out]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     val readFun = reify {
       asReadFunction[Out](parseFunction.splice)
     }
     impl(c)(readFun, reify { None })
   }
-  def parseFunctionImplWithDelim[Out: c.WeakTypeTag](c: Context)(parseFunction: c.Expr[String => Out], delim: c.Expr[String]) : c.Expr[DataSourceFormat[Out]] = {
+  def parseFunctionImplWithDelim[Out: c.WeakTypeTag](c: Context)(parseFunction: c.Expr[String => Out], delim: c.Expr[String]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     val readFun = reify {
       asReadFunction[Out](parseFunction.splice)
@@ -170,7 +184,7 @@ object DelimitedInputFormat {
   }
 
   
-  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[(Array[Byte], Int, Int) => Out], delim: c.Expr[Option[String]]) : c.Expr[DataSourceFormat[Out]] = {
+  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[(Array[Byte], Int, Int) => Out], delim: c.Expr[Option[String]]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -179,20 +193,26 @@ object DelimitedInputFormat {
     
     val pact4sFormat = reify {
       
-      new DelimitedInputFormat[Out] with DataSourceFormat[Out]{
-        val udt = c.Expr(createUdtOut).splice
-        override val userFunction = readFunction.splice
-      
-        override def persistConfiguration(config: Configuration) {
-          super.persistConfiguration(config)
-          delim.splice map { config.setString(JavaDelimitedInputFormat.RECORD_DELIMITER, _) }
+      new JavaDelimitedInputFormat with ScalaInputFormatBase[Out]{
+        override val udt = c.Expr(createUdtOut).splice
+        
+        setDelimiter((delim.splice.getOrElse("\n")));
+
+        override def readRecord(record: PactRecord, source: Array[Byte], offset: Int, numBytes: Int): Boolean = {
+          val output = readFunction.splice.apply(source, offset, numBytes)
+
+          if (output != null) {
+            record.setNumFields(outputLength)
+            serializer.serialize(output, record)
+          }
+
+          return output != null
         }
-        override def getUDF = this.udf
       }
       
     }
     
-    val result = c.Expr[DataSourceFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
+    val result = c.Expr[ScalaInputFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
 
 //    c.info(c.enclosingPosition, s"GENERATED Pact4s DataSource Format: ${show(result)}", true)
 
@@ -203,31 +223,47 @@ object DelimitedInputFormat {
 
 object CsvInputFormat {
   
-  def apply[Out](): DataSourceFormat[Out] = macro implWithoutAll[Out]
-  def apply[Out](recordDelim: String): DataSourceFormat[Out] = macro implWithRD[Out]
-  def apply[Out](recordDelim: String, fieldDelim: String): DataSourceFormat[Out] = macro implWithRDandFD[Out]
-  
-  def implWithoutAll[Out: c.WeakTypeTag](c: Context)() : c.Expr[DataSourceFormat[Out]] = {
+  def apply[Out](): ScalaInputFormat[Out] = macro implWithoutAll[Out]
+  def apply[Out](recordDelim: String): ScalaInputFormat[Out] = macro implWithRD[Out]
+  def apply[Out](recordDelim: String, fieldDelim: Char): ScalaInputFormat[Out] = macro implWithRDandFD[Out]
+
+  def apply[Out](fieldIndices: Seq[Int]): ScalaInputFormat[Out] = macro implWithoutAllWithIndices[Out]
+  def apply[Out](fieldIndices: Seq[Int], recordDelim: String): ScalaInputFormat[Out] = macro implWithRDWithIndices[Out]
+  def apply[Out](fieldIndices: Seq[Int], recordDelim: String, fieldDelim: Char): ScalaInputFormat[Out] = macro implWithRDandFDWithIndices[Out]
+
+
+  def implWithoutAll[Out: c.WeakTypeTag](c: Context)() : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
-    impl(c)(reify { None }, reify { None })
+    impl(c)(reify { Seq[Int]() }, reify { None }, reify { None })
   }
-  def implWithRD[Out: c.WeakTypeTag](c: Context)(recordDelim: c.Expr[String]) : c.Expr[DataSourceFormat[Out]] = {
+  def implWithRD[Out: c.WeakTypeTag](c: Context)
+                                    (recordDelim: c.Expr[String]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
-    impl(c)(reify { Some(recordDelim.splice) }, reify { None })
+    impl(c)(reify { Seq[Int]() },reify { Some(recordDelim.splice) }, reify { None })
   }
-  def implWithRDandFD[Out: c.WeakTypeTag](c: Context)(recordDelim: c.Expr[String], fieldDelim: c.Expr[String]) : c.Expr[DataSourceFormat[Out]] = {
+  def implWithRDandFD[Out: c.WeakTypeTag](c: Context)
+                                         (recordDelim: c.Expr[String], fieldDelim: c.Expr[Char]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
-    impl(c)(reify { Some(recordDelim.splice) }, reify { Some(fieldDelim.splice) })
+    impl(c)(reify { Seq[Int]() },reify { Some(recordDelim.splice) }, reify { Some(fieldDelim.splice) })
+  }
+
+  def implWithoutAllWithIndices[Out: c.WeakTypeTag](c: Context)(fieldIndices: c.Expr[Seq[Int]]) : c.Expr[ScalaInputFormat[Out]] = {
+    import c.universe._
+    impl(c)(fieldIndices, reify { None }, reify { None })
+  }
+  def implWithRDWithIndices[Out: c.WeakTypeTag](c: Context)
+                                    (fieldIndices: c.Expr[Seq[Int]], recordDelim: c.Expr[String]) : c.Expr[ScalaInputFormat[Out]] = {
+    import c.universe._
+    impl(c)(fieldIndices,reify { Some(recordDelim.splice) }, reify { None })
+  }
+  def implWithRDandFDWithIndices[Out: c.WeakTypeTag](c: Context)
+                                         (fieldIndices: c.Expr[Seq[Int]], recordDelim: c.Expr[String], fieldDelim: c.Expr[Char]) : c.Expr[ScalaInputFormat[Out]] = {
+    import c.universe._
+    impl(c)(fieldIndices,reify { Some(recordDelim.splice) }, reify { Some(fieldDelim.splice) })
   }
   
-  val fieldParserTypes: Map[Class[_ <: eu.stratosphere.pact.common.`type`.Value], Class[_ <: FieldParser[_]]] = Map(
-    classOf[PactDouble] -> classOf[DecimalTextDoubleParser],
-    classOf[PactInteger] -> classOf[DecimalTextIntParser],
-    classOf[PactLong] -> classOf[DecimalTextLongParser],
-    classOf[PactString] -> classOf[VarLengthStringParser]
-  )
-  
-  def impl[Out: c.WeakTypeTag](c: Context)(recordDelim: c.Expr[Option[String]], fieldDelim: c.Expr[Option[String]]) : c.Expr[DataSourceFormat[Out]] = {
+  def impl[Out: c.WeakTypeTag](c: Context)
+                              (fieldIndices: c.Expr[Seq[Int]], recordDelim: c.Expr[Option[String]], fieldDelim: c.Expr[Option[Char]]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -235,50 +271,73 @@ object CsvInputFormat {
     val (udtOut, createUdtOut) = slave.mkUdtClass[Out]
     
     val pact4sFormat = reify {
-      new JavaRecordInputFormat with DataSourceFormat[Out] {
-        override def persistConfiguration(config: Configuration) {
-          super.persistConfiguration(config)
-
-          val fields: Seq[OutputField] = getUDF.outputFields.filter(_.isUsed)
-
-          config.setInteger(JavaRecordInputFormat.NUM_FIELDS_PARAMETER, fields.length)
-          
-          // for some reason we canno use fields.zipWithIndex here,
-          // this works, is not as pretty (functional) though
-          var index = 0;
-          fields foreach { field: OutputField => 
-            val fieldType  = getUDF.outputUDT.fieldTypes(field.localPos)
-            val parser = fieldParserTypes(fieldType)
-            config.setClass(JavaRecordInputFormat.FIELD_PARSER_PARAMETER_PREFIX + index, parser)
-            config.setInteger(JavaRecordInputFormat.TEXT_POSITION_PARAMETER_PREFIX + index, field.localPos)
-            config.setInteger(JavaRecordInputFormat.RECORD_POSITION_PARAMETER_PREFIX + index, field.globalPos.getValue)
-            index = index + 1
-          }
-
-          recordDelim.splice map { config.setString(JavaRecordInputFormat.RECORD_DELIMITER_PARAMETER, _) }
-          fieldDelim.splice map { config.setString(JavaRecordInputFormat.FIELD_DELIMITER_PARAMETER, _) }
-        }
+      new JavaRecordInputFormat with ScalaInputFormat[Out] {
         
         val udt: UDT[Out] = c.Expr[UDT[Out]](createUdtOut).splice
         lazy val udf: UDF0[Out] = new UDF0(udt)
         override def getUDF = udf
+        
+        setDelimiter((recordDelim.splice.getOrElse("\n")))
+        setFieldDelim(fieldDelim.splice.getOrElse(','))
+        
+        // there is a problem with the reification of Class[_ <: Value], so we work with Class[_] and convert it
+        // in a function outside the reify block
+//        setFieldTypesArray(asValueClassArray(getUDF.outputFields.filter(_.isUsed).map(x => getUDF.outputUDT.fieldTypes(x.localPos))))
+        
+        // is this maybe more correct? Note that null entries in the types array denote fields skipped by the CSV parser
+        val indices = fieldIndices.splice
+        val fieldTypes = asValueClassArrayFromOption(getUDF.outputFields.map {
+          case x if x.isUsed => Some(getUDF.outputUDT.fieldTypes(x.localPos))
+          case _ => None
+        })
+        if (indices.isEmpty) {
+          setFieldTypesArray(fieldTypes)
+        } else {
+          setFields(indices.toArray, fieldTypes)
+        }
+        
       }
       
     }
     
-    val result = c.Expr[DataSourceFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
+    val result = c.Expr[ScalaInputFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
 
 //    c.info(c.enclosingPosition, s"GENERATED Pact4s DataSource Format: ${show(result)}", true)
 
     return result
     
   }
+  
+    // we need to do this conversion outside the reify block
+    def asValueClassArray(types: Seq[Class[_]]) : Array[Class[_ <: Value]] = {
+      
+      val typed = types.foldRight(List[Class[_ <: Value]]())((x,y) => {
+        val t : Class[_ <: Value] = x.asInstanceOf[Class[_ <: Value]]
+        t :: y
+      })
+      
+      Array[Class[_ <: Value]]() ++ typed
+    }
+    
+    // we need to do this conversion outside the reify block
+    def asValueClassArrayFromOption(types: Seq[Option[Class[_]]]) : Array[Class[_ <: Value]] = {
+      
+      val typed = types.foldRight(List[Class[_ <: Value]]())((x,y) => {
+        val t : Class[_ <: Value] = x match {
+          case None => null
+          case Some(x) => x.asInstanceOf[Class[_ <: Value]]
+        }
+        t :: y
+      })
+      
+      Array[Class[_ <: Value]]() ++ typed
+    }
 }
 
 object TextInputFormat {
-  def apply(charSetName: Option[String] = None): DataSourceFormat[String] = {
+  def apply(charSetName: Option[String] = None): ScalaInputFormat[String] = {
 
-    new JavaTextInputFormat with DataSourceFormat[String] {
+    new JavaTextInputFormat with ScalaInputFormat[String] {
       override def persistConfiguration(config: Configuration) {
         super.persistConfiguration(config)
 
@@ -294,9 +353,9 @@ object TextInputFormat {
 }
 
 object FixedLengthInputFormat {
-  def apply[Out](readFunction: (Array[Byte], Int) => Out, recordLength: Int): DataSourceFormat[Out] = macro impl[Out]
+  def apply[Out](readFunction: (Array[Byte], Int) => Out, recordLength: Int): ScalaInputFormat[Out] = macro impl[Out]
   
-  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[(Array[Byte], Int) => Out], recordLength: c.Expr[Int]) : c.Expr[DataSourceFormat[Out]] = {
+  def impl[Out: c.WeakTypeTag](c: Context)(readFunction: c.Expr[(Array[Byte], Int) => Out], recordLength: c.Expr[Int]) : c.Expr[ScalaInputFormat[Out]] = {
     import c.universe._
     
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -305,20 +364,29 @@ object FixedLengthInputFormat {
     
     val pact4sFormat = reify {
       
-      new FixedLengthInputFormat[Out] with DataSourceFormat[Out] {
-        val udt = c.Expr(createUdtOut).splice
-        override val userFunction = readFunction.splice
-      
+      new JavaFixedLengthInputFormat with ScalaInputFormatBase[Out] {
+        override val udt = c.Expr(createUdtOut).splice
+
         override def persistConfiguration(config: Configuration) {
           super.persistConfiguration(config)
           config.setInteger(JavaFixedLengthInputFormat.RECORDLENGTH_PARAMETER_KEY, (recordLength.splice))
         }
-        override def getUDF = this.udf
+
+        override def readBytes(record: PactRecord, source: Array[Byte], startPos: Int): Boolean = {
+          val output = readFunction.splice.apply(source, startPos)
+
+          if (output != null) {
+            record.setNumFields(outputLength)
+            serializer.serialize(output, record)
+          }
+
+          return output != null
+        }
       }
       
     }
     
-    val result = c.Expr[DataSourceFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
+    val result = c.Expr[ScalaInputFormat[Out]](Block(List(udtOut), pact4sFormat.tree))
 
 //    c.info(c.enclosingPosition, s"GENERATED Pact4s DataSource Format: ${show(result)}", true)
 

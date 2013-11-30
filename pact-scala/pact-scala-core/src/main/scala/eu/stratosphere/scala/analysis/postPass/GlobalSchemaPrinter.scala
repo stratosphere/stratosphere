@@ -34,17 +34,19 @@ import eu.stratosphere.pact.generic.contract.Contract
 import eu.stratosphere.pact.generic.contract.SingleInputContract
 import eu.stratosphere.pact.generic.contract.DualInputContract
 import eu.stratosphere.pact.common.contract.GenericDataSink
+import org.apache.commons.logging.{LogFactory, Log}
 
 object GlobalSchemaPrinter {
 
   import Extractors._
 
+  private final val LOG: Log = LogFactory.getLog(classOf[GlobalSchemaOptimizer])
+
   def printSchema(plan: OptimizedPlan): Unit = {
 
-    println("### " + plan.getJobName + " ###")
+    LOG.debug("### " + plan.getJobName + " ###")
     plan.getDataSinks.map(_.getSinkNode).foldLeft(Set[OptimizerNode]())(printSchema)
-    println("####" + ("#" * plan.getJobName.length) + "####")
-    println()
+    LOG.debug("####" + ("#" * plan.getJobName.length) + "####")
   }
 
   private def printSchema(visited: Set[OptimizerNode], node: OptimizerNode): Set[OptimizerNode] = {
@@ -59,14 +61,14 @@ object GlobalSchemaPrinter {
         val newVisited = children.foldLeft(visited + node)(printSchema)
 
         node match {
-          
+
           case _: SinkJoiner | _: BinaryUnionNode =>
 
           case DataSinkNode(udf, input) => {
             printInfo(node, "Sink",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -86,7 +88,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "CoGroup",
               Seq(("L", leftKey), ("R", rightKey)),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -96,7 +98,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Cross",
               Seq(),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -106,7 +108,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Join",
               Seq(("L", leftKey), ("R", rightKey)),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -116,17 +118,17 @@ object GlobalSchemaPrinter {
             printInfo(node, "Map",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
           }
-          
+
           case UnionNode(udf, input) => {
             printInfo(node, "Union",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -134,7 +136,7 @@ object GlobalSchemaPrinter {
 
           case ReduceNode(udf, key, input) => {
 
-//            val contract = node.asInstanceOf[Reduce4sContract[_, _, _]] 
+//            val contract = node.asInstanceOf[Reduce4sContract[_, _, _]]
 //            contract.userCombineCode map { _ =>
 //              printInfo(node, "Combine",
 //                Seq(("", key)),
@@ -148,7 +150,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Reduce",
               Seq(("", key)),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -197,6 +199,6 @@ object GlobalSchemaPrinter {
     val sDiscards = discards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
     val sWrites = indexesToStrings("", writes.toSerializerIndexArray) mkString ", "
 
-    println(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
+    LOG.debug(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
   }
 }

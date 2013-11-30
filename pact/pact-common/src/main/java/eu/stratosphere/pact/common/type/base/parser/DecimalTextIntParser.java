@@ -15,26 +15,18 @@
 
 package eu.stratosphere.pact.common.type.base.parser;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 
 /**
  * Parses a decimal text field into a PactInteger.
  * Only characters '1' to '0' and '-' are allowed.
  * The parser does not check for the maximum value.
- * 
- * @author Fabian Hueske (fabian.hueske@tu-berlin.de)
- *
  */
-public class DecimalTextIntParser  implements FieldParser<PactInteger> {
-
-	@Override
-	public void configure(Configuration config) { }
-	
+public class DecimalTextIntParser extends FieldParser<PactInteger> {
 
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delim, PactInteger field) {
-		int val = 0;
+		long val = 0;
 		boolean neg = false;
 		
 		if (bytes[startPos] == '-') {
@@ -44,8 +36,7 @@ public class DecimalTextIntParser  implements FieldParser<PactInteger> {
 		
 		for (int i = startPos; i < limit; i++) {
 			if (bytes[i] == delim) {
-				field.setValue(val*(neg ? -1 : 1));
-				return i+1;
+				return valueSet(field, val, neg, i+1);
 			}
 			if (bytes[i] < 48 || bytes[i] > 57) {
 				return -1;
@@ -53,12 +44,28 @@ public class DecimalTextIntParser  implements FieldParser<PactInteger> {
 			val *= 10;
 			val += bytes[i] - 48;
 		}
-		field.setValue(val*(neg ? -1 : 1));
-		return limit;
+		return valueSet(field, val, neg, limit);
+	}
+	
+	private final int valueSet(PactInteger field, long val, boolean negative, int position) {
+		if (negative) {
+			if (val >= Integer.MIN_VALUE) {
+				field.setValue((int) -val);
+			} else {
+				return -1;
+			}
+		} else {
+			if (val <= Integer.MAX_VALUE) {
+				field.setValue((int) val);
+			} else {
+				return -1;
+			}
+		}
+		return position;
 	}
 	
 	@Override
-	public PactInteger getValue() {
+	public PactInteger createValue() {
 		return new PactInteger();
 	}
 }

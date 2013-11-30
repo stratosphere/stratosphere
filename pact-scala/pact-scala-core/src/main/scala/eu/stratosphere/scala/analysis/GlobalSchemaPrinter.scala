@@ -13,7 +13,7 @@
 
 package eu.stratosphere.scala.analysis
 
-import scala.Array.canBuildFrom
+
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.collectionAsScalaIterable
 import Extractors.CoGroupNode
@@ -30,17 +30,19 @@ import eu.stratosphere.pact.generic.contract.DualInputContract
 import eu.stratosphere.pact.generic.contract.SingleInputContract
 import eu.stratosphere.pact.generic.contract.BulkIteration
 import eu.stratosphere.pact.generic.contract.WorksetIteration
+import org.apache.commons.logging.{LogFactory, Log}
 
 object GlobalSchemaPrinter {
 
   import Extractors._
 
+  private final val LOG: Log = LogFactory.getLog(classOf[GlobalSchemaGenerator])
+
   def printSchema(plan: Plan): Unit = {
 
-    println("### " + plan.getJobName + " ###")
+    LOG.debug("### " + plan.getJobName + " ###")
     plan.getDataSinks.foldLeft(Set[Contract]())(printSchema)
-    println("####" + ("#" * plan.getJobName.length) + "####")
-    println()
+    LOG.debug("####" + ("#" * plan.getJobName.length) + "####")
   }
 
   private def printSchema(visited: Set[Contract], node: Contract): Set[Contract] = {
@@ -71,7 +73,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Sink",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -91,7 +93,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "CoGroup",
               Seq(("L", leftKey), ("R", rightKey)),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -101,7 +103,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Cross",
               Seq(),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -111,7 +113,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Join",
               Seq(("L", leftKey), ("R", rightKey)),
               Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArray), ("R", udf.getRightForwardIndexArray)),
+              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
               Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
               udf.outputFields
             )
@@ -121,7 +123,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Map",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -131,7 +133,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Union",
               Seq(),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -153,7 +155,7 @@ object GlobalSchemaPrinter {
             printInfo(node, "Reduce",
               Seq(("", key)),
               Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArray)),
+              Seq(("", udf.getForwardIndexArrayFrom)),
               Seq(("", udf.getDiscardIndexArray)),
               udf.outputFields
             )
@@ -201,6 +203,6 @@ object GlobalSchemaPrinter {
     val sDiscards = discards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
     val sWrites = indexesToStrings("", writes.toSerializerIndexArray) mkString ", "
 
-    println(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
+    LOG.debug(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
   }
 }

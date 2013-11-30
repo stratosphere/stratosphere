@@ -48,6 +48,12 @@ import eu.stratosphere.pact.common.type.base.PactString;
  * @see DriverManager
  */
 public class JDBCInputFormat extends GenericInputFormat {
+	
+	public final String DRIVER_KEY 		= "driver";
+	public final String USERNAME_KEY 	= "username";
+	public final String PASSWORD_KEY	= "password";
+	public final String URL_KEY			= "url";
+	public final String QUERY_KEY		= "query";
 
     public static class NotTransformableSQLFieldException extends Exception {
 
@@ -110,10 +116,10 @@ public class JDBCInputFormat extends GenericInputFormat {
      * @param query Query to execute.
      */
     public JDBCInputFormat(Configuration parameters, String query) {
-        this.driverName = parameters.getString("driver", "");
-        this.username = parameters.getString("username", "");
-        this.password = parameters.getString("password", "");
-        this.dbURL = parameters.getString("url", "");
+        this.driverName = parameters.getString(DRIVER_KEY, "");
+        this.username = parameters.getString(USERNAME_KEY, "");
+        this.password = parameters.getString(PASSWORD_KEY, "");
+        this.dbURL = parameters.getString(URL_KEY, "");
         this.query = query;
     }
 
@@ -128,7 +134,7 @@ public class JDBCInputFormat extends GenericInputFormat {
     private void retrieveTypeAndFillRecord(int pos, int type, PactRecord record) throws SQLException, NotTransformableSQLFieldException {
         switch (type) {
             case java.sql.Types.NULL:
-                record.setField(pos, new PactNull());
+                record.setField(pos, PactNull.getInstance());
                 break;
             case java.sql.Types.BOOLEAN:
                 record.setField(pos, new PactBoolean(resultSet.getBoolean(pos + 1)));
@@ -211,7 +217,7 @@ public class JDBCInputFormat extends GenericInputFormat {
     }
 
     private boolean isFieldNullOrEmpty(String field) {
-        return (field == null || field.equals(""));
+        return (field == null || field.length() == 0);
     }
 
     /**
@@ -225,17 +231,17 @@ public class JDBCInputFormat extends GenericInputFormat {
     public void configure(Configuration parameters) {
         boolean needConfigure = isFieldNullOrEmpty(this.query) || isFieldNullOrEmpty(this.dbURL);
         if (needConfigure) {
-            this.driverName = parameters.getString("drivername", null);
-            this.username = parameters.getString("username", null);
-            this.password = parameters.getString("password", null);
-            this.query = parameters.getString("query", null);
-            this.dbURL = parameters.getString("dburl", null);
+            this.driverName = parameters.getString(DRIVER_KEY, null);
+            this.username = parameters.getString(USERNAME_KEY, null);
+            this.password = parameters.getString(PASSWORD_KEY, null);
+            this.query = parameters.getString(QUERY_KEY, null);
+            this.dbURL = parameters.getString(URL_KEY, null);
         }
 
         try {
             prepareQueryExecution();
         } catch (SQLException e) {
-            throw new IllegalArgumentException("Configure failed:\t!" + e.getMessage());
+            throw new IllegalArgumentException("Configure failed:\t!", e);
         }
     }
 

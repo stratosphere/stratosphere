@@ -44,16 +44,17 @@ import eu.stratosphere.pact.common.stubs.CoGroupStub
 import eu.stratosphere.scala.DataSet
 import eu.stratosphere.pact.generic.contract.UserCodeObjectWrapper
 import eu.stratosphere.scala.TwoInputHintable
+import eu.stratosphere.scala.codegen.Util
 
-class CoGroupDataStream[LeftIn, RightIn](val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
-  def where[Key](keyFun: LeftIn => Key): CoGroupDataStreamWithWhere[LeftIn, RightIn, Key] = macro CoGroupMacros.whereImpl[LeftIn, RightIn, Key]
+class CoGroupDataSet[LeftIn, RightIn](val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
+  def where[Key](keyFun: LeftIn => Key): CoGroupDataSetWithWhere[LeftIn, RightIn, Key] = macro CoGroupMacros.whereImpl[LeftIn, RightIn, Key]
 }
 
-class CoGroupDataStreamWithWhere[LeftIn, RightIn, Key](val leftKeySelection: List[Int], val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
-  def isEqualTo[Key](keyFun: RightIn => Key): CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn] = macro CoGroupMacros.isEqualToImpl[LeftIn, RightIn, Key]
+class CoGroupDataSetWithWhere[LeftIn, RightIn, Key](val leftKeySelection: List[Int], val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
+  def isEqualTo[Key](keyFun: RightIn => Key): CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn] = macro CoGroupMacros.isEqualToImpl[LeftIn, RightIn, Key]
 }
 
-class CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn](val leftKeySelection: List[Int], val rightKeySelection: List[Int], val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
+class CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn](val leftKeySelection: List[Int], val rightKeySelection: List[Int], val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
   def map[Out](fun: (Iterator[LeftIn], Iterator[RightIn]) => Out): DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out] = macro CoGroupMacros.map[LeftIn, RightIn, Out]
   def flatMap[Out](fun: (Iterator[LeftIn], Iterator[RightIn]) => Iterator[Out]): DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out] = macro CoGroupMacros.flatMap[LeftIn, RightIn, Out]
 }
@@ -62,7 +63,7 @@ class NoKeyCoGroupBuilder(s: CoGroupStub) extends CoGroupContract.Builder(new Us
 
 object CoGroupMacros {
   
-  def whereImpl[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataStream[LeftIn, RightIn] })(keyFun: c.Expr[LeftIn => Key]): c.Expr[CoGroupDataStreamWithWhere[LeftIn, RightIn, Key]] = {
+  def whereImpl[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataSet[LeftIn, RightIn] })(keyFun: c.Expr[LeftIn => Key]): c.Expr[CoGroupDataSetWithWhere[LeftIn, RightIn, Key]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -71,13 +72,13 @@ object CoGroupMacros {
 
     val helper = reify {
       val helper = c.prefix.splice
-      new CoGroupDataStreamWithWhere[LeftIn, RightIn, Key](keySelector.splice, helper.leftInput, helper.rightInput)
+      new CoGroupDataSetWithWhere[LeftIn, RightIn, Key](keySelector.splice, helper.leftInput, helper.rightInput)
     }
 
     return helper
   }
   
-  def isEqualToImpl[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataStreamWithWhere[LeftIn, RightIn, Key] })(keyFun: c.Expr[RightIn => Key]): c.Expr[CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn]] = {
+  def isEqualToImpl[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Key: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataSetWithWhere[LeftIn, RightIn, Key] })(keyFun: c.Expr[RightIn => Key]): c.Expr[CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -86,13 +87,13 @@ object CoGroupMacros {
 
     val helper = reify {
       val helper = c.prefix.splice
-      new CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn](helper.leftKeySelection, keySelector.splice, helper.leftInput, helper.rightInput)
+      new CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn](helper.leftKeySelection, keySelector.splice, helper.leftInput, helper.rightInput)
     }
 
     return helper
   }
 
-  def map[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn] })(fun: c.Expr[(Iterator[LeftIn], Iterator[RightIn]) => Out]): c.Expr[DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out]] = {
+  def map[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn] })(fun: c.Expr[(Iterator[LeftIn], Iterator[RightIn]) => Out]): c.Expr[DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out]] = {
     import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -102,7 +103,7 @@ object CoGroupMacros {
     val (udtOut, createUdtOut) = slave.mkUdtClass[Out]
     
     val contract = reify {
-      val helper: CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn] = c.prefix.splice
+      val helper: CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn] = c.prefix.splice
       val leftKeySelection = helper.leftKeySelection
       val rightKeySelection = helper.rightKeySelection
 
@@ -117,9 +118,11 @@ object CoGroupMacros {
         private val outputRecord = new PactRecord()
 
         private var leftIterator: DeserializingIterator[LeftIn] = _
-        private var leftForward: Array[Int] = _
+        private var leftForwardFrom: Array[Int] = _
+        private var leftForwardTo: Array[Int] = _
         private var rightIterator: DeserializingIterator[RightIn] = _
-        private var rightForward: Array[Int] = _
+        private var rightForwardFrom: Array[Int] = _
+        private var rightForwardTo: Array[Int] = _
         private var serializer: UDTSerializer[Out] = _
 
         override def open(config: Configuration) = {
@@ -128,9 +131,11 @@ object CoGroupMacros {
           this.outputRecord.setNumFields(udf.getOutputLength)
 
           this.leftIterator = new DeserializingIterator(udf.getLeftInputDeserializer)
-          this.leftForward = udf.getLeftForwardIndexArray
+          this.leftForwardFrom = udf.getLeftForwardIndexArrayFrom
+          this.leftForwardTo = udf.getLeftForwardIndexArrayTo
           this.rightIterator = new DeserializingIterator(udf.getRightInputDeserializer)
-          this.rightForward = udf.getRightForwardIndexArray
+          this.rightForwardFrom = udf.getRightForwardIndexArrayFrom
+          this.rightForwardTo = udf.getRightForwardIndexArrayTo
           this.serializer = udf.getOutputSerializer
         }
 
@@ -140,10 +145,10 @@ object CoGroupMacros {
           val firstRightRecord = rightIterator.initialize(rightRecords)
           
           if (firstRightRecord != null) {
-            outputRecord.copyFrom(firstRightRecord, rightForward, rightForward)
+            outputRecord.copyFrom(firstRightRecord, rightForwardFrom, rightForwardTo)
           }
           if (firstLeftRecord != null) {
-            outputRecord.copyFrom(firstLeftRecord, leftForward, leftForward)
+            outputRecord.copyFrom(firstLeftRecord, leftForwardFrom, leftForwardTo)
           }
 
           val output = fun.splice.apply(leftIterator, rightIterator)
@@ -155,8 +160,11 @@ object CoGroupMacros {
       
       val builder = new NoKeyCoGroupBuilder(generatedStub).input1(helper.leftInput.contract).input2(helper.rightInput.contract)
 
-      val keyTypes = generatedStub.leftInputUDT.getKeySet(generatedStub.leftKeySelector.selectedFields map { _.localPos })
-      keyTypes.foreach { builder.keyField(_, -1, -1) } // global indexes haven't been computed yet...
+      val leftKeyPositions = generatedStub.leftKeySelector.selectedFields.toIndexArray
+      val rightKeyPositions = generatedStub.leftKeySelector.selectedFields.toIndexArray
+      val keyTypes = generatedStub.leftInputUDT.getKeySet(leftKeyPositions)
+      // global indexes haven't been computed yet...
+      0 until keyTypes.size foreach { i => builder.keyField(keyTypes(i), leftKeyPositions(i), rightKeyPositions(i)) }
       
       
       val ret = new CoGroupContract(builder) with TwoInputKeyedScalaContract[LeftIn, RightIn, Out] {
@@ -164,8 +172,10 @@ object CoGroupMacros {
         override val rightKey: FieldSelector = generatedStub.rightKeySelector
         override def getUDF = generatedStub.udf
         override def annotations = Seq(
-          Annotations.getConstantFieldsFirst(getUDF.getLeftForwardIndexArray),
-          Annotations.getConstantFieldsSecond(getUDF.getRightForwardIndexArray))
+          Annotations.getConstantFieldsFirst(
+            Util.filterNonForwards(getUDF.getLeftForwardIndexArrayFrom, getUDF.getLeftForwardIndexArrayTo)),
+          Annotations.getConstantFieldsSecond(
+            Util.filterNonForwards(getUDF.getRightForwardIndexArrayFrom, getUDF.getRightForwardIndexArrayTo)))
       }
       new DataSet[Out](ret) with TwoInputHintable[LeftIn, RightIn, Out] {}
     }
@@ -175,7 +185,7 @@ object CoGroupMacros {
     return result
   }
   
-  def flatMap[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn] })(fun: c.Expr[(Iterator[LeftIn], Iterator[RightIn]) => Iterator[Out]]): c.Expr[DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out]] = {
+  def flatMap[LeftIn: c.WeakTypeTag, RightIn: c.WeakTypeTag, Out: c.WeakTypeTag](c: Context { type PrefixType = CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn] })(fun: c.Expr[(Iterator[LeftIn], Iterator[RightIn]) => Iterator[Out]]): c.Expr[DataSet[Out] with TwoInputHintable[LeftIn, RightIn, Out]] = {
      import c.universe._
 
     val slave = MacroContextHolder.newMacroHelper(c)
@@ -185,7 +195,7 @@ object CoGroupMacros {
     val (udtOut, createUdtOut) = slave.mkUdtClass[Out]
     
     val contract = reify {
-      val helper: CoGroupDataStreamWithWhereAndEqual[LeftIn, RightIn] = c.prefix.splice
+      val helper: CoGroupDataSetWithWhereAndEqual[LeftIn, RightIn] = c.prefix.splice
       val leftKeySelection = helper.leftKeySelection
       val rightKeySelection = helper.rightKeySelection
 
@@ -200,9 +210,11 @@ object CoGroupMacros {
         private val outputRecord = new PactRecord()
 
         private var leftIterator: DeserializingIterator[LeftIn] = _
-        private var leftForward: Array[Int] = _
+        private var leftForwardFrom: Array[Int] = _
+        private var leftForwardTo: Array[Int] = _
         private var rightIterator: DeserializingIterator[RightIn] = _
-        private var rightForward: Array[Int] = _
+        private var rightForwardFrom: Array[Int] = _
+        private var rightForwardTo: Array[Int] = _
         private var serializer: UDTSerializer[Out] = _
 
         override def open(config: Configuration) = {
@@ -211,19 +223,21 @@ object CoGroupMacros {
           this.outputRecord.setNumFields(udf.getOutputLength)
 
           this.leftIterator = new DeserializingIterator(udf.getLeftInputDeserializer)
-          this.leftForward = udf.getLeftForwardIndexArray
+          this.leftForwardFrom = udf.getLeftForwardIndexArrayFrom
+          this.leftForwardTo = udf.getLeftForwardIndexArrayTo
           this.rightIterator = new DeserializingIterator(udf.getRightInputDeserializer)
-          this.rightForward = udf.getRightForwardIndexArray
+          this.rightForwardFrom = udf.getRightForwardIndexArrayFrom
+          this.rightForwardTo = udf.getRightForwardIndexArrayTo
           this.serializer = udf.getOutputSerializer
         }
 
         override def coGroup(leftRecords: JIterator[PactRecord], rightRecords: JIterator[PactRecord], out: Collector[PactRecord]) = {
 
           val firstLeftRecord = leftIterator.initialize(leftRecords)
-          outputRecord.copyFrom(firstLeftRecord, leftForward, leftForward)
+          outputRecord.copyFrom(firstLeftRecord, leftForwardFrom, leftForwardTo)
 
           val firstRightRecord = rightIterator.initialize(rightRecords)
-          outputRecord.copyFrom(firstRightRecord, rightForward, rightForward)
+          outputRecord.copyFrom(firstRightRecord, rightForwardFrom, rightForwardTo)
 
           val output = fun.splice.apply(leftIterator, rightIterator)
 
@@ -239,8 +253,11 @@ object CoGroupMacros {
       
       val builder = new NoKeyCoGroupBuilder(generatedStub).input1(helper.leftInput.contract).input2(helper.rightInput.contract)
 
-      val keyTypes = generatedStub.leftInputUDT.getKeySet(generatedStub.leftKeySelector.selectedFields map { _.localPos })
-      keyTypes.foreach { builder.keyField(_, -1, -1) } // global indexes haven't been computed yet...
+      val leftKeyPositions = generatedStub.leftKeySelector.selectedFields.toIndexArray
+      val rightKeyPositions = generatedStub.leftKeySelector.selectedFields.toIndexArray
+      val keyTypes = generatedStub.leftInputUDT.getKeySet(leftKeyPositions)
+      // global indexes haven't been computed yet...
+      0 until keyTypes.size foreach { i => builder.keyField(keyTypes(i), leftKeyPositions(i), rightKeyPositions(i)) }
       
       
       val ret = new CoGroupContract(builder) with TwoInputKeyedScalaContract[LeftIn, RightIn, Out] {
@@ -248,8 +265,10 @@ object CoGroupMacros {
         override val rightKey: FieldSelector = generatedStub.rightKeySelector
         override def getUDF = generatedStub.udf
         override def annotations = Seq(
-          Annotations.getConstantFieldsFirst(getUDF.getLeftForwardIndexArray),
-          Annotations.getConstantFieldsSecond(getUDF.getRightForwardIndexArray))
+          Annotations.getConstantFieldsFirst(
+            Util.filterNonForwards(getUDF.getLeftForwardIndexArrayFrom, getUDF.getLeftForwardIndexArrayTo)),
+          Annotations.getConstantFieldsSecond(
+            Util.filterNonForwards(getUDF.getRightForwardIndexArrayFrom, getUDF.getRightForwardIndexArrayTo)))
       }
       new DataSet[Out](ret) with TwoInputHintable[LeftIn, RightIn, Out] {}
     }

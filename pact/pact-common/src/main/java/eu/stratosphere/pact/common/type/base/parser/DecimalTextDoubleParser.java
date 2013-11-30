@@ -15,17 +15,12 @@
 
 package eu.stratosphere.pact.common.type.base.parser;
 
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.base.PactDouble;
 
 /**
  * Parses a text field into a PactDouble.
- *
  */
-public class DecimalTextDoubleParser  implements FieldParser<PactDouble> {
-
-	@Override
-	public void configure(Configuration config) {}
+public class DecimalTextDoubleParser extends FieldParser<PactDouble> {
 	
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delim, PactDouble field) {
@@ -49,7 +44,7 @@ public class DecimalTextDoubleParser  implements FieldParser<PactDouble> {
 	}
 	
 	@Override
-	public PactDouble getValue() {
+	public PactDouble createValue() {
 		return new PactDouble();
 	}
 }
