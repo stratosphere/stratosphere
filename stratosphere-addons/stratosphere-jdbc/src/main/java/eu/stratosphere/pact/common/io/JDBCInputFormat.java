@@ -33,6 +33,7 @@ import eu.stratosphere.pact.common.type.base.PactLong;
 import eu.stratosphere.pact.common.type.base.PactNull;
 import eu.stratosphere.pact.common.type.base.PactShort;
 import eu.stratosphere.pact.common.type.base.PactString;
+import eu.stratosphere.pact.generic.io.UnsplittableInput;
 
 /**
  * InputFormat to read data from a database and generate PactReords.
@@ -47,7 +48,7 @@ import eu.stratosphere.pact.common.type.base.PactString;
  * @see PactRecord
  * @see DriverManager
  */
-public class JDBCInputFormat extends GenericInputFormat {
+public class JDBCInputFormat extends GenericInputFormat implements UnsplittableInput {
 	
 	public final String DRIVER_KEY 		= "driver";
 	public final String USERNAME_KEY 	= "username";
