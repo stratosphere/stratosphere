@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.template.GenericInputSplit;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactBoolean;
 import eu.stratosphere.pact.common.type.base.PactDouble;
@@ -34,6 +35,7 @@ import eu.stratosphere.pact.common.type.base.PactNull;
 import eu.stratosphere.pact.common.type.base.PactShort;
 import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.generic.io.UnsplittableInput;
+import java.io.IOException;
 
 /**
  * InputFormat to read data from a database and generate PactReords.
@@ -123,7 +125,14 @@ public class JDBCInputFormat extends GenericInputFormat implements UnsplittableI
         this.dbURL = parameters.getString(URL_KEY, "");
         this.query = query;
     }
-
+    
+    @Override
+	public GenericInputSplit[] createInputSplits(int minNumSplits) throws IOException {
+		GenericInputSplit[] splits = new GenericInputSplit[1];
+        splits[0] = new GenericInputSplit();
+		return splits;
+	}
+    
     /**
      * Enters data value from the current resultSet into a PactRecord.
      *
