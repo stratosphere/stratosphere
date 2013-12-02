@@ -38,6 +38,7 @@ jobmanager.heap.mb: 256
 
 jobmanager.web.port: 8081
 
+# Number of jobs that are kept in the history
 jobmanager.web.archive: 20
 
 #=======================================================================================================================
