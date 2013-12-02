@@ -167,6 +167,7 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 								pactRecord.clear();
 								if (inFormat.nextRecord(pactRecord)) {
 									output.collect(pactRecord);
+	                 // AH: This is too early to send counters - close could write to counters too
 								}
 							}
 						} else {

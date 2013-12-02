@@ -14,7 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.pact.runtime.udf;
 
+import java.util.HashMap;
+
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
+import eu.stratosphere.pact.common.stubs.aggregators.DoubleCounter;
 
 /**
  *
@@ -27,11 +30,13 @@ public class RuntimeUDFContext implements RuntimeContext {
 	
 	private final int subtaskIndex;
 	
+  private HashMap<String, DoubleCounter> doubleCounters = null;
 	
 	public RuntimeUDFContext(String name, int numParallelSubtasks, int subtaskIndex) {
 		this.name = name;
 		this.numParallelSubtasks = numParallelSubtasks;
 		this.subtaskIndex = subtaskIndex;
+		this.doubleCounters = new HashMap<String, DoubleCounter>();
 	}
 	
 	@Override
@@ -48,4 +53,15 @@ public class RuntimeUDFContext implements RuntimeContext {
 	public int getIndexOfThisSubtask() {
 		return this.subtaskIndex;
 	}
+
+  @Override
+  public DoubleCounter getDoubleCounter(String name) {
+    DoubleCounter counter = doubleCounters.get(name);
+    if (counter == null) {
+      counter = new DoubleCounter();
+      doubleCounters.put(name, counter);
+    }
+    return counter;
+  }
+  
 }

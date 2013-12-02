@@ -14,6 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.pact.common.stubs;
 
+import eu.stratosphere.pact.common.stubs.aggregators.DoubleCounter;
+
 /**
  *
  */
@@ -24,4 +26,7 @@ public interface RuntimeContext {
 	int getNumberOfParallelSubtasks();
 	
 	int getIndexOfThisSubtask();
+	
+	DoubleCounter getDoubleCounter(String name);
+	
 }
