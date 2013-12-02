@@ -4,3 +4,24 @@ Foundation (http://www.apache.org/).
 Specifically, this product copied and modified source code from the
 following projects:
  - Apache Hadoop (Version 0.20.2)
+ 
+ 
+This product also includes software licensed under the 
+Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
+
+Specifically, this product copied and used source code from the
+following projects:
+ - CHAP Links library, Timeline (Version 2.5.0)
+ 
+ 
+This product also includes software licensed under the MIT license 
+(http://opensource.org/licenses/MIT).
+
+Specifically, this product copied and used source code from the
+following projects:
+ - JQuery (Version v1.4.2)
+ - JCanvas (Version 13.11.21)
+ - Flot (Version 0.8.1)
+ 	- Categories Plugin
+ 	- Stack Plugin
+  	- Time Plugin
