@@ -46,7 +46,6 @@ import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobStatus;
 import eu.stratosphere.nephele.jobgraph.JobVertexID;
 import eu.stratosphere.nephele.jobmanager.archive.ArchiveListener;
-import eu.stratosphere.nephele.jobmanager.archive.MemoryArchivist;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
 import eu.stratosphere.nephele.managementgraph.ManagementVertex;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
@@ -317,7 +316,7 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 	 * Map of network topologies belonging to recently started jobs with the time stamp of the last received job event.
 	 */
 	private final Map<JobID, NetworkTopology> recentNetworkTopologies = new HashMap<JobID, NetworkTopology>();
-
+	
 	/**
 	 * The timer used to trigger the cleanup routine.
 	 */
