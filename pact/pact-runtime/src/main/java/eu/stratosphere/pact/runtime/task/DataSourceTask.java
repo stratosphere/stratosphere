@@ -167,7 +167,7 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 								pactRecord.clear();
 								if (inFormat.nextRecord(pactRecord)) {
 									output.collect(pactRecord);
-	                 // AH: This is too early to send counters - close could write to counters too
+	                 // AH: This is where map of UDF gets called - it is too early to send counters - close could write to counters too
 								}
 							}
 						} else {
@@ -230,6 +230,7 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 			this.output.close();
 			
 			// close all chained tasks letting them report failure
+      // AH: This is the place where the close() method of the UDF will be called
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 		}
 		catch (Exception ex) {

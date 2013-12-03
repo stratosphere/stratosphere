@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
 import eu.stratosphere.pact.common.stubs.aggregators.DoubleCounter;
+import eu.stratosphere.pact.common.stubs.aggregators.IntCounter;
 
 /**
  *
@@ -31,11 +32,13 @@ public class RuntimeUDFContext implements RuntimeContext {
 	private final int subtaskIndex;
 	
   private HashMap<String, DoubleCounter> doubleCounters = null;
+  private HashMap<String, IntCounter> intCounters = null;
 	
 	public RuntimeUDFContext(String name, int numParallelSubtasks, int subtaskIndex) {
 		this.name = name;
 		this.numParallelSubtasks = numParallelSubtasks;
 		this.subtaskIndex = subtaskIndex;
+		this.intCounters = new HashMap<String, IntCounter>();
 		this.doubleCounters = new HashMap<String, DoubleCounter>();
 	}
 	
@@ -60,6 +63,16 @@ public class RuntimeUDFContext implements RuntimeContext {
     if (counter == null) {
       counter = new DoubleCounter();
       doubleCounters.put(name, counter);
+    }
+    return counter;
+  }
+
+  @Override
+  public IntCounter getIntCounter(String name) {
+    IntCounter counter = intCounters.get(name);
+    if (counter == null) {
+      counter = new IntCounter();
+      intCounters.put(name, counter);
     }
     return counter;
   }

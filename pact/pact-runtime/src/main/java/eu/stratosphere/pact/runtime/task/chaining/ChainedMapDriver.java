@@ -19,7 +19,6 @@ import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.common.stubs.aggregators.DoubleCounter;
 import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.pact.runtime.task.RegularPactTask;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
@@ -112,8 +111,6 @@ public class ChainedMapDriver<IT, OT> extends ChainedDriver<IT, OT> {
 		catch (Exception ex) {
 			throw new ExceptionInChainedStubException(this.taskName, ex);
 		}
-    DoubleCounter cnt = this.mapper.getRuntimeContext().getDoubleCounter("numRecords");
-    System.out.println("Map finished, counter: " + cnt.getLocalValue());
 	}
 
 	/* (non-Javadoc)

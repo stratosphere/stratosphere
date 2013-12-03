@@ -15,6 +15,7 @@
 package eu.stratosphere.pact.common.stubs;
 
 import eu.stratosphere.pact.common.stubs.aggregators.DoubleCounter;
+import eu.stratosphere.pact.common.stubs.aggregators.IntCounter;
 
 /**
  *
@@ -28,5 +29,7 @@ public interface RuntimeContext {
 	int getIndexOfThisSubtask();
 	
 	DoubleCounter getDoubleCounter(String name);
+  
+  IntCounter getIntCounter(String name);
 	
 }
