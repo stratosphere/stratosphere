@@ -12,6 +12,6 @@ public interface PlanExecutor {
 	 * 
 	 * @throws Exception Thrown, i job submission caused an exception.
 	 */
-	public abstract long executePlan(Plan plan) throws Exception;
+	public abstract ExecutionResult executePlan(Plan plan) throws Exception;
 
 }

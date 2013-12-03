@@ -25,8 +25,9 @@ public class RemoteExecutor implements PlanExecutor {
 	}
 
 	@Override
-	public long executePlan(Plan plan) throws Exception {
+	public ExecutionResult executePlan(Plan plan) throws Exception {
 		PlanWithJars p = new PlanWithJars(plan, this.jarFiles);
-		return this.client.run(p, true);
+		long netRuntime = this.client.run(p, true);
+		return new ExecutionResult(netRuntime, null);
 	}
 }
