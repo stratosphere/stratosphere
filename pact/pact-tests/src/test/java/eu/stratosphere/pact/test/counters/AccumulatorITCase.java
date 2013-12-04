@@ -50,7 +50,7 @@ import eu.stratosphere.pact.test.util.TestBase2;
  * TODO Test conflict when different UDFs write to counter with same name but with different type.
  */
 @RunWith(Parameterized.class)
-public class CounterITCase extends TestBase2 {
+public class AccumulatorITCase extends TestBase2 {
 
 	private static final String INPUT = "one\n" + "two two\n" + "three three three\n";
 	private static final String EXPECTED = "one 1\ntwo 2\nthree 3\n";
@@ -58,7 +58,7 @@ public class CounterITCase extends TestBase2 {
 	protected String dataPath;
 	protected String resultPath;
 	
-	public CounterITCase(Configuration config) {
+	public AccumulatorITCase(Configuration config) {
 		super(config);
 	}
 
