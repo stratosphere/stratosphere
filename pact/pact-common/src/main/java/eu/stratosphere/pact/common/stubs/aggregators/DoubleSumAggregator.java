@@ -40,4 +40,5 @@ public class DoubleSumAggregator implements Aggregator<PactDouble> {
 	public void reset() {
 		sum = 0;
 	}
+
 }

@@ -18,9 +18,12 @@ package eu.stratosphere.pact.runtime.task;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.google.common.collect.Maps;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
@@ -43,6 +46,9 @@ import eu.stratosphere.pact.common.contract.DataDistribution;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
 import eu.stratosphere.pact.common.stubs.Stub;
+import eu.stratosphere.pact.common.stubs.accumulables.Accumulable;
+import eu.stratosphere.pact.common.stubs.accumulables.Accumulator;
+import eu.stratosphere.pact.common.stubs.accumulables.AccumulatorHelper;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.util.InstantiationUtil;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
@@ -379,6 +385,12 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 
 			// close all chained tasks letting them report failure
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
+			
+			// TODO Here we can collect the accumulators of all involved UDFs and send
+			// them to the JobManager. close() has been called for all involved UDFs
+			// earlier (using this.stub.close() and closeChainedTasks(), so UDFs can
+			// no longer modify accumulators.
+			collectAccumulators(this.stub, this.chainedTasks);
 		}
 		catch (Exception ex) {
 			// close the input, but do not report any exceptions, since we already have another root cause
@@ -399,6 +411,28 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 		finally {
 			this.driver.cleanup();
 		}
+	}
+
+	private void collectAccumulators(S stub, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
+		// TODO Not sure if I have to check for this.running (this is tested before calling stub.close())
+		Map<String, Accumulable<?,?>> stubAccumulables = null;
+		if (this.stub != null) {
+			// collect the counters from the stub here
+			stubAccumulables = this.stub.getRuntimeContext().getAllAccumulables();
+		} else {
+			// TODO When is this the case? What should we do here?
+			stubAccumulables = Maps.newHashMap();
+		}
+
+		// We can merge here the accumulables from the stub and the chained tasks. 
+		// Type conflicts can occur here if counters with same name but different type were used
+		// TODO We should use the same logic in JobManager
+		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
+			Map<String, Accumulable<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulables();
+			AccumulatorHelper.mergeInto(stubAccumulables, allOther);
+		}
+		
+		// TODO Transfer stubAccumulables now to JobManager
 	}
 
 	/* (non-Javadoc)
