@@ -1,11 +1,11 @@
-package eu.stratosphere.pact.common.stubs.accumulables;
+package eu.stratosphere.pact.common.stubs.accumulators;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 
-public class IntCounter implements Accumulator<Integer> {
+public class IntCounter implements SimpleAccumulator<Integer> {
 
   private int localValue = 0;
   
@@ -20,16 +20,16 @@ public class IntCounter implements Accumulator<Integer> {
   }
   
   @Override
-  public void merge(Accumulable<?, ?> other) {
+  public void merge(Accumulator<?, ?> other) {
   	// TODO Remove unknowns
   	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
   	this.localValue += ((IntCounter)other).getLocalValue();
   }
 
-//  @Override
-//  public Integer merge(Accumulable<Integer, Integer> other) {
-//    return this.localValue + other.getLocalValue();
-//  }
+  @Override
+  public void resetLocal() {
+    this.localValue = 0;
+  }
 
 	@Override
 	public void write(DataOutput out) throws IOException {
@@ -39,11 +39,6 @@ public class IntCounter implements Accumulator<Integer> {
 	@Override
 	public void read(DataInput in) throws IOException {
 		localValue = in.readInt();
-	}
-
-	@Override
-	public void resetLocal() {
-		this.localValue = 0;
 	}
 
 }

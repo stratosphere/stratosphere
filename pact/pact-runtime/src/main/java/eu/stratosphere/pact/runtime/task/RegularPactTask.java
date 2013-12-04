@@ -46,9 +46,9 @@ import eu.stratosphere.pact.common.contract.DataDistribution;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
 import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.common.stubs.accumulables.Accumulable;
-import eu.stratosphere.pact.common.stubs.accumulables.Accumulator;
-import eu.stratosphere.pact.common.stubs.accumulables.AccumulatorHelper;
+import eu.stratosphere.pact.common.stubs.accumulators.Accumulator;
+import eu.stratosphere.pact.common.stubs.accumulators.AccumulatorHelper;
+import eu.stratosphere.pact.common.stubs.accumulators.SimpleAccumulator;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.util.InstantiationUtil;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
@@ -415,24 +415,24 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 
 	private void collectAccumulators(S stub, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// TODO Not sure if I have to check for this.running (this is tested before calling stub.close())
-		Map<String, Accumulable<?,?>> stubAccumulables = null;
+		Map<String, Accumulator<?,?>> stubAccumulators = null;
 		if (this.stub != null) {
 			// collect the counters from the stub here
-			stubAccumulables = this.stub.getRuntimeContext().getAllAccumulables();
+			stubAccumulators = this.stub.getRuntimeContext().getAllAccumulators();
 		} else {
 			// TODO When is this the case? What should we do here?
-			stubAccumulables = Maps.newHashMap();
+			stubAccumulators = Maps.newHashMap();
 		}
 
-		// We can merge here the accumulables from the stub and the chained tasks. 
+		// We can merge here the accumulators from the stub and the chained tasks. 
 		// Type conflicts can occur here if counters with same name but different type were used
 		// TODO We should use the same logic in JobManager
 		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
-			Map<String, Accumulable<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulables();
-			AccumulatorHelper.mergeInto(stubAccumulables, allOther);
+			Map<String, Accumulator<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulators();
+			AccumulatorHelper.mergeInto(stubAccumulators, allOther);
 		}
 		
-		// TODO Transfer stubAccumulables now to JobManager
+		// TODO Transfer stubAccumulators now to JobManager
 	}
 
 	/* (non-Javadoc)

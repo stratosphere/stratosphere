@@ -1,11 +1,11 @@
-package eu.stratosphere.pact.common.stubs.accumulables;
+package eu.stratosphere.pact.common.stubs.accumulators;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 
-public class LongCounter implements Accumulator<Long> {
+public class LongCounter implements SimpleAccumulator<Long> {
 
   private long localValue = 0;
   
@@ -20,9 +20,15 @@ public class LongCounter implements Accumulator<Long> {
   }
 
   @Override
-  public void merge(Accumulable<?, ?> other) {
+  public void merge(Accumulator<?, ?> other) {
+    // TODO Remove unknowns
   	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
   	this.localValue += ((LongCounter)other).getLocalValue();
+  }
+
+  @Override
+  public void resetLocal() {
+    this.localValue = 0;
   }
 
 	@Override
@@ -33,11 +39,6 @@ public class LongCounter implements Accumulator<Long> {
 	@Override
 	public void read(DataInput in) throws IOException {
 		this.localValue = in.readLong();
-	}
-
-	@Override
-	public void resetLocal() {
-		this.localValue = 0;
 	}
 
 }

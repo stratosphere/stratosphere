@@ -1,15 +1,15 @@
-package eu.stratosphere.pact.common.stubs.accumulables;
+package eu.stratosphere.pact.common.stubs.accumulators;
 
 import java.util.Map;
 
 public class AccumulatorHelper {
 	
 	/**
-	 * Compare both classes, throw {@link UnsupportedOperationException} if they differ
+	 * Compare both classes and throw {@link UnsupportedOperationException} if they differ
 	 */
 	public static void compareAccumulatorTypes(String name,
-			@SuppressWarnings("rawtypes") Class<? extends Accumulable> first,
-			@SuppressWarnings("rawtypes") Class<? extends Accumulable> second)
+			@SuppressWarnings("rawtypes") Class<? extends Accumulator> first,
+			@SuppressWarnings("rawtypes") Class<? extends Accumulator> second)
 			throws UnsupportedOperationException {
 		if (first != second) {
 			throw new UnsupportedOperationException("The accumulator object '" 
@@ -18,21 +18,21 @@ public class AccumulatorHelper {
 	}
 
 	/**
-	 * Merge two collections of accumulable objects. The second will be merged
+	 * Merge two collections of accumulators. The second will be merged
 	 * into the first.
 	 * 
-	 * @param accumulables
+	 * @param accumulators
 	 *          The collection of accumulators that will be updated
 	 * @param toMerge
 	 *          The collection of accumulators that will be merged into the other
 	 */
-	public static void mergeInto(Map<String, Accumulable<?, ?>> accumulables,
-			Map<String, Accumulable<?, ?>> toMerge) {
-		for (Map.Entry<String, Accumulable<?,?>> otherEntry : toMerge.entrySet()) {
-			Accumulable<?,?> ownAccumulator = accumulables.get(otherEntry.getKey());
+	public static void mergeInto(Map<String, Accumulator<?, ?>> accumulabtors,
+			Map<String, Accumulator<?, ?>> toMerge) {
+		for (Map.Entry<String, Accumulator<?,?>> otherEntry : toMerge.entrySet()) {
+			Accumulator<?,?> ownAccumulator = accumulabtors.get(otherEntry.getKey());
 			if (ownAccumulator == null) {
 				// Take over counter from chained task
-				accumulables.put(otherEntry.getKey(), otherEntry.getValue());
+				accumulabtors.put(otherEntry.getKey(), otherEntry.getValue());
 			} else {
 				// Both should have the same type
 				AccumulatorHelper.compareAccumulatorTypes(otherEntry.getKey(),

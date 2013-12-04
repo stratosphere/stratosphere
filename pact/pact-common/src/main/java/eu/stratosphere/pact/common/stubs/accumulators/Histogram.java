@@ -1,4 +1,4 @@
-package eu.stratosphere.pact.common.stubs.accumulables;
+package eu.stratosphere.pact.common.stubs.accumulators;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -15,7 +15,7 @@ import com.google.common.collect.Maps;
  * Could be extended to continuous values later, but then we need to dynamically
  * decide about the bin size in an online algorithm (or ask the user)
  */
-public class Histogram implements Accumulable<Integer, Map<Integer, Integer>> {
+public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
 
 	private Map<Integer, Integer> hashMap = Maps.newHashMap();
 
@@ -34,16 +34,12 @@ public class Histogram implements Accumulable<Integer, Map<Integer, Integer>> {
 		return this.hashMap;
 	}
 
-	@Override
-	public void resetLocal() {
-		this.hashMap.clear();
-	}
-
 	/**
 	 * TODO Write test case
 	 */
 	@Override
-	public void merge(Accumulable<?, ?> other) {
+	public void merge(Accumulator<?, ?> other) {
+    // TODO Remove unknowns
 		AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
 		// Merge the values into this map
 		for (Map.Entry<Integer, Integer> entryFromOther : ((Histogram)other).getLocalValue()
@@ -57,24 +53,11 @@ public class Histogram implements Accumulable<Integer, Map<Integer, Integer>> {
 			}
 		}
 	}
-//	@Override
-//	public Accumulable<Integer, Map<Integer, Integer>> merge(
-//			Accumulable<Integer, Map<Integer, Integer>> other) {
-//		// Merge the values into this map
-//		for (Map.Entry<Integer, Integer> entryFromOther : other.getLocalValue()
-//				.entrySet()) {
-//			Integer ownValue = this.hashMap.get(entryFromOther.getKey());
-//			if (ownValue == null) {
-//				this.hashMap.put(entryFromOther.getKey(), entryFromOther.getValue());
-//			} else {
-//				this.hashMap.put(entryFromOther.getKey(), entryFromOther.getValue()
-//						+ ownValue);
-//			}
-//		}
-//
-//		return this;
-//	};
-	
+
+  @Override
+  public void resetLocal() {
+    this.hashMap.clear();
+  }
 	
 	@Override
 	public void write(DataOutput out) throws IOException {

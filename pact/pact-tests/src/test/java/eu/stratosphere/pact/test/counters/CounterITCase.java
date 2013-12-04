@@ -37,9 +37,9 @@ import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.MapStub;
 import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFields;
-import eu.stratosphere.pact.common.stubs.accumulables.DoubleCounter;
-import eu.stratosphere.pact.common.stubs.accumulables.Histogram;
-import eu.stratosphere.pact.common.stubs.accumulables.IntCounter;
+import eu.stratosphere.pact.common.stubs.accumulators.DoubleCounter;
+import eu.stratosphere.pact.common.stubs.accumulators.Histogram;
+import eu.stratosphere.pact.common.stubs.accumulators.IntCounter;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
@@ -120,8 +120,8 @@ public class CounterITCase extends TestBase2 {
 		private final AsciiUtils.WhitespaceTokenizer tokenizer =
 				new AsciiUtils.WhitespaceTokenizer();
 
-		// Needs to be instantiated in open() since the runtime context is not yet
-		// initialized
+		// Needs to be instantiated later since the runtime context is not yet
+		// initialized at this place
 		IntCounter cntNumLines = null;
 		DoubleCounter openCloseCounter = null;
     Histogram wordsPerLineDistribution = null;

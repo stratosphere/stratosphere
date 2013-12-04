@@ -17,15 +17,13 @@ package eu.stratosphere.pact.runtime.udf;
 import java.util.HashMap;
 
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
-import eu.stratosphere.pact.common.stubs.accumulables.Accumulable;
-import eu.stratosphere.pact.common.stubs.accumulables.Accumulator;
-import eu.stratosphere.pact.common.stubs.accumulables.AccumulatorHelper;
-import eu.stratosphere.pact.common.stubs.accumulables.DoubleCounter;
-import eu.stratosphere.pact.common.stubs.accumulables.Histogram;
-import eu.stratosphere.pact.common.stubs.accumulables.IntCounter;
-import eu.stratosphere.pact.common.stubs.accumulables.LongCounter;
-import eu.stratosphere.pact.common.stubs.aggregators.Aggregator;
-import eu.stratosphere.pact.common.type.Value;
+import eu.stratosphere.pact.common.stubs.accumulators.Accumulator;
+import eu.stratosphere.pact.common.stubs.accumulators.AccumulatorHelper;
+import eu.stratosphere.pact.common.stubs.accumulators.DoubleCounter;
+import eu.stratosphere.pact.common.stubs.accumulators.Histogram;
+import eu.stratosphere.pact.common.stubs.accumulators.IntCounter;
+import eu.stratosphere.pact.common.stubs.accumulators.LongCounter;
+import eu.stratosphere.pact.common.stubs.accumulators.SimpleAccumulator;
 
 /**
  *
@@ -38,13 +36,7 @@ public class RuntimeUDFContext implements RuntimeContext {
 	
 	private final int subtaskIndex;
 	
-//  private HashMap<String, DoubleCounter> doubleCounters = new HashMap<String, DoubleCounter>();
-//  private HashMap<String, IntCounter> intCounters = new HashMap<String, IntCounter>();
-  
-//  private HashMap<String, Aggregator<?>> aggregators = new HashMap<String, Aggregator<?>>();
-
-//  private HashMap<String, Accumulator<?>> accumulators = new HashMap<String, Accumulator<?>>();
-  private HashMap<String, Accumulable<?, ?>> accumulables = new HashMap<String, Accumulable<?, ?>>();
+  private HashMap<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
 	
 	public RuntimeUDFContext(String name, int numParallelSubtasks, int subtaskIndex) {
 		this.name = name;
@@ -79,7 +71,7 @@ public class RuntimeUDFContext implements RuntimeContext {
 
 	@Override
 	public Histogram getHistogram(String name) {
-  	return (Histogram) getAccumulable(name, Histogram.class);
+  	return (Histogram) getAccumulator(name, Histogram.class);
 	}
 
   @Override
@@ -87,61 +79,36 @@ public class RuntimeUDFContext implements RuntimeContext {
   	return (DoubleCounter) getAccumulator(name, DoubleCounter.class);
   }
 
-//	@SuppressWarnings("unchecked")
-//	@Override
-//	public <T extends Value> Aggregator<T> getAggregator(String name, Class<? extends Aggregator<T>> aggregatorClass) {
-//
-//		Aggregator<?> aggregator = aggregators.get(name);
-//		
-//		if (aggregator != null) {
-//			if (aggregator.getClass() != aggregatorClass) {
-//				throw new UnsupportedOperationException("The aggregator object '" 
-//						+ name + "' was created earlier with type " + aggregator.getClass() + " but is now requested as " + aggregatorClass);
-//			}
-//		} else {
-//			// Create new accumulable object
-//			try {
-//				aggregator = aggregatorClass.newInstance();
-//			} catch (InstantiationException e) {
-//				e.printStackTrace();
-//			} catch (IllegalAccessException e) {
-//				e.printStackTrace();
-//			}
-//      aggregators.put(name, aggregator);
-//		}
-//		return (Aggregator<T>) aggregator;
-//	}
-
 	@Override
-	public <T> Accumulator<T> getAccumulator(String name, Class<? extends Accumulator<T>> accumulatorClass) {
-		return (Accumulator<T>) getAccumulable(name, accumulatorClass);
+	public <T> SimpleAccumulator<T> getSimpleAccumulator(String name, Class<? extends SimpleAccumulator<T>> accumulatorClass) {
+		return (SimpleAccumulator<T>) getAccumulator(name, accumulatorClass);
 	}
   
 	@SuppressWarnings("unchecked")
 	@Override
-	public <V, A> Accumulable<V, A> getAccumulable(String name, Class<? extends Accumulable<V, A>> accumulableClass) {
+	public <V, A> Accumulator<V, A> getAccumulator(String name, Class<? extends Accumulator<V, A>> accumulatorClass) {
 
-			Accumulable<?,?> accumulable = accumulables.get(name);
+			Accumulator<?,?> accumulator = accumulators.get(name);
 			
-			if (accumulable != null) {
-				AccumulatorHelper.compareAccumulatorTypes(name, accumulable.getClass(), accumulableClass);
+			if (accumulator != null) {
+				AccumulatorHelper.compareAccumulatorTypes(name, accumulator.getClass(), accumulatorClass);
 			} else {
-				// Create new accumulable object
+				// Create new accumulator
 				try {
-					accumulable = accumulableClass.newInstance();
+					accumulator = accumulatorClass.newInstance();
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
 					e.printStackTrace();
 				}
-	      accumulables.put(name, accumulable);
+	      accumulators.put(name, accumulator);
 			}
-			return (Accumulable<V, A>) accumulable;
+			return (Accumulator<V, A>) accumulator;
 	}
 
 	@Override
-	public HashMap<String, Accumulable<?, ?>> getAllAccumulables() {
-		return this.accumulables;
+	public HashMap<String, Accumulator<?, ?>> getAllAccumulators() {
+		return this.accumulators;
 	}
 	
 //	@Override

@@ -230,8 +230,9 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 			this.output.close();
 			
 			// close all chained tasks letting them report failure
-      // AH: This is the place where the close() method of the UDF will be called
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
+			
+      // TODO Here we can merge the accumulators
 		}
 		catch (Exception ex) {
 			// close the input, but do not report any exceptions, since we already have another root cause
