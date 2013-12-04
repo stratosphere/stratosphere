@@ -9,6 +9,7 @@ import eu.stratosphere.pact.common.`type`.base.PactString
 
 import eu.stratosphere.scala._
 import eu.stratosphere.scala.operators._
+import eu.stratosphere.scala.stubs._
 
 import eu.stratosphere.scala.analysis.GlobalSchemaPrinter
 import eu.stratosphere.pact.example.util.AsciiUtils
@@ -16,6 +17,12 @@ import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import eu.stratosphere.scala.analysis.postPass.GlobalSchemaOptimizer
 import eu.stratosphere.scala.analysis.GlobalSchemaGenerator
+
+import eu.stratosphere.pact.common.`type`.PactRecord
+import eu.stratosphere.pact.common.stubs.Collector
+
+import eu.stratosphere.scala.codegen.Util
+import eu.stratosphere.nephele.configuration.Configuration
 
 
 // Grab bag of random scala examples
@@ -28,7 +35,7 @@ object Main1 extends Serializable {
     lazy val tokenizer = new AsciiUtils.WhitespaceTokenizer()
     val foo = new Foo(3)
     def apply(a: (String, Int)) = {
-      println("I GOT: " + a + " AND: " + foo.a)
+      println("I GOT: " + a + " ANDd: " + foo.a)
       tokenizer.setStringToTokenize(new PactString(a._1))
       a
     }
@@ -52,6 +59,7 @@ object Main1 extends Serializable {
 
 
   def main(args: Array[String]) {
+
 //    var logger = Logger.getLogger(classOf[GlobalSchemaOptimizer])
 //    logger.setLevel(Level.DEBUG)
 //    logger = Logger.getLogger(classOf[GlobalSchemaGenerator])
@@ -62,12 +70,22 @@ object Main1 extends Serializable {
 
     val input = DataSource("file:///home/aljoscha/dummy-input", DelimitedInputFormat(readFun) )
     val inputNumbers = DataSource("file:///home/aljoscha/dummy-input-numbers", CsvInputFormat[(Int, String, String)](Seq(0,2,1), "\n", ','))
-    
+
+
     val counts = input.map { _.split("""\W+""") map { (_, 1) } }
       .flatMap { l => l }
       .groupBy { case (word, _) => word }
       .combinableReduceGroup { _.reduce { (w1, w2) => (w1._1, w1._2 + w2._2) } }
       .map(fun)
+      .map( new MapStub[(String, Int), (String, Int)] {
+        override def open(config: Configuration) = {
+          println("Opening up this badboy.")
+        }
+        override def map(in: (String, Int)) = {
+          println("IN RICH MAPPER: " + in)
+          in
+        }
+      })
 //      .filter { case (w, c) => c == 7 }
 
     val countsCross = counts.cross(counts)

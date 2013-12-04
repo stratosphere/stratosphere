@@ -20,8 +20,7 @@ import eu.stratosphere.scala.ScalaContract
 import eu.stratosphere.pact.common.contract.MapContract
 import eu.stratosphere.scala.analysis.UDT
 import eu.stratosphere.pact.common.`type`.PactRecord
-import eu.stratosphere.pact.common.stubs.MapStub
-import eu.stratosphere.pact.common.stubs.Collector
+import eu.stratosphere.pact.common.stubs.{Collector, MapStub => JMapStub}
 import eu.stratosphere.pact.generic.contract.Contract
 import eu.stratosphere.scala.contracts.Annotations
 import eu.stratosphere.scala.OneInputScalaContract
@@ -31,6 +30,7 @@ import eu.stratosphere.nephele.configuration.Configuration
 import eu.stratosphere.scala.DataSet
 import eu.stratosphere.scala.OneInputHintable
 import eu.stratosphere.scala.codegen.Util
+import eu.stratosphere.scala.stubs.{MapStub, FlatMapStub, FilterStub, MapStubBase}
 
 object MapMacros {
 
@@ -44,28 +44,12 @@ object MapMacros {
     val (udtIn, createUdtIn) = slave.mkUdtClass[In]
     val (udtOut, createUdtOut) = slave.mkUdtClass[Out]
 
-    val contract = reify {
-
-      val generatedStub = new MapStub with Serializable {
-        val inputUDT = c.Expr[UDT[In]](createUdtIn).splice
-        val outputUDT = c.Expr[UDT[Out]](createUdtOut).splice
-        val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
-        
-        private var deserializer: UDTSerializer[In] = _
-        private var serializer: UDTSerializer[Out] = _
-        private var discard: Array[Int] = _
-        private var outputLength: Int = _
-
-        override def open(config: Configuration) {
-          super.open(config)
-
-          discard = udf.getDiscardIndexArray
-          outputLength = udf.getOutputLength
-
-          this.deserializer = udf.getInputDeserializer
-          this.serializer = udf.getOutputSerializer
-        }
-
+    val stub: c.Expr[MapStubBase[In, Out]] = if (fun.actualType <:< weakTypeOf[MapStub[In, Out]])
+      reify { fun.splice.asInstanceOf[MapStubBase[In, Out]] }
+    else reify {
+      implicit val inputUDT: UDT[In] = c.Expr[UDT[In]](createUdtIn).splice
+      implicit val outputUDT: UDT[Out] = c.Expr[UDT[Out]](createUdtOut).splice
+      new MapStubBase[In, Out] {
         override def map(record: PactRecord, out: Collector[PactRecord]) = {
           val input = deserializer.deserializeRecyclingOn(record)
           val output = fun.splice.apply(input)
@@ -79,7 +63,9 @@ object MapMacros {
           out.collect(record)
         }
       }
-      
+    }
+    val contract = reify {
+      val generatedStub = stub.splice
       val builder = MapContract.builder(generatedStub).input((c.prefix.splice).contract)
       
       val contract = new MapContract(builder) with OneInputScalaContract[In, Out] {
@@ -108,28 +94,12 @@ object MapMacros {
     val (udtIn, createUdtIn) = slave.mkUdtClass[In]
     val (udtOut, createUdtOut) = slave.mkUdtClass[Out]
 
-    val contract = reify {
-
-      val generatedStub = new MapStub with Serializable {
-        val inputUDT = c.Expr[UDT[In]](createUdtIn).splice
-        val outputUDT = c.Expr[UDT[Out]](createUdtOut).splice
-        val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
-        
-        private var deserializer: UDTSerializer[In] = _
-        private var serializer: UDTSerializer[Out] = _
-        private var discard: Array[Int] = _
-        private var outputLength: Int = _
-
-        override def open(config: Configuration) {
-          super.open(config)
-
-          discard = udf.getDiscardIndexArray
-          outputLength = udf.getOutputLength
-
-          this.deserializer = udf.getInputDeserializer
-          this.serializer = udf.getOutputSerializer
-        }
-
+    val stub: c.Expr[MapStubBase[In, Out]] = if (fun.actualType <:< weakTypeOf[FlatMapStub[In, Out]])
+      reify { fun.splice.asInstanceOf[MapStubBase[In, Out]] }
+    else reify {
+      implicit val inputUDT: UDT[In] = c.Expr[UDT[In]](createUdtIn).splice
+      implicit val outputUDT: UDT[Out] = c.Expr[UDT[Out]](createUdtOut).splice
+      new MapStubBase[In, Out] {
         override def map(record: PactRecord, out: Collector[PactRecord]) = {
           val input = deserializer.deserializeRecyclingOn(record)
           val output = fun.splice.apply(input)
@@ -149,7 +119,9 @@ object MapMacros {
           }
         }
       }
-      
+    }
+    val contract = reify {
+      val generatedStub = stub.splice
       val builder = MapContract.builder(generatedStub).input((c.prefix.splice).contract)
       
       val contract = new MapContract(builder) with OneInputScalaContract[In, Out] {
@@ -177,28 +149,11 @@ object MapMacros {
 
     val (udtIn, createUdtIn) = slave.mkUdtClass[In]
 
-    val contract = reify {
-
-      val generatedStub = new MapStub with Serializable {
-        val inputUDT = c.Expr[UDT[In]](createUdtIn).splice
-        val outputUDT = c.Expr[UDT[In]](createUdtIn).splice
-        val udf: UDF1[In, In] = new UDF1(inputUDT, outputUDT)
-        
-        private var deserializer: UDTSerializer[In] = _
-//        private var serializer: UDTSerializer[In] = _
-        private var discard: Array[Int] = _
-        private var outputLength: Int = _
-
-        override def open(config: Configuration) {
-          super.open(config)
-
-          discard = udf.getDiscardIndexArray
-          outputLength = udf.getOutputLength
-
-          this.deserializer = udf.getInputDeserializer
-//          this.serializer = udf.getOutputSerializer
-        }
-
+    val stub: c.Expr[MapStubBase[In, In]] = if (fun.actualType <:< weakTypeOf[FilterStub[In, In]])
+      reify { fun.splice.asInstanceOf[MapStubBase[In, In]] }
+    else reify {
+      implicit val inputUDT: UDT[In] = c.Expr[UDT[In]](createUdtIn).splice
+      new MapStubBase[In, In] {
         override def map(record: PactRecord, out: Collector[PactRecord]) = {
           val input = deserializer.deserializeRecyclingOn(record)
           if (fun.splice.apply(input)) {
@@ -206,7 +161,9 @@ object MapMacros {
           }
         }
       }
-      
+    }
+    val contract = reify {
+      val generatedStub = stub.splice
       val builder = MapContract.builder(generatedStub).input((c.prefix.splice).contract)
       
       val contract = new MapContract(builder) with OneInputScalaContract[In, In] {
