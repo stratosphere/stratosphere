@@ -12,40 +12,28 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.pact.vertexcentric.util;
+package eu.stratosphere.pact.spargel;
 
-import java.util.Iterator;
 
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.Key;
 import eu.stratosphere.pact.common.type.Value;
 
 
-public final class MessageIterator<Message extends Value> implements Iterator<Message> {
-
-	private final Message instance;
-	private Iterator<PactRecord> source;
+public final class Edge<VertexKey extends Key, EdgeValue extends Value> {
 	
-	public MessageIterator(Message instance) {
-		this.instance = instance;
+	private VertexKey target;
+	private EdgeValue edgeValue;
+	
+	void set(VertexKey target, EdgeValue edgeValue) {
+		this.target = target;
+		this.edgeValue = edgeValue;
 	}
 	
-	public final void setSource(Iterator<PactRecord> source) {
-		this.source = source;
+	public VertexKey target() {
+		return target;
 	}
 	
-	@Override
-	public final boolean hasNext() {
-		return this.source.hasNext();
-	}
-	
-	@Override
-	public final Message next() {
-		this.source.next().getFieldInto(1, this.instance);
-		return this.instance;
-	}
-
-	@Override
-	public final void remove() {
-		throw new UnsupportedOperationException();
+	public EdgeValue edgeValue() {
+		return edgeValue;
 	}
 }
