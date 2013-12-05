@@ -1,4 +1,4 @@
-package eu.stratosphere.pact.common.stubs.accumulators;
+package eu.stratosphere.pact.generic.stub.accumulators;
 
 import eu.stratosphere.pact.common.type.Value;
 

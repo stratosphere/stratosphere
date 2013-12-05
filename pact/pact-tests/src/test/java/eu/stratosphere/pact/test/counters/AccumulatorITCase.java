@@ -15,14 +15,20 @@
 
 package eu.stratosphere.pact.test.counters;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.contract.FileDataSink;
@@ -37,13 +43,15 @@ import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.MapStub;
 import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFields;
-import eu.stratosphere.pact.common.stubs.accumulators.DoubleCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.Histogram;
-import eu.stratosphere.pact.common.stubs.accumulators.IntCounter;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.example.util.AsciiUtils;
+import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
+import eu.stratosphere.pact.generic.stub.accumulators.AccumulatorHelper;
+import eu.stratosphere.pact.generic.stub.accumulators.DoubleCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.Histogram;
+import eu.stratosphere.pact.generic.stub.accumulators.IntCounter;
 import eu.stratosphere.pact.test.util.TestBase2;
 
 /**
@@ -112,27 +120,35 @@ public class AccumulatorITCase extends TestBase2 {
 	
 	public static class TokenizeLine extends MapStub implements Serializable {
 		private static final long serialVersionUID = 1L;
-		
 		private final PactRecord outputRecord = new PactRecord();
 		private final PactString word = new PactString();
 		private final PactInteger one = new PactInteger(1);
-		
 		private final AsciiUtils.WhitespaceTokenizer tokenizer =
 				new AsciiUtils.WhitespaceTokenizer();
 
 		// Needs to be instantiated later since the runtime context is not yet
 		// initialized at this place
 		IntCounter cntNumLines = null;
-		DoubleCounter openCloseCounter = null;
     Histogram wordsPerLineDistribution = null;
+    
+    // This counter will be added without convenience functions
+    DoubleCounter openCloseCounter = new DoubleCounter();
+    private SetAccumulator<String> distinctWords = null;
     
 		@Override
 		public void open(Configuration parameters) throws Exception {
 		  System.out.println("Map: open");
 		  
+		  // Add counters using convenience functions
 			this.cntNumLines = getRuntimeContext().getIntCounter("num-lines");
-			this.openCloseCounter = getRuntimeContext().getDoubleCounter("open-close-counter");
       this.wordsPerLineDistribution = getRuntimeContext().getHistogram("words-per-line");
+
+			// Add built-in accumulator without convenience function
+			getRuntimeContext().addAccumulator("open-close-counter", this.openCloseCounter);
+      
+      // Add custom counter. Didn't find a way to do this with getAccumulator()
+      this.distinctWords = new SetAccumulator<String>();
+      this.getRuntimeContext().addAccumulator("distinct-words", distinctWords);
       
       // Create counter and test increment
       IntCounter simpleCounter = getRuntimeContext().getIntCounter("simple-counter");
@@ -168,6 +184,9 @@ public class AccumulatorITCase extends TestBase2 {
 			int wordsPerLine = 0;
 			while (tokenizer.next(this.word))
 			{
+			  // Use custom counter
+			  distinctWords.add(this.word.getValue());
+			  
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
 				collector.collect(this.outputRecord);
@@ -237,6 +256,48 @@ public class AccumulatorITCase extends TestBase2 {
 		public void close() throws Exception {
       System.out.println("Reduce: close");
 		}
+	}
+	
+	/**
+	 * Custom accumulator
+	 */
+	public static class SetAccumulator<T> implements Accumulator<T, Set<T>> {
+	  
+	  private Set<T> set = Sets.newHashSet();
+
+    @Override
+    public void add(T value) {
+      this.set.add(value);
+    }
+
+    @Override
+    public Set<T> getLocalValue() {
+      return this.set;
+    }
+
+    @Override
+    public void resetLocal() {
+      this.set.clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void merge(Accumulator<?, ?> other) {
+      AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+      // build union
+      this.set.addAll(((SetAccumulator<T>)other).getLocalValue());
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      // TODO
+    }
+
+    @Override
+    public void read(DataInput in) throws IOException {
+      // TODO
+    }
+	  
 	}
 
 }

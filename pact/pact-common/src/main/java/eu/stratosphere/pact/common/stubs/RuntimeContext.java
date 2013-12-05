@@ -16,12 +16,12 @@ package eu.stratosphere.pact.common.stubs;
 
 import java.util.HashMap;
 
-import eu.stratosphere.pact.common.stubs.accumulators.Accumulator;
-import eu.stratosphere.pact.common.stubs.accumulators.DoubleCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.Histogram;
-import eu.stratosphere.pact.common.stubs.accumulators.IntCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.LongCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.SimpleAccumulator;
+import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
+import eu.stratosphere.pact.generic.stub.accumulators.DoubleCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.Histogram;
+import eu.stratosphere.pact.generic.stub.accumulators.IntCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.LongCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.SimpleAccumulator;
 
 /**
  *
@@ -56,32 +56,51 @@ public interface RuntimeContext {
 	 */
 	Histogram getHistogram(String name);
 
-	  /**
+  /**
+   * Add this accumulator. Throws an exception if the counter is already
+   * existing.
+   * 
+   * TODO This is only needed to support generic accumulators (e.g. for
+   * Set<String>). Didn't find a way to get this work with getAccumulator. There
+   * should be only one way to create accumulators.
+   */
+  <V, A> void addAccumulator(String name, Accumulator<V, A> accumulator);
+  
+
+  /**
+   * Get an existing accumulator object. The accumulator must have been added
+   * previously in this local runtime context.
+   * 
+   * Throws an exception if the accumulator does not exist or if the accumulator
+   * exists, but with different type.
+   */
+  <V, A> Accumulator<V, A> getAccumulator(String name);
+
+  /**
+   * TODO I propose to remove this and only keep the other more explicit functions (to
+   * add or get an accumulator object)
+   * 
    * Get an existing or new named accumulator object. Use this function to get
    * an counter for an custom accumulator type. For the integrated accumulators
    * you better use convenience functions (e.g. getIntCounter).
    * 
-   * There is no need to register accumulators - they will be created
-   * when a UDF asks the first time for a counter that does not exist yet
-   * locally. This implies that there can be conflicts when a counter is
-   * requested with the same name but with different types, either in the same
-   * UDF or in different. In the last case the conflict occurs during merging.
-   * 
-   * TODO Create a version that checks if the counter is really new or already
-   * internally used (newOnly)
+   * There is no need to register accumulators - they will be created when a UDF
+   * asks the first time for a counter that does not exist yet locally. This
+   * implies that there can be conflicts when a counter is requested with the
+   * same name but with different types, either in the same UDF or in different.
+   * In the last case the conflict occurs during merging.
    * 
    * @param name
    * @param accumulatorClass
    *          If the accumulator was not created previously
    * @return
    */
-  <V, A> Accumulator<V, A> getAccumulator(String name, Class<? extends Accumulator<V, A>> accumulatorClass);
+//  <V, A> Accumulator<V, A> getAccumulator(String name, Class<? extends Accumulator<V, A>> accumulatorClass);
 
   /**
    * See getAccumulable
-   * 
    */
-  <T> SimpleAccumulator<T> getSimpleAccumulator(String name, Class<? extends SimpleAccumulator<T>> accumulatorClass);
+//  <T> SimpleAccumulator<T> getSimpleAccumulator(String name, Class<? extends SimpleAccumulator<T>> accumulatorClass);
 
 
 }

@@ -17,13 +17,13 @@ package eu.stratosphere.pact.runtime.udf;
 import java.util.HashMap;
 
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
-import eu.stratosphere.pact.common.stubs.accumulators.Accumulator;
-import eu.stratosphere.pact.common.stubs.accumulators.AccumulatorHelper;
-import eu.stratosphere.pact.common.stubs.accumulators.DoubleCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.Histogram;
-import eu.stratosphere.pact.common.stubs.accumulators.IntCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.LongCounter;
-import eu.stratosphere.pact.common.stubs.accumulators.SimpleAccumulator;
+import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
+import eu.stratosphere.pact.generic.stub.accumulators.AccumulatorHelper;
+import eu.stratosphere.pact.generic.stub.accumulators.DoubleCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.Histogram;
+import eu.stratosphere.pact.generic.stub.accumulators.IntCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.LongCounter;
+import eu.stratosphere.pact.generic.stub.accumulators.SimpleAccumulator;
 
 /**
  *
@@ -79,32 +79,47 @@ public class RuntimeUDFContext implements RuntimeContext {
   	return (DoubleCounter) getAccumulator(name, DoubleCounter.class);
   }
 
-	@Override
-	public <T> SimpleAccumulator<T> getSimpleAccumulator(String name, Class<? extends SimpleAccumulator<T>> accumulatorClass) {
-		return (SimpleAccumulator<T>) getAccumulator(name, accumulatorClass);
-	}
-  
-	@SuppressWarnings("unchecked")
-	@Override
-	public <V, A> Accumulator<V, A> getAccumulator(String name, Class<? extends Accumulator<V, A>> accumulatorClass) {
+  @Override
+  public <V, A> void addAccumulator(String name, Accumulator<V, A> accumulator) {
+    if (accumulators.containsKey(name)) {
+      throw new UnsupportedOperationException("The counter '" + name + "' already exists and cannot be added.");
+    }
+    accumulators.put(name, accumulator);
+  }
 
-			Accumulator<?,?> accumulator = accumulators.get(name);
-			
-			if (accumulator != null) {
-				AccumulatorHelper.compareAccumulatorTypes(name, accumulator.getClass(), accumulatorClass);
-			} else {
-				// Create new accumulator
-				try {
-					accumulator = accumulatorClass.newInstance();
-				} catch (InstantiationException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-	      accumulators.put(name, accumulator);
-			}
-			return (Accumulator<V, A>) accumulator;
-	}
+  @SuppressWarnings("unchecked")
+  @Override
+  public <V, A> Accumulator<V, A> getAccumulator(String name) {
+    
+    // TODO Add safety check - currently this just throws an exception in the user code.
+    return (Accumulator<V, A>) accumulators.get(name);
+  }
+  
+  @SuppressWarnings("unchecked")
+  private <V, A> Accumulator<V, A> getAccumulator(String name, Class<? extends Accumulator<V, A>> accumulatorClass) {
+
+      Accumulator<?,?> accumulator = accumulators.get(name);
+      
+      if (accumulator != null) {
+        AccumulatorHelper.compareAccumulatorTypes(name, accumulator.getClass(), accumulatorClass);
+      } else {
+        // Create new accumulator
+        try {
+          accumulator = accumulatorClass.newInstance();
+        } catch (InstantiationException e) {
+          e.printStackTrace();
+        } catch (IllegalAccessException e) {
+          e.printStackTrace();
+        }
+        accumulators.put(name, accumulator);
+      }
+      return (Accumulator<V, A>) accumulator;
+  }
+
+//  @Override
+//  public <T> SimpleAccumulator<T> getSimpleAccumulator(String name, Class<? extends SimpleAccumulator<T>> accumulatorClass) {
+//    return (SimpleAccumulator<T>) getAccumulator(name, accumulatorClass);
+//  }
 
 	@Override
 	public HashMap<String, Accumulator<?, ?>> getAllAccumulators() {
