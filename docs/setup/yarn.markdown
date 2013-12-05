@@ -34,9 +34,11 @@ If you want to build the uber-jar from sources, follow the build instructions. M
 ### Deploy
 
 Invoke the Jar file using the following command:
+
 ```bash
 java -jar stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar
 ```
+
 This command will show you the following overview:
 
 ```bash
