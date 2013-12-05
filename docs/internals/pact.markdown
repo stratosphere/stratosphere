@@ -278,7 +278,7 @@ prepare the inputs for the user functions. Among the different
 alternatives, it selects the cheapest one with respect to the cost
 model.
 
-The compiler is found in the project *[pact-compiler](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler)* and consist of two main components:
+The compiler is found in the project *[pact-compiler](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler)* and consist of two main components:
 
 1.  The [Optimizer](#compiler_optimizer),
     which evaluates the different alternatives and selects the cheapest
@@ -295,13 +295,13 @@ The compiler is found in the project *[pact-compiler](https://github.com/stratos
 #### Optimizer
 
 The optimizer is contained in the package
-[eu.stratosphere.pact.compiler](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler).
+[eu.stratosphere.pact.compiler](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler).
 The central class is
-[PactCompiler](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/PactCompiler.java),
+[PactCompiler](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/PactCompiler.java),
 providing the *compile()* method that acts as the main entry point for
-the compilation process. It accepts an instance of a [Pact Plan](https://github.com/stratosphere-eu/stratosphere/tree/master//pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java)
+the compilation process. It accepts an instance of a [Pact Plan](https://github.com/stratosphere/stratosphere/tree/master//pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java)
 and returns an instance of
-[OptimizedPlan](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/plan/OptimizedPlan.java).
+[OptimizedPlan](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/plan/OptimizedPlan.java).
 
 The optimizer uses an internal representation of the plan, which is a
 DAG of nodes as the original Pact Plan. The nodes contain a large set of
@@ -311,7 +311,7 @@ cases, the optimizer's nodes correspond directly to nodes in the Pact
 Plan; however, additional nodes may be inserted, for example for
 combiners and artificial dams. The classes for the internal
 representation can be found in
-[eu.stratosphere.pact.compiler.plan](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/plan).
+[eu.stratosphere.pact.compiler.plan](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/plan).
 
 ##### Optimization Process
 
@@ -438,7 +438,7 @@ costs.
 #### Job Graph Generator
 
 The
-[eu.stratosphere.pact.compiler.jobgen.JobGraphGenerator](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/jobgen/JobGraphGenerator.java)
+[eu.stratosphere.pact.compiler.jobgen.JobGraphGenerator](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-compiler/src/main/java/eu/stratosphere/pact/compiler/jobgen/JobGraphGenerator.java)
 takes an optimized plan and translates it into a Nephele
 [JobGraph](writingnehelejobs#connectingtasks "writingnehelejobs").
 

@@ -1,12 +1,12 @@
 ---
 layout: inner_docs
-title:  "Stratosphere On Yarn"
+title:  "Stratosphere On YARN"
 sublinks:
   - {anchor: "session", title: "Start Stratosphere Session"}
   - {anchor: "submission", title: "Job Submission"}
 ---
 
-## Stratosphere on Yarn
+## Stratosphere on YARN
 
 Apache [Hadoop YARN](http://hadoop.apache.org/) is a cluster resource management framework. It allows to run various distributed applications on top of a cluster. Stratosphere runs on YARN next to other applications. So users do not have to setup or install anything if there is already a YARN setup.
 

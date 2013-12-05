@@ -87,7 +87,7 @@ The task manager implements the
 *[TaskOperationProtocol](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols/TaskOperationProtocol.java")*
 interface which is defined as part of the `nephele-server` project in
 the package
-*[eu.stratosphere.nephele.protocols](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols")*.
+*[eu.stratosphere.nephele.protocols](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-server/src/main/java/eu/stratosphere/nephele/protocols")*.
 It provides methods for the job manager to submit and cancel tasks, as
 well as to query the task manager for cached libraries and submit these
 if necessary.
@@ -100,7 +100,7 @@ if necessary.
 
 The MemoryManager interface is defined as part of the `nephele-common`
 project in the package
-*[eu.stratosphere.nephele.services.memorymanager](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/)*.
+*[eu.stratosphere.nephele.services.memorymanager](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/)*.
 Memory is allocated in
 *[MemorySegments](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java "https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/MemorySegment.java")*,
 which have a certain fixed size and are also referred to as memory
@@ -117,17 +117,17 @@ the memory results in a NullPointerException.
 
 More typically than directly accessing the memory pages, the data is
 accessed though views:
-[DataInputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataInputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataInputView.java")
+[DataInputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataInputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataInputView.java")
 and
-[DataOutputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataOutputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataOutputView.java").
+[DataOutputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataOutputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/DataOutputView.java").
 The provide the abstraction of writing (or reading) sequentially to
 (from) memory. Underneath, the data is distributed across the memory
 pages.
 
 Most memory views inherit from
-[AbstractPagedInputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedInputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedInputView.java")
+[AbstractPagedInputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedInputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedInputView.java")
 and
-[AbstractPagedOutputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedOutputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedOutputView.java").
+[AbstractPagedOutputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedOutputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/memorymanager/AbstractPagedOutputView.java").
 There are view implementations which transparently flush pages to disk
 and retrieve them again when memory is scarce.
 
@@ -163,12 +163,12 @@ the I/O manager is in the form of memory segments from the
 MemoryManager.
 
 The I/O manager and the readers and writers are contained in the package
-*[eu.stratosphere.nephele.services.iomanager](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager")*.
+*[eu.stratosphere.nephele.services.iomanager](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager")*.
 The I/O manager provides only abstractions for reading / writing entire
 memory pages. Abstractions for record streams are given though
-[ChannelReaderInputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelReaderInputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelReaderInputView.java")
+[ChannelReaderInputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelReaderInputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelReaderInputView.java")
 and
-[ChannelWriterOutputView](https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelWriterOutputView.java "https://github.com/stratosphere-eu/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelWriterOutputView.java").
+[ChannelWriterOutputView](https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelWriterOutputView.java "https://github.com/stratosphere/stratosphere/tree/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/iomanager/ChannelWriterOutputView.java").
 
 The files creates by the I/O manager are temporary files that live only
 in the scope of one job. They are by default created in the system's

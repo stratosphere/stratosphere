@@ -70,12 +70,12 @@ A PACT program basically consist of four components:
 
 -   **Data types**: Primitive types (Integer, String, Double, etc.) are
     provided in
-    *[eu.stratosphere.pact.common.type.base](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/base "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/base")*.
+    *[eu.stratosphere.pact.common.type.base](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/base "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/base")*.
       
      More complex types must implement the interfaces
-    *[eu.stratosphere.pact.common.api.common.type.Key](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Key.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Key.java")*
+    *[eu.stratosphere.pact.common.api.common.type.Key](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Key.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Key.java")*
     or
-    *[eu.stratosphere.pact.common.api.common.type.Value](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java")*.
+    *[eu.stratosphere.pact.common.api.common.type.Value](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/type/Value.java")*.
       
        
      **Important:** All data types must implement a default constructor
@@ -95,16 +95,16 @@ A PACT program basically consist of four components:
     They represent the user-defined functionality of DataSources and
     DataSinks. For reading and writing pairs, two corresponding classes
     have to be implemented that extend
-    *[eu.stratosphere.pact.common.generic.io.InputFormat](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java")*
+    *[eu.stratosphere.pact.common.generic.io.InputFormat](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/InputFormat.java")*
     and
-    *[eu.stratosphere.pact.common.generic.io.OutputFormat](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/OutputFormat.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/OutputFormat.java")*.
+    *[eu.stratosphere.pact.common.generic.io.OutputFormat](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/OutputFormat.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/generic/io/OutputFormat.java")*.
       
        
      For the common case of reading text records from files and writing
     text records back, some convenience formats are provided:
-    *[eu.stratosphere.pact.common.io.TextInputFormat](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextInputFormat.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextInputFormat.java")*
+    *[eu.stratosphere.pact.common.io.TextInputFormat](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextInputFormat.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextInputFormat.java")*
     and
-    *[eu.stratosphere.pact.common.io.TextOutputFormat](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextOutputFormat.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextOutputFormat.java")*.
+    *[eu.stratosphere.pact.common.io.TextOutputFormat](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextOutputFormat.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/io/TextOutputFormat.java")*.
     The text input and output format work with a customizable delimiter
     character (default is '\\n').   
        
@@ -116,28 +116,28 @@ A PACT program basically consist of four components:
 \* **Stub implementations**: Your job logic goes into PACT stub
 implementations. Stubs are templates for first-order user functions that
 are executed in parallel. Stub implementations extend the stubs found in
-*[eu.stratosphere.pact.common.stub](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub")*.
+*[eu.stratosphere.pact.common.stub](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub")*.
 You need to extend the stub that corresponds to the [Input
 Contract](pactpm#input_contracts "pactpm")
 for that specific user function. For example, if your function should
 use a `Match` contract, than you need to extend the `MatchStub`.
 
 \* **Plan construction**: A class that implements the interface
-*[eu.stratosphere.pact.common.plan.PlanAssembler](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java")*
+*[eu.stratosphere.pact.common.plan.PlanAssembler](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/PlanAssembler.java")*
 provides PACT job plans. The method *getPlan(String …)* constructs the
 plan of a [PACT
 Job](pactpm.html "pactpm").
 The plan consists of connected [Input
 Contracts](pactpm#input_contracts "pactpm")
 (found in
-*[eu.stratosphere.pact.common.contract](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract")*).
+*[eu.stratosphere.pact.common.contract](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract")*).
 Each [Input
 Contract](pactpm#input_contracts "pactpm")
 has an own contract class. A contract is initialized with the
 corresponding PACT stub implementation. Contracts are assembled to a
 contract graph with their *setInput()*
 (*setFirstInput()**/setSecondInput()*) methods. A plan
-(*[eu.stratosphere.pact.common.plan.Plan](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java")*)
+(*[eu.stratosphere.pact.common.plan.Plan](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/plan/Plan.java")*)
 is generated and initialized with all DataSinks of the assembled
 contract graph. Finally, the plan is returned by the *getPlan(String …)*
 method. By default, all PACTs are executed single-threaded (only one
@@ -183,10 +183,10 @@ The PACT Programming Model does also support optional combiners for
 Reduce stubs.   
  Combiners are implemented by overriding the `combine()` method of the
 corresponding Reduce stub
-(*[eu.stratosphere.pact.common.stub.ReduceStub](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub/ReduceStub.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub/ReduceStub.java")*).
+(*[eu.stratosphere.pact.common.stub.ReduceStub](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub/ReduceStub.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/stub/ReduceStub.java")*).
 To notify the optimizer of the *combine()* implementation the Reduce
 stub must be annotated with the *Combinable* annotation
-(*[eu.stratosphere.pact.common.contract.ReduceContract.Combinable](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/ReduceContract.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/ReduceContract.java")*).
+(*[eu.stratosphere.pact.common.contract.ReduceContract.Combinable](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/ReduceContract.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/ReduceContract.java")*).
   
  **Attention:** The combiner will not be used, if the annotation is
 missing. Annotating a Reduce stub although *combine()* was not
@@ -198,7 +198,7 @@ identical to the reduce function!
 [Stub
 Annotations](pactpm#user_code_annotations "pactpm")
 are realized as Java annotations and defined in
-*[eu.stratosphere.pact.common.stubs.StubAnnotation](https://github.com/stratosphere-eu/stratosphere/tree/master/pact-common/src/main/java/eu/stratosphere/pact/common/stubs/StubAnnotation.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact-common/src/main/java/eu/stratosphere/pact/common/stubs/StubAnnotation.java")*.
+*[eu.stratosphere.pact.common.stubs.StubAnnotation](https://github.com/stratosphere/stratosphere/tree/master/pact-common/src/main/java/eu/stratosphere/pact/common/stubs/StubAnnotation.java "https://github.com/stratosphere/stratosphere/tree/master/pact-common/src/main/java/eu/stratosphere/pact/common/stubs/StubAnnotation.java")*.
   
 
 There are two ways to attach the annotations.
@@ -229,7 +229,7 @@ plan construction. To set stub parameters, use the methods
 key, int value)*, and *setStubParameter(String key, boolean value)* of
 the contract object that contains the stub class to parametrize.   
  See the `FilterO` Map stub of the [TPCHQuery3 Example
-Program](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
+Program](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/relational/TPCHQuery3.java")
 to learn how to configure Stubs.
 
 ### Compiler Hints
@@ -246,7 +246,7 @@ supplying compiler hints to the optimizer.
 Compiler hints can be given to the optimizer by setting them at the
 contracts during plan construction. This is done by first fetching the
 contract's
-[eu.stratosphere.pact.common.contract.CompilerHints](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/CompilerHints.java "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/CompilerHints.java")
+[eu.stratosphere.pact.common.contract.CompilerHints](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/CompilerHints.java "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-common/src/main/java/eu/stratosphere/pact/common/contract/CompilerHints.java")
 object:
 
     Contract.getCompilerHints()
@@ -840,7 +840,7 @@ Thus, a test usually completes within seconds.
 
 The test harness is located in the `pact-client` Maven module in the
 package
-[eu.stratosphere.pact.testing](https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-clients/src/main/java/eu/stratosphere/pact/testing "https://github.com/stratosphere-eu/stratosphere/tree/master/pact/pact-clients/src/main/java/eu/stratosphere/pact/testing").
+[eu.stratosphere.pact.testing](https://github.com/stratosphere/stratosphere/tree/master/pact/pact-clients/src/main/java/eu/stratosphere/pact/testing "https://github.com/stratosphere/stratosphere/tree/master/pact/pact-clients/src/main/java/eu/stratosphere/pact/testing").
 
 ### Simple Case
 
