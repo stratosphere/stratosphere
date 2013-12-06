@@ -26,7 +26,7 @@ import eu.stratosphere.pact.common.`type`.PactRecord
 abstract class ReduceStubBase[In: UDT, Out: UDT] extends JReduceStub with Serializable {
   val inputUDT: UDT[In] = implicitly[UDT[In]]
   val outputUDT: UDT[Out] = implicitly[UDT[Out]]
-  lazy val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
+  val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
 
   protected val reduceRecord = new PactRecord()
 

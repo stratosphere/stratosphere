@@ -21,7 +21,7 @@ import eu.stratosphere.pact.common.`type`.PactRecord
 abstract class MapStubBase[In: UDT, Out: UDT] extends JMapStub with Serializable with Function1[In, Out] {
   val inputUDT: UDT[In] = implicitly[UDT[In]]
   val outputUDT: UDT[Out] = implicitly[UDT[Out]]
-  lazy val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
+  val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
 
   protected lazy val deserializer: UDTSerializer[In] = udf.getInputDeserializer
   protected lazy val serializer: UDTSerializer[Out] = udf.getOutputSerializer
