@@ -12,7 +12,7 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.pact.spargel;
+package eu.stratosphere.spargel.java;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ import eu.stratosphere.pact.common.util.InstantiationUtil;
 import eu.stratosphere.pact.common.util.ReflectionUtil;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.WorksetIteration;
-import eu.stratosphere.pact.spargel.util.MessageIterator;
+import eu.stratosphere.spargel.java.util.MessageIterator;
 
 
 public class SpargelIteration {

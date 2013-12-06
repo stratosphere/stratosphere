@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.spargel.examples.connectedcomponents;
+package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
 import eu.stratosphere.pact.common.io.TextInputFormat;
 import eu.stratosphere.pact.common.type.PactRecord;

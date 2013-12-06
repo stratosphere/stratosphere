@@ -12,7 +12,7 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.pact.spargel.examples.connectedcomponents;
+package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
 import java.util.Iterator;
 
@@ -25,9 +25,9 @@ import eu.stratosphere.pact.common.plan.PlanAssembler;
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
 import eu.stratosphere.pact.common.type.base.PactLong;
 import eu.stratosphere.pact.common.type.base.PactNull;
-import eu.stratosphere.pact.spargel.MessagingFunction;
-import eu.stratosphere.pact.spargel.SpargelIteration;
-import eu.stratosphere.pact.spargel.VertexUpdateFunction;
+import eu.stratosphere.spargel.java.MessagingFunction;
+import eu.stratosphere.spargel.java.SpargelIteration;
+import eu.stratosphere.spargel.java.VertexUpdateFunction;
 
 public class SpargelConnectedComponents implements PlanAssembler, PlanAssemblerDescription {
 	
