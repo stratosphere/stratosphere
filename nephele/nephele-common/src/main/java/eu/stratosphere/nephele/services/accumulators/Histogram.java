@@ -1,4 +1,4 @@
-package eu.stratosphere.pact.generic.stub.accumulators;
+package eu.stratosphere.nephele.services.accumulators;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
 
 
 /**

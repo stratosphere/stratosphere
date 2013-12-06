@@ -36,8 +36,11 @@ import eu.stratosphere.nephele.io.MutableReader;
 import eu.stratosphere.nephele.io.MutableRecordReader;
 import eu.stratosphere.nephele.io.MutableUnionRecordReader;
 import eu.stratosphere.nephele.io.RecordWriter;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
+import eu.stratosphere.nephele.taskmanager.AccumulatorCollector;
 import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.AbstractTask;
@@ -51,9 +54,6 @@ import eu.stratosphere.pact.common.util.InstantiationUtil;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
 import eu.stratosphere.pact.common.util.PactConfigConstants;
 import eu.stratosphere.pact.generic.stub.GenericReducer;
-import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
-import eu.stratosphere.pact.generic.stub.accumulators.AccumulatorHelper;
-import eu.stratosphere.pact.generic.stub.accumulators.SimpleAccumulator;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypeComparatorFactory;
 import eu.stratosphere.pact.generic.types.TypeSerializer;
@@ -390,7 +390,7 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 			// them to the JobManager. close() has been called for all involved UDFs
 			// earlier (using this.stub.close() and closeChainedTasks(), so UDFs can
 			// no longer modify accumulators.
-			collectAccumulators(this.stub, this.chainedTasks);
+			collectAndReportAccumulators(this.stub, this.chainedTasks);
 		}
 		catch (Exception ex) {
 			// close the input, but do not report any exceptions, since we already have another root cause
@@ -413,11 +413,17 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 		}
 	}
 
-	private void collectAccumulators(S stub, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
+	/**
+	 * TODO Finalize
+	 * 
+	 * @param stub
+	 * @param chainedTasks
+	 */
+	private void collectAndReportAccumulators(S stub, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// TODO Not sure if I have to check for this.running (this is tested before calling stub.close())
 		Map<String, Accumulator<?,?>> stubAccumulators = null;
 		if (this.stub != null) {
-			// collect the counters from the stub here
+			// collect the counters from the stub
 			stubAccumulators = this.stub.getRuntimeContext().getAllAccumulators();
 		} else {
 			// TODO When is this the case? What should we do here?
@@ -433,6 +439,7 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 		}
 		
 		// TODO Transfer stubAccumulators now to JobManager
+		AccumulatorCollector.instance().reportAccumulators(getEnvironment().getJobID(), stubAccumulators.get(stubAccumulators.keySet().toArray()[0]));
 	}
 
 	/* (non-Javadoc)

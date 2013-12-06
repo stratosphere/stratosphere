@@ -1,6 +1,8 @@
-package eu.stratosphere.pact.generic.stub.accumulators;
+package eu.stratosphere.nephele.services.accumulators;
 
-import eu.stratosphere.pact.common.type.Value;
+import java.io.Serializable;
+
+import eu.stratosphere.nephele.io.IOReadableWritable;
 
 /**
  * Interface for custom accumulator objects. Data are written to in a UDF,
@@ -19,7 +21,7 @@ import eu.stratosphere.pact.common.type.Value;
  * @param <A>
  *          Type of the accumulator result
  */
-public interface Accumulator<V, A> extends Value {
+public interface Accumulator<V, A> extends IOReadableWritable, Serializable {
 
 	/**
 	 * @param value
@@ -37,7 +39,7 @@ public interface Accumulator<V, A> extends Value {
 	 */
 	void resetLocal();
 
-	  /**
+  /**
    * Used by system internally to merge the collected parts of an accumulator at
    * the end of the job. It makes an check internally whether the accumulator
    * type is the same.

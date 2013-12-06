@@ -1,6 +1,7 @@
-package eu.stratosphere.pact.generic.stub.accumulators;
+package eu.stratosphere.nephele.services.accumulators;
 
 import java.util.Map;
+
 
 public class AccumulatorHelper {
 	

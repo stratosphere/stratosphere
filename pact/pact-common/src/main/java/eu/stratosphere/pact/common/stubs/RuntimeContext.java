@@ -16,12 +16,11 @@ package eu.stratosphere.pact.common.stubs;
 
 import java.util.HashMap;
 
-import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
-import eu.stratosphere.pact.generic.stub.accumulators.DoubleCounter;
-import eu.stratosphere.pact.generic.stub.accumulators.Histogram;
-import eu.stratosphere.pact.generic.stub.accumulators.IntCounter;
-import eu.stratosphere.pact.generic.stub.accumulators.LongCounter;
-import eu.stratosphere.pact.generic.stub.accumulators.SimpleAccumulator;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
+import eu.stratosphere.nephele.services.accumulators.Histogram;
+import eu.stratosphere.nephele.services.accumulators.IntCounter;
+import eu.stratosphere.nephele.services.accumulators.LongCounter;
 
 /**
  *

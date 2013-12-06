@@ -15,6 +15,9 @@
 
 package eu.stratosphere.nephele.execution;
 
+import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
+
 public interface ExecutionObserver {
 
 	/**
@@ -49,4 +52,12 @@ public interface ExecutionObserver {
 	 * @return <code>true</code> if the task has been canceled, <code>false</code> otherwise
 	 */
 	boolean isCanceled();
+	
+  /**
+   * TODO Finalize.
+   * 
+   * RuntimeTask (implementing ExecutionObserver) can call a
+   * method in JobManager to send the accumulators
+   */
+	void reportAccumulators(JobID jobID, Accumulator<?,?> accumulator);
 }

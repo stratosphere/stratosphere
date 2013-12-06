@@ -1,29 +1,30 @@
-package eu.stratosphere.pact.generic.stub.accumulators;
+package eu.stratosphere.nephele.services.accumulators;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 
-public class IntCounter implements SimpleAccumulator<Integer> {
 
-  private int localValue = 0;
+public class LongCounter implements SimpleAccumulator<Long> {
+
+  private long localValue = 0;
   
   @Override
-  public void add(Integer value) {
-    localValue += value;
+  public void add(Long value) {
+    this.localValue += value;
   }
 
   @Override
-  public Integer getLocalValue() {
-    return localValue;
+  public Long getLocalValue() {
+    return this.localValue;
   }
-  
+
   @Override
   public void merge(Accumulator<?, ?> other) {
-  	// TODO Remove unknowns
+    // TODO Remove unknowns
   	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
-  	this.localValue += ((IntCounter)other).getLocalValue();
+  	this.localValue += ((LongCounter)other).getLocalValue();
   }
 
   @Override
@@ -33,12 +34,12 @@ public class IntCounter implements SimpleAccumulator<Integer> {
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeInt(localValue);
+		out.writeLong(this.localValue);
 	}
 
 	@Override
 	public void read(DataInput in) throws IOException {
-		localValue = in.readInt();
+		this.localValue = in.readLong();
 	}
 
 }

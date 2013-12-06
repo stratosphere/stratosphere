@@ -31,6 +31,11 @@ import org.junit.runners.Parameterized.Parameters;
 import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
+import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
+import eu.stratosphere.nephele.services.accumulators.Histogram;
+import eu.stratosphere.nephele.services.accumulators.IntCounter;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -47,11 +52,6 @@ import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.example.util.AsciiUtils;
-import eu.stratosphere.pact.generic.stub.accumulators.Accumulator;
-import eu.stratosphere.pact.generic.stub.accumulators.AccumulatorHelper;
-import eu.stratosphere.pact.generic.stub.accumulators.DoubleCounter;
-import eu.stratosphere.pact.generic.stub.accumulators.Histogram;
-import eu.stratosphere.pact.generic.stub.accumulators.IntCounter;
 import eu.stratosphere.pact.test.util.TestBase2;
 
 /**
