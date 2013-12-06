@@ -4,6 +4,7 @@ title:  "Stratosphere On YARN"
 sublinks:
   - {anchor: "session", title: "Start Stratosphere Session"}
   - {anchor: "submission", title: "Job Submission"}
+  - {anchor: "build", title: "Advanced Building"}
 ---
 
 ## Stratosphere on YARN
@@ -75,9 +76,6 @@ Once Stratosphere is deployed in your YARN cluster, it will show you the connect
 
 The client has to remain open to keep the deployment intact. We suggest to use `screen`. It will start another shell that is detachable.
 So open `screen`, start Stratosphere on YARN, use `CTRL+a` then press `d` to detach the screen session. Use `screen -r` to resume again.
-
-
-
 </section>
 
 <section id="submission">
@@ -106,5 +104,32 @@ java -cp stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar eu.stratosphere.pact.cl
 
 
 You can use also the regular mechanisms to submit jobs (`bin/pact-client.sh`), but you have to configure the `stratosphere-conf.yaml` with the correct JobManager details.
+</section>
+
+<section id="build">
+### Build Stratosphere for a specific Hadoop version.
+
+This section covers building Stratosphere for a specifiy Hadoop version. Most users do not need to do this manually.
+The problem is that Stratosphere uses HDFS and YARN which are both from Apache Hadoop. There exist many different builds of Hadoop (from both the upstream project and the different Hadoop distributions.)
+Typically errors arise with the RPC services. An error could look like this:
+
+```
+ERROR: The job was not successfully submitted to the nephele job manager: eu.stratosphere.nephele.executiongraph.GraphConversionException: Cannot compute input splits for TSV: java.io.IOException: Failed on local exception: com.google.protobuf.InvalidProtocolBufferException: Protocol message contained an invalid tag (zero).; Host Details :
+```
+
+**Example**
+
+```
+mvn -Dhadoop.profile=2 -Pcdh-repo -Dhadoop.version=2.0.0-cdh4.2.0 -P\!include-yarn -DskipTests package
+```
+
+The commands in detail:
+
+*  `-Dhadoop.profile=2` activates the Hadoop YARN profile of Stratosphere. This will enable all components of Stratosphere that are compatible with Hadoop 2.2
+*  `-Pcdh-repo` activates the Cloudera Hadoop dependencies. If you want other vendor's Hadoop dependencies (not in maven central) add the repository to your local maven configuration in `~/.m2/`.
+* `-Dhadoop.version=2.0.0-cdh4.2.0` sets a special version of the Hadoop dependencies. Make sure that the specified Hadoop version is compatible with the profile you activated (non-YARN probably need `-Dhadoop.profile=1`)
+* `-P!include-yarn` this command disables YARN in Stratosphere. This is required in this case because the Hadoop version we are using here `2.0.0-cdh4.2.0` is using the old YARN interface. As stated above, we expect Hadoop 2.2 (but Hadoop 2.1-betas might also work since they use the new APIs.)
+
+Please ask the Stratosphere Team if you have issues with your Hadoop compatabiliy.
 
 </section>
