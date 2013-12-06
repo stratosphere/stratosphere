@@ -15,7 +15,6 @@ package eu.stratosphere.scala.stubs
 
 import eu.stratosphere.scala.analysis.{UDTSerializer, UDT, UDF1}
 import eu.stratosphere.pact.common.stubs.{Collector, MapStub => JMapStub}
-import eu.stratosphere.nephele.configuration.Configuration
 import eu.stratosphere.pact.common.`type`.PactRecord
 
 abstract class MapStubBase[In: UDT, Out: UDT] extends JMapStub with Serializable with Function1[In, Out] {

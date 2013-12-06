@@ -29,20 +29,10 @@ import eu.stratosphere.pact.common.contract.ReduceContract
 import eu.stratosphere.pact.common.stubs.{ReduceStub => JReduceStub}
 
 import eu.stratosphere.scala.contracts.Annotations
-import eu.stratosphere.scala.analysis.UDTSerializer
-import eu.stratosphere.scala.analysis.UDF1
-import eu.stratosphere.scala.operators.stubs.DeserializingIterator
-import eu.stratosphere.scala.codegen.MacroContextHolder
-import eu.stratosphere.scala.ScalaContract
-import eu.stratosphere.scala.analysis.UDT
-import eu.stratosphere.scala.analysis.FieldSelector
-import eu.stratosphere.scala.analysis.FieldSelector
-import eu.stratosphere.scala.OneInputKeyedScalaContract
-import eu.stratosphere.scala.DataSet
-import eu.stratosphere.scala.OneInputHintable
-import eu.stratosphere.scala.OneInputScalaContract
-import eu.stratosphere.scala.codegen.Util
-import eu.stratosphere.scala.stubs.{ReduceStub, GroupReduceStub, CombinableGroupReduceStub, ReduceStubBase}
+import eu.stratosphere.scala._
+import eu.stratosphere.scala.analysis._
+import eu.stratosphere.scala.codegen.{MacroContextHolder, Util}
+import eu.stratosphere.scala.stubs.{ReduceStub, ReduceStubBase, CombinableGroupReduceStub, GroupReduceStub}
 
 class KeyedDataSet[In](val keySelection: List[Int], val input: DataSet[In]) {
   def reduceGroup[Out](fun: Iterator[In] => Out): DataSet[Out] with OneInputHintable[In, Out] = macro ReduceMacros.reduceGroup[In, Out]

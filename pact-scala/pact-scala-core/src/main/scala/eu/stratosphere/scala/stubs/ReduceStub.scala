@@ -17,8 +17,6 @@ import java.util.{ Iterator => JIterator }
 
 import eu.stratosphere.scala.analysis.{UDTSerializer, UDF1, FieldSelector, UDT}
 import eu.stratosphere.pact.common.stubs.{ReduceStub => JReduceStub, Collector}
-import eu.stratosphere.scala.operators.stubs.DeserializingIterator
-import eu.stratosphere.nephele.configuration.Configuration
 import scala.Iterator
 import eu.stratosphere.pact.common.`type`.PactRecord
 

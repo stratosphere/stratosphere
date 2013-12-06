@@ -15,33 +15,22 @@ package eu.stratosphere.scala.operators
 
 import language.experimental.macros
 import scala.reflect.macros.Context
-import eu.stratosphere.scala.ScalaContract
-import eu.stratosphere.pact.common.contract.MapContract
-import eu.stratosphere.scala.analysis.UDT
+
 import eu.stratosphere.pact.common.`type`.PactRecord
-import eu.stratosphere.pact.common.stubs.MapStub
 import eu.stratosphere.pact.common.stubs.Collector
 import eu.stratosphere.pact.generic.contract.Contract
-import eu.stratosphere.scala.contracts.Annotations
-import eu.stratosphere.pact.common.contract.ReduceContract
-import eu.stratosphere.pact.common.stubs.ReduceStub
-import eu.stratosphere.scala.analysis.UDTSerializer
-import eu.stratosphere.scala.analysis.UDF1
-import eu.stratosphere.scala.operators.stubs.DeserializingIterator
-import eu.stratosphere.nephele.configuration.Configuration
-import java.util.{ Iterator => JIterator }
-import eu.stratosphere.scala.analysis.FieldSelector
-import eu.stratosphere.scala.OneInputKeyedScalaContract
-import eu.stratosphere.pact.common.contract.CrossContract
-import eu.stratosphere.scala.analysis.UDF2
 import eu.stratosphere.pact.common.contract.MatchContract
-import eu.stratosphere.scala.TwoInputKeyedScalaContract
 import eu.stratosphere.pact.common.stubs.MatchStub
-import eu.stratosphere.scala.codegen.MacroContextHolder
-import eu.stratosphere.scala.DataSet
 import eu.stratosphere.pact.generic.contract.UserCodeObjectWrapper
-import eu.stratosphere.scala.TwoInputHintable
-import eu.stratosphere.scala.codegen.Util
+
+import eu.stratosphere.nephele.configuration.Configuration
+
+import java.util.{ Iterator => JIterator }
+
+import eu.stratosphere.scala._
+import eu.stratosphere.scala.analysis._
+import eu.stratosphere.scala.contracts.Annotations
+import eu.stratosphere.scala.codegen.{MacroContextHolder, Util}
 
 class JoinDataSet[LeftIn, RightIn](val leftInput: DataSet[LeftIn], val rightInput: DataSet[RightIn]) {
   def where[Key](keyFun: LeftIn => Key) = macro JoinMacros.whereImpl[LeftIn, RightIn, Key]
