@@ -21,9 +21,7 @@ public class IntCounter implements SimpleAccumulator<Integer> {
   }
   
   @Override
-  public void merge(Accumulator<?, ?> other) {
-  	// TODO Remove unknowns
-  	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+  public void merge(Accumulator<Integer, Integer> other) {
   	this.localValue += ((IntCounter)other).getLocalValue();
   }
 

@@ -39,9 +39,7 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
 	 * TODO Write test case
 	 */
 	@Override
-	public void merge(Accumulator<?, ?> other) {
-    // TODO Remove unknowns
-		AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+	public void merge(Accumulator<Integer, Map<Integer, Integer>> other) {
 		// Merge the values into this map
 		for (Map.Entry<Integer, Integer> entryFromOther : ((Histogram)other).getLocalValue()
 				.entrySet()) {

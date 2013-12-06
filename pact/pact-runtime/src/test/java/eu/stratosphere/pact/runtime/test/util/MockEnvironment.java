@@ -18,6 +18,7 @@ package eu.stratosphere.pact.runtime.test.util;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import eu.stratosphere.nephele.configuration.Configuration;
@@ -33,6 +34,7 @@ import eu.stratosphere.nephele.io.RuntimeInputGate;
 import eu.stratosphere.nephele.io.RuntimeOutputGate;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
@@ -340,5 +342,10 @@ public class MockEnvironment implements Environment
 	public int getNumberOfInputChannels() {
 		
 		return this.inputs.size();
+	}
+
+	@Override
+	public void reportAccumulators(Map<String, Accumulator<?, ?>> accumulators) {
+		throw new UnsupportedOperationException("reportAccumulators() is not supported by MockEnvironment");
 	}
 }

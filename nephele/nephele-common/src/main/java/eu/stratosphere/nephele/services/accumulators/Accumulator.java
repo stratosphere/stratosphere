@@ -18,10 +18,10 @@ import eu.stratosphere.nephele.io.IOReadableWritable;
  * 
  * @param <V>
  *          Type of values that are added to the accumulator
- * @param <A>
+ * @param <R>
  *          Type of the accumulator result
  */
-public interface Accumulator<V, A> extends IOReadableWritable, Serializable {
+public interface Accumulator<V, R> extends IOReadableWritable, Serializable {
 
 	/**
 	 * @param value
@@ -32,7 +32,7 @@ public interface Accumulator<V, A> extends IOReadableWritable, Serializable {
 	/**
 	 * @return local value from the current UDF context
 	 */
-	A getLocalValue();
+	R getLocalValue();
 
 	/**
 	 * Reset value locally. This only affects the current UDF context.
@@ -52,6 +52,6 @@ public interface Accumulator<V, A> extends IOReadableWritable, Serializable {
    * @return Reference to this (for efficiency), after data from other were
    *         merged in
    */
-	void merge(Accumulator<?, ?> other);
+	void merge(Accumulator<V, R> other);
 
 }

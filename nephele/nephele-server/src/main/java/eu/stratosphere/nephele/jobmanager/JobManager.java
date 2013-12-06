@@ -1248,8 +1248,12 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * TODO Finalize (accumulators)
 	 */
   @Override
-  public void reportAccumulatorResult(JobID jobID, Accumulator<?, ?> accumulator)
+  public void reportAccumulatorResult(JobID jobID, Map<StringRecord, Accumulator<?, ?>> accumulator)
       throws IOException {
     System.out.println("Received accumulator result for job " + jobID.toString());
+    for (Map.Entry<StringRecord, Accumulator<?, ?>> entry : accumulator.entrySet()) {
+    	System.out.println("Accumulator " + entry.getKey() + " of type " + entry.getValue().getClass() + ": " + entry.getValue().getLocalValue());
+    }
+    // TODO Store these locally for this job, to be able to merge them at the end of the job.
   }
 }

@@ -22,7 +22,6 @@ import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.IntCounter;
 import eu.stratosphere.nephele.services.accumulators.LongCounter;
-import eu.stratosphere.nephele.services.accumulators.SimpleAccumulator;
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
 
 /**

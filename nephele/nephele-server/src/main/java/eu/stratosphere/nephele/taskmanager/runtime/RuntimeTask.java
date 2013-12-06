@@ -32,7 +32,6 @@ import eu.stratosphere.nephele.execution.RuntimeEnvironment;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.taskmanager.Task;
 import eu.stratosphere.nephele.taskmanager.TaskManager;
@@ -378,13 +377,5 @@ public final class RuntimeTask implements Task, ExecutionObserver {
 
 		return this.executionState;
 	}
-
-	/**
-	 * TODO Finalize (accumulators)
-	 */
-  @Override
-  public void reportAccumulators(JobID jobID, Accumulator<?,?> accumulator) {
-    this.taskManager.reportAccumulators(jobID, accumulator);
-  }
 
 }

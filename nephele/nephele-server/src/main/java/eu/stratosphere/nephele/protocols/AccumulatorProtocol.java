@@ -16,9 +16,11 @@
 package eu.stratosphere.nephele.protocols;
 
 import java.io.IOException;
+import java.util.Map;
 
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.types.StringRecord;
 
 /**
  * The accumulator protocol is implemented by the job manager and offers functionality
@@ -34,6 +36,6 @@ public interface AccumulatorProtocol extends VersionedProtocol {
    * @param jobID
    * @throws IOException
    */
-	void reportAccumulatorResult(JobID jobID, Accumulator<?, ?> accumulator) throws IOException;
+	void reportAccumulatorResult(JobID jobID, Map<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
 
 }

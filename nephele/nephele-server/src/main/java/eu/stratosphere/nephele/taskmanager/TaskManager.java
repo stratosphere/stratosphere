@@ -72,7 +72,6 @@ import eu.stratosphere.nephele.protocols.ChannelLookupProtocol;
 import eu.stratosphere.nephele.protocols.InputSplitProviderProtocol;
 import eu.stratosphere.nephele.protocols.JobManagerProtocol;
 import eu.stratosphere.nephele.protocols.TaskOperationProtocol;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
@@ -311,10 +310,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 		// Add shutdown hook for clean up tasks
 		Runtime.getRuntime().addShutdownHook(new TaskManagerCleanUp(this));
-		
-		// Register accumulator collector
-		// TODO Refactor (accumulators)
-		AccumulatorCollector.instance().setTaskManager(this);
 	}
 
 	/**
@@ -477,7 +472,7 @@ public class TaskManager implements TaskOperationProtocol {
 			RuntimeEnvironment re;
 			try {
 				re = new RuntimeEnvironment(tdd, this.memoryManager, this.ioManager, new TaskInputSplitProvider(jobID,
-					vertexID, this.globalInputSplitProvider));
+					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy);
 			} catch (Throwable t) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);
@@ -844,19 +839,5 @@ public class TaskManager implements TaskOperationProtocol {
 			}
 		}
 	}
-
-	/**
-	 * TODO Refactor. Put into interface (so that TM offers accumulator collector service)
-	 * 
-	 * @param jobID
-	 * @param message
-	 */
-  public void reportAccumulators(JobID jobID, Accumulator<?, ?> accumulator) {
-    try {
-      this.accumulatorProtocolProxy.reportAccumulatorResult(jobID, accumulator);
-    } catch (IOException e) {
-      LOG.error(StringUtils.stringifyException(e));
-    }
-  }
   
 }

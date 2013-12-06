@@ -40,7 +40,6 @@ import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
-import eu.stratosphere.nephele.taskmanager.AccumulatorCollector;
 import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.AbstractTask;
@@ -390,7 +389,15 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 			// them to the JobManager. close() has been called for all involved UDFs
 			// earlier (using this.stub.close() and closeChainedTasks(), so UDFs can
 			// no longer modify accumulators.
-			collectAndReportAccumulators(this.stub, this.chainedTasks);
+			Map<String, Accumulator<?,?>> accumulators = null;
+			if (stub != null) {
+				// collect the counters from the stub
+				accumulators = stub.getRuntimeContext().getAllAccumulators();
+			} else {
+				// TODO When is this the case? What should we do here?
+				accumulators = Maps.newHashMap();
+			}
+			RegularPactTask.mergeAndReportAccumulators(getEnvironment(), accumulators, this.chainedTasks);
 		}
 		catch (Exception ex) {
 			// close the input, but do not report any exceptions, since we already have another root cause
@@ -414,32 +421,25 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 	}
 
 	/**
-	 * TODO Finalize
+	 * TODO Finalize & refactor
 	 * 
 	 * @param stub
+	 *          The task stub which usually holds several accumulators
 	 * @param chainedTasks
+	 *          Each chained task might have accumulators which will be merged with
+	 *          the accumulators of the stub.
 	 */
-	private void collectAndReportAccumulators(S stub, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
-		// TODO Not sure if I have to check for this.running (this is tested before calling stub.close())
-		Map<String, Accumulator<?,?>> stubAccumulators = null;
-		if (this.stub != null) {
-			// collect the counters from the stub
-			stubAccumulators = this.stub.getRuntimeContext().getAllAccumulators();
-		} else {
-			// TODO When is this the case? What should we do here?
-			stubAccumulators = Maps.newHashMap();
-		}
-
+	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?,?>> accumulators, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// We can merge here the accumulators from the stub and the chained tasks. 
 		// Type conflicts can occur here if counters with same name but different type were used
 		// TODO We should use the same logic in JobManager
 		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
 			Map<String, Accumulator<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulators();
-			AccumulatorHelper.mergeInto(stubAccumulators, allOther);
+			AccumulatorHelper.mergeInto(accumulators, allOther);
 		}
 		
-		// TODO Transfer stubAccumulators now to JobManager
-		AccumulatorCollector.instance().reportAccumulators(getEnvironment().getJobID(), stubAccumulators.get(stubAccumulators.keySet().toArray()[0]));
+		// Report accumulators to JobManager
+		env.reportAccumulators(accumulators);
 	}
 
 	/* (non-Javadoc)

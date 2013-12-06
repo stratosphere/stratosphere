@@ -282,8 +282,7 @@ public class AccumulatorITCase extends TestBase2 {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void merge(Accumulator<?, ?> other) {
-      AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+    public void merge(Accumulator<T, Set<T>> other) {
       // build union
       this.set.addAll(((SetAccumulator<T>)other).getLocalValue());
     }

@@ -21,9 +21,7 @@ public class LongCounter implements SimpleAccumulator<Long> {
   }
 
   @Override
-  public void merge(Accumulator<?, ?> other) {
-    // TODO Remove unknowns
-  	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+  public void merge(Accumulator<Long, Long> other) {
   	this.localValue += ((LongCounter)other).getLocalValue();
   }
 

@@ -21,9 +21,7 @@ public class DoubleCounter implements SimpleAccumulator<Double> {
   }
   
   @Override
-  public void merge(Accumulator<?, ?> other) {
-    // TODO Remove unknowns
-  	AccumulatorHelper.compareAccumulatorTypes("unknown", this.getClass(), other.getClass());
+  public void merge(Accumulator<Double, Double> other) {
   	this.localValue += ((DoubleCounter)other).getLocalValue();
   }
 

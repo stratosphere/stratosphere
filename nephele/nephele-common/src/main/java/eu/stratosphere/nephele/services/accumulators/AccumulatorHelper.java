@@ -22,26 +22,36 @@ public class AccumulatorHelper {
 	 * Merge two collections of accumulators. The second will be merged
 	 * into the first.
 	 * 
-	 * @param accumulators
+	 * @param target
 	 *          The collection of accumulators that will be updated
 	 * @param toMerge
 	 *          The collection of accumulators that will be merged into the other
 	 */
-	public static void mergeInto(Map<String, Accumulator<?, ?>> accumulabtors,
+	public static void mergeInto(Map<String, Accumulator<?, ?>> target,
 			Map<String, Accumulator<?, ?>> toMerge) {
 		for (Map.Entry<String, Accumulator<?,?>> otherEntry : toMerge.entrySet()) {
-			Accumulator<?,?> ownAccumulator = accumulabtors.get(otherEntry.getKey());
+			Accumulator<?,?> ownAccumulator = target.get(otherEntry.getKey());
 			if (ownAccumulator == null) {
 				// Take over counter from chained task
-				accumulabtors.put(otherEntry.getKey(), otherEntry.getValue());
+				target.put(otherEntry.getKey(), otherEntry.getValue());
 			} else {
 				// Both should have the same type
 				AccumulatorHelper.compareAccumulatorTypes(otherEntry.getKey(),
 						ownAccumulator.getClass(), otherEntry.getValue().getClass());
 				
 				// Merge counter from chained task into counter from stub
-				ownAccumulator.merge(otherEntry.getValue());
+				mergeSingle(ownAccumulator, otherEntry.getValue());
 			}
 		}
 	}
+	
+	private static final <V, R> void mergeSingle(Accumulator<?, ?> target, Accumulator<?, ?> toMerge) {
+	  @SuppressWarnings("unchecked")
+	  Accumulator<V, R> typedTarget = (Accumulator<V, R>) target;
+	  
+	  @SuppressWarnings("unchecked")
+	  Accumulator<V, R> typedToMerge = (Accumulator<V, R>) toMerge;
+	  
+	  typedTarget.merge(typedToMerge);
+	 }
 }
