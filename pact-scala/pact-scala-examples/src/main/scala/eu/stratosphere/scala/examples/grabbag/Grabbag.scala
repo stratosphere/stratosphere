@@ -95,7 +95,14 @@ object Main1 extends Serializable {
     val foo = counts.join(inputNumbers) where { case (_, c) => c}
 
     
-    val bar1 = foo.isEqualTo { case (c, _, _) => c } map { (w1, w2) => (w1._1 + " is ONE " + w2._2, w1._2) }
+//    val bar1 = foo.isEqualTo { case (c, _, _) => c } map { (w1, w2) => (w1._1 + " is ONE " + w2._2, w1._2) }
+    val bar1 = foo.isEqualTo { case (c, _, _) => c } map(
+      new JoinStub[(String, Int), (Int, String, String), (String, Int)] {
+        def apply(l: (String, Int), r: (Int, String, String)) = {
+          (l._1 + " is ONE BGG " + r._2, l._2)
+        }
+      }
+    )
     bar1.right neglects { case (a,b,c) => c }
     
     val bar2 = foo.isEqualTo { case (c, _, _) => c } map { (w1, w2) => (w1._1 + " is TWO " + w2._2, w1._2) }
