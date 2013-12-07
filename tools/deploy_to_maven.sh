@@ -62,16 +62,19 @@ if [[ $TRAVIS_PULL_REQUEST == "false" ]] ; then
 	if [[ $TRAVIS_JOB_NUMBER == *5 ]] ; then 
 		#generate yarn poms & build for yarn.
 		./tools/generate_specific_pom.sh $CURRENT_STRATOSPHERE_VERSION $CURRENT_STRATOSPHERE_VERSION_YARN pom.xml
-		mvn -B -DskipTests clean package
+		mvn -B -DskipTests clean install
 		CURRENT_STRATOSPHERE_VERSION=$CURRENT_STRATOSPHERE_VERSION_YARN
 	fi
 	if [[ $TRAVIS_JOB_NUMBER == *2 ]] || [[ $TRAVIS_JOB_NUMBER == *5 ]] ; then 
 		sudo apt-get install sshpass
+		cd stratosphere-dist
+		mvn -B -DskipTests -Pdebian-package package
+		cd ..
 		echo "Uploading build to dopa.dima.tu-berlin.de. Job Number: $TRAVIS_JOB_NUMBER"
 		mkdir stratosphere
 		cp -r stratosphere-dist/target/stratosphere-dist-$CURRENT_STRATOSPHERE_VERSION-bin/stratosphere-$CURRENT_STRATOSPHERE_VERSION/* stratosphere/
 		tar -czf stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz stratosphere
-		sshpass -p "$DOPA_PASS" scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz $DOPA_USER@dopa.dima.tu-berlin.de:bin/
+		sshpass -p "$DOPA_PASS" scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz stratosphere-dist/target/*yarn*.jar $DOPA_USER@dopa.dima.tu-berlin.de:bin/
 	fi
 
 fi # pull request check
