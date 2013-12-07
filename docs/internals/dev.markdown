@@ -24,7 +24,7 @@ Unfortunately, our SSL certificate does not have a valid signature chain
 at the moment. You have to disable GIT's check for that. To check out
 the code execute:
 
-    git clone git://github.com/stratosphere-eu/stratosphere.git
+    git clone git://github.com/stratosphere/stratosphere.git
 
 Compile the Source Code and Build the System
 --------------------------------------------
@@ -265,7 +265,7 @@ The Eclipse source code import is done in two stages:
 
 Clone the latest revision from our public github repository:
 
-    git clone https://github.com/stratosphere-eu/stratosphere.git
+    git clone https://github.com/stratosphere/stratosphere.git
 
 The source code will be placed in a directory called `stratosphere`. See
 [here](sourcecodestructure.html "sourcecodestructure")

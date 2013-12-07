@@ -31,6 +31,7 @@ questions:
 
 There are a couple of ways to track the progress of a Stratosphere program:
 
+-   The JobManager starts a web interface by default. In runs on port 8081
 -   Use the visualization tool. The tool reports the states of all
     subtasks. If *profiling* is enabled (see [Configuration
     Reference](configreference.html "configreference")),
