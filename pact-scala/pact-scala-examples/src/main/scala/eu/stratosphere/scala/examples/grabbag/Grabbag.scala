@@ -81,7 +81,7 @@ object Main1 extends Serializable {
         override def open(config: Configuration) = {
           println("Opening up this badboy.")
         }
-        override def map(in: (String, Int)) = {
+        override def apply(in: (String, Int)) = {
           println("IN RICH MAPPER: " + in)
           in
         }

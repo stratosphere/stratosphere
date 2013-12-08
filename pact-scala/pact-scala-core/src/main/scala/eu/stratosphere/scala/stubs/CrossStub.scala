@@ -39,7 +39,7 @@ abstract class CrossStub[LeftIn: UDT, RightIn: UDT, Out: UDT] extends CrossStubB
   override def cross(leftRecord: PactRecord, rightRecord: PactRecord, out: Collector[PactRecord]) = {
     val left = leftDeserializer.deserializeRecyclingOn(leftRecord)
     val right = rightDeserializer.deserializeRecyclingOn(rightRecord)
-    val output = cross(left, right)
+    val output = apply(left, right)
 
     leftRecord.setNumFields(outputLength)
 
@@ -52,15 +52,13 @@ abstract class CrossStub[LeftIn: UDT, RightIn: UDT, Out: UDT] extends CrossStubB
     serializer.serialize(output, leftRecord)
     out.collect(leftRecord)
   }
-
-  def cross(leftIn: LeftIn, rightIn: RightIn): Out
 }
 
 abstract class FlatCrossStub[LeftIn: UDT, RightIn: UDT, Out: UDT] extends CrossStubBase[LeftIn, RightIn, Out] with Function2[LeftIn, RightIn, Iterator[Out]]  {
   override def cross(leftRecord: PactRecord, rightRecord: PactRecord, out: Collector[PactRecord]) = {
     val left = leftDeserializer.deserializeRecyclingOn(leftRecord)
     val right = rightDeserializer.deserializeRecyclingOn(rightRecord)
-    val output = flatCross(left, right)
+    val output = apply(left, right)
 
     if (output.nonEmpty) {
 
@@ -78,8 +76,6 @@ abstract class FlatCrossStub[LeftIn: UDT, RightIn: UDT, Out: UDT] extends CrossS
       }
     }
   }
-
-  def flatCross(leftIn: LeftIn, rightIn: RightIn): Iterator[Out]
 }
 
 

@@ -49,8 +49,6 @@ abstract class ReduceStub[In: UDT] extends ReduceStubBase[In, In] with Function2
     reduceSerializer.serialize(output, reduceRecord)
     out.collect(reduceRecord)
   }
-
-  def apply(in1: In, in2: In): In
 }
 
 abstract class GroupReduceStub[In: UDT, Out: UDT] extends ReduceStubBase[In, Out] with Function1[Iterator[In], Out] {
@@ -58,15 +56,11 @@ abstract class GroupReduceStub[In: UDT, Out: UDT] extends ReduceStubBase[In, Out
     val firstRecord = reduceIterator.initialize(records)
     reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
 
-    val output = reduce(reduceIterator)
+    val output = apply(reduceIterator)
 
     reduceSerializer.serialize(output, reduceRecord)
     out.collect(reduceRecord)
   }
-
-  def reduce(records: Iterator[In]): Out
-
-  def apply(record: Iterator[In]): Out = throw new RuntimeException("This should never be called.")
 }
 
 abstract class CombinableGroupReduceStub[In: UDT, Out: UDT] extends ReduceStubBase[In, Out] with Function1[Iterator[In], Out] {

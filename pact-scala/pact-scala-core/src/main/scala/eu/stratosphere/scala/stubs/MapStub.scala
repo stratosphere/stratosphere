@@ -17,7 +17,7 @@ import eu.stratosphere.scala.analysis.{UDTSerializer, UDT, UDF1}
 import eu.stratosphere.pact.common.stubs.{Collector, MapStub => JMapStub}
 import eu.stratosphere.pact.common.`type`.PactRecord
 
-abstract class MapStubBase[In: UDT, Out: UDT] extends JMapStub with Serializable with Function1[In, Out] {
+abstract class MapStubBase[In: UDT, Out: UDT] extends JMapStub with Serializable{
   val inputUDT: UDT[In] = implicitly[UDT[In]]
   val outputUDT: UDT[Out] = implicitly[UDT[Out]]
   val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
@@ -26,15 +26,12 @@ abstract class MapStubBase[In: UDT, Out: UDT] extends JMapStub with Serializable
   protected lazy val serializer: UDTSerializer[Out] = udf.getOutputSerializer
   protected lazy val discard: Array[Int] = udf.getDiscardIndexArray
   protected lazy val outputLength: Int = udf.getOutputLength
-
-  // just so we satisfy Function1 requirements
-  def apply(in: In): Out = throw new RuntimeException("Should never be called.")
 }
 
-abstract class MapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] {
+abstract class MapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] with Function1[In, Out] {
   override def map(record: PactRecord, out: Collector[PactRecord]) = {
     val input = deserializer.deserializeRecyclingOn(record)
-    val output = map(input)
+    val output = apply(input)
 
     record.setNumFields(outputLength)
 
@@ -44,14 +41,12 @@ abstract class MapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] {
     serializer.serialize(output, record)
     out.collect(record)
   }
-
-  def map(in: In): Out
 }
 
-abstract class FlatMapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] {
+abstract class FlatMapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] with Function1[In, Iterator[Out]] {
   override def map(record: PactRecord, out: Collector[PactRecord]) = {
     val input = deserializer.deserializeRecyclingOn(record)
-    val output = flatMap(input)
+    val output = apply(input)
 
     if (output.nonEmpty) {
 
@@ -67,17 +62,13 @@ abstract class FlatMapStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] {
       }
     }
   }
-
-  def flatMap(in: In): Iterator[Out]
 }
 
-abstract class FilterStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] {
+abstract class FilterStub[In: UDT, Out: UDT] extends MapStubBase[In, Out] with Function1[In, Boolean]  {
   override def map(record: PactRecord, out: Collector[PactRecord]) = {
     val input = deserializer.deserializeRecyclingOn(record)
-    if (filter(input)) {
+    if (apply(input)) {
       out.collect(record)
     }
   }
-
-  def filter(in: In): Boolean
 }
