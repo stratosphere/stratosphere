@@ -15,9 +15,13 @@
 
 package eu.stratosphere.pact.test.counters;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,7 +36,6 @@ import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
-import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.IntCounter;
@@ -260,10 +263,14 @@ public class AccumulatorITCase extends TestBase2 {
 	
 	/**
 	 * Custom accumulator
+	 * 
+	 * TODO: Not so nice that it needs to extend IOReadableWritable.
+	 * Better if we could support the basic 
 	 */
-	public static class SetAccumulator<T> implements Accumulator<T, Set<T>> {
+	public static class SetAccumulator<T extends Serializable> implements Accumulator<T, Set<T>> {
 	  
-	  private Set<T> set = Sets.newHashSet();
+//	  private SerializableHashSet<T> set = new SerializableHashSet<T>();
+	  Set<T> set = Sets.newHashSet();
 
     @Override
     public void add(T value) {
@@ -280,7 +287,6 @@ public class AccumulatorITCase extends TestBase2 {
       this.set.clear();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void merge(Accumulator<T, Set<T>> other) {
       // build union
@@ -290,11 +296,34 @@ public class AccumulatorITCase extends TestBase2 {
     @Override
     public void write(DataOutput out) throws IOException {
       // TODO
+//      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//      ObjectOutputStream oos = new ObjectOutputStream(baos);
+//      oos.writeObject(this);
+//      byte[] bytes = baos.toByteArray();
+//      out.writeInt(bytes.length);
+//      out.write(bytes);
     }
 
+//    @SuppressWarnings("unchecked")
     @Override
     public void read(DataInput in) throws IOException {
-      // TODO
+//      int len = in.readInt();
+//      byte[] bytes = new byte[len];
+//      in.readFully(bytes);
+//      
+//      ObjectInputStream oois = null;
+//      try {
+//        oois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+//        try {
+//          set = (Set<T>) oois.readObject();
+//        } catch (ClassNotFoundException e) {
+//          e.printStackTrace();
+//        }
+//      } finally {
+//        if (oois != null) {
+//          oois.close();
+//        }
+//      }
     }
 	  
 	}

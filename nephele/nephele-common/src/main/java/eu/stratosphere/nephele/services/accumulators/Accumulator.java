@@ -19,7 +19,7 @@ import eu.stratosphere.nephele.io.IOReadableWritable;
  * @param <V>
  *          Type of values that are added to the accumulator
  * @param <R>
- *          Type of the accumulator result
+ *          Type of the accumulator result as it will be reported to the client
  */
 public interface Accumulator<V, R> extends IOReadableWritable, Serializable {
 

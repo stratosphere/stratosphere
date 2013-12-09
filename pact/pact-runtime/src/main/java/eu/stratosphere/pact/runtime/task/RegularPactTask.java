@@ -385,10 +385,10 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 			// close all chained tasks letting them report failure
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 			
-			// TODO Here we can collect the accumulators of all involved UDFs and send
-			// them to the JobManager. close() has been called for all involved UDFs
-			// earlier (using this.stub.close() and closeChainedTasks(), so UDFs can
-			// no longer modify accumulators.
+      // Collect the accumulators of all involved UDFs and send them to the
+      // JobManager. close() has been called earlier for all involved UDFs
+      // (using this.stub.close() and closeChainedTasks()), so UDFs can no longer
+      // modify accumulators.
 			Map<String, Accumulator<?,?>> accumulators = null;
 			if (stub != null) {
 				// collect the counters from the stub
