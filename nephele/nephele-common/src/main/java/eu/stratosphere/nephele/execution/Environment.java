@@ -15,7 +15,6 @@
 
 package eu.stratosphere.nephele.execution;
 
-import java.util.Map;
 import java.util.Set;
 
 import eu.stratosphere.nephele.configuration.Configuration;
@@ -25,8 +24,9 @@ import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.io.OutputGate;
 import eu.stratosphere.nephele.io.RecordDeserializerFactory;
 import eu.stratosphere.nephele.io.channels.ChannelID;
+import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.InputSplitProvider;
@@ -250,13 +250,6 @@ public interface Environment {
 	 * @return the IDs of all the input channels connected to the gate with the given ID
 	 */
 	Set<ChannelID> getInputChannelIDsOfGate(GateID gateID);
-
-	/**
-	 * The Nephele task can call this to report the accumulators it collected. The
-	 * Environment has the responsibility to forward them to the JobManager.
-	 * 
-	 * @param accumulators
-	 *          all accumulators created by the task
-	 */
-	void reportAccumulators(Map<String, Accumulator<?, ?>> accumulators);
+	
+	AccumulatorProtocol getAccumulatorProtocolProxy();
 }

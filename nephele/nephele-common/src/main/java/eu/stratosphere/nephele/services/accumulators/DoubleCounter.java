@@ -39,5 +39,10 @@ public class DoubleCounter implements SimpleAccumulator<Double> {
 	public void read(DataInput in) throws IOException {
 		this.localValue = in.readDouble();
 	}
+	
+	@Override
+	public String toString() {
+		return "DoubleCounter object. Local value: " + this.localValue;
+	}
 
 }

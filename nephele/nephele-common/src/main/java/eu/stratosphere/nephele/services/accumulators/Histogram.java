@@ -57,15 +57,33 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
   public void resetLocal() {
     this.hashMap.clear();
   }
+  
+  @Override
+  public String toString() {
+  	StringBuilder builder = new StringBuilder();
+  	builder.append("[");
+  	for (Map.Entry<Integer, Integer> entry : this.hashMap.entrySet() ) {
+  		builder.append(entry.getKey() + ":" + entry.getValue() + ", ");
+  	}
+  	builder.append("]");
+  	return builder.toString();
+  }
 	
 	@Override
 	public void write(DataOutput out) throws IOException {
-		// TODO See SerializableHashMap
+		out.writeInt(hashMap.size());
+		for (Map.Entry<Integer, Integer> entry : hashMap.entrySet()) {
+			out.writeInt(entry.getKey());
+			out.writeInt(entry.getValue());
+		}
 	}
 
 	@Override
 	public void read(DataInput in) throws IOException {
-		// TODO See SerializableHashMap
+		int size = in.readInt();
+		for (int i=0; i<size; ++i) {
+			hashMap.put(in.readInt(), in.readInt());
+		}
 	}
 
 }

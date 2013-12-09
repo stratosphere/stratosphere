@@ -39,5 +39,10 @@ public class IntCounter implements SimpleAccumulator<Integer> {
 	public void read(DataInput in) throws IOException {
 		localValue = in.readInt();
 	}
+	
+	@Override
+	public String toString() {
+		return "IntCounter object. Local value: " + this.localValue;
+	}
 
 }

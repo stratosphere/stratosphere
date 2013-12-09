@@ -119,6 +119,7 @@ import eu.stratosphere.nephele.protocols.ExtendedManagementProtocol;
 import eu.stratosphere.nephele.protocols.InputSplitProviderProtocol;
 import eu.stratosphere.nephele.protocols.JobManagerProtocol;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.taskmanager.AbstractTaskResult;
 import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
 import eu.stratosphere.nephele.taskmanager.TaskExecutionState;
@@ -131,6 +132,7 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.SerializableArrayList;
+import eu.stratosphere.nephele.util.SerializableHashMap;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -1295,17 +1297,18 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * TODO Finalize (accumulators)
 	 */
   @Override
-  public void reportAccumulatorResult(JobID jobID, Map<StringRecord, Accumulator<?, ?>> accumulator)
+  public void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> newAccumulators)
       throws IOException {
     System.out.println("Received accumulator result for job " + jobID.toString());
-    for (Map.Entry<StringRecord, Accumulator<?, ?>> entry : accumulator.entrySet()) {
-    	System.out.println("Accumulator " + entry.getKey() + " of type " + entry.getValue().getClass() + ": " + entry.getValue().getLocalValue());
-    }
+    System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
     // TODO Store these locally for this job, to be able to merge them at the end of the job.
+    AccumulatorHelper.mergeIntoSerializable(this.accumulators, newAccumulators);
   }
+  
+  private SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators = new SerializableHashMap<StringRecord, Accumulator<?, ?>>();
   
   @Override
   public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) {
-  	return null;
+  	return accumulators;
   }
 }

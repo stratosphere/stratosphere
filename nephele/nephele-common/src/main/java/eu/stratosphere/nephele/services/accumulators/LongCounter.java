@@ -39,5 +39,10 @@ public class LongCounter implements SimpleAccumulator<Long> {
 	public void read(DataInput in) throws IOException {
 		this.localValue = in.readLong();
 	}
+	
+	@Override
+	public String toString() {
+		return "LongCounter object. Local value: " + this.localValue;
+	}
 
 }

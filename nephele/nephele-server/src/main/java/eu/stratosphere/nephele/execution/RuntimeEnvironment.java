@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -45,14 +44,11 @@ import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.InputSplitProvider;
 import eu.stratosphere.nephele.types.Record;
-import eu.stratosphere.nephele.types.StringRecord;
-import eu.stratosphere.nephele.util.SerializableHashMap;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -901,21 +897,10 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 		return Collections.unmodifiableSet(inputChannelIDs);
 	}
-
-	/**
-	 * Report accumulators to JobManager. This is called from a task. 
-	 */
+	
 	@Override
-	public void reportAccumulators(Map<String, Accumulator<?, ?>> accumulators) {
-    try {
-    	// Transform String to StringRecord to make HashMap serializable
-    	SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = new SerializableHashMap<StringRecord, Accumulator<?,?>>(accumulators.size());
-    	for (Map.Entry<String, Accumulator<?, ?>> entry : accumulators.entrySet()) {
-    		serializableAccumulators.put(new StringRecord(entry.getKey()), entry.getValue());
-    	}
-			this.accumulatorProtocolProxy.reportAccumulatorResult(jobID, serializableAccumulators);
-		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
-		}
+	public AccumulatorProtocol getAccumulatorProtocolProxy() {
+		return accumulatorProtocolProxy;
 	}
+
 }

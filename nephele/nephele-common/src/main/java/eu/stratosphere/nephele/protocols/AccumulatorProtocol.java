@@ -21,6 +21,7 @@ import java.util.Map;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.types.StringRecord;
+import eu.stratosphere.nephele.util.SerializableHashMap;
 
 /**
  * The accumulator protocol is implemented by the job manager and offers functionality
@@ -31,12 +32,12 @@ public interface AccumulatorProtocol extends VersionedProtocol {
   /**
    * TODO Would be nice to have the vertex/taskID, to know (and log) in
    * JobManager where the report came from and to check if all accumulators were
-   * reported (assuming that each task reports some). Optional however
+   * reported (assuming that each task reports some).
    * 
    * @param jobID
    * @throws IOException
    */
-	void reportAccumulatorResult(JobID jobID, Map<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
+	void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
 	
 	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID);
 

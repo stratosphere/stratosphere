@@ -237,9 +237,10 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 			
       // Merge and report accumulators
+			System.out.println("Subtask " + getEnvironment().getIndexInSubtaskGroup() + " of " + getEnvironment().getCurrentNumberOfSubtasks());
 			Map<String, Accumulator<?,?>> accumulators = null;
 			if (this.output instanceof ChainedDriver) {
-				accumulators = ((ChainedDriver)this.output).getStub().getRuntimeContext().getAllAccumulators();
+				accumulators = ((ChainedDriver<?,?>)this.output).getStub().getRuntimeContext().getAllAccumulators();
 			} else {
 				accumulators = Maps.newHashMap();
 			}

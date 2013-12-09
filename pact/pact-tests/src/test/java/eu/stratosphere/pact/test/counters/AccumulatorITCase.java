@@ -30,8 +30,10 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.Sets;
 
+import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.IntCounter;
@@ -78,6 +80,14 @@ public class AccumulatorITCase extends TestBase2 {
 	@Override
 	protected void postSubmit() throws Exception {
 		compareResultsByLinesInMemory(EXPECTED, resultPath);
+		
+		// Test accumulator results
+		System.out.println("Accumulator results:");
+		JobExecutionResult res = getJobExecutionResult();
+		System.out.println(AccumulatorHelper.getResultsFormated(res.getAllAccumulatorResults()));
+		
+		Assert.assertEquals(new Integer(3), (Integer) res.getAccumulatorResult("num-lines"));
+//		Check num-lines, words-per-line, open-close-counter, distinct-words
 	}
 
 	@Override
@@ -136,7 +146,7 @@ public class AccumulatorITCase extends TestBase2 {
     
 		@Override
 		public void open(Configuration parameters) throws Exception {
-		  System.out.println("Map: open");
+//		  System.out.println("Map: open");
 		  
 		  // Add counters using convenience functions
 			this.cntNumLines = getRuntimeContext().getIntCounter("num-lines");
@@ -172,7 +182,7 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void map(PactRecord record, Collector<PactRecord> collector) {
-      System.out.println("Map: map");
+//      System.out.println("Map: map");
       
 			this.cntNumLines.add(1);
 			
@@ -196,7 +206,7 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void close() throws Exception {
-      System.out.println("Map: close");
+//      System.out.println("Map: close");
       
       // Test counter used in open and close only
       this.openCloseCounter.add(0.5);
@@ -218,22 +228,22 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void open(Configuration parameters) throws Exception {
-      System.out.println("Reduce: open");
+//      System.out.println("Reduce: open");
   		this.reduceCalls = getRuntimeContext().getIntCounter("reduce-calls");
   		this.combineCalls = getRuntimeContext().getIntCounter("combine-calls");
 		}
 		
 		@Override
 		public void reduce(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
-      System.out.println("Reduce: reduce");
+//      System.out.println("Reduce: reduce");
       reduceCalls.add(1);
       reduceInternal(records, out);
 		}
 		
 		@Override
 		public void combine(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
+//			System.out.println("Reduce: combine");
 			combineCalls.add(1);
-      System.out.println("Reduce: combine");
 			reduceInternal(records, out);
 		}
 		
@@ -253,7 +263,7 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void close() throws Exception {
-      System.out.println("Reduce: close");
+//      System.out.println("Reduce: close");
 		}
 	}
 	

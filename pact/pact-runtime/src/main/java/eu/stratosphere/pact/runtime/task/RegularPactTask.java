@@ -44,6 +44,9 @@ import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.AbstractTask;
 import eu.stratosphere.nephele.types.Record;
+import eu.stratosphere.nephele.types.StringRecord;
+import eu.stratosphere.nephele.util.SerializableHashMap;
+import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.pact.common.contract.DataDistribution;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
@@ -433,14 +436,25 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?,?>> accumulators, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// We can merge here the accumulators from the stub and the chained tasks. 
 		// Type conflicts can occur here if counters with same name but different type were used
-		// TODO We should use the same logic in JobManager
+		System.out.println("ORIGINAL:");
+		System.out.println(AccumulatorHelper.getAccumulatorsFormated(accumulators));
 		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
 			Map<String, Accumulator<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulators();
+			System.out.println("MERGE IN:");
+			System.out.println(AccumulatorHelper.getAccumulatorsFormated(allOther));
 			AccumulatorHelper.mergeInto(accumulators, allOther);
 		}
 		
+		if (accumulators.size() == 0) { return; }
+		
 		// Report accumulators to JobManager
-		env.reportAccumulators(accumulators);
+    try {
+    	// Transform String to StringRecord to make HashMap serializable
+    	SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = AccumulatorHelper.toSerializableMap(accumulators);
+			env.getAccumulatorProtocolProxy().reportAccumulatorResult(env.getJobID(), serializableAccumulators);
+		} catch (IOException e) {
+			LOG.error(StringUtils.stringifyException(e));
+		}
 	}
 
 	@Override
