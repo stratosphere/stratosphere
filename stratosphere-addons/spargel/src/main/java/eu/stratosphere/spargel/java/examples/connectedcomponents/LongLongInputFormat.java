@@ -13,24 +13,33 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.nephele.io.channels.bytebuffered;
+package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import eu.stratosphere.pact.common.io.TextInputFormat;
+import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.base.PactLong;
 
-import eu.stratosphere.nephele.event.task.AbstractEvent;
+import java.util.regex.Pattern;
 
-public class ByteBufferedChannelActivateEvent extends AbstractEvent {
+public class LongLongInputFormat extends TextInputFormat {
+
+	private static final long serialVersionUID = 1L;
+
+	private static final Pattern SEPARATOR = Pattern.compile("[,\t ]");
+	
+	private final PactLong l1 = new PactLong();
+	private final PactLong l2 = new PactLong();
 
 	@Override
-	public void read(DataInput in) throws IOException {
+	public boolean readRecord(PactRecord target, byte[] bytes, int offset, int numBytes) {
+		String str = new String(bytes, offset, numBytes);
+		String[] parts = SEPARATOR.split(str);
 
-		// Nothing to do here
-	}
-
-	@Override
-	public void write(DataOutput out) throws IOException {
-		// Nothing to do here
+		this.l1.setValue(Long.parseLong(parts[0]));
+		this.l2.setValue(Long.parseLong(parts[1]));
+		
+		target.setField(0, this.l1);
+		target.setField(1, this.l2);
+		return true;
 	}
 }

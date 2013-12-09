@@ -13,28 +13,29 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.runtime.task.util;
+package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
-import java.io.IOException;
+import eu.stratosphere.pact.common.io.TextInputFormat;
+import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.base.PactLong;
+import eu.stratosphere.pact.common.type.base.parser.DecimalTextLongParser;
 
-public class ReaderInterruptionBehaviors {
-
-	public static final ReaderInterruptionBehavior EXCEPTION_ON_INTERRUPT = new ReaderInterruptionBehavior() {
-		@Override
-		public boolean onInterrupt(InterruptedException e) throws IOException {
-			throw new IOException("Reader was interrupted.", e);
-		}
-	};
-
-	public static final ReaderInterruptionBehavior RELEASE_ON_INTERRUPT = new ReaderInterruptionBehavior() {
-		@Override
-		public boolean onInterrupt(InterruptedException e) throws IOException {
-//			Thread.interrupted();
-			return false;
-		}
-	};
+public class DuplicateLongInputFormat extends TextInputFormat {
 	
-	// --------------------------------------------------------------------------------------------
+	private static final long serialVersionUID = 1L;
 	
-	private ReaderInterruptionBehaviors() {}
+	private final PactLong l1 = new PactLong();
+	private final PactLong l2 = new PactLong();
+	
+	@Override
+	public boolean readRecord(PactRecord target, byte[] bytes, int offset, int numBytes) {
+		final long value = DecimalTextLongParser.parseField(bytes, offset, numBytes, (char) 0xffff);
+
+		this.l1.setValue(value);
+		this.l2.setValue(value);
+		
+		target.setField(0, this.l1);
+		target.setField(1, this.l2);
+		return true;
+	}
 }

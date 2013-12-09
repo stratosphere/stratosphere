@@ -27,9 +27,9 @@
 	<modules>
 		<module>pact-array-datamodel</module>
 		<!-- To come here: hbase-simple, jdbc, sequenceFile, avro -->
+		<module>stratosphere-jdbc</module>
+		<module>spargel</module>
 	</modules>
-
-
 	
 	<!-- See main pom.xml for explanation of profiles -->
 	<profiles>
@@ -55,6 +55,18 @@
 			</activation>
 			<modules>
 				<module>pact-hbase</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>include-yarn</id>
+			<activation>
+				<property>
+					<!-- Please do not remove the 'hadoop1' comment. See ./tools/generate_specific_pom.sh -->
+					<!--hadoop2--><name>hadoop.profile</name><value>2</value>
+				</property>
+			</activation>
+			<modules>
+				<module>stratosphere-yarn</module>
 			</modules>
 		</profile>
 	</profiles>

@@ -101,6 +101,8 @@ import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.jobmanager.archive.ArchiveListener;
+import eu.stratosphere.nephele.jobmanager.archive.MemoryArchivist;
 import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 import eu.stratosphere.nephele.jobmanager.scheduler.SchedulingException;
 import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitManager;
@@ -124,6 +126,7 @@ import eu.stratosphere.nephele.taskmanager.TaskKillResult;
 import eu.stratosphere.nephele.taskmanager.TaskSubmissionResult;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ConnectionInfoLookupResponse;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.RemoteReceiver;
+import eu.stratosphere.nephele.taskmanager.runtime.ExecutorThreadFactory;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.nephele.types.StringRecord;
@@ -153,6 +156,8 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final JobManagerProfiler profiler;
 
 	private final EventCollector eventCollector;
+	
+	private final ArchiveListener archive;
 
 	private final InputSplitManager inputSplitManager;
 
@@ -164,7 +169,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 	private final int recommendedClientPollingInterval;
 
-	private final ExecutorService executorService = Executors.newCachedThreadPool();
+	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
 
 	private final static int SLEEPINTERVAL = 1000;
 
@@ -209,6 +214,16 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		// Load the job progress collector
 		this.eventCollector = new EventCollector(this.recommendedClientPollingInterval);
+		
+		// Register simple job archive
+		int archived_items = GlobalConfiguration.getInteger(
+				ConfigConstants.JOB_MANAGER_WEB_ARCHIVE_COUNT, ConfigConstants.DEFAULT_JOB_MANAGER_WEB_ARCHIVE_COUNT);
+		if(archived_items > 0) {
+			this.archive = new MemoryArchivist(archived_items);
+			this.eventCollector.registerArchivist(archive);
+		}
+		else
+			this.archive = null;
 
 		// Load the input split manager
 		this.inputSplitManager = new InputSplitManager();
@@ -379,7 +394,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	 * @param args
 	 *        arguments from the command line
 	 */
-	@SuppressWarnings("static-access")
+	
 	public static void main(final String[] args) {
 		
 		// determine if a valid log4j config exists and initialize a default logger if not
@@ -392,6 +407,19 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			root.setLevel(Level.INFO);
 		}
 		
+		JobManager jobManager = initialize(args);
+				
+		// Start info server for jobmanager
+		jobManager.startInfoServer();
+
+		// Run the main task loop
+		jobManager.runTaskLoop();
+
+		// Clean up task are triggered through a shutdown hook
+	}
+	
+	@SuppressWarnings("static-access")
+	public static JobManager initialize(final String[] args) {
 		// output the version and revision information to the log
 		logVersionInformation();
 		
@@ -417,7 +445,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		final String configDir = line.getOptionValue(configDirOpt.getOpt(), null);
 		final String executionModeName = line.getOptionValue(executionModeOpt.getOpt(), "local");
 		
-		final ExecutionMode executionMode;
+		ExecutionMode executionMode = null;
 		if ("local".equals(executionModeName)) {
 			executionMode = ExecutionMode.LOCAL;
 		} else if ("cluster".equals(executionModeName)) {
@@ -425,7 +453,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		} else {
 			System.err.println("Unrecognized execution mode: " + executionModeName);
 			System.exit(FAILURERETURNCODE);
-			return;
 		}
 		
 		// First, try to load global configuration
@@ -439,14 +466,8 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		if (configDir != null) {
 			infoserverConfig.setString(ConfigConstants.STRATOSPHERE_BASE_DIR_PATH_KEY, configDir+"/..");
 		}
-				
-		// Start info server for jobmanager
-		jobManager.startInfoServer(infoserverConfig);
-
-		// Run the main task loop
-		jobManager.runTaskLoop();
-
-		// Clean up task are triggered through a shutdown hook
+		GlobalConfiguration.includeConfiguration(infoserverConfig);
+		return jobManager;
 	}
 
 	/**
@@ -871,14 +892,21 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	}
 
 	/**
+	 * Returns current ManagementGraph from eventCollector and, if not current, from archive
+	 * 
 	 * {@inheritDoc}
 	 */
 	@Override
 	public ManagementGraph getManagementGraph(final JobID jobID) throws IOException {
 
-		final ManagementGraph mg = this.eventCollector.getManagementGraph(jobID);
+		ManagementGraph mg = this.eventCollector.getManagementGraph(jobID);
 		if (mg == null) {
-			throw new IOException("Cannot find job with ID " + jobID);
+			if(this.archive != null)
+				mg = this.archive.getManagementGraph(jobID);
+			
+			if (mg == null) {
+				throw new IOException("Cannot find job with ID " + jobID);
+			}
 		}
 
 		return mg;
@@ -1225,9 +1253,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	/**
 	 * Starts the Jetty Infoserver for the Jobmanager
 	 * 
-	 * @param config
 	 */
-	public void startInfoServer(Configuration config) {
+	public void startInfoServer() {
+		final Configuration config = GlobalConfiguration.getConfiguration();
 		// Start InfoServer
 		try {
 			int port = config.getInteger(ConfigConstants.JOB_MANAGER_WEB_PORT_KEY, ConfigConstants.DEFAULT_WEB_FRONTEND_PORT);
@@ -1238,6 +1266,25 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		} catch (Exception e) {
 			LOG.error("Cannot instantiate info server: " + StringUtils.stringifyException(e));
 		}
+	}
+	
+	
+	// TODO Add to RPC?
+	public List<RecentJobEvent> getOldJobs() throws IOException {
+
+		//final List<RecentJobEvent> eventList = new SerializableArrayList<RecentJobEvent>();
+
+		if (this.archive == null) {
+			throw new IOException("No instance of the event collector found");
+		}
+
+		//this.eventCollector.getRecentJobs(eventList);
+
+		return this.archive.getJobs();
+	}
+	
+	public ArchiveListener getArchive() {
+		return this.archive;
 	}
 
 	public int getNumberOfTaskTrackers() {

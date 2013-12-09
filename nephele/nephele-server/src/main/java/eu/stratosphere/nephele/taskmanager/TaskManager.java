@@ -77,6 +77,7 @@ import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ByteBufferedChannelManager;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.InsufficientResourcesException;
+import eu.stratosphere.nephele.taskmanager.runtime.ExecutorThreadFactory;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 import eu.stratosphere.nephele.util.SerializableArrayList;
 import eu.stratosphere.nephele.util.StringUtils;
@@ -100,7 +101,7 @@ public class TaskManager implements TaskOperationProtocol {
 
   private AccumulatorProtocol accumulatorProtocolProxy;
 
-	private final ExecutorService executorService = Executors.newCachedThreadPool();
+	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
 
 	private static final int handlerCount = 1;
 
@@ -377,7 +378,8 @@ public class TaskManager implements TaskOperationProtocol {
 			try {
 				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
 			} catch (IOException e) {
-				LOG.debug("sending the heart beat caused on IO Exception");
+				e.printStackTrace();
+				LOG.info("sending the heart beat caused on IO Exception");
 			}
 
 			// Check the status of the task threads to detect unexpected thread terminations

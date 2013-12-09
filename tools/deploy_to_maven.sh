@@ -2,6 +2,15 @@
 
 #Please ask @rmetzger (on GitHub) before changing anything here. It contains some magic.
 
+# Build Responsibilities
+# 1. Deploy to sonatype (old hadoop)
+# 2. Deploy to dopa (old hadoop)
+# 3. Nothing
+# 4. deploy to sonatype (yarn hadoop)
+# 5. deploy to dopa (yarn hadoop)
+# 6. Nothing
+
+
 echo "install lifecylce mapping fake plugin"
 git clone https://github.com/mfriedenhagen/dummy-lifecycle-mapping-plugin.git
 cd dummy-lifecycle-mapping-plugin
@@ -43,12 +52,16 @@ if [[ $TRAVIS_PULL_REQUEST == "false" ]] ; then
 	if [[ $TRAVIS_JOB_NUMBER == *1 ]] && [[ $TRAVIS_PULL_REQUEST == "false" ]] ; then 
 		# Deploy regular hadoop v1 to maven
 		mvn -DskipTests deploy --settings deploysettings.xml; 
+	fi
 
+	if [[ $TRAVIS_JOB_NUMBER == *4 ]] && [[ $TRAVIS_PULL_REQUEST == "false" ]] ; then 
 		# deploy hadoop v2 (yarn)
 		echo "Generating poms for hadoop-yarn."
 		./tools/generate_specific_pom.sh $CURRENT_STRATOSPHERE_VERSION $CURRENT_STRATOSPHERE_VERSION_YARN
 		mvn -B -f pom.hadoop2.xml -DskipTests clean deploy --settings deploysettings.xml; 
 	fi
+
+	
 
 	#
 	# Deploy binaries to DOPA
@@ -62,16 +75,19 @@ if [[ $TRAVIS_PULL_REQUEST == "false" ]] ; then
 	if [[ $TRAVIS_JOB_NUMBER == *5 ]] ; then 
 		#generate yarn poms & build for yarn.
 		./tools/generate_specific_pom.sh $CURRENT_STRATOSPHERE_VERSION $CURRENT_STRATOSPHERE_VERSION_YARN pom.xml
-		mvn -B -DskipTests clean package
+		mvn -B -DskipTests clean install
 		CURRENT_STRATOSPHERE_VERSION=$CURRENT_STRATOSPHERE_VERSION_YARN
 	fi
 	if [[ $TRAVIS_JOB_NUMBER == *2 ]] || [[ $TRAVIS_JOB_NUMBER == *5 ]] ; then 
 		sudo apt-get install sshpass
+		cd stratosphere-dist
+		mvn -B -DskipTests -Pdebian-package package
+		cd ..
 		echo "Uploading build to dopa.dima.tu-berlin.de. Job Number: $TRAVIS_JOB_NUMBER"
 		mkdir stratosphere
 		cp -r stratosphere-dist/target/stratosphere-dist-$CURRENT_STRATOSPHERE_VERSION-bin/stratosphere-$CURRENT_STRATOSPHERE_VERSION/* stratosphere/
 		tar -czf stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz stratosphere
-		sshpass -p "$DOPA_PASS" scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz $DOPA_USER@dopa.dima.tu-berlin.de:bin/
+		sshpass -p "$DOPA_PASS" scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r stratosphere-$CURRENT_STRATOSPHERE_VERSION.tgz stratosphere-dist/target/*yarn*.jar $DOPA_USER@dopa.dima.tu-berlin.de:bin/
 	fi
 
 fi # pull request check

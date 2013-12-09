@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2012 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,25 +12,26 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
+package eu.stratosphere.nephele.taskmanager.runtime;
 
-package eu.stratosphere.pact.runtime.iterative.event;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-/**
- * Marks the end of a superstep of one particular iteration head
- */
-public class EndOfSuperstepEvent extends AbstractTaskEvent {
+public class ExecutorThreadFactory implements ThreadFactory {
 	
-	public static final EndOfSuperstepEvent INSTANCE = new EndOfSuperstepEvent();
+	public static final ExecutorThreadFactory INSTANCE = new ExecutorThreadFactory();
 
-	@Override
-	public void write(DataOutput out) throws IOException {}
-
-	@Override
-	public void read(DataInput in) throws IOException {}
+	private static final String THREAD_NAME = "Nephele Executor Thread ";
+	
+	private final AtomicInteger threadNumber = new AtomicInteger(1);
+	
+	
+	private ExecutorThreadFactory() {}
+	
+	
+	public Thread newThread(Runnable target) {
+		Thread t = new Thread(target, THREAD_NAME + threadNumber.getAndIncrement());
+		t.setDaemon(true);
+		return t;
+	}
 }
