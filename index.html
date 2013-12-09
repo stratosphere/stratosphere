@@ -99,7 +99,7 @@ $( document ).ready(function() {
       <p>Stratosphere extends the well-known MapReduce model with new operators. These operators represent many common data analysis tasks more naturally and efficiently. All operators will start working in memory and gracefully go <a href="http://en.wikipedia.org/wiki/Out-of-core_algorithm" target="_blanc">out of core</a> under memory pressure.</p>
     </div>
     <div class="col-md-6">
-        <img src="{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg'" class="img-rounded img-responsive">
+        <img src="{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Operators_extended.svg'" class="img-responsive">
     </div>
   </div>
 
@@ -112,7 +112,7 @@ $( document ).ready(function() {
   </div>
   <div class="row">
     <div class="col-md-6">
-      <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-rounded img-responsive">
+      <img src="{{ site.baseurl }}/img/Stratosphere_DAG.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_DAG.svg'" class="img-responsive">
     </div>
     <div class="col-md-6">
         <p>Stratosphere allows to model analysis programs as advanced data flow graphs. For many applications, this is a more natural fit than the constrained MapReduce interface (strictly Map followed by Reduce). Furthermore, data pipelining and in-memory data transfers increase performance by drastically reducing disk and network I/O.</p>
@@ -123,7 +123,7 @@ $( document ).ready(function() {
   <div class="row" id="see-how-hadoop">
     <div class="col-md-12 bs-callout-info bs-callout">
       <h4>Complex Data Flows in Hadoop</h4>
-      <img src="{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg'" class="img-rounded img-responsive">
+      <img src="{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Dataflow_Cmp.svg'" class="img-responsive">
       <p>Executing the plan shown on the left using MapReduce leads to a composition of multiple MapReduce jobs. Intermediate results are stored in HDFS after each job. This causes <b>a lot of network and disk I/O</b>. Remember also that a just the setup of a MapReduce job itself takes some time.
       This example shows that many real world applications do not fit the MapReduce model. Also, the implementation of complex data flows using MapReduce is very time-consuming.</p>
       <p>Stratosphere is able to natively execute the job. Everything is processed in-memory. Only if the data does not fit into the memory anymore, it starts using the local hard disks.</p>
@@ -166,7 +166,7 @@ val plan = new ScalaPlan(Seq(output))
   </div>
   <div class="row">
     <div class="col-md-6">
-      <img src="{{ site.baseurl }}/img/Stratosphere_Iteration.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Iteration.svg'" class="img-rounded img-responsive">
+      <img src="{{ site.baseurl }}/img/Stratosphere_Iteration.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Iteration.svg'" class="img-responsive">
     </div>
     <div class="col-md-6">
         <p>Data Mining, Machine Learning and Graph processing algorithms often require to loop over the working data multiple times.
@@ -179,7 +179,7 @@ val plan = new ScalaPlan(Seq(output))
   <div class="row" id="see-how-hadoop-iterations">
     <div class="col-md-12 bs-callout-info bs-callout">
       <h4>Iterations with Hadoop</h4>
-      <img src="{{ site.baseurl }}/img/Hadoop_Iterations.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Hadoop_Iterations.svg'" class="img-rounded img-responsive">
+      <img src="{{ site.baseurl }}/img/Hadoop_Iterations.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Hadoop_Iterations.svg'" class="img-responsive">
       <p>Iterative algorithms are implemented in Hadoop MapReduce using a central driver that spawns MapReduce jobs until the result has been computed. This approach has many disadvantages:
         <ul>
           <li>Each MapReduce Job needs at least 30 seconds for setup</li>
@@ -225,7 +225,7 @@ val plan = new ScalaPlan(Seq(output))
 
    <div class="row">
     <div class="col-md-6">
-      <img src="{{ site.baseurl }}/img/Stratosphere_Stack.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Stack.svg'" class="img-rounded img-responsive">
+      <img src="{{ site.baseurl }}/img/Stratosphere_Stack.svg" onerror="this.onerror=null; this.src='{{ site.baseurl }}/img/Stratosphere_Stack.svg'" class="img-responsive">
     </div>
     <div class="col-md-6">
       <p>Stratosphere seamlessly integrates into existing Hadoop setups and runs side-by-side with Hadoop's TaskTrackers and DataNodes. Stratosphere can read data from Hadoop sources, but comes with its own efficient runtime. Similar to Hadoop, Stratosphere scales by adding more machines to the cluster. <br>

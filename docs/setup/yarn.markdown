@@ -103,7 +103,7 @@ Action "run" compiles and submits a PACT program.
      -a,--arguments <programArgs>   Pact program arguments
      -c,--class <classname>         Pact program assembler class
      -j,--jarfile <jarfile>         Pact program JAR file
-     -m,--hostname <arg>            Hostname:port of JobManager [optional]
+     -m,--jobmanager <arg>          Hostname:port of JobManager [optional]
      -w,--wait                      Wait until program finishes
 [...]
 ```
@@ -119,7 +119,7 @@ wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
 ./bin/pact-client.sh run -m localhost:6123 -j examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt 
 ```
 
-You can use also script without the `-m` (or `--hostname`) argument, but you have to configure the `stratosphere-conf.yaml` with the correct JobManager details.
+You can use also script without the `-m` (or `--jobmanager`) argument, but you have to configure the `stratosphere-conf.yaml` with the correct JobManager details.
 </section>
 
 <section id="build">
