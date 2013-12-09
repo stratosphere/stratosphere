@@ -6,12 +6,10 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
+import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.pact.client.nephele.api.Client;
-import eu.stratosphere.pact.client.nephele.api.ErrorInPlanAssemblerException;
 import eu.stratosphere.pact.client.nephele.api.PlanWithJars;
-import eu.stratosphere.pact.client.nephele.api.ProgramInvocationException;
 import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.compiler.CompilerException;
 
 public class RemoteExecutor implements PlanExecutor {
 
@@ -52,11 +50,11 @@ public class RemoteExecutor implements PlanExecutor {
 		return new InetSocketAddress(host, port);
 	}
 
-	public long executePlanWithJars(PlanWithJars p) throws Exception {
+	public JobExecutionResult executePlanWithJars(PlanWithJars p) throws Exception {
 		return this.client.run(p, true);
 	}
 	@Override
-	public long executePlan(Plan plan) throws Exception {
+	public JobExecutionResult executePlan(Plan plan) throws Exception {
 		PlanWithJars p = new PlanWithJars(plan, this.jarFiles);
 		return this.client.run(p, true);
 	}

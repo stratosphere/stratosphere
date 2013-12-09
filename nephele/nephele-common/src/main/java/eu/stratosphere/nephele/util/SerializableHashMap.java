@@ -45,6 +45,14 @@ public class SerializableHashMap<K extends IOReadableWritable, V extends IOReada
 	 * The generated serial version UID.
 	 */
 	private static final long serialVersionUID = 6693468726881121924L;
+	
+	public SerializableHashMap() {
+		super();
+	}
+	
+	public SerializableHashMap(int initialCapacity) {
+		super(initialCapacity);
+	}
 
 	/**
 	 * {@inheritDoc}

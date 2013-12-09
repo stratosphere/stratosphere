@@ -63,9 +63,11 @@ import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.profiling.ProfilingUtils;
 import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
+import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
 import eu.stratosphere.nephele.protocols.ChannelLookupProtocol;
 import eu.stratosphere.nephele.protocols.InputSplitProviderProtocol;
 import eu.stratosphere.nephele.protocols.JobManagerProtocol;
@@ -96,6 +98,8 @@ public class TaskManager implements TaskOperationProtocol {
 	private final InputSplitProviderProtocol globalInputSplitProvider;
 
 	private final ChannelLookupProtocol lookupService;
+
+  private AccumulatorProtocol accumulatorProtocolProxy;
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
 
@@ -223,6 +227,16 @@ public class TaskManager implements TaskOperationProtocol {
 			throw new Exception("Failed to initialize channel lookup protocol. " + e.getMessage(), e);
 		}
 		this.lookupService = lookupService;
+		
+    // Try to create local stub for the job manager
+    AccumulatorProtocol accumulatorProtocolStub = null;
+    try {
+      accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
+    } catch (IOException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
+    }
+    this.accumulatorProtocolProxy = accumulatorProtocolStub;
 
 		// Start local RPC server
 		Server taskManagerServer = null;
@@ -460,7 +474,7 @@ public class TaskManager implements TaskOperationProtocol {
 			RuntimeEnvironment re;
 			try {
 				re = new RuntimeEnvironment(tdd, this.memoryManager, this.ioManager, new TaskInputSplitProvider(jobID,
-					vertexID, this.globalInputSplitProvider));
+					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy);
 			} catch (Throwable t) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);
@@ -688,6 +702,9 @@ public class TaskManager implements TaskOperationProtocol {
 		// Stop RPC proxy for the lookup service
 		RPC.stopProxy(this.lookupService);
 
+    // Stop RPC proxy for accumulator reports
+    RPC.stopProxy(this.accumulatorProtocolProxy);
+
 		// Shut down the own RPC server
 		this.taskManagerServer.stop();
 
@@ -824,4 +841,5 @@ public class TaskManager implements TaskOperationProtocol {
 			}
 		}
 	}
+  
 }
