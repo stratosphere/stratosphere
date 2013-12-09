@@ -44,7 +44,6 @@ This command will show you the following overview:
 
 ```bash
 java -jar stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar 
-Missing required option: [-n Number of Yarn container to allocate (=Number of TaskTrackers)]
 Usage:
    Required
      -n,--container <arg>   Number of Yarn container to allocate (=Number of TaskTrackers)
@@ -53,10 +52,11 @@ Usage:
      -g,--generateConf               Place default configuration file in current directory
      -j,--jar <arg>                  Path to Stratosphere jar file
      -jm,--jobManagerMemory <arg>    Memory for JobManager Container [in MB]
+     -q,--query                      Display avilable YARN resources (memory, cores)
+     -qu,--queue <arg>               Specify YARN queue.
      -tm,--taskManagerMemory <arg>   Memory per TaskManager Container [in MB]
      -tmc,--taskManagerCores <arg>   Virtual CPU cores per TaskManager
      -v,--verbose                    Verbose debug mode
-
 ```
 
 Please note that the Client requires the `HADOOP_HOME` (or `YARN_CONF_DIR` or `HADOOP_CONF_DIR`) environment variable to be set to read the YARN and HDFS configuration.
@@ -85,25 +85,41 @@ So open `screen`, start Stratosphere on YARN, use `CTRL+a` then press `d` to det
 Use the following command to submit a Stratosphere Job-jar to the YARN cluster:
 
 ```
-java -cp stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar eu.stratosphere.pact.client.CliFrontend remote
+java -cp stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar eu.stratosphere.pact.client.CliFrontend
 ```
 
-The arguments are passed this way
+If you have Stratosphere installed from a custom build or a zip file, use the pact-client:
 
 ```
-Usage: [host:port] [jar] [class] [args]
+./bin/pact-client.sh
+``` 
+
+Both commands will show you a help like this:
+
 ```
+[...]
+Action "run" compiles and submits a PACT program.
+  "run" action arguments:
+     -a,--arguments <programArgs>   Pact program arguments
+     -c,--class <classname>         Pact program assembler class
+     -j,--jarfile <jarfile>         Pact program JAR file
+     -m,--hostname <arg>            Hostname:port of JobManager [optional]
+     -w,--wait                      Wait until program finishes
+[...]
+```
+
+Use the *run* action to submit a job to YARN. The uberjar will show you the address of the JobManager in the console.
 
 **Example**
 
-```
-java -cp stratosphere-dist-0.4-SNAPSHOT-yarn-uberjar.jar eu.stratosphere.pact.client.CliFrontend remote cloud-13:6123 /home/rmetzger/stratosphere-tutorial-reference-0.1-SNAPSHOT.jar \
-  eu.stratosphere.tutorial.task4.WeightVectorPlan \
-  "hdfs:///user/robert/bigdataclass-wikipedia hdfs:///user/robert/bigdataclass-wikipedia-result $DOP"
+```bash
+# Optionally download some sample data first
+wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
+# Submit Job to Stratosphere
+./bin/pact-client.sh run -m localhost:6123 -j examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt 
 ```
 
-
-You can use also the regular mechanisms to submit jobs (`bin/pact-client.sh`), but you have to configure the `stratosphere-conf.yaml` with the correct JobManager details.
+You can use also script without the `-m` (or `--hostname`) argument, but you have to configure the `stratosphere-conf.yaml` with the correct JobManager details.
 </section>
 
 <section id="build">
