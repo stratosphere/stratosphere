@@ -1256,4 +1256,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
     }
     // TODO Store these locally for this job, to be able to merge them at the end of the job.
   }
+  
+  @Override
+  public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) {
+  	return null;
+  }
 }

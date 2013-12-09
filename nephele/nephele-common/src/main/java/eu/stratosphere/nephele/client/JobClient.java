@@ -340,6 +340,7 @@ public class JobClient {
 						startTimestamp = jobEvent.getTimestamp();
 					}
 					if (jobStatus == JobStatus.FINISHED) {
+						// Here we need to either request the accumulators or already have them
 						Runtime.getRuntime().removeShutdownHook(this.jobCleanUp);
 						final long jobDuration = jobEvent.getTimestamp() - startTimestamp;
 						this.console.println("Job duration (in ms): " + jobDuration);

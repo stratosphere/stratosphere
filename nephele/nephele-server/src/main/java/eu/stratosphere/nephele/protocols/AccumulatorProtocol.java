@@ -37,5 +37,7 @@ public interface AccumulatorProtocol extends VersionedProtocol {
    * @throws IOException
    */
 	void reportAccumulatorResult(JobID jobID, Map<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
+	
+	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID);
 
 }
