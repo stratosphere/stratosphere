@@ -101,6 +101,7 @@ import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.jobmanager.accumulators.AccumulatorManager;
 import eu.stratosphere.nephele.jobmanager.archive.ArchiveListener;
 import eu.stratosphere.nephele.jobmanager.archive.MemoryArchivist;
 import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
@@ -166,6 +167,8 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final AbstractScheduler scheduler;
 
 	private final MulticastManager multicastManager;
+	
+	private AccumulatorManager accumulatorManager;
 
 	private InstanceManager instanceManager;
 
@@ -226,6 +229,12 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 		else
 			this.archive = null;
+		
+    // Create the accumulator manager, with same archiving limit as web
+    // interface. We need to store the accumulators for at least one job.
+    // Otherwise they might be deleted before the client requested the
+    // accumulator results.
+	  this.accumulatorManager = new AccumulatorManager(Math.min(1, archived_items));
 
 		// Load the input split manager
 		this.inputSplitManager = new InputSplitManager();
@@ -1292,18 +1301,15 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	public int getNumberOfTaskTrackers() {
 		return this.instanceManager.getNumberOfTaskTrackers();
 	}
-
+	
   @Override
   public void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> newAccumulators)
       throws IOException {
-  	// Accumulators are stored in the EventManager
-    System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
-    System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
-    this.eventCollector.processAccumulatorEvent(jobID, newAccumulators);
+    this.accumulatorManager.processIncomingAccumulators(jobID, newAccumulators);
   }
   
   @Override
   public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) {
-  	return AccumulatorHelper.toSerializableMap(this.eventCollector.getJobAccumulators(jobID));
+    return AccumulatorHelper.toSerializableMap(this.accumulatorManager.getJobAccumulators(jobID));
   }
 }

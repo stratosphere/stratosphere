@@ -301,7 +301,7 @@
 
 							<archive>
 								<manifestEntries>
-									<Pact-Assembler-Class>eu.stratosphere.pact.example.wordcount.WordCount</Pact-Assembler-Class>
+									<Pact-Assembler-Class>eu.stratosphere.pact.example.wordcount.WordCountAccumulators</Pact-Assembler-Class>
 								</manifestEntries>
 							</archive>
 

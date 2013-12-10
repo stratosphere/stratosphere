@@ -7,6 +7,8 @@ import java.io.IOException;
 
 
 public class LongCounter implements SimpleAccumulator<Long> {
+  
+  private static final long serialVersionUID = 1L;
 
   private long localValue = 0;
   

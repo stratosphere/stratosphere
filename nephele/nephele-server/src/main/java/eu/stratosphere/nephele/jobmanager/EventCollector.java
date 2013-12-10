@@ -51,10 +51,7 @@ import eu.stratosphere.nephele.managementgraph.ManagementVertex;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
 import eu.stratosphere.nephele.profiling.ProfilingListener;
 import eu.stratosphere.nephele.profiling.types.ProfilingEvent;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
-import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.topology.NetworkTopology;
-import eu.stratosphere.nephele.types.StringRecord;
 
 /**
  * The event collector collects events which occurred during the execution of a job and prepares them
@@ -321,11 +318,6 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 	private final Map<JobID, NetworkTopology> recentNetworkTopologies = new HashMap<JobID, NetworkTopology>();
 	
 	/**
-	 * Map of accumulators belonging to recently started jobs
-	 */
-	private final Map<JobID, JobAccumulators> jobAccumulators = new HashMap<JobID, JobAccumulators>();
-
-	/**
 	 * The timer used to trigger the cleanup routine.
 	 */
 	private final Timer timer;
@@ -558,10 +550,6 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 						archiveNetworkTopology(entry.getKey(), this.recentNetworkTopologies.get(entry.getKey()));
 						this.recentNetworkTopologies.remove(entry.getValue());
 					}
-					synchronized (this.jobAccumulators) {
-						archiveAccumulators(entry.getKey(), this.jobAccumulators.get(entry.getKey()));
-						this.jobAccumulators.remove(entry.getKey());
-					}
 				}
 			}
 		}
@@ -686,42 +674,6 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 	private void archiveNetworkTopology(JobID jobId, NetworkTopology topology) {
 		for(ArchiveListener al : archivists) {
 			al.archiveNetworkTopology(jobId, topology);
-		}
-	}
-
-	private void archiveAccumulators(JobID jobID, JobAccumulators jobAccumulators) {
-		for(ArchiveListener al : archivists) {
-			al.archiveAccumulators(jobID, jobAccumulators);
-		}
-	}
-	
-	public void processAccumulatorEvent(JobID jobID, Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
-		JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
-		if (jobAccumulators == null) {
-			jobAccumulators = new JobAccumulators();
-			this.jobAccumulators.put(jobID, jobAccumulators);
-		}
-		jobAccumulators.processNew(newAccumulators);
-	}
-
-	public Map<String, Accumulator<?, ?>> getJobAccumulators(JobID jobID) {
-		JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
-		if (jobAccumulators == null) {
-			return new HashMap<String, Accumulator<?, ?>>();
-		}
-		return jobAccumulators.getAccumulators();
-	}
-	
-	public static class JobAccumulators {
-		
-		private final Map<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
-		
-		public Map<String, Accumulator<?, ?>> getAccumulators() {
-			return this.accumulators;
-		}
-		
-		public void processNew(Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
-			AccumulatorHelper.mergeIntoSerializable(this.accumulators, newAccumulators);
 		}
 	}
 }

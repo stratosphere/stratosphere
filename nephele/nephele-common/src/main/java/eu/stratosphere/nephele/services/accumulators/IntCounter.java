@@ -7,6 +7,8 @@ import java.io.IOException;
 
 
 public class IntCounter implements SimpleAccumulator<Integer> {
+  
+  private static final long serialVersionUID = 1L;
 
   private int localValue = 0;
   

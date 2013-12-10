@@ -43,7 +43,7 @@ public class AccumulatorHelper {
 			Map<StringRecord, Accumulator<?, ?>> toMerge) {
 		synchronized(target) {
 			for (Map.Entry<StringRecord, Accumulator<?,?>> otherEntry : toMerge.entrySet()) {
-				Accumulator<?,?> ownAccumulator = target.get(otherEntry.getKey());
+				Accumulator<?,?> ownAccumulator = target.get(otherEntry.getKey().toString());
 				if (ownAccumulator == null) {
 					// Take over counter from chained task
 					target.put(otherEntry.getKey().toString(), otherEntry.getValue());

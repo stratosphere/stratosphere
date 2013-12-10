@@ -7,6 +7,8 @@ import java.io.IOException;
 
 
 public class DoubleCounter implements SimpleAccumulator<Double> {
+  
+  private static final long serialVersionUID = 1L;
 
   private double localValue = 0;
   

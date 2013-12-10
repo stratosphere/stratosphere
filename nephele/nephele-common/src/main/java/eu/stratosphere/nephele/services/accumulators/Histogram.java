@@ -17,6 +17,8 @@ import com.google.common.collect.Maps;
  * decide about the bin size in an online algorithm (or ask the user)
  */
 public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
+  
+  private static final long serialVersionUID = 1L;
 
 	private Map<Integer, Integer> hashMap = Maps.newHashMap();
 
@@ -60,13 +62,7 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
   
   @Override
   public String toString() {
-  	StringBuilder builder = new StringBuilder();
-  	builder.append("[");
-  	for (Map.Entry<Integer, Integer> entry : this.hashMap.entrySet() ) {
-  		builder.append(entry.getKey() + ":" + entry.getValue() + ", ");
-  	}
-  	builder.append("]");
-  	return builder.toString();
+    return this.hashMap.toString();
   }
 	
 	@Override

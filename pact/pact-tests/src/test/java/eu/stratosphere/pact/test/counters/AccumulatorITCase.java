@@ -177,6 +177,7 @@ public class AccumulatorITCase extends TestBase2 {
 
       // Should fail if we request it with different type
       try {
+        @SuppressWarnings("unused")
         DoubleCounter simpleCounter3 = getRuntimeContext().getDoubleCounter("simple-counter");
 //      	DoubleSumAggregator longAggregator3 = (DoubleSumAggregator) getRuntimeContext().getAggregator("custom", DoubleSumAggregator.class);
         Assert.fail("Should not be able to obtain previously created counter with different type");
@@ -278,12 +279,13 @@ public class AccumulatorITCase extends TestBase2 {
 	 * Custom accumulator
 	 * 
 	 * TODO: Not so nice that it needs to extend IOReadableWritable.
-	 * Better if we could support the basic 
+	 * Better if RPC would support the standard types (String, native, ...) automatically.
 	 */
 	public static class SetAccumulator<T extends Serializable> implements Accumulator<T, Set<T>> {
 	  
-//	  private SerializableHashSet<T> set = new SerializableHashSet<T>();
-	  Set<T> set = Sets.newHashSet();
+    private static final long serialVersionUID = 1L;
+    
+	  private Set<T> set = Sets.newHashSet();
 
     @Override
     public void add(T value) {
