@@ -207,7 +207,7 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		// This will execute the word-count embedded in a local context. replace this line by the commented
 		// succeeding line to send the job to a local installation or to a cluster for execution
 //		JobExecutionResult result = LocalExecutor.execute(plan);
-		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCount.jar");
+		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCountAccumulators.jar");
 		JobExecutionResult result = ex.executePlan(plan);
 		
     System.out.println("Number of lines counter: " + result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
