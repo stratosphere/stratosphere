@@ -15,6 +15,8 @@ import eu.stratosphere.nephele.types.StringRecord;
  * longer running and the results shall be still available for the client or the
  * web interface. Accumulators for older jobs are automatically removed when new
  * arrive, based on a maximum number of entries.
+ * 
+ * All functions are thread-safe and thus can be called directly from JobManager.
  */
 public class AccumulatorManager {
   
@@ -28,20 +30,42 @@ public class AccumulatorManager {
     this.maxEntries = maxEntries;
   }
 
+  /**
+   * Merges the new accumulators with the existing accumulators collected for
+   * the job.
+   */
   public void processIncomingAccumulators(JobID jobID,
       Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
-    System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
-    System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
-    JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
-    if (jobAccumulators == null) {
-      System.out.println("Register new accumulators");
-      jobAccumulators = new JobAccumulators();
-      this.jobAccumulators.put(jobID, jobAccumulators);
-      cleanup(jobID);
+    synchronized(this.jobAccumulators) {
+      System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
+      System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
+      JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
+      if (jobAccumulators == null) {
+        System.out.println("Register new accumulators");
+        jobAccumulators = new JobAccumulators();
+        this.jobAccumulators.put(jobID, jobAccumulators);
+        cleanup(jobID);
+      }
+      jobAccumulators.processNew(newAccumulators);
     }
-    jobAccumulators.processNew(newAccumulators);
   }
 
+  /**
+   * Returns all collected accumulators for the job. For efficiency the internal
+   * accumulator is returned - please use it read-only.
+   */
+  public Map<String, Accumulator<?, ?>> getJobAccumulators(JobID jobID) {
+    JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
+    if (jobAccumulators == null) {
+      return new HashMap<String, Accumulator<?, ?>>();
+    }
+    return jobAccumulators.getAccumulators();
+  }
+
+  /**
+   * Cleanup data for the oldest jobs if the maximum number of entries is
+   * reached.
+   */
   private void cleanup(JobID jobId) {
     if (!lru.contains(jobId))
       lru.addFirst(jobId);
@@ -49,13 +73,5 @@ public class AccumulatorManager {
       JobID toRemove = lru.removeLast();
       this.jobAccumulators.remove(toRemove);
     }
-  }
-
-  public Map<String, Accumulator<?, ?>> getJobAccumulators(JobID jobID) {
-    JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
-    if (jobAccumulators == null) {
-      return new HashMap<String, Accumulator<?, ?>>();
-    }
-    return jobAccumulators.getAccumulators();
   }
 }

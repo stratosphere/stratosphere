@@ -15,15 +15,21 @@
 
 package eu.stratosphere.pact.example.wordcount;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 
 import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.LongCounter;
-import eu.stratosphere.pact.client.LocalExecutor;
+import eu.stratosphere.nephele.util.SerializableHashSet;
+import eu.stratosphere.pact.client.PlanExecutor;
+import eu.stratosphere.pact.client.RemoteExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -39,10 +45,10 @@ import eu.stratosphere.pact.common.stubs.MapStub;
 import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFields;
 import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.example.util.AsciiUtils;
-import eu.stratosphere.pact.example.wordcount.WordCountAccumulators.TokenizeLine;
 
 /**
  * This is similar to the WordCount example and additionally demonstrates how to
@@ -74,10 +80,14 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		public static final String ACCUM_WORDS_PER_LINE = "accumulator.words-per-line";
 		private Histogram wordsPerLine = new Histogram();
 		
+		public static final String ACCUM_DISTINCT_WORDS = "accumulator.distinct-words";
+		private SetAccumulator<PactString> distinctWords = new SetAccumulator<PactString>();
+		
 		@Override
 		public void open(Configuration parameters) throws Exception {
 		  getRuntimeContext().addAccumulator(ACCUM_NUM_LINES, this.numLines);
 		  getRuntimeContext().addAccumulator(ACCUM_WORDS_PER_LINE, this.wordsPerLine);
+		  getRuntimeContext().addAccumulator(ACCUM_DISTINCT_WORDS, this.distinctWords);
 		  
 		  // You could also write to accumulators in open() or close()
 		}
@@ -100,13 +110,15 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 			int numWords = 0;
 			while (tokenizer.next(this.word))
 			{
+			  distinctWords.add(new PactString(this.word));
+			  
 			  ++ numWords;
 				// we emit a (word, 1) pair 
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
 				collector.collect(this.outputRecord);
 			}
-			// Add a value to the historam accumulator
+			// Add a value to the histogram accumulator
 			this.wordsPerLine.add(numWords);
 		}
 	}
@@ -194,10 +206,54 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		
 		// This will execute the word-count embedded in a local context. replace this line by the commented
 		// succeeding line to send the job to a local installation or to a cluster for execution
-		JobExecutionResult result = LocalExecutor.execute(plan);
-		System.out.println("Number of lines counter: " + result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
-		System.out.println("Words per line histogram: " + result.getAccumulatorResult(TokenizeLine.ACCUM_WORDS_PER_LINE));
-//		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCount.jar");
-//		ex.executePlan(plan);
+//		JobExecutionResult result = LocalExecutor.execute(plan);
+		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCount.jar");
+		JobExecutionResult result = ex.executePlan(plan);
+		
+    System.out.println("Number of lines counter: " + result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
+    System.out.println("Words per line histogram: " + result.getAccumulatorResult(TokenizeLine.ACCUM_WORDS_PER_LINE));
+    System.out.println("Distinct words: " + result.getAccumulatorResult(TokenizeLine.ACCUM_DISTINCT_WORDS));
 	}
+  
+  /**
+   * Custom accumulator
+   */
+  public static class SetAccumulator<T extends Value> implements Accumulator<T, Set<T>> {
+    
+    private static final long serialVersionUID = 1L;
+    
+    private SerializableHashSet<T> set = new SerializableHashSet<T>();
+
+    @Override
+    public void add(T value) {
+      this.set.add(value);
+    }
+
+    @Override
+    public Set<T> getLocalValue() {
+      return this.set;
+    }
+
+    @Override
+    public void resetLocal() {
+      this.set.clear();
+    }
+
+    @Override
+    public void merge(Accumulator<T, Set<T>> other) {
+      // build union
+      this.set.addAll(((SetAccumulator<T>)other).getLocalValue());
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      this.set.write(out);
+    }
+
+    @Override
+    public void read(DataInput in) throws IOException {
+      this.set.read(in);
+    }
+    
+  }
 }

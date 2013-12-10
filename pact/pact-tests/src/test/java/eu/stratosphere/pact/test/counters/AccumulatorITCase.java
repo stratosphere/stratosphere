@@ -30,15 +30,17 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.nephele.io.IOReadableWritable;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.accumulators.DoubleCounter;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.IntCounter;
+import eu.stratosphere.nephele.types.StringRecord;
+import eu.stratosphere.nephele.util.SerializableHashSet;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -149,7 +151,7 @@ public class AccumulatorITCase extends TestBase2 {
     
     // This counter will be added without convenience functions
     DoubleCounter openCloseCounter = new DoubleCounter();
-    private SetAccumulator<String> distinctWords = null;
+    private SetAccumulator<StringRecord> distinctWords = null;
     
 		@Override
 		public void open(Configuration parameters) throws Exception {
@@ -163,7 +165,7 @@ public class AccumulatorITCase extends TestBase2 {
 			getRuntimeContext().addAccumulator("open-close-counter", this.openCloseCounter);
       
       // Add custom counter. Didn't find a way to do this with getAccumulator()
-      this.distinctWords = new SetAccumulator<String>();
+      this.distinctWords = new SetAccumulator<StringRecord>();
       this.getRuntimeContext().addAccumulator("distinct-words", distinctWords);
       
       // Create counter and test increment
@@ -202,7 +204,7 @@ public class AccumulatorITCase extends TestBase2 {
 			while (tokenizer.next(this.word))
 			{
 			  // Use custom counter
-			  distinctWords.add(this.word.getValue());
+			  distinctWords.add(new StringRecord(this.word.getValue()));
 			  
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
@@ -281,11 +283,11 @@ public class AccumulatorITCase extends TestBase2 {
 	 * TODO: Not so nice that it needs to extend IOReadableWritable.
 	 * Better if RPC would support the standard types (String, native, ...) automatically.
 	 */
-	public static class SetAccumulator<T extends Serializable> implements Accumulator<T, Set<T>> {
+	public static class SetAccumulator<T extends IOReadableWritable> implements Accumulator<T, Set<T>> {
 	  
     private static final long serialVersionUID = 1L;
     
-	  private Set<T> set = Sets.newHashSet();
+	  private SerializableHashSet<T> set = new SerializableHashSet<T>();
 
     @Override
     public void add(T value) {
@@ -310,7 +312,7 @@ public class AccumulatorITCase extends TestBase2 {
 
     @Override
     public void write(DataOutput out) throws IOException {
-      // TODO
+      this.set.write(out);
 //      ByteArrayOutputStream baos = new ByteArrayOutputStream();
 //      ObjectOutputStream oos = new ObjectOutputStream(baos);
 //      oos.writeObject(this);
@@ -322,6 +324,7 @@ public class AccumulatorITCase extends TestBase2 {
 //    @SuppressWarnings("unchecked")
     @Override
     public void read(DataInput in) throws IOException {
+      this.set.read(in);
 //      int len = in.readInt();
 //      byte[] bytes = new byte[len];
 //      in.readFully(bytes);
