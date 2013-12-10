@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -28,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.client.JobExecutionResult;
@@ -87,7 +89,12 @@ public class AccumulatorITCase extends TestBase2 {
 		System.out.println(AccumulatorHelper.getResultsFormated(res.getAllAccumulatorResults()));
 		
 		Assert.assertEquals(new Integer(3), (Integer) res.getAccumulatorResult("num-lines"));
-//		Check num-lines, words-per-line, open-close-counter, distinct-words
+		
+		// Test histogram (words per line distribution)
+		Map<Integer, Integer> dist = Maps.newHashMap();
+		dist.put(1, 1); dist.put(2, 2); dist.put(3, 3);
+		Assert.assertEquals(dist, res.getAccumulatorResult("words-per-line"));
+//		Check open-close-counter, distinct-words
 	}
 
 	@Override

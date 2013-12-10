@@ -24,21 +24,22 @@ import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.SerializableHashMap;
 
 /**
- * The accumulator protocol is implemented by the job manager and offers functionality
- * to task managers allowing them to send the collected accumulators during a job
+ * The accumulator protocol is implemented by the job manager. TaskManagers can
+ * use it to send the collected accumulators and JobClients can use
+ * it to get the final accumulator results after the job ended.
  */
 public interface AccumulatorProtocol extends VersionedProtocol {
 
   /**
-   * TODO Would be nice to have the vertex/taskID, to know (and log) in
-   * JobManager where the report came from and to check if all accumulators were
-   * reported (assuming that each task reports some).
-   * 
-   * @param jobID
-   * @throws IOException
-   */
+	 * Report accumulators that were collected in a task. Called by Task Manager,
+	 * after the user code was executed but before the task status update is
+	 * reported.
+	 */
 	void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
 	
+	/**
+	 * Get the final accumulator results. Called by JobClient after the job ended.
+	 */
 	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID);
 
 }

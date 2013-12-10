@@ -1,28 +1,20 @@
 package eu.stratosphere.nephele.jobmanager.archive;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.jetty.util.log.Log;
 
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.ExecutionStateChangeEvent;
 import eu.stratosphere.nephele.event.job.JobEvent;
 import eu.stratosphere.nephele.event.job.RecentJobEvent;
-import eu.stratosphere.nephele.event.job.VertexEvent;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobStatus;
-import eu.stratosphere.nephele.jobgraph.JobVertexID;
+import eu.stratosphere.nephele.jobmanager.EventCollector.JobAccumulators;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
-import eu.stratosphere.nephele.managementgraph.ManagementGroupVertex;
-import eu.stratosphere.nephele.managementgraph.ManagementGroupVertexID;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 
@@ -54,6 +46,8 @@ public class MemoryArchivist implements ArchiveListener {
 	 * Map of network topologies belonging to recently started jobs with the time stamp of the last received job event.
 	 */
 	private final Map<JobID, NetworkTopology> networkTopologies = new HashMap<JobID, NetworkTopology>();
+	
+	private final Map<JobID, JobAccumulators> jobAccumulators = new HashMap<JobID, JobAccumulators>();
 	
 	private final LinkedList<JobID> lru = new LinkedList<JobID>();
 	
@@ -93,6 +87,14 @@ public class MemoryArchivist implements ArchiveListener {
 		
 		cleanup(jobId);
 	}
+
+	@Override
+	public void archiveAccumulators(JobID jobID, JobAccumulators jobAccumulators) {
+		
+		this.jobAccumulators.put(jobID, jobAccumulators);
+		
+		cleanup(jobID);
+	}
 	
 	public List<RecentJobEvent> getJobs() {
 
@@ -108,6 +110,7 @@ public class MemoryArchivist implements ArchiveListener {
 			oldJobs.remove(toRemove);
 			managementGraphs.remove(toRemove);
 			networkTopologies.remove(toRemove);
+			jobAccumulators.remove(toRemove);
 		}
 	}
 	
@@ -125,6 +128,11 @@ public class MemoryArchivist implements ArchiveListener {
 	
 	public List<AbstractEvent> getEvents(JobID jobID) {
 		return collectedEvents.get(jobID);
+	}
+	
+	@Override
+	public Map<JobID, JobAccumulators> getJobAccumulators() {
+		return jobAccumulators;
 	}
 	
 	public long getJobTime(JobID jobID, JobStatus jobStatus) {
@@ -150,5 +158,6 @@ public class MemoryArchivist implements ArchiveListener {
 		}
 		return 0;
 	}
+
 
 }

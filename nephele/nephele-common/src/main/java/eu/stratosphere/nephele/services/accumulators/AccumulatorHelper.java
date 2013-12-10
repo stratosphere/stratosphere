@@ -36,14 +36,17 @@ public class AccumulatorHelper {
 		}
 	}
 	
-	public static void mergeIntoSerializable(SerializableHashMap<StringRecord, Accumulator<?, ?>> target,
-			SerializableHashMap<StringRecord, Accumulator<?, ?>> toMerge) {
+	/**
+	 * TODO Merge this with other
+	 */
+	public static void mergeIntoSerializable(Map<String, Accumulator<?, ?>> target,
+			Map<StringRecord, Accumulator<?, ?>> toMerge) {
 		synchronized(target) {
 			for (Map.Entry<StringRecord, Accumulator<?,?>> otherEntry : toMerge.entrySet()) {
 				Accumulator<?,?> ownAccumulator = target.get(otherEntry.getKey());
 				if (ownAccumulator == null) {
 					// Take over counter from chained task
-					target.put(otherEntry.getKey(), otherEntry.getValue());
+					target.put(otherEntry.getKey().toString(), otherEntry.getValue());
 				} else {
 					// Both should have the same type
 					AccumulatorHelper.compareAccumulatorTypes(otherEntry.getKey(),

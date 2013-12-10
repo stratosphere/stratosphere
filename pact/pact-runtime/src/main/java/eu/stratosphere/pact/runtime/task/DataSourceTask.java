@@ -17,13 +17,11 @@ package eu.stratosphere.pact.runtime.task;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.google.common.collect.Maps;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
@@ -237,14 +235,8 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 			
       // Merge and report accumulators
-			System.out.println("Subtask " + getEnvironment().getIndexInSubtaskGroup() + " of " + getEnvironment().getCurrentNumberOfSubtasks());
-			Map<String, Accumulator<?,?>> accumulators = null;
-			if (this.output instanceof ChainedDriver) {
-				accumulators = ((ChainedDriver<?,?>)this.output).getStub().getRuntimeContext().getAllAccumulators();
-			} else {
-				accumulators = Maps.newHashMap();
-			}
-			RegularPactTask.mergeAndReportAccumulators(getEnvironment(), accumulators, chainedTasks);
+			RegularPactTask.mergeAndReportAccumulators(getEnvironment(),
+					new HashMap<String, Accumulator<?,?>>(), chainedTasks);
 		}
 		catch (Exception ex) {
 			// close the input, but do not report any exceptions, since we already have another root cause

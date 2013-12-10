@@ -1,13 +1,14 @@
 package eu.stratosphere.nephele.jobmanager.archive;
 
 import java.util.List;
+import java.util.Map;
 
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.RecentJobEvent;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobStatus;
-import eu.stratosphere.nephele.jobgraph.JobVertexID;
+import eu.stratosphere.nephele.jobmanager.EventCollector.JobAccumulators;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
 import eu.stratosphere.nephele.topology.NetworkTopology;
@@ -49,6 +50,11 @@ public interface ArchiveListener {
 	 * @param topology
 	 */
 	void archiveNetworkTopology(JobID jobId, NetworkTopology topology);
+
+	/**
+	 * Stores collected accumulators for a job in archive
+	 */
+	void archiveAccumulators(JobID jobID, JobAccumulators jobAccumulators);
 	
 	/**
 	 * Get all archived Jobs
@@ -80,6 +86,11 @@ public interface ArchiveListener {
 	 * @return
 	 */
 	List<AbstractEvent> getEvents(JobID jobID);
+	
+	/**
+	 * Get archived job accumulators
+	 */
+	Map<JobID, JobAccumulators> getJobAccumulators();
 	
 	/**
 	 * Returns the time when the status of the given job changed to jobStatus

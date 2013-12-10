@@ -436,15 +436,16 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?,?>> accumulators, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// We can merge here the accumulators from the stub and the chained tasks. 
 		// Type conflicts can occur here if counters with same name but different type were used
-		System.out.println("ORIGINAL:");
+		System.out.println("Subtask " + env.getIndexInSubtaskGroup() + " of " + env.getCurrentNumberOfSubtasks() + " (" + env.getTaskName() + ")");
 		System.out.println(AccumulatorHelper.getAccumulatorsFormated(accumulators));
 		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
 			Map<String, Accumulator<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulators();
-			System.out.println("MERGE IN:");
+			System.out.println("MERGE IN (" + chainedTask.getTaskName() + "):");
 			System.out.println(AccumulatorHelper.getAccumulatorsFormated(allOther));
 			AccumulatorHelper.mergeInto(accumulators, allOther);
 		}
 		
+		// Don't report if the UDF didn't collect any accumulators
 		if (accumulators.size() == 0) { return; }
 		
 		// Report accumulators to JobManager

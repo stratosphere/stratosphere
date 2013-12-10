@@ -1293,22 +1293,17 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		return this.instanceManager.getNumberOfTaskTrackers();
 	}
 
-	/**
-	 * TODO Finalize (accumulators)
-	 */
   @Override
   public void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> newAccumulators)
       throws IOException {
-    System.out.println("Received accumulator result for job " + jobID.toString());
+  	// Accumulators are stored in the EventManager
+    System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
     System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
-    // TODO Store these locally for this job, to be able to merge them at the end of the job.
-    AccumulatorHelper.mergeIntoSerializable(this.accumulators, newAccumulators);
+    this.eventCollector.processAccumulatorEvent(jobID, newAccumulators);
   }
-  
-  private SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators = new SerializableHashMap<StringRecord, Accumulator<?, ?>>();
   
   @Override
   public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) {
-  	return accumulators;
+  	return AccumulatorHelper.toSerializableMap(this.eventCollector.getJobAccumulators(jobID));
   }
 }
