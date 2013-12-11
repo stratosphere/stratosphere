@@ -3,6 +3,12 @@ layout: inner_docs_v04
 title: Scala Programming Guide
 ---
 
+Writing Stratosphere Programs in Scala
+=====================================
+This guide explains how to develop Stratosphere programs with the Scala programming interface.
+It assumes you are familiar with the general concepts of Stratosphere's [Programming Model](pmodel.html "Programming Model").
+We recommend to learn about the basic concepts first, before continuing with the [Java](java.html "Java Programming Guide") or the Scala programming guide.
+
 ## Scala Programming Guide
 <p class="lead"><strong>Our Scala programming guide is coming soon.</strong> Meanwhile, you can go through our recent Scala presentations from the <a href="{{site.baseurl}}/events/2013/summit.html">Stratosphere Summit</a>.</p>
 
