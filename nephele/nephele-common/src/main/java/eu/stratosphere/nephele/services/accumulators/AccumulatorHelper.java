@@ -3,10 +3,6 @@ package eu.stratosphere.nephele.services.accumulators;
 import java.util.HashMap;
 import java.util.Map;
 
-import eu.stratosphere.nephele.types.StringRecord;
-import eu.stratosphere.nephele.util.SerializableHashMap;
-
-
 public class AccumulatorHelper {
 	
 	/**
@@ -29,7 +25,6 @@ public class AccumulatorHelper {
 				// Both should have the same type
 				AccumulatorHelper.compareAccumulatorTypes(otherEntry.getKey(),
 						ownAccumulator.getClass(), otherEntry.getValue().getClass());
-				
 				// Merge counter from chained task into counter from stub
 				mergeSingle(ownAccumulator, otherEntry.getValue());
 			}
@@ -37,28 +32,8 @@ public class AccumulatorHelper {
 	}
 	
 	/**
-	 * TODO Merge this with other
+	 * Workaround method for type safety
 	 */
-	public static void mergeIntoSerializable(Map<String, Accumulator<?, ?>> target,
-			Map<StringRecord, Accumulator<?, ?>> toMerge) {
-		synchronized(target) {
-			for (Map.Entry<StringRecord, Accumulator<?,?>> otherEntry : toMerge.entrySet()) {
-				Accumulator<?,?> ownAccumulator = target.get(otherEntry.getKey().toString());
-				if (ownAccumulator == null) {
-					// Take over counter from chained task
-					target.put(otherEntry.getKey().toString(), otherEntry.getValue());
-				} else {
-					// Both should have the same type
-					AccumulatorHelper.compareAccumulatorTypes(otherEntry.getKey(),
-							ownAccumulator.getClass(), otherEntry.getValue().getClass());
-					
-					// Merge counter from chained task into counter from stub
-					mergeSingle(ownAccumulator, otherEntry.getValue());
-				}
-			}
-		}
-	}
-	
 	private static final <V, R> void mergeSingle(Accumulator<?, ?> target, Accumulator<?, ?> toMerge) {
 	  @SuppressWarnings("unchecked")
 	  Accumulator<V, R> typedTarget = (Accumulator<V, R>) target;
@@ -83,25 +58,12 @@ public class AccumulatorHelper {
 	}
 
 	/**
-	 * Transform the Map with accumulators into a serializable HashMap
-	 */
-	public static SerializableHashMap<StringRecord, Accumulator<?, ?>> toSerializableMap(
-			Map<String, Accumulator<?, ?>> accumulators) {
-		SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = 
-				new SerializableHashMap<StringRecord, Accumulator<?, ?>>(accumulators.size());
-		for (Map.Entry<String, Accumulator<?, ?>> entry : accumulators.entrySet()) {
-  		serializableAccumulators.put(new StringRecord(entry.getKey()), entry.getValue());
-  	}
-  	return serializableAccumulators;
-	}
-
-	/**
 	 * Transform the Map with accumulators into a Map containing only the results
 	 */
-	public static Map<String, Object> toResultMap(Map<StringRecord, Accumulator<?, ?>> accumulators) {
+	public static Map<String, Object> toResultMap(Map<String, Accumulator<?, ?>> accumulators) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
-		for (Map.Entry<StringRecord, Accumulator<?, ?>> entry : accumulators.entrySet()) {
-  		resultMap.put(entry.getKey().toString(), (Object)entry.getValue().getLocalValue());
+		for (Map.Entry<String, Accumulator<?, ?>> entry : accumulators.entrySet()) {
+  		resultMap.put(entry.getKey(), (Object)entry.getValue().getLocalValue());
   	}
   	return resultMap;
 	}

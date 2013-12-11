@@ -29,26 +29,6 @@ public class AccumulatorManager {
     this.maxEntries = maxEntries;
   }
 
-//  /**
-//   * Merges the new accumulators with the existing accumulators collected for
-//   * the job.
-//   */
-//  public void processIncomingAccumulators(JobID jobID,
-//      Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
-//    synchronized(this.jobAccumulators) {
-//      System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
-//      System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
-//      JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
-//      if (jobAccumulators == null) {
-//        System.out.println("Register new accumulators");
-//        jobAccumulators = new JobAccumulators();
-//        this.jobAccumulators.put(jobID, jobAccumulators);
-//        cleanup(jobID);
-//      }
-//      jobAccumulators.processNew(newAccumulators);
-//    }
-//  }
-
   /**
    * Merges the new accumulators with the existing accumulators collected for
    * the job.
@@ -60,7 +40,6 @@ public class AccumulatorManager {
       System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
       JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
       if (jobAccumulators == null) {
-        System.out.println("Register new accumulators");
         jobAccumulators = new JobAccumulators();
         this.jobAccumulators.put(jobID, jobAccumulators);
         cleanup(jobID);
@@ -71,7 +50,7 @@ public class AccumulatorManager {
 
   /**
    * Returns all collected accumulators for the job. For efficiency the internal
-   * accumulator is returned - please use it read-only.
+   * accumulator is returned, so please use it read-only.
    */
   public Map<String, Accumulator<?, ?>> getJobAccumulators(JobID jobID) {
     JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);

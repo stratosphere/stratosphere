@@ -16,12 +16,9 @@
 package eu.stratosphere.nephele.protocols;
 
 import java.io.IOException;
-import java.util.Map;
 
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
-import eu.stratosphere.nephele.types.StringRecord;
 
 /**
  * The accumulator protocol is implemented by the job manager. TaskManagers can
@@ -34,15 +31,12 @@ public interface AccumulatorProtocol extends VersionedProtocol {
 	 * Report accumulators that were collected in a task. Called by Task Manager,
 	 * after the user code was executed but before the task status update is
 	 * reported.
-	 * 
-	 * TODO Enable transfer of custom accumulators. Analogous to
-	 * IterationEventWithAggregators, or by enabling user classloader in RPC.
 	 */
 	void reportAccumulatorResult(AccumulatorEvent accumulatorEvent) throws IOException;
 	
 	/**
 	 * Get the final accumulator results. Called by JobClient after the job ended.
 	 */
-	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) throws IOException;
+	AccumulatorEvent getAccumulatorResults(JobID jobID) throws IOException;
 
 }

@@ -34,10 +34,9 @@ import eu.stratosphere.nephele.jobgraph.JobStatus;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
 import eu.stratosphere.nephele.protocols.JobManagementProtocol;
-import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.types.IntegerRecord;
-import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -362,7 +361,7 @@ public class JobClient {
 						// Request accumulators
 						Map<String, Object> accumulators = null;
 						try {
-							accumulators = AccumulatorHelper.toResultMap(getAccumulators());
+							accumulators = AccumulatorHelper.toResultMap(getAccumulators().getAccumulators());
 						} catch (IOException ioe) {
 							Runtime.getRuntime().removeShutdownHook(this.jobCleanUp);
 							throw ioe;	// Rethrow error
@@ -425,8 +424,7 @@ public class JobClient {
 		this.console = stream;
 	}
 
-	private Map<StringRecord, Accumulator<?, ?>> getAccumulators() throws IOException {
-
+	private AccumulatorEvent getAccumulators() throws IOException {
 		synchronized (this.jobSubmitClient) {
 			return this.accumulatorProtocolProxy.getAccumulatorResults(this.jobGraph.getJobID());
 		}

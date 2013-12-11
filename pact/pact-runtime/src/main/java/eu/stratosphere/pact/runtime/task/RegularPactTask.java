@@ -424,13 +424,15 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 	}
 
 	/**
-	 * TODO Finalize & refactor
+	 * This method is called at the end of a task, receiving the accumulators of
+	 * the task and the chained tasks. It merges them into a single map of
+	 * accumulators and sends them to the JobManager.
 	 * 
 	 * @param stub
 	 *          The task stub which usually holds several accumulators
 	 * @param chainedTasks
-	 *          Each chained task might have accumulators which will be merged with
-	 *          the accumulators of the stub.
+	 *          Each chained task might have accumulators which will be merged
+	 *          with the accumulators of the stub.
 	 */
 	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?,?>> accumulators, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
 		// We can merge here the accumulators from the stub and the chained tasks. 
@@ -450,7 +452,7 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 		// Report accumulators to JobManager
 		synchronized (env.getAccumulatorProtocolProxy()) {
 	    try {
-	      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators));
+	      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators, true));
 			} catch (IOException e) {
 				LOG.error(StringUtils.stringifyException(e));
 			}

@@ -28,8 +28,7 @@ import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.LongCounter;
 import eu.stratosphere.nephele.util.SerializableHashSet;
-import eu.stratosphere.pact.client.PlanExecutor;
-import eu.stratosphere.pact.client.RemoteExecutor;
+import eu.stratosphere.pact.client.LocalExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -54,92 +53,82 @@ import eu.stratosphere.pact.example.util.AsciiUtils;
  * This is similar to the WordCount example and additionally demonstrates how to
  * use custom accumulators (built-in or custom).
  */
-public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescription {
-	
-	/**
-	 * Converts a PactRecord containing one string in to multiple string/integer pairs.
-	 * The string is tokenized by whitespaces. For each token a new record is emitted,
-	 * where the token is the first field and an Integer(1) is the second field.
-	 */
+public class WordCountAccumulators implements PlanAssembler,
+		PlanAssemblerDescription {
+
 	public static class TokenizeLine extends MapStub implements Serializable {
 		private static final long serialVersionUID = 1L;
-		
-		// initialize reusable mutable objects
+
 		private final PactRecord outputRecord = new PactRecord();
 		private final PactString word = new PactString();
 		private final PactInteger one = new PactInteger(1);
-		
-		private final AsciiUtils.WhitespaceTokenizer tokenizer =
-				new AsciiUtils.WhitespaceTokenizer();
-		
-		// For efficiency it is recommended to have member variables for the accumulators
+
+		private final AsciiUtils.WhitespaceTokenizer tokenizer = new AsciiUtils.WhitespaceTokenizer();
+
+		// For efficiency it is recommended to have member variables for the
+		// accumulators
 		public static final String ACCUM_NUM_LINES = "accumulator.num-lines";
 		private LongCounter numLines = new LongCounter();
-		
-    // This histogram accumulator collects the distribution of number of words
-    // per line
+
+		// This histogram accumulator collects the distribution of number of words
+		// per line
 		public static final String ACCUM_WORDS_PER_LINE = "accumulator.words-per-line";
 		private Histogram wordsPerLine = new Histogram();
-		
+
 		public static final String ACCUM_DISTINCT_WORDS = "accumulator.distinct-words";
 		private SetAccumulator<PactString> distinctWords = new SetAccumulator<PactString>();
-		
+
 		@Override
 		public void open(Configuration parameters) throws Exception {
-			
+
 			// Accumulators have to be registered to the system
-		  getRuntimeContext().addAccumulator(ACCUM_NUM_LINES, this.numLines);
-		  getRuntimeContext().addAccumulator(ACCUM_WORDS_PER_LINE, this.wordsPerLine);
-		  getRuntimeContext().addAccumulator(ACCUM_DISTINCT_WORDS, this.distinctWords);
-		  
-		  // You could also write to accumulators in open() or close()
+			getRuntimeContext().addAccumulator(ACCUM_NUM_LINES, this.numLines);
+			getRuntimeContext().addAccumulator(ACCUM_WORDS_PER_LINE,
+					this.wordsPerLine);
+			getRuntimeContext().addAccumulator(ACCUM_DISTINCT_WORDS,
+					this.distinctWords);
+
+			// You could also write to accumulators in open() or close()
 		}
-		
+
 		@Override
 		public void map(PactRecord record, Collector<PactRecord> collector) {
-		  
-		  // Increment counter
-		  numLines.add(1L);
-		  
-			// get the first field (as type PactString) from the record
+
+			// Increment counter
+			numLines.add(1L);
+
 			PactString line = record.getField(0, PactString.class);
 
-			// normalize the line
 			AsciiUtils.replaceNonWordChars(line, ' ');
 			AsciiUtils.toLowerCase(line);
-			
-			// tokenize the line
+
 			this.tokenizer.setStringToTokenize(line);
 			int numWords = 0;
-			while (tokenizer.next(this.word))
-			{
-			  distinctWords.add(new PactString(this.word));
-			  
-			  ++ numWords;
-				// we emit a (word, 1) pair 
+			while (tokenizer.next(this.word)) {
+				distinctWords.add(new PactString(this.word));
+
+				++numWords;
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
 				collector.collect(this.outputRecord);
 			}
+
 			// Add a value to the histogram accumulator
 			this.wordsPerLine.add(numWords);
 		}
 	}
 
-	/**
-	 * Sums up the counts for a certain given key. The counts are assumed to be at position <code>1</code>
-	 * in the record. The other fields are not modified.
-	 */
 	@Combinable
 	@ConstantFields(0)
 	public static class CountWords extends ReduceStub implements Serializable {
-		
+
 		private static final long serialVersionUID = 1L;
-		
+
 		private final PactInteger cnt = new PactInteger();
-		
+
 		@Override
-		public void reduce(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
+		public void reduce(Iterator<PactRecord> records, Collector<PactRecord> out)
+				throws Exception {
 			PactRecord element = null;
 			int sum = 0;
 			while (records.hasNext()) {
@@ -152,111 +141,114 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 			element.setField(1, this.cnt);
 			out.collect(element);
 		}
-		
+
 		@Override
-		public void combine(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
-			// the logic is the same as in the reduce function, so simply call the reduce method
+		public void combine(Iterator<PactRecord> records, Collector<PactRecord> out)
+				throws Exception {
 			reduce(records, out);
 		}
 	}
 
-
 	@Override
 	public Plan getPlan(String... args) {
-		// parse job parameters
-		int numSubTasks   = (args.length > 0 ? Integer.parseInt(args[0]) : 1);
+		int numSubTasks = (args.length > 0 ? Integer.parseInt(args[0]) : 1);
 		String dataInput = (args.length > 1 ? args[1] : "");
-		String output    = (args.length > 2 ? args[2] : "");
+		String output = (args.length > 2 ? args[2] : "");
 
-		FileDataSource source = new FileDataSource(new TextInputFormat(), dataInput, "Input Lines");
-		source.setParameter(TextInputFormat.CHARSET_NAME, "ASCII");		// comment out this line for UTF-8 inputs
-		MapContract mapper = MapContract.builder(new TokenizeLine())
-			.input(source)
-			.name("Tokenize Lines")
-			.build();
-		ReduceContract reducer = ReduceContract.builder(CountWords.class, PactString.class, 0)
-			.input(mapper)
-			.name("Count Words")
-			.build();
-		FileDataSink out = new FileDataSink(new RecordOutputFormat(), output, reducer, "Word Counts");
-		RecordOutputFormat.configureRecordFormat(out)
-			.recordDelimiter('\n')
-			.fieldDelimiter(' ')
-			.field(PactString.class, 0)
-			.field(PactInteger.class, 1);
-		
+		FileDataSource source = new FileDataSource(new TextInputFormat(),
+				dataInput, "Input Lines");
+		source.setParameter(TextInputFormat.CHARSET_NAME, "ASCII"); // comment out
+																																// this line for
+																																// UTF-8 inputs
+		MapContract mapper = MapContract.builder(new TokenizeLine()).input(source)
+				.name("Tokenize Lines").build();
+		ReduceContract reducer = ReduceContract
+				.builder(CountWords.class, PactString.class, 0).input(mapper)
+				.name("Count Words").build();
+		FileDataSink out = new FileDataSink(new RecordOutputFormat(), output,
+				reducer, "Word Counts");
+		RecordOutputFormat.configureRecordFormat(out).recordDelimiter('\n')
+				.fieldDelimiter(' ').field(PactString.class, 0)
+				.field(PactInteger.class, 1);
+
 		Plan plan = new Plan(out, "WordCount Example");
 		plan.setDefaultParallelism(numSubTasks);
 		return plan;
 	}
-
 
 	@Override
 	public String getDescription() {
 		return "Parameters: [numSubStasks] [input] [output]";
 	}
 
-	
 	public static void main(String[] args) throws Exception {
 		WordCountAccumulators wc = new WordCountAccumulators();
-		
+
 		if (args.length < 3) {
 			System.err.println(wc.getDescription());
 			System.exit(1);
 		}
-		
+
 		Plan plan = wc.getPlan(args);
-		
-		// This will execute the word-count embedded in a local context. replace this line by the commented
-		// succeeding line to send the job to a local installation or to a cluster for execution
-//		JobExecutionResult result = LocalExecutor.execute(plan);
-		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCountAccumulators.jar");
-		JobExecutionResult result = ex.executePlan(plan);
-		
-    System.out.println("Number of lines counter: " + result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
-    System.out.println("Words per line histogram: " + result.getAccumulatorResult(TokenizeLine.ACCUM_WORDS_PER_LINE));
-    System.out.println("Distinct words: " + result.getAccumulatorResult(TokenizeLine.ACCUM_DISTINCT_WORDS));
+
+		// This will execute the word-count embedded in a local context. replace
+		// this line by the commented
+		// succeeding line to send the job to a local installation or to a cluster
+		// for execution
+		JobExecutionResult result = LocalExecutor.execute(plan);
+		// PlanExecutor ex = new RemoteExecutor("localhost", 6123,
+		// "target/pact-examples-0.4-SNAPSHOT-WordCountAccumulators.jar");
+		// JobExecutionResult result = ex.executePlan(plan);
+
+		// Accumulators can be accessed by their name. 
+		System.out.println("Number of lines counter: "
+				+ result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
+		System.out.println("Words per line histogram: "
+				+ result.getAccumulatorResult(TokenizeLine.ACCUM_WORDS_PER_LINE));
+		System.out.println("Distinct words: "
+				+ result.getAccumulatorResult(TokenizeLine.ACCUM_DISTINCT_WORDS));
 	}
-  
-  /**
-   * Custom accumulator
-   */
-  public static class SetAccumulator<T extends Value> implements Accumulator<T, Set<T>> {
-    
-    private static final long serialVersionUID = 1L;
-    
-    private SerializableHashSet<T> set = new SerializableHashSet<T>();
 
-    @Override
-    public void add(T value) {
-      this.set.add(value);
-    }
+	/**
+	 * Custom accumulator
+	 */
+	public static class SetAccumulator<T extends Value> implements
+			Accumulator<T, Set<T>> {
 
-    @Override
-    public Set<T> getLocalValue() {
-      return this.set;
-    }
+		private static final long serialVersionUID = 1L;
 
-    @Override
-    public void resetLocal() {
-      this.set.clear();
-    }
+		private SerializableHashSet<T> set = new SerializableHashSet<T>();
 
-    @Override
-    public void merge(Accumulator<T, Set<T>> other) {
-      // build union
-      this.set.addAll(((SetAccumulator<T>)other).getLocalValue());
-    }
+		@Override
+		public void add(T value) {
+			this.set.add(value);
+		}
 
-    @Override
-    public void write(DataOutput out) throws IOException {
-      this.set.write(out);
-    }
+		@Override
+		public Set<T> getLocalValue() {
+			return this.set;
+		}
 
-    @Override
-    public void read(DataInput in) throws IOException {
-      this.set.read(in);
-    }
-    
-  }
+		@Override
+		public void resetLocal() {
+			this.set.clear();
+		}
+
+		@Override
+		public void merge(Accumulator<T, Set<T>> other) {
+			// build union
+			this.set.addAll(((SetAccumulator<T>) other).getLocalValue());
+		}
+
+		@Override
+		public void write(DataOutput out) throws IOException {
+			this.set.write(out);
+		}
+
+		@Override
+		public void read(DataInput in) throws IOException {
+			this.set.read(in);
+		}
+
+	}
 }

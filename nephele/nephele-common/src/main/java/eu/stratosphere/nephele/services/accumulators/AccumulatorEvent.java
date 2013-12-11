@@ -9,30 +9,30 @@ import java.util.Map;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.io.IOReadableWritable;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.util.SerializableHashMap;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
- * 
- * 
- * This class doesn't use the existing {@link SerializableHashMap} since this
- * requires to transform the string to a StringRecord. It also sends the class
- * of the key, which is constant in our case.
+ * This class encapsulates a map of accumulators for a single job. It is used
+ * for the transfer from TaskManagers to the JobManager and from the JobManager
+ * to the Client.
  */
 public class AccumulatorEvent implements IOReadableWritable {
 
 	private JobID jobID;
 
 	private Map<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
+	
+	private boolean useUserClassLoader = false;
 
-	public AccumulatorEvent() {
-
-	}
+	// Removing this causes an EOFException in the RPC service. The RPC should be
+	// improved in this regard (error message is very unspecific).
+	public AccumulatorEvent() { }
 
 	public AccumulatorEvent(JobID jobID,
-			Map<String, Accumulator<?, ?>> accumulators) {
+			Map<String, Accumulator<?, ?>> accumulators, boolean useUserClassLoader) {
 		this.accumulators = accumulators;
 		this.jobID = jobID;
+		this.useUserClassLoader = useUserClassLoader;
 	}
 
 	public JobID getJobID() {
@@ -45,6 +45,7 @@ public class AccumulatorEvent implements IOReadableWritable {
 
 	@Override
 	public void write(DataOutput out) throws IOException {
+		out.writeBoolean(this.useUserClassLoader);
 		jobID.write(out);
 		out.writeInt(accumulators.size());
 		for (Map.Entry<String, Accumulator<?, ?>> entry : this.accumulators
@@ -58,23 +59,29 @@ public class AccumulatorEvent implements IOReadableWritable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void read(DataInput in) throws IOException {
+		this.useUserClassLoader = in.readBoolean();
 		jobID = new JobID();
 		jobID.read(in);
 		int numberOfMapEntries = in.readInt();
 		this.accumulators = new HashMap<String, Accumulator<?, ?>>(
 				numberOfMapEntries);
 		
-		// Get user class loader. Required to support custom accumulators.
-		ClassLoader clazzLoader = LibraryCacheManager.getClassLoader(jobID);
+		// Get user class loader. This is required at the JobManager, but not at the
+		// client.
+		ClassLoader classLoader = null;
+		if (this.useUserClassLoader) {
+			classLoader = LibraryCacheManager.getClassLoader(jobID);
+		} else {
+			classLoader = this.getClass().getClassLoader();
+		}
 
 		for (int i = 0; i < numberOfMapEntries; i++) {
-			System.out.println("- read entry " + i);
 			String key = in.readUTF();
 
 			final String valueType = in.readUTF();
 			Class<Accumulator<?, ?>> valueClass = null;
 			try {
-				valueClass = (Class<Accumulator<?, ?>>) Class.forName(valueType, true, clazzLoader);
+				valueClass = (Class<Accumulator<?, ?>>) Class.forName(valueType, true, classLoader);
 			} catch (ClassNotFoundException e) {
 				throw new IOException(StringUtils.stringifyException(e));
 			}
@@ -90,5 +97,4 @@ public class AccumulatorEvent implements IOReadableWritable {
 			this.accumulators.put(key, value);
 		}
 	}
-
 }
