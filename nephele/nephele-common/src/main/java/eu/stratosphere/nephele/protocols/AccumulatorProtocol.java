@@ -20,8 +20,8 @@ import java.util.Map;
 
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
 import eu.stratosphere.nephele.types.StringRecord;
-import eu.stratosphere.nephele.util.SerializableHashMap;
 
 /**
  * The accumulator protocol is implemented by the job manager. TaskManagers can
@@ -39,11 +39,12 @@ public interface AccumulatorProtocol extends VersionedProtocol {
    * class). Analogous to IterationEventWithAggregators, or by enabling user
    * classloader in RPC (not possible since SerializableHashMap creates instance).
    */
-	void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
+//	void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
+	void reportAccumulatorResult(AccumulatorEvent accumulatorEvent) throws IOException;
 	
 	/**
 	 * Get the final accumulator results. Called by JobClient after the job ended.
 	 */
-	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID);
+	Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) throws IOException;
 
 }

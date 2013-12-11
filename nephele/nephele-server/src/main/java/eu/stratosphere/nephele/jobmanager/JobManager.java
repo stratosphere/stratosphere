@@ -120,6 +120,7 @@ import eu.stratosphere.nephele.protocols.ExtendedManagementProtocol;
 import eu.stratosphere.nephele.protocols.InputSplitProviderProtocol;
 import eu.stratosphere.nephele.protocols.JobManagerProtocol;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.taskmanager.AbstractTaskResult;
 import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
@@ -133,7 +134,6 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.nephele.types.StringRecord;
 import eu.stratosphere.nephele.util.SerializableArrayList;
-import eu.stratosphere.nephele.util.SerializableHashMap;
 import eu.stratosphere.nephele.util.StringUtils;
 
 /**
@@ -1302,14 +1302,20 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		return this.instanceManager.getNumberOfTaskTrackers();
 	}
 	
+//  @Override
+//  public void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> newAccumulators)
+//      throws IOException {
+//    this.accumulatorManager.processIncomingAccumulators(jobID, newAccumulators);
+//  }
+
   @Override
-  public void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> newAccumulators)
+  public void reportAccumulatorResult(AccumulatorEvent accumulatorEvent)
       throws IOException {
-    this.accumulatorManager.processIncomingAccumulators(jobID, newAccumulators);
+    this.accumulatorManager.processIncomingAccumulators(accumulatorEvent.getJobID(), accumulatorEvent.getAccumulators());
   }
-  
+
   @Override
-  public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) {
+  public Map<StringRecord, Accumulator<?, ?>> getAccumulatorResults(JobID jobID) throws IOException {
     return AccumulatorHelper.toSerializableMap(this.accumulatorManager.getJobAccumulators(jobID));
   }
 }

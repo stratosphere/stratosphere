@@ -37,6 +37,7 @@ import eu.stratosphere.nephele.io.MutableRecordReader;
 import eu.stratosphere.nephele.io.MutableUnionRecordReader;
 import eu.stratosphere.nephele.io.RecordWriter;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
+import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
@@ -44,8 +45,6 @@ import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.AbstractTask;
 import eu.stratosphere.nephele.types.Record;
-import eu.stratosphere.nephele.types.StringRecord;
-import eu.stratosphere.nephele.util.SerializableHashMap;
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.pact.common.contract.DataDistribution;
 import eu.stratosphere.pact.common.stubs.Collector;
@@ -450,9 +449,11 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 		
 		// Report accumulators to JobManager
     try {
+      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators));
     	// Transform String to StringRecord to make HashMap serializable
-    	SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = AccumulatorHelper.toSerializableMap(accumulators);
-			env.getAccumulatorProtocolProxy().reportAccumulatorResult(env.getJobID(), serializableAccumulators);
+//    	SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = AccumulatorHelper.toSerializableMap(accumulators);
+//			env.getAccumulatorProtocolProxy().reportAccumulatorResult(env.getJobID(), serializableAccumulators);
+      
 		} catch (IOException e) {
 			LOG.error(StringUtils.stringifyException(e));
 		}

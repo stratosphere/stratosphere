@@ -7,7 +7,6 @@ import java.util.Map;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
-import eu.stratosphere.nephele.types.StringRecord;
 
 /**
  * This class manages the accumulators for different jobs. Either the jobs are
@@ -30,12 +29,32 @@ public class AccumulatorManager {
     this.maxEntries = maxEntries;
   }
 
+//  /**
+//   * Merges the new accumulators with the existing accumulators collected for
+//   * the job.
+//   */
+//  public void processIncomingAccumulators(JobID jobID,
+//      Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
+//    synchronized(this.jobAccumulators) {
+//      System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
+//      System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));
+//      JobAccumulators jobAccumulators = this.jobAccumulators.get(jobID);
+//      if (jobAccumulators == null) {
+//        System.out.println("Register new accumulators");
+//        jobAccumulators = new JobAccumulators();
+//        this.jobAccumulators.put(jobID, jobAccumulators);
+//        cleanup(jobID);
+//      }
+//      jobAccumulators.processNew(newAccumulators);
+//    }
+//  }
+
   /**
    * Merges the new accumulators with the existing accumulators collected for
    * the job.
    */
   public void processIncomingAccumulators(JobID jobID,
-      Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
+      Map<String, Accumulator<?, ?>> newAccumulators) {
     synchronized(this.jobAccumulators) {
       System.out.println("JobManager: Received accumulator result for job " + jobID.toString());
       System.out.println(AccumulatorHelper.getAccumulatorsFormated(newAccumulators));

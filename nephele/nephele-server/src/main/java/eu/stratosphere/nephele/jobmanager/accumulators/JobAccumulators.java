@@ -5,7 +5,6 @@ import java.util.Map;
 
 import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorHelper;
-import eu.stratosphere.nephele.types.StringRecord;
 
 /**
  * Simple class wrapping a map of accumulators for a single job. Just for
@@ -19,7 +18,11 @@ public class JobAccumulators {
     return this.accumulators;
   }
   
-  public void processNew(Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
-    AccumulatorHelper.mergeIntoSerializable(this.accumulators, newAccumulators);
+  public void processNew(Map<String, Accumulator<?, ?>> newAccumulators) {
+    AccumulatorHelper.mergeInto(this.accumulators, newAccumulators);
   }
+  
+//  public void processNew(Map<StringRecord, Accumulator<?, ?>> newAccumulators) {
+//    AccumulatorHelper.mergeIntoSerializable(this.accumulators, newAccumulators);
+//  }
 }
