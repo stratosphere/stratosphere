@@ -28,7 +28,8 @@ import eu.stratosphere.nephele.services.accumulators.Accumulator;
 import eu.stratosphere.nephele.services.accumulators.Histogram;
 import eu.stratosphere.nephele.services.accumulators.LongCounter;
 import eu.stratosphere.nephele.util.SerializableHashSet;
-import eu.stratosphere.pact.client.LocalExecutor;
+import eu.stratosphere.pact.client.PlanExecutor;
+import eu.stratosphere.pact.client.RemoteExecutor;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -71,6 +72,7 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		private final AsciiUtils.WhitespaceTokenizer tokenizer =
 				new AsciiUtils.WhitespaceTokenizer();
 		
+		// For efficiency it is recommended to have member variables for the accumulators
 		public static final String ACCUM_NUM_LINES = "accumulator.num-lines";
 		private LongCounter numLines = new LongCounter();
 		
@@ -84,6 +86,8 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		
 		@Override
 		public void open(Configuration parameters) throws Exception {
+			
+			// Accumulators have to be registered to the system
 		  getRuntimeContext().addAccumulator(ACCUM_NUM_LINES, this.numLines);
 		  getRuntimeContext().addAccumulator(ACCUM_WORDS_PER_LINE, this.wordsPerLine);
 		  getRuntimeContext().addAccumulator(ACCUM_DISTINCT_WORDS, this.distinctWords);
@@ -205,9 +209,9 @@ public class WordCountAccumulators implements PlanAssembler, PlanAssemblerDescri
 		
 		// This will execute the word-count embedded in a local context. replace this line by the commented
 		// succeeding line to send the job to a local installation or to a cluster for execution
-		JobExecutionResult result = LocalExecutor.execute(plan);
-//		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCountAccumulators.jar");
-//		JobExecutionResult result = ex.executePlan(plan);
+//		JobExecutionResult result = LocalExecutor.execute(plan);
+		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCountAccumulators.jar");
+		JobExecutionResult result = ex.executePlan(plan);
 		
     System.out.println("Number of lines counter: " + result.getAccumulatorResult(TokenizeLine.ACCUM_NUM_LINES));
     System.out.println("Words per line histogram: " + result.getAccumulatorResult(TokenizeLine.ACCUM_WORDS_PER_LINE));

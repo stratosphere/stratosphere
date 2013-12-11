@@ -251,5 +251,8 @@ public interface Environment {
 	 */
 	Set<ChannelID> getInputChannelIDsOfGate(GateID gateID);
 	
+	/**
+	 * Returns the proxy object for the accumulator protocol.
+	 */
 	AccumulatorProtocol getAccumulatorProtocolProxy();
 }

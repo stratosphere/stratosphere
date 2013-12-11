@@ -37,9 +37,6 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
 		return this.hashMap;
 	}
 
-	/**
-	 * TODO Write test case
-	 */
 	@Override
 	public void merge(Accumulator<Integer, Map<Integer, Integer>> other) {
 		// Merge the values into this map

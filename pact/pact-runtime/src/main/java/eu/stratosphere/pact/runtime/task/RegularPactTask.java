@@ -443,19 +443,17 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 			System.out.println(AccumulatorHelper.getAccumulatorsFormated(allOther));
 			AccumulatorHelper.mergeInto(accumulators, allOther);
 		}
-		
+
 		// Don't report if the UDF didn't collect any accumulators
 		if (accumulators.size() == 0) { return; }
-		
+
 		// Report accumulators to JobManager
-    try {
-      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators));
-    	// Transform String to StringRecord to make HashMap serializable
-//    	SerializableHashMap<StringRecord, Accumulator<?, ?>> serializableAccumulators = AccumulatorHelper.toSerializableMap(accumulators);
-//			env.getAccumulatorProtocolProxy().reportAccumulatorResult(env.getJobID(), serializableAccumulators);
-      
-		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+		synchronized (env.getAccumulatorProtocolProxy()) {
+	    try {
+	      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators));
+			} catch (IOException e) {
+				LOG.error(StringUtils.stringifyException(e));
+			}
 		}
 	}
 

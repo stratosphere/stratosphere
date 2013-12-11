@@ -31,15 +31,13 @@ import eu.stratosphere.nephele.types.StringRecord;
 public interface AccumulatorProtocol extends VersionedProtocol {
 
   /**
-   * Report accumulators that were collected in a task. Called by Task Manager,
-   * after the user code was executed but before the task status update is
-   * reported.
-   * 
-   * TODO Enable transfer of custom accumulators (move second argument to
-   * class). Analogous to IterationEventWithAggregators, or by enabling user
-   * classloader in RPC (not possible since SerializableHashMap creates instance).
-   */
-//	void reportAccumulatorResult(JobID jobID, SerializableHashMap<StringRecord, Accumulator<?, ?>> accumulators) throws IOException;
+	 * Report accumulators that were collected in a task. Called by Task Manager,
+	 * after the user code was executed but before the task status update is
+	 * reported.
+	 * 
+	 * TODO Enable transfer of custom accumulators. Analogous to
+	 * IterationEventWithAggregators, or by enabling user classloader in RPC.
+	 */
 	void reportAccumulatorResult(AccumulatorEvent accumulatorEvent) throws IOException;
 	
 	/**
