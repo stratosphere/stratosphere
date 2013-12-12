@@ -312,7 +312,7 @@
 						</configuration>
 					</execution>
 
-          <!-- WordCount -->
+          <!-- WordCount accumulators -->
           <execution>
             <id>WordCountAccumulators</id>
             <phase>package</phase>

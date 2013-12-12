@@ -418,10 +418,10 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 			// close all chained tasks letting them report failure
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 			
-      // Collect the accumulators of all involved UDFs and send them to the
-      // JobManager. close() has been called earlier for all involved UDFs
-      // (using this.stub.close() and closeChainedTasks()), so UDFs can no longer
-      // modify accumulators.
+			// Collect the accumulators of all involved UDFs and send them to the
+			// JobManager. close() has been called earlier for all involved UDFs
+			// (using this.stub.close() and closeChainedTasks()), so UDFs can no longer
+			// modify accumulators.
 			Map<String, Accumulator<?,?>> accumulators = null;
 			if (stub != null) {
 				// collect the counters from the stub
@@ -464,25 +464,33 @@ public class RegularPactTask<S extends Stub, OT> extends AbstractTask implements
 	 *          Each chained task might have accumulators which will be merged
 	 *          with the accumulators of the stub.
 	 */
-	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?,?>> accumulators, ArrayList<ChainedDriver<?, ?>> chainedTasks) {
-		// We can merge here the accumulators from the stub and the chained tasks. 
-		// Type conflicts can occur here if counters with same name but different type were used
-		System.out.println("Subtask " + env.getIndexInSubtaskGroup() + " of " + env.getCurrentNumberOfSubtasks() + " (" + env.getTaskName() + ")");
-		System.out.println(AccumulatorHelper.getAccumulatorsFormated(accumulators));
+	static void mergeAndReportAccumulators(Environment env, Map<String, Accumulator<?, ?>> accumulators,
+			ArrayList<ChainedDriver<?, ?>> chainedTasks) {
+		// We can merge here the accumulators from the stub and the chained
+		// tasks.
+		// Type conflicts can occur here if counters with same name but
+		// different type were used
+//		System.out.println("Subtask " + env.getIndexInSubtaskGroup() + " of "
+//				+ env.getCurrentNumberOfSubtasks() + " (" + env.getTaskName() + ")");
+//		System.out.println(AccumulatorHelper.getAccumulatorsFormated(accumulators));
 		for (ChainedDriver<?, ?> chainedTask : chainedTasks) {
-			Map<String, Accumulator<?,?>> allOther = chainedTask.getStub().getRuntimeContext().getAllAccumulators();
-			System.out.println("MERGE IN (" + chainedTask.getTaskName() + "):");
-			System.out.println(AccumulatorHelper.getAccumulatorsFormated(allOther));
+			Map<String, Accumulator<?, ?>> allOther = chainedTask.getStub().getRuntimeContext()
+					.getAllAccumulators();
+//			System.out.println("MERGE IN (" + chainedTask.getTaskName() + "):");
+//			System.out.println(AccumulatorHelper.getAccumulatorsFormated(allOther));
 			AccumulatorHelper.mergeInto(accumulators, allOther);
 		}
 
 		// Don't report if the UDF didn't collect any accumulators
-		if (accumulators.size() == 0) { return; }
+		if (accumulators.size() == 0) {
+			return;
+		}
 
 		// Report accumulators to JobManager
 		synchronized (env.getAccumulatorProtocolProxy()) {
-	    try {
-	      env.getAccumulatorProtocolProxy().reportAccumulatorResult(new AccumulatorEvent(env.getJobID(), accumulators, true));
+			try {
+				env.getAccumulatorProtocolProxy().reportAccumulatorResult(
+						new AccumulatorEvent(env.getJobID(), accumulators, true));
 			} catch (IOException e) {
 				LOG.error(StringUtils.stringifyException(e));
 			}

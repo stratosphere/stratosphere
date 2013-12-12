@@ -15,7 +15,6 @@
 
 package eu.stratosphere.nephele.execution;
 
-
 public interface ExecutionObserver {
 
 	/**

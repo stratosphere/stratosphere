@@ -191,7 +191,7 @@ public final class SpeedTest {
 				ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT);
 
 			final JobClient jobClient = new JobClient(jobGraph, clientConfiguration);
-	    final JobExecutionResult jobResult = jobClient.submitJobAndWait();
+			final JobExecutionResult jobResult = jobClient.submitJobAndWait();
 			final long executionTime = jobResult.getNetRuntime();
 
 			// Calculate throughput in MBit/s and output it

@@ -168,7 +168,7 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 								// build next pair and ship pair if it is valid
 								pactRecord.clear();
 								if (inFormat.nextRecord(pactRecord)) {
-	                 // This is where map of UDF gets called
+									// This is where map of UDF gets called
 									output.collect(pactRecord);
 								}
 							}
@@ -234,7 +234,7 @@ public class DataSourceTask<OT> extends AbstractInputTask<InputSplit>
 			// close all chained tasks letting them report failure
 			RegularPactTask.closeChainedTasks(this.chainedTasks, this);
 			
-      // Merge and report accumulators
+			// Merge and report accumulators
 			RegularPactTask.mergeAndReportAccumulators(getEnvironment(),
 					new HashMap<String, Accumulator<?,?>>(), chainedTasks);
 		}

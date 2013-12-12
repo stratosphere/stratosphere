@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.configuration.Configuration;
@@ -67,6 +68,8 @@ public class AccumulatorITCase extends TestBase2 {
 
 	private static final String INPUT = "one\n" + "two two\n" + "three three three\n";
 	private static final String EXPECTED = "one 1\ntwo 2\nthree 3\n";
+	
+	private static final int NUM_SUBTASKS = 2;
 
 	protected String dataPath;
 	protected String resultPath;
@@ -91,12 +94,20 @@ public class AccumulatorITCase extends TestBase2 {
 		System.out.println(AccumulatorHelper.getResultsFormated(res.getAllAccumulatorResults()));
 		
 		Assert.assertEquals(new Integer(3), (Integer) res.getAccumulatorResult("num-lines"));
+
+		Assert.assertEquals(new Double(NUM_SUBTASKS), (Double)res.getAccumulatorResult("open-close-counter"));
 		
 		// Test histogram (words per line distribution)
 		Map<Integer, Integer> dist = Maps.newHashMap();
 		dist.put(1, 1); dist.put(2, 2); dist.put(3, 3);
 		Assert.assertEquals(dist, res.getAccumulatorResult("words-per-line"));
-//		Check open-close-counter, distinct-words
+		
+		// Test distinct words (custom accumulator)
+		Set<StringRecord> distinctWords = Sets.newHashSet();
+		distinctWords.add(new StringRecord("one"));
+		distinctWords.add(new StringRecord("two"));
+		distinctWords.add(new StringRecord("three"));
+		Assert.assertEquals(distinctWords, res.getAccumulatorResult("distinct-words"));
 	}
 
 	@Override
@@ -108,7 +119,7 @@ public class AccumulatorITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config1 = new Configuration();
-		config1.setInteger("IterationAllReducer#NoSubtasks", 2);
+		config1.setInteger("IterationAllReducer#NoSubtasks", NUM_SUBTASKS);
 		return toParameterList(config1);
 	}
 	
@@ -141,58 +152,58 @@ public class AccumulatorITCase extends TestBase2 {
 		private final PactRecord outputRecord = new PactRecord();
 		private final PactString word = new PactString();
 		private final PactInteger one = new PactInteger(1);
-		private final AsciiUtils.WhitespaceTokenizer tokenizer =
-				new AsciiUtils.WhitespaceTokenizer();
+		private final AsciiUtils.WhitespaceTokenizer tokenizer = new AsciiUtils.WhitespaceTokenizer();
 
 		// Needs to be instantiated later since the runtime context is not yet
 		// initialized at this place
 		IntCounter cntNumLines = null;
-    Histogram wordsPerLineDistribution = null;
-    
-    // This counter will be added without convenience functions
-    DoubleCounter openCloseCounter = new DoubleCounter();
-    private SetAccumulator<StringRecord> distinctWords = null;
+		Histogram wordsPerLineDistribution = null;
+
+		// This counter will be added without convenience functions
+		DoubleCounter openCloseCounter = new DoubleCounter();
+		private SetAccumulator<StringRecord> distinctWords = null;
     
 		@Override
 		public void open(Configuration parameters) throws Exception {
-//		  System.out.println("Map: open");
 		  
-		  // Add counters using convenience functions
+			// Add counters using convenience functions
 			this.cntNumLines = getRuntimeContext().getIntCounter("num-lines");
-      this.wordsPerLineDistribution = getRuntimeContext().getHistogram("words-per-line");
+			this.wordsPerLineDistribution = getRuntimeContext().getHistogram("words-per-line");
 
 			// Add built-in accumulator without convenience function
 			getRuntimeContext().addAccumulator("open-close-counter", this.openCloseCounter);
-      
-      // Add custom counter. Didn't find a way to do this with getAccumulator()
-      this.distinctWords = new SetAccumulator<StringRecord>();
-      this.getRuntimeContext().addAccumulator("distinct-words", distinctWords);
-      
-      // Create counter and test increment
-      IntCounter simpleCounter = getRuntimeContext().getIntCounter("simple-counter");
-      simpleCounter.add(1);
-      Assert.assertEquals(simpleCounter.getLocalValue().intValue(), 1);
-      
-      // Test if we get the same counter
-      IntCounter simpleCounter2 = getRuntimeContext().getIntCounter("simple-counter");
-      Assert.assertEquals(simpleCounter.getLocalValue(), simpleCounter2.getLocalValue());
 
-      // Should fail if we request it with different type
-      try {
-        @SuppressWarnings("unused")
-        DoubleCounter simpleCounter3 = getRuntimeContext().getDoubleCounter("simple-counter");
-//      	DoubleSumAggregator longAggregator3 = (DoubleSumAggregator) getRuntimeContext().getAggregator("custom", DoubleSumAggregator.class);
-        Assert.fail("Should not be able to obtain previously created counter with different type");
-	    } catch (UnsupportedOperationException ex) {
-	    }
-      
-      // Test counter used in open() and closed()
-      this.openCloseCounter.add(0.5);
+			// Add custom counter. Didn't find a way to do this with
+			// getAccumulator()
+			this.distinctWords = new SetAccumulator<StringRecord>();
+			this.getRuntimeContext().addAccumulator("distinct-words", distinctWords);
+
+			// Create counter and test increment
+			IntCounter simpleCounter = getRuntimeContext().getIntCounter("simple-counter");
+			simpleCounter.add(1);
+			Assert.assertEquals(simpleCounter.getLocalValue().intValue(), 1);
+
+			// Test if we get the same counter
+			IntCounter simpleCounter2 = getRuntimeContext().getIntCounter("simple-counter");
+			Assert.assertEquals(simpleCounter.getLocalValue(), simpleCounter2.getLocalValue());
+
+			// Should fail if we request it with different type
+			try {
+				@SuppressWarnings("unused")
+				DoubleCounter simpleCounter3 = getRuntimeContext().getDoubleCounter("simple-counter");
+				// DoubleSumAggregator longAggregator3 = (DoubleSumAggregator)
+				// getRuntimeContext().getAggregator("custom",
+				// DoubleSumAggregator.class);
+				Assert.fail("Should not be able to obtain previously created counter with different type");
+			} catch (UnsupportedOperationException ex) {
+			}
+
+			// Test counter used in open() and closed()
+			this.openCloseCounter.add(0.5);
 		}
 		
 		@Override
 		public void map(PactRecord record, Collector<PactRecord> collector) {
-//      System.out.println("Map: map");
       
 			this.cntNumLines.add(1);
 			
@@ -203,9 +214,9 @@ public class AccumulatorITCase extends TestBase2 {
 			int wordsPerLine = 0;
 			while (tokenizer.next(this.word))
 			{
-			  // Use custom counter
-			  distinctWords.add(new StringRecord(this.word.getValue()));
-			  
+				// Use custom counter
+				distinctWords.add(new StringRecord(this.word.getValue()));
+  
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
 				collector.collect(this.outputRecord);
@@ -216,13 +227,10 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void close() throws Exception {
-//      System.out.println("Map: close");
-      
-      // Test counter used in open and close only
-      this.openCloseCounter.add(0.5);
-      Assert.assertEquals(1, this.openCloseCounter.getLocalValue().intValue());
+			// Test counter used in open and close only
+			this.openCloseCounter.add(0.5);
+			Assert.assertEquals(1, this.openCloseCounter.getLocalValue().intValue());
 		}
-		
 	}
 
 	@Combinable
@@ -238,21 +246,18 @@ public class AccumulatorITCase extends TestBase2 {
 		
 		@Override
 		public void open(Configuration parameters) throws Exception {
-//      System.out.println("Reduce: open");
-  		this.reduceCalls = getRuntimeContext().getIntCounter("reduce-calls");
-  		this.combineCalls = getRuntimeContext().getIntCounter("combine-calls");
+			this.reduceCalls = getRuntimeContext().getIntCounter("reduce-calls");
+			this.combineCalls = getRuntimeContext().getIntCounter("combine-calls");
 		}
 		
 		@Override
 		public void reduce(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
-//      System.out.println("Reduce: reduce");
-      reduceCalls.add(1);
-      reduceInternal(records, out);
+			reduceCalls.add(1);
+			reduceInternal(records, out);
 		}
 		
 		@Override
 		public void combine(Iterator<PactRecord> records, Collector<PactRecord> out) throws Exception {
-//			System.out.println("Reduce: combine");
 			combineCalls.add(1);
 			reduceInternal(records, out);
 		}
@@ -270,80 +275,46 @@ public class AccumulatorITCase extends TestBase2 {
 			element.setField(1, this.cnt);
 			out.collect(element);
 		}
-		
-		@Override
-		public void close() throws Exception {
-//      System.out.println("Reduce: close");
-		}
 	}
 	
 	/**
 	 * Custom accumulator
-	 * 
-	 * TODO: Not so nice that it needs to extend IOReadableWritable.
-	 * Better if RPC would support the standard types (String, native, ...) automatically.
 	 */
 	public static class SetAccumulator<T extends IOReadableWritable> implements Accumulator<T, Set<T>> {
-	  
-    private static final long serialVersionUID = 1L;
-    
-	  private SerializableHashSet<T> set = new SerializableHashSet<T>();
 
-    @Override
-    public void add(T value) {
-      this.set.add(value);
-    }
+		private static final long serialVersionUID = 1L;
 
-    @Override
-    public Set<T> getLocalValue() {
-      return this.set;
-    }
+		private SerializableHashSet<T> set = new SerializableHashSet<T>();
 
-    @Override
-    public void resetLocal() {
-      this.set.clear();
-    }
+		@Override
+		public void add(T value) {
+			this.set.add(value);
+		}
 
-    @Override
-    public void merge(Accumulator<T, Set<T>> other) {
-      // build union
-      this.set.addAll(((SetAccumulator<T>)other).getLocalValue());
-    }
+		@Override
+		public Set<T> getLocalValue() {
+			return this.set;
+		}
 
-    @Override
-    public void write(DataOutput out) throws IOException {
-      this.set.write(out);
-//      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//      ObjectOutputStream oos = new ObjectOutputStream(baos);
-//      oos.writeObject(this);
-//      byte[] bytes = baos.toByteArray();
-//      out.writeInt(bytes.length);
-//      out.write(bytes);
-    }
+		@Override
+		public void resetLocal() {
+			this.set.clear();
+		}
 
-//    @SuppressWarnings("unchecked")
-    @Override
-    public void read(DataInput in) throws IOException {
-      this.set.read(in);
-//      int len = in.readInt();
-//      byte[] bytes = new byte[len];
-//      in.readFully(bytes);
-//      
-//      ObjectInputStream oois = null;
-//      try {
-//        oois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-//        try {
-//          set = (Set<T>) oois.readObject();
-//        } catch (ClassNotFoundException e) {
-//          e.printStackTrace();
-//        }
-//      } finally {
-//        if (oois != null) {
-//          oois.close();
-//        }
-//      }
-    }
-	  
+		@Override
+		public void merge(Accumulator<T, Set<T>> other) {
+			// build union
+			this.set.addAll(((SetAccumulator<T>) other).getLocalValue());
+		}
+
+		@Override
+		public void write(DataOutput out) throws IOException {
+			this.set.write(out);
+		}
+
+		@Override
+		public void read(DataInput in) throws IOException {
+			this.set.read(in);
+		}
 	}
-
 }

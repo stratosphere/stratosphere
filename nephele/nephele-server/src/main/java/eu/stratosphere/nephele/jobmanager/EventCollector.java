@@ -316,7 +316,7 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 	 * Map of network topologies belonging to recently started jobs with the time stamp of the last received job event.
 	 */
 	private final Map<JobID, NetworkTopology> recentNetworkTopologies = new HashMap<JobID, NetworkTopology>();
-	
+
 	/**
 	 * The timer used to trigger the cleanup routine.
 	 */

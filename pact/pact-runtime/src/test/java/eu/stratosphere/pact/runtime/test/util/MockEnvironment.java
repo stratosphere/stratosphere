@@ -353,7 +353,8 @@ public class MockEnvironment implements Environment
 	
 	@Override
 	public AccumulatorProtocol getAccumulatorProtocolProxy() {
-		throw new UnsupportedOperationException("getAccumulatorProtocolProxy() is not supported by MockEnvironment");
+		throw new UnsupportedOperationException(
+				"getAccumulatorProtocolProxy() is not supported by MockEnvironment");
 	}
 
 }

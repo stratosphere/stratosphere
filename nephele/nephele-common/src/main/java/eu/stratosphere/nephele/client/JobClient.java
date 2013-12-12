@@ -61,7 +61,7 @@ public class JobClient {
 	/**
 	 * The accumulator protocol stub to request accumulators from JobManager
 	 */
-  private AccumulatorProtocol accumulatorProtocolProxy;
+	private AccumulatorProtocol accumulatorProtocolProxy;
 
 	/**
 	 * The job graph assigned with this job client.

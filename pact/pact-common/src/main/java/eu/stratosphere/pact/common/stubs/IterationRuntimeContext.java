@@ -27,5 +27,4 @@ public interface IterationRuntimeContext extends RuntimeContext {
 	<T extends Value> Aggregator<T> getIterationAggregator(String name);
 	
 	<T extends Value> T getPreviousIterationAggregate(String name);
-	
 }

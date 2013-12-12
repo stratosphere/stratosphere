@@ -15,15 +15,16 @@ import eu.stratosphere.nephele.io.IOReadableWritable;
  * is a set of objects.
  * 
  * @param <V>
- *          Type of values that are added to the accumulator
+ *            Type of values that are added to the accumulator
  * @param <R>
- *          Type of the accumulator result as it will be reported to the client
+ *            Type of the accumulator result as it will be reported to the
+ *            client
  */
 public interface Accumulator<V, R> extends IOReadableWritable, Serializable {
 
 	/**
 	 * @param value
-	 *          The value to add to the accumulator object
+	 *            The value to add to the accumulator object
 	 */
 	void add(V value);
 
@@ -37,15 +38,15 @@ public interface Accumulator<V, R> extends IOReadableWritable, Serializable {
 	 */
 	void resetLocal();
 
-  /**
-   * Used by system internally to merge the collected parts of an accumulator at
-   * the end of the job.
-   * 
-   * @param other
-   *          reference to accumulator to merge in
-   * @return Reference to this (for efficiency), after data from other were
-   *         merged in
-   */
+	/**
+	 * Used by system internally to merge the collected parts of an accumulator
+	 * at the end of the job.
+	 * 
+	 * @param other
+	 *            reference to accumulator to merge in
+	 * @return Reference to this (for efficiency), after data from other were
+	 *         merged in
+	 */
 	void merge(Accumulator<V, R> other);
 
 }

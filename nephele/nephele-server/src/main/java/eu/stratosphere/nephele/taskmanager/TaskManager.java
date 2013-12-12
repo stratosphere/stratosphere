@@ -102,7 +102,7 @@ public class TaskManager implements TaskOperationProtocol {
 	private final ChannelLookupProtocol lookupService;
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
-  private AccumulatorProtocol accumulatorProtocolProxy;
+	private AccumulatorProtocol accumulatorProtocolProxy;
 
 	private static final int handlerCount = 1;
 
@@ -219,16 +219,17 @@ public class TaskManager implements TaskOperationProtocol {
 			throw new Exception("Failed to initialize channel lookup protocol. " + e.getMessage(), e);
 		}
 		this.lookupService = lookupService;
-		
-    // Try to create local stub for the job manager
-    AccumulatorProtocol accumulatorProtocolStub = null;
-    try {
-      accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
-    } catch (IOException e) {
-      LOG.error(StringUtils.stringifyException(e));
-      throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
-    }
-    this.accumulatorProtocolProxy = accumulatorProtocolStub;
+
+		// Try to create local stub for the job manager
+		AccumulatorProtocol accumulatorProtocolStub = null;
+		try {
+			accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress,
+					NetUtils.getSocketFactory());
+		} catch (IOException e) {
+			LOG.error(StringUtils.stringifyException(e));
+			throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
+		}
+		this.accumulatorProtocolProxy = accumulatorProtocolStub;
 
 		// Start local RPC server
 		Server taskManagerServer = null;
@@ -796,8 +797,8 @@ public class TaskManager implements TaskOperationProtocol {
 		// Stop RPC proxy for the lookup service
 		RPC.stopProxy(this.lookupService);
 
-    // Stop RPC proxy for accumulator reports
-    RPC.stopProxy(this.accumulatorProtocolProxy);
+		// Stop RPC proxy for accumulator reports
+		RPC.stopProxy(this.accumulatorProtocolProxy);
 
 		// Shut down the own RPC server
 		this.taskManagerServer.stop();

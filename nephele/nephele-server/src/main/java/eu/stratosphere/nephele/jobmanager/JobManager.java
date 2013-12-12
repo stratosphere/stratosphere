@@ -219,12 +219,12 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 		else
 			this.archive = null;
-		
-    // Create the accumulator manager, with same archiving limit as web
-    // interface. We need to store the accumulators for at least one job.
-    // Otherwise they might be deleted before the client requested the
-    // accumulator results.
-	  this.accumulatorManager = new AccumulatorManager(Math.min(1, archived_items));
+
+		// Create the accumulator manager, with same archiving limit as web
+		// interface. We need to store the accumulators for at least one job.
+		// Otherwise they might be deleted before the client requested the
+		// accumulator results.
+		this.accumulatorManager = new AccumulatorManager(Math.min(1, archived_items));
 
 		// Load the input split manager
 		this.inputSplitManager = new InputSplitManager();
@@ -1293,15 +1293,15 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	public int getNumberOfTaskTrackers() {
 		return this.instanceManager.getNumberOfTaskTrackers();
 	}
-	
-  @Override
-  public void reportAccumulatorResult(AccumulatorEvent accumulatorEvent)
-      throws IOException {
-    this.accumulatorManager.processIncomingAccumulators(accumulatorEvent.getJobID(), accumulatorEvent.getAccumulators());
-  }
 
-  @Override
-  public AccumulatorEvent getAccumulatorResults(JobID jobID) throws IOException {
-    return new AccumulatorEvent(jobID, this.accumulatorManager.getJobAccumulators(jobID), false);
-  }
+	@Override
+	public void reportAccumulatorResult(AccumulatorEvent accumulatorEvent) throws IOException {
+		this.accumulatorManager.processIncomingAccumulators(accumulatorEvent.getJobID(),
+				accumulatorEvent.getAccumulators());
+	}
+
+	@Override
+	public AccumulatorEvent getAccumulatorResults(JobID jobID) throws IOException {
+		return new AccumulatorEvent(jobID, this.accumulatorManager.getJobAccumulators(jobID), false);
+	}
 }

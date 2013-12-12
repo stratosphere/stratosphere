@@ -48,7 +48,7 @@ public interface ArchiveListener {
 	 * @param topology
 	 */
 	void archiveNetworkTopology(JobID jobId, NetworkTopology topology);
-
+	
 	/**
 	 * Get all archived Jobs
 	 * 

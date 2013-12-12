@@ -7,8 +7,6 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-
-
 /**
  * Histogram for discrete-data. Let's you populate a histogram distributedly.
  * Implemented as a Integer->Integer HashMap
@@ -17,8 +15,8 @@ import com.google.common.collect.Maps;
  * decide about the bin size in an online algorithm (or ask the user)
  */
 public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
-  
-  private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 1L;
 
 	private Map<Integer, Integer> hashMap = Maps.newHashMap();
 
@@ -40,28 +38,27 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
 	@Override
 	public void merge(Accumulator<Integer, Map<Integer, Integer>> other) {
 		// Merge the values into this map
-		for (Map.Entry<Integer, Integer> entryFromOther : ((Histogram)other).getLocalValue()
+		for (Map.Entry<Integer, Integer> entryFromOther : ((Histogram) other).getLocalValue()
 				.entrySet()) {
 			Integer ownValue = this.hashMap.get(entryFromOther.getKey());
 			if (ownValue == null) {
 				this.hashMap.put(entryFromOther.getKey(), entryFromOther.getValue());
 			} else {
-				this.hashMap.put(entryFromOther.getKey(), entryFromOther.getValue()
-						+ ownValue);
+				this.hashMap.put(entryFromOther.getKey(), entryFromOther.getValue() + ownValue);
 			}
 		}
 	}
 
-  @Override
-  public void resetLocal() {
-    this.hashMap.clear();
-  }
-  
-  @Override
-  public String toString() {
-    return this.hashMap.toString();
-  }
-	
+	@Override
+	public void resetLocal() {
+		this.hashMap.clear();
+	}
+
+	@Override
+	public String toString() {
+		return this.hashMap.toString();
+	}
+
 	@Override
 	public void write(DataOutput out) throws IOException {
 		out.writeInt(hashMap.size());
@@ -74,7 +71,7 @@ public class Histogram implements Accumulator<Integer, Map<Integer, Integer>> {
 	@Override
 	public void read(DataInput in) throws IOException {
 		int size = in.readInt();
-		for (int i=0; i<size; ++i) {
+		for (int i = 0; i < size; ++i) {
 			hashMap.put(in.readInt(), in.readInt());
 		}
 	}

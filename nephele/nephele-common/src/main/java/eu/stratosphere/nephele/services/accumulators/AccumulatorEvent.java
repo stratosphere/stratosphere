@@ -21,15 +21,17 @@ public class AccumulatorEvent implements IOReadableWritable {
 	private JobID jobID;
 
 	private Map<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
-	
+
 	private boolean useUserClassLoader = false;
 
-	// Removing this causes an EOFException in the RPC service. The RPC should be
-	// improved in this regard (error message is very unspecific).
-	public AccumulatorEvent() { }
+	// Removing this causes an EOFException in the RPC service. The RPC should
+	// be improved in this regard (error message is very unspecific).
+	public AccumulatorEvent() {
+	}
 
 	public AccumulatorEvent(JobID jobID,
-			Map<String, Accumulator<?, ?>> accumulators, boolean useUserClassLoader) {
+			Map<String, Accumulator<?, ?>> accumulators,
+			boolean useUserClassLoader) {
 		this.accumulators = accumulators;
 		this.jobID = jobID;
 		this.useUserClassLoader = useUserClassLoader;
@@ -65,8 +67,9 @@ public class AccumulatorEvent implements IOReadableWritable {
 		int numberOfMapEntries = in.readInt();
 		this.accumulators = new HashMap<String, Accumulator<?, ?>>(
 				numberOfMapEntries);
-		
-		// Get user class loader. This is required at the JobManager, but not at the
+
+		// Get user class loader. This is required at the JobManager, but not at
+		// the
 		// client.
 		ClassLoader classLoader = null;
 		if (this.useUserClassLoader) {
@@ -81,7 +84,8 @@ public class AccumulatorEvent implements IOReadableWritable {
 			final String valueType = in.readUTF();
 			Class<Accumulator<?, ?>> valueClass = null;
 			try {
-				valueClass = (Class<Accumulator<?, ?>>) Class.forName(valueType, true, classLoader);
+				valueClass = (Class<Accumulator<?, ?>>) Class.forName(
+						valueType, true, classLoader);
 			} catch (ClassNotFoundException e) {
 				throw new IOException(StringUtils.stringifyException(e));
 			}
