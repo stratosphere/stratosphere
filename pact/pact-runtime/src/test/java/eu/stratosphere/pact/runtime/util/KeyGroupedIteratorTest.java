@@ -17,6 +17,7 @@ package eu.stratosphere.pact.runtime.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -30,7 +31,6 @@ import eu.stratosphere.pact.common.type.base.PactString;
 import eu.stratosphere.pact.common.util.MutableObjectIterator;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.PactRecordComparator;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.PactRecordSerializer;
-import eu.stratosphere.pact.runtime.util.KeyGroupedIterator;
 
 /**
  * Test for the key grouped iterator, which advances in windows containing the same key and provides a sub-iterator
@@ -280,7 +280,7 @@ public class KeyGroupedIteratorTest
 	}
 	
 	@Test
-	public void testHasNextDoesNotOverweiteCurrentRecord() throws Exception
+	public void testHasNextDoesNotOverwriteCurrentRecord() throws Exception
 	{
 		try {
 			Iterator<PactRecord> valsIter = null;
@@ -332,6 +332,28 @@ public class KeyGroupedIteratorTest
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail("The test encountered an unexpected exception.");
+		}
+	}
+	
+	/**
+	 * Tests whether the values iterator returns always the same object.
+	 */
+	@Test
+	public void testSameObjectReturned() throws Exception {
+		
+		Iterator<PactRecord> valsIter = null;
+		PactRecord rec = null;
+		
+		HashSet<Integer> objectIds = new HashSet<Integer>();
+		
+		while(this.psi.nextKey()) {
+			objectIds.clear();
+			valsIter = this.psi.getValues();
+			while(valsIter.hasNext()) {
+				rec = valsIter.next();
+				objectIds.add(System.identityHashCode(rec));
+			}
+			Assert.assertEquals("More than one object reference returned", 1, objectIds.size());
 		}
 	}
 	

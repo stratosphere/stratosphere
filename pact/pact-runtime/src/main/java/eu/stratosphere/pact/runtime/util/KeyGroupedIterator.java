@@ -154,6 +154,7 @@ public final class KeyGroupedIterator<E>
 		private final TypeComparator<E> comparator = KeyGroupedIterator.this.comparator; 
 		
 		private E staging = this.serializer.createInstance();
+		private E emission = this.serializer.createInstance();
 		private boolean currentIsUnconsumed = false;
 		
 		private ValuesIterator() {}
@@ -206,7 +207,8 @@ public final class KeyGroupedIterator<E>
 		public E next() {
 			if (this.currentIsUnconsumed || hasNext()) {
 				this.currentIsUnconsumed = false;
-				return KeyGroupedIterator.this.current;
+				this.serializer.copyTo(KeyGroupedIterator.this.current, this.emission);
+				return this.emission;
 			} else {
 				throw new NoSuchElementException();
 			}
