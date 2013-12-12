@@ -43,7 +43,7 @@ public class GenericDataSink extends Contract {
 	
 	private Ordering partitionOrdering;
 	
-	private DataDistribution distribution;
+	private DataDistribution<?> distribution;
 
 	// --------------------------------------------------------------------------------------------
 
@@ -260,7 +260,7 @@ public class GenericDataSink extends Contract {
 	 * @param globalOrder The order to write the data in.
 	 * @param distribution The distribution to use for the range partitioning.
 	 */
-	public void setGlobalOrder(Ordering globalOrder, DataDistribution distribution) {
+	public void setGlobalOrder(Ordering globalOrder, DataDistribution<?> distribution) {
 		this.localOrdering = globalOrder;
 		setRangePartitioned(globalOrder, distribution);
 	}
@@ -315,8 +315,10 @@ public class GenericDataSink extends Contract {
 	 * @param partitionOrdering The record ordering over which to partition in ranges.
 	 * @param distribution The distribution to use for the range partitioning.
 	 */
-	public void setRangePartitioned(Ordering partitionOrdering, DataDistribution distribution)
+	public void setRangePartitioned(Ordering partitionOrdering, DataDistribution<?> distribution)
 	{
+		// TODO: check compatibility of distribution and ordering (number and order of keys, key types, etc.
+		// TODO: adapt partition ordering to data distribution (use prefix of ordering)
 		this.partitionOrdering = partitionOrdering;
 		this.distribution = distribution;
 	}
@@ -326,7 +328,7 @@ public class GenericDataSink extends Contract {
 	 * 
 	 * @return The distribution to use for the range partitioning.
 	 */
-	public DataDistribution getDataDistribution() {
+	public DataDistribution<?> getDataDistribution() {
 		return this.distribution;
 	}
 	

@@ -15,6 +15,7 @@
 
 package eu.stratosphere.pact.compiler.dataproperties;
 
+import eu.stratosphere.pact.common.contract.DataDistribution;
 import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.util.FieldSet;
 import eu.stratosphere.pact.compiler.CompilerException;
@@ -39,6 +40,8 @@ public final class RequestedGlobalProperties implements Cloneable
 	private FieldSet partitioningFields;		// the fields which are partitioned
 	
 	private Ordering ordering;					// order of the partitioned fields, if it is an ordered (range) range partitioning
+	
+	private DataDistribution<?> dataDistribution; // optional data distribution, for a range partitioning
 	
 	// --------------------------------------------------------------------------------------------
 	
@@ -68,12 +71,17 @@ public final class RequestedGlobalProperties implements Cloneable
 	
 
 	public void setRangePartitioned(Ordering ordering) {
+		this.setRangePartitioned(ordering, null);
+	}
+	
+	public void setRangePartitioned(Ordering ordering, DataDistribution<?> dataDistribution) {
 		if (ordering == null) {
 			throw new NullPointerException();
 		}
 		this.partitioning = PartitioningProperty.RANGE_PARTITIONED;
 		this.ordering = ordering;
 		this.partitioningFields = null;
+		this.dataDistribution = dataDistribution;
 	}
 	
 	public void setAnyPartitioning(FieldSet partitionedFields) {
@@ -122,6 +130,15 @@ public final class RequestedGlobalProperties implements Cloneable
 	 */
 	public Ordering getOrdering() {
 		return this.ordering;
+	}
+	
+	/**
+	 * Gets the data distribution.
+	 * 
+	 * @return The data distribution.
+	 */
+	public DataDistribution<?> getDataDistribution() {
+		return this.dataDistribution;
 	}
 
 	/**
@@ -237,7 +254,11 @@ public final class RequestedGlobalProperties implements Cloneable
 				channel.setShipStrategy(ShipStrategyType.PARTITION_HASH, Utils.createOrderedFromSet(this.partitioningFields));
 				break;
 			case RANGE_PARTITIONED:
-				channel.setShipStrategy(ShipStrategyType.PARTITION_RANGE, this.ordering.getInvolvedIndexes(), this.ordering.getFieldSortDirections());
+
+				channel.setShipStrategy(ShipStrategyType.PARTITION_RANGE, this.ordering.getInvolvedIndexes(), this.ordering.getFieldSortDirections());				
+				if(this.dataDistribution != null) {
+					channel.setDataDistribution(this.dataDistribution);
+				}
 				break;
 			default:
 				throw new CompilerException();

@@ -26,7 +26,7 @@ import eu.stratosphere.pact.common.type.PactRecord;
  * 
  * @author warneke
  */
-public class TeraDistribution implements DataDistribution
+public class TeraDistribution implements DataDistribution<PactRecord>
 {
 	private static final int ALPHABETH_SIZE = 95;
 
