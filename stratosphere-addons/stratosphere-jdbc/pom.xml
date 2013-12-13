@@ -6,11 +6,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
-    	<artifactId>stratosphere-addons</artifactId>
-    	<groupId>eu.stratosphere</groupId>
-    	<version>0.4-SNAPSHOT</version>
-    	<relativePath>..</relativePath>
-  	</parent>
+		<artifactId>stratosphere-addons</artifactId>
+		<groupId>eu.stratosphere</groupId>
+		<version>0.4-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
 
 	<artifactId>stratosphere-jdbc</artifactId>
 	<name>stratosphere-jdbc</name>
@@ -20,24 +20,16 @@
 	<dependencies>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-common</artifactId>
+			<artifactId>stratosphere-record-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-                <dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-clients</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.1</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-common</artifactId>
+			<artifactId>stratosphere-clients</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>

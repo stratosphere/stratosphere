@@ -25,9 +25,9 @@
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			
 			<excludes>
-				<exclude>eu.stratosphere:nephele-examples</exclude>
-				<exclude>eu.stratosphere:pact-examples</exclude>
-				<exclude>eu.stratosphere:pact-scala-examples</exclude>
+				<exclude>eu.stratosphere:stratosphere-java-examples</exclude>
+				<exclude>eu.stratosphere:stratosphere-scala-examples</exclude>
+				<exclude>eu.stratosphere:stratosphere-record-examples</exclude>
 				<!--
 				<exclude>**/*javadoc*</exclude>
 				<exclude>**/*sources*</exclude>
@@ -37,10 +37,9 @@
 				-->
 				<!--
 				  This is a hardcoded exclude-list containing all libraries that are exclusively used in pact-clients.
-          The previous command did not work because it also excludes libraries that should be in lib, such as commons-io.
+				  The previous command did not work because it also excludes libraries that should be in lib, such as commons-io.
 				-->
-			        <exclude>commons-fileupload:commons-fileupload</exclude>
-        <!-- <exclude>org.eclipse.jetty:jetty-*</exclude>-->
+				<exclude>commons-fileupload:commons-fileupload</exclude>
 			</excludes>
 		</dependencySet>
 		
@@ -125,8 +124,8 @@
 		</fileSet>
 
 		<fileSet>
-			<!-- copy files for PACT web frontend -->
-			<directory>../pact/pact-clients/resources</directory>
+			<!-- copy files for compiler web frontend -->
+			<directory>../stratosphere-clients/resources</directory>
 			<outputDirectory>resources</outputDirectory>
 			<fileMode>0644</fileMode>
 			<excludes>
@@ -136,7 +135,7 @@
 		
 		<fileSet>
 			<!-- copy files for Jobmanager web frontend -->
-			<directory>../nephele/nephele-server/resources</directory>
+			<directory>../stratosphere-runtime/resources</directory>
 			<outputDirectory>resources</outputDirectory>
 			<fileMode>0644</fileMode>
 			<excludes>
@@ -145,30 +144,44 @@
 		</fileSet>
 
 		<fileSet>
-			<!-- copy jar files of pact job examples -->
-			<directory>../pact/pact-examples/target</directory>
-			<outputDirectory>examples/pact/</outputDirectory>
+			<!-- copy jar files of java examples -->
+			<directory>../stratosphere-examples/stratosphere-java-examples/target</directory>
+			<outputDirectory>examples</outputDirectory>
 			<fileMode>0644</fileMode>
 			<includes>
 				<include>*.jar</include>
 			</includes>
 			<excludes>
-				<exclude>pact-examples-${project.version}.jar</exclude>
+				<exclude>stratosphere-examples-${project.version}.jar</exclude>
 			</excludes>
 		</fileSet>
 
 		<fileSet>
-			<!-- copy jar files of pact job examples -->
-			<directory>../pact-scala/pact-scala-examples/target</directory>
-			<outputDirectory>examples/pact-scala/</outputDirectory>
+			<!-- copy jar files of examples -->
+			<directory>../stratosphere-examples/stratosphere-scala-examples/target</directory>
+			<outputDirectory>examples</outputDirectory>
 			<fileMode>0644</fileMode>
 			<includes>
 				<include>*.jar</include>
 			</includes>
 			<excludes>
-				<exclude>pact-scala-examples-${project.version}.jar</exclude>
+				<exclude>stratosphere-examples-${project.version}.jar</exclude>
 			</excludes>
 		</fileSet>
+
+		<fileSet>
+			<!-- copy jar files of examples -->
+			<directory>../stratosphere-examples/stratosphere-record-examples/target</directory>
+			<outputDirectory>examples</outputDirectory>
+			<fileMode>0644</fileMode>
+			<includes>
+				<include>*.jar</include>
+			</includes>
+			<excludes>
+				<exclude>stratosphere-examples-${project.version}.jar</exclude>
+			</excludes>
+		</fileSet>
+
 	</fileSets>
 
 </assembly>
