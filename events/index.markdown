@@ -11,6 +11,7 @@ links:
 <section id="2013">
 ### 2013
 
+- [Future Cloud Action Line Workshop in Helsinki](http://www.eitictlabs.eu/news-events/events/article/future-cloud-action-line-workshop-in-helsinki/) (Dec. 12th)
 - [Big Data Beers]({{site.baseurl}}/events/2013/big_data_beers.html) (Nov. 20th)
 - [Stratosphere Summit]({{site.baseurl}}/events/2013/summit.html) (Nov. 14-15th)
 
