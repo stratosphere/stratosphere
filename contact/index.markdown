@@ -3,6 +3,10 @@ layout: inner_text
 title: Contact 
 ---
 
+### Email
+
+Send us an email to <a href="mailto:contact@getstratosphere.org">contact@getstratosphere.org</a>.
+
 ### Mailing List
 
 We have a [Stratosphere-dev Google Group](https://groups.google.com/forum/#!forum/stratosphere-dev). 
