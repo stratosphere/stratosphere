@@ -13,13 +13,19 @@
       <ul class="nav navbar-nav">
         <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quickstart</a></li>
         <li class="{% if page.url contains '/downloads/' %}active{% endif %}"><a href="{{ site.baseurl }}/downloads/">Downloads</a></li>
-        <li class="{% if page.url contains '/docs/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/">Documentation</a></li>
+        <li class="dropdown{% if page.url contains '/docs/' %} active{% endif %}">
+          <a data-toggle="dropdown" class="dropdown-toggle" href="#">Documentation <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li class="{% if page.url contains '/docs/0.4/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/0.4/">Latest (0.4)</a></li>
+            <li class="{% if page.url contains '/docs/pre-0.4/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/pre-0.4/">pre-0.4</a></li>
+          </ul>
+        </li>
         <li class="{% if page.url contains '/faq/' %}active{% endif %}"><a href="{{ site.baseurl }}/faq/">FAQ</a></li>
         <li class="{% if page.url contains '/events/' %}active{% endif %}"><a href="{{ site.baseurl }}/events/">Events</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="{% if page.url contains '/blog/' %}active{% endif %}"><a href="{{ site.baseurl }}/blog/">Blog</a></li>
-        <li class="dropdown">
+        <li class="dropdown{% if page.url contains '/project/' %} active{% endif %}">
           <a data-toggle="dropdown" class="dropdown-toggle" href="#">Project <b class="caret"></b></a>
           <ul class="dropdown-menu">
             <li class="{% if page.url contains '/project/funding/' %}active{% endif %}"><a href="{{ site.baseurl }}/project/funding/">Funding</a></li>

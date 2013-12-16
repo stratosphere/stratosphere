@@ -425,6 +425,10 @@ section {
     line-height: 90%;
 }
 
+.navbar-inverse {
+    text-shadow: none;
+}
+
 /*.sidenav li[class~="subsection"][class~="active"] a {
     font-weight: bold;
 }*/
