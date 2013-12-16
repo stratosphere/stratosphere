@@ -13,14 +13,14 @@ Server Setup
 ========================
 In this article, we describe the execution of a Meteor query. Meteor provides a standalone client that can be executed on a different computer than the actual Stratosphere cluster.
 
-As a precondition, the Nephele Jobmanager and the Sopremo Server must run.
+As a precondition, the Stratosphere Jobmanager and the Sopremo Server must run.
 
 Starting Sopremo Server
 ------------------------
 
 First of all, the Meteor client translates a query into a SopremoPlan. The plan is then send to the Sopremo server and executed. 
 
-The Sopremo server must run on the same computer as the Nephele Jobmanager. 
+The Sopremo server must run on the same computer as the Stratosphere Jobmanager. 
 
 To start the Sopremo server, first adjust the server address in the sopremo-user.xml configuration file in the conf folder.
 
