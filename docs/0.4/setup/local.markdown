@@ -6,6 +6,7 @@ sublinks:
   - {anchor: "requirements", title: "Requirements"}
   - {anchor: "config", title: "Configuration"}
   - {anchor: "start", title: "Starting Stratosphere"}
+  - {anchor: "windows", title: "Stratosphere on Windows"}
 ---
 
 ## Local Setup
@@ -21,7 +22,7 @@ Go to the [downloads page]({{site.baseurl}}/downloads/) and get the ready to run
 <section id="requirements">
 ### Requirements
 
-Stratosphere runs on all *UNIX-like environments*, e.g. **Linux**, **Mac OS X**, and **Cygwin** (for Windows). The only requirement for a local setup is **Java 1.6.x** or higher.
+Stratosphere runs on **Linux**, **Mac OS X** and **Windows**. The only requirement for a local setup is **Java 1.6.x** or higher. The following manual assumes a *UNIX-like environment*, for Windows see [Stratosphere on Windows](#windows).
 
 You can check the correct installation of Java by issuing the following command:
 
@@ -66,4 +67,59 @@ INFO ... - Starting web info server for JobManager on port 8081
 {% endhighlight %}
 
 The JobManager will also start a web frontend on port 8081, which you can check with your browser at `http://localhost:8081`.
+</section>
+
+<section id="windows">
+### Stratosphere on Windows
+
+If you want to run Stratosphere on Windows you need to download, unpack and configure the stratosphere archive as mentioned above. After that you can either use the **Windows Batch** or **Cygwin**  to run the Stratosphere jobmanager.
+
+To start Stratosphere in local mode from the *Windows Batch*, open the command window, navigate to the bin directory of Stratosphere and run start-local.bat.
+
+{% highlight bash %}
+$ cd stratosphere
+$ cd bin
+$ start-local.bat
+Starting Stratosphere job manager. Webinterface by default on http://localhost:8081/.
+Do not close this batch window. Stop job manager by pressing Ctrl+C.
+{% endhighlight %}
+
+After that, you need to open a second terminal to run jobs using pact-client.bat.
+
+
+With *Cygwin* you need to start the Cygwin Terminal, navigate to your stratosphere directory and run the start-local.sh script:
+
+{% highlight bash %}
+$ cd stratosphere
+$ bin/start-local.sh
+Starting Nephele job manager
+{% endhighlight %}
+
+If you are installing Stratosphere from the git repository and you are using the Windows git shell, Cygwin can produce a failure similiar to this one:
+
+{% highlight bash %}
+c:/stratosphere/bin/start-local.sh: line 30: $'\r': command not found
+{% endhighlight %}
+
+This error occurs, because git is automatically transforming UNIX line endings to Windows style line endings when running in Windows. The problem is, that Cygwin can only deal with UNIX style line endings. The solution is to adjust the Cygwin settings to deal with the correct line endings by following these three steps:
+
+1. Start a Cygwin shell.
+
+2. Determine your home directory by entering
+
+{% highlight bash %}
+cd;pwd
+{% endhighlight %}
+
+It will return a path under the Cygwin root path.
+
+2.  Using NotePad, WordPad or a different text editor open the file .bash_profile in the home directory and append the following: (If the file does not exist you have to create it)
+
+{% highlight bash %}
+export SHELLOPTS
+set -o igncr
+{% endhighlight %}
+
+Save the file and open a new bash shell.
+
 </section>
