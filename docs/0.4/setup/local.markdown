@@ -72,9 +72,9 @@ The JobManager will also start a web frontend on port 8081, which you can check 
 <section id="windows">
 ### Stratosphere on Windows
 
-If you want to run Stratosphere on Windows you need to download, unpack and configure the stratosphere archive as mentioned above. After that you can either use the **Windows Batch** or **Cygwin**  to run the Stratosphere jobmanager.
+If you want to run Stratosphere on Windows you need to download, unpack and configure the Stratosphere archive as mentioned above. After that you can either use the **Windows Batch** file (`.bat`) or use **Cygwin**  to run the Stratosphere Jobmanager.
 
-To start Stratosphere in local mode from the *Windows Batch*, open the command window, navigate to the bin directory of Stratosphere and run start-local.bat.
+To start Stratosphere in local mode from the *Windows Batch*, open the command window, navigate to the `bin/` directory of Stratosphere and run `start-local.bat`.
 
 {% highlight bash %}
 $ cd stratosphere
@@ -84,10 +84,10 @@ Starting Stratosphere job manager. Webinterface by default on http://localhost:8
 Do not close this batch window. Stop job manager by pressing Ctrl+C.
 {% endhighlight %}
 
-After that, you need to open a second terminal to run jobs using pact-client.bat.
+After that, you need to open a second terminal to run jobs using `pact-client.bat`.
 
 
-With *Cygwin* you need to start the Cygwin Terminal, navigate to your stratosphere directory and run the start-local.sh script:
+With *Cygwin* you need to start the Cygwin Terminal, navigate to your Stratosphere directory and run the `start-local.sh` script:
 
 {% highlight bash %}
 $ cd stratosphere
@@ -113,7 +113,7 @@ cd;pwd
 
 It will return a path under the Cygwin root path.
 
-2.  Using NotePad, WordPad or a different text editor open the file .bash_profile in the home directory and append the following: (If the file does not exist you have to create it)
+2.  Using NotePad, WordPad or a different text editor open the file `.bash_profile` in the home directory and append the following: (If the file does not exist you have to create it)
 
 {% highlight bash %}
 export SHELLOPTS
