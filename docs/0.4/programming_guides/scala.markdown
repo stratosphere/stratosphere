@@ -5,12 +5,13 @@ sublinks:
   - {anchor: "intro-example", title: "Word Count Example"}
   - {anchor: "project-setup", title: "Project Setup"}
   - {anchor: "dataset", title: "The DataSet Abstraction"}
-  - {anchor: "datatypes", title: "Usable Data Types"}
+  - {anchor: "datatypes", title: "Data Types"}
   - {anchor: "data-sources", title: "Creating Data Sources"}
   - {anchor: "operations", title: "Operations on DataSet"}
+  - {anchor: "iterations", title: "Iterations"}
   - {anchor: "data-sinks", title: "Creating Data Sinks"}
   - {anchor: "execution", title: "Executing Jobs"}
-  - {anchor: "rich-stubs", title: "Advanced: Rich Stubs"}
+  - {anchor: "rich-functions", title: "Rich Functions"}
 
 ---
 
@@ -41,10 +42,10 @@ To start, let's look at a Word Count job implemented in Scala. This program is
 very simple but it will give you a basic idea of what a Scala job looks like.
 
 ```scala
-import eu.stratosphere.pact.client.LocalExecutor
+import eu.stratosphere.client.LocalExecutor
 
-import eu.stratosphere.scala._
-import eu.stratosphere.scala.operators._
+import eu.stratosphere.api.scala._
+import eu.stratosphere.api.scala.operators._
 
 object WordCount {
   def main(args: Array[String]) {
@@ -56,7 +57,7 @@ object WordCount {
       .reduce { (w1, w2) => (w1._1, w1._2 + w2._2) }
 
     val output = counts.write(wordsOutput, CsvOutputFormat()))
-    val plan = new Plan(Seq(output))
+    val plan = new ScalaPlan(Seq(output))
 
     LocalExecutor.execute(plan)
   }
@@ -116,18 +117,18 @@ following lines to your POM.
   ```
 
 To quickly get started you can use the Stratosphere Scala quickstart available
-[here]({{site.baseurl}}/quickstart/scala.html). This will give you a complete Maven project
-with some working example code that you can use to explore the system or as
-basis for your own projects.
+[here]({{site.baseurl}}/quickstart/scala.html). This will give you a
+completeMaven project with some working example code that you can use to explore
+the system or as basis for your own projects.
 
 These imports are normally enough for any project:
 
 ```scala
-import eu.stratosphere.scala._
-import eu.stratosphere.scala.operators._
+import eu.stratosphere.api.scala._
+import eu.stratosphere.api.scala.operators._
 
-import eu.stratosphere.pact.client.LocalExecutor
-import eu.stratosphere.pact.client.RemoteExecutor
+import eu.stratosphere.client.LocalExecutor
+import eu.stratosphere.client.RemoteExecutor
 ```
 
 The first two imports contain things like `DataSet`, `Plan`, data sources, data
@@ -168,8 +169,8 @@ val mapped = input map { a => (a._1, a._2 + 1)}
 The anonymous function would retrieve in `a` tuples of type `(String, Int)`.
 
 <section id="datatypes">
-Usable Data Types
------------------
+Data Types
+----------
 
 There are some restrictions regarding the data types that can be used in Scala
 jobs (basically the generic parameter of `DataSet`). The usable types are
@@ -177,9 +178,9 @@ the primitive Scala types, case classes (which includes tuples), and custom
 data types.
 
 Custom data types must implement the interface
-[Key](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java).
+[Value](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java).
 For custom data types that should also be used as a grouping key or join key
-the [Value](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java)
+the [Key](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java)
 interface must be implemented.
 
 
@@ -203,95 +204,36 @@ local machine or `hdfs://some/path` to read files from HDFS. The input
 format can be one of our builtin formats or a custom input format. The builtin
 formats are:
 
-* BinaryInputFormat
-* BinarySerializedInputFormat
-* DelimitedInputFormat
-* CsvInputFormat
-* TextInputFormat
-* FixedLengthInputFormat
+* [TextInputFormat](#text-input-format)
+* [CsvInputFormat](#csv-input-format)
+* [DelimitedInputFormat](#delimited-input-format)
+* [BinaryInputFormat](#binary-input-format)
+* [BinarySerializedInputFormat](#binary-serialized-input-format)
+* [FixedLengthInputFormat](#fixed-length-input-format)
 
 We will now have a look at each of them and show how they are employed and in
 which situations.
 
-#### BinaryInputFormat
+<section id="text-input-format">
+#### TextInputFormat
 
-This input format is best used when you have a custom binary format that
-you store the data in. It is created using one of the following:
-
-```scala
-BinaryInputFormat[Out](readFunction: DataInput => Out)
-BinaryInputFormat[Out](readFunction: DataInput => Out, blocksize: Long)
-```
-
-So you have to provide a function that gets a
-[java.io.DataInput](http://docs.oracle.com/javase/7/docs/api/java/io/DataInput.html)
-and returns the object that
-contains the data. The type of this object will then also be the type of the
-`DataSet` created by the `DataSource` operation.
-
-The provided function can also be an anonymous function, so you could
-have something like this:
+This input format simply reads a text file line wise and creates a `String`
+for each line. It is used as:
 
 ```scala
-val input = DataSource("file:///some/file", BinaryInputFormat( { input =>
-  val one = input.readInt
-  val two = input.readDouble
-  (one, two)  
-}))
+TextInputFormat()
 ```
 
-Here `input` would be of type `DataSet[(Int, Double)]`.
-
-#### BinarySerializedInputFormat
-
-This input format is only meant to be used in conjunction with
-`BinarySerializedOutputFormat`. You can use these to write elements to files using a
-Stratosphere-internal format that can efficiently be read again. You should only
-use this when output is only meant to be consumed by other Stratosphere jobs.
-The format can be used on one of two ways:
+As you have already seen in the Word Count Example there is a shortcut for this.
+Instead of using a `DataSource` with `TextInputFormat` you can simply write:
 
 ```scala
-BinarySerializedInputFormat[Out]()
-BinarySerializedInputFormat[Out](blocksize: Long)
+val input = TextFile("<file-path>")
 ```
 
-So if input files contain elements of type `(String, Int)` (a tuple type) you
-could use:
+The `input` would then be a `DataSet[String]`.
 
-```scala
-val input = DataSource("file:///some/file", BinarySerializedInputFormat[(String, Int)]())
-```
-
-#### DelimitedInputFormat
-
-This input format is meant for textual records that are separated by
-some delimiter. The delimiter could be a newline, for example. It is used like
-this:
-
-```scala
-DelimitedInputFormat[Out](parseFunction: String => Out, delim: String = "\n")
-```
-
-The input files will be split on the supplied delimiter (or the default newline)
-and the supplied parse function must parse the textual representation in the
-`String` and return an object. The type of this object will then also be the
-type of the `DataSet` created by the `DataSource` operation.
-
-Just as with `BinaryInputFormat` the function can be an anonymous function, so
-you could have:
-
-```scala
-val input = DataSource("file:///some/file", BinaryInputFormat( { line =>
-  line match {
-    case EdgeInputPattern(from, to) => Path(from.toInt, to.toInt, 1)
-  }
-}))
-```
-
-In this example EdgeInputPattern is some regular expression used for parsing
-a line of text and `Path` is a custom case class that is used to represent
-the data. The type of input would in this case be `DataSet[Path]`.
-
+<section id="csv-input-format">
 #### CsvInputFormat
 
 This input format is mainly used to read Csv-Files, as the name suggests. Input
@@ -330,24 +272,89 @@ val input = DataSource("file:///some/file", CsvInputFormat[(Int, Int, String)](S
 Here only the specified fields would be read and 3-tuples created for you.
 The type of input would be `DataSet[(Int, Int, String)]`.
 
-#### TextInputFormat
+<section id="delimited-input-format">
+#### DelimitedInputFormat
 
-This input format simply reads a text file line wise and creates a `String`
-for each line. It is used as:
-
-```scala
-TextInputFormat()
-```
-
-As you have already seen in the Word Count Example there is a shortcut for this.
-Instead of using a `DataSource` with `TextInputFormat` you can simply write:
+This input format is meant for textual records that are separated by
+some delimiter. The delimiter could be a newline, for example. It is used like
+this:
 
 ```scala
-val input = TextFile("<file-path>")
+DelimitedInputFormat[Out](parseFunction: String => Out, delim: String = "\n")
 ```
 
-The `input` would then be a `DataSet[String]`.
+The input files will be split on the supplied delimiter (or the default newline)
+and the supplied parse function must parse the textual representation in the
+`String` and return an object. The type of this object will then also be the
+type of the `DataSet` created by the `DataSource` operation.
 
+Just as with `BinaryInputFormat` the function can be an anonymous function, so
+you could have:
+
+```scala
+val input = DataSource("file:///some/file", BinaryInputFormat( { line =>
+  line match {
+    case EdgeInputPattern(from, to) => Path(from.toInt, to.toInt, 1)
+  }
+}))
+```
+
+In this example EdgeInputPattern is some regular expression used for parsing
+a line of text and `Path` is a custom case class that is used to represent
+the data. The type of input would in this case be `DataSet[Path]`.
+
+<section id="binary-input-format">
+#### BinaryInputFormat
+
+This input format is best used when you have a custom binary format that
+you store the data in. It is created using one of the following:
+
+```scala
+BinaryInputFormat[Out](readFunction: DataInput => Out)
+BinaryInputFormat[Out](readFunction: DataInput => Out, blocksize: Long)
+```
+
+So you have to provide a function that gets a
+[java.io.DataInput](http://docs.oracle.com/javase/7/docs/api/java/io/DataInput.html)
+and returns the object that
+contains the data. The type of this object will then also be the type of the
+`DataSet` created by the `DataSource` operation.
+
+The provided function can also be an anonymous function, so you could
+have something like this:
+
+```scala
+val input = DataSource("file:///some/file", BinaryInputFormat( { input =>
+  val one = input.readInt
+  val two = input.readDouble
+  (one, two)  
+}))
+```
+
+Here `input` would be of type `DataSet[(Int, Double)]`.
+
+<section id="binary-serialized-input-format">
+#### BinarySerializedInputFormat
+
+This input format is only meant to be used in conjunction with
+`BinarySerializedOutputFormat`. You can use these to write elements to files using a
+Stratosphere-internal format that can efficiently be read again. You should only
+use this when output is only meant to be consumed by other Stratosphere jobs.
+The format can be used on one of two ways:
+
+```scala
+BinarySerializedInputFormat[Out]()
+BinarySerializedInputFormat[Out](blocksize: Long)
+```
+
+So if input files contain elements of type `(String, Int)` (a tuple type) you
+could use:
+
+```scala
+val input = DataSource("file:///some/file", BinarySerializedInputFormat[(String, Int)]())
+```
+
+<section id="fixed-length-input-format">
 #### FixedLengthInputFormat
 
 This input format is for cases where you want to read binary blocks
@@ -381,7 +388,7 @@ val words = input.map { x => (x, 1) }
 
 val output = counts.write(words, CsvOutputFormat()))
 
-val plan = new Plan(Seq(output))
+val plan = new ScalaPlan(Seq(output))
 ```
 
 What you get is a graph that has a data source, a map operator (that contains
@@ -647,9 +654,82 @@ def flatMap[Out](fun: (LeftIn, RightIn) => Iterator[Out]): DataSet[Out]
 def filter(fun: (LeftIn, RightIn) => Boolean): DataSet[(LeftIn, RightIn)]
 ```
 
+#### Union
+
+When you want to have the combination of several data sets as the input of
+an operation you can use a union to combine them. It is used like this
+
+```scala
+val input1: DataSet[String]
+val input2: DataSet[String]
+val unioned = input1.union(input2)
+```
+
+The signature of union is:
+
+```scala
+def union(secondInput: DataSet[A])
+```
+
+Where `A` is the generic type of the `DataSet` on which you execute the `union`.
+
+<section id="iterations">
+Iterations
+----------
+
+Iterations allow you to implement *loops* in Stratosphere programs.
+[This page](iterations.html) gives a
+general introduction to iterations. This section here provides quick examples
+of how to use the concepts using the Scala API.
+The iteration operators encapsulate a part of the program and execute it
+repeatedly, feeding back the result of one iteration (the partial solution) into
+the next iteration. Stratosphere has two different types of iterations,
+*Bulk Iteration* and *Delta Iteration*.
+
+For both types of iterations you provide the iteration body as a function
+that has data sets as input and returns a new data set. The difference is
+that bulk iterations map from one data set two one new data set while
+delta iterations map two data sets to two new data sets.
+
 #### Bulk Iteration
 
-#### Workset Iteration
+The signature of the bulk iterate method is this:
+
+```scala
+def iterate(n: Int, stepFunction: DataSet[A] => DataSet[A])
+```
+
+where `A` is the type of the `DataSet` on which `iterate` is called. The number
+of steps is given in `n`. This is how you use it in practice:
+
+```scala
+val dataPoints = DataSource(dataPointInput, DelimitedInputFormat(parseInput))
+val clusterPoints = DataSource(clusterInput, DelimitedInputFormat(parseInput))
+
+def kMeansStep(centers: DataSet[(Int, Point)]) = {
+
+  val distances = dataPoints cross centers map computeDistance
+  val nearestCenters = distances.groupBy { case (pid, _) => pid }
+    .reduceGroup { ds => ds.minBy(_._2.distance) } map asPointSum.tupled
+  val newCenters = nearestCenters.groupBy { case (cid, _) => cid }
+    .reduceGroup sumPointSums map { case (cid, pSum) => cid -> pSum.toPoint() }
+
+  newCenters
+}
+
+val finalCenters = clusterPoints.iterate(numIterations, kMeansStep)
+
+val output = finalCenters.write(clusterOutput, DelimitedOutputFormat(formatOutput.tupled))
+```
+
+Not that we use some functions here which we don't show. If you want, you
+can check out the complete code in our KMeans example.
+
+#### Delta Iteration
+
+This is tad bit prototypical right now. Please contact us through one of the
+channels [here](http://stratosphere.eu/contact/) if you are interested in
+working with it.
 
 
 <section id="data-sinks">
@@ -670,77 +750,16 @@ on of either `file:///some/file` to acces files on the local machine or
 `hdfs://some/path` to read files from HDFS. The output format can be one of our
 builtin formats or a custom output format. The builtin formats are:
 
-* RawOutputFormat
-* BinaryOutputFormat
-* BinarySerializedOutputFormat
-* DelimitedOutputFormat
-* CsvOutputFormat
+* [DelimitedOutputFormat](#delimited-output-format)
+* [CsvOutputFormat](#csv-output-format)
+* [RawOutputFormat](#raw-output-format)
+* [BinaryOutputFormat](#binary-output-format)
+* [BinarySerializedOutputFormat](#binary-serialized-output-format)
 
 We will now have a look at each of them and show how they are employed and in
 which situations.
 
-#### RawOutputFormat
-
-This input format can be used when you want to have complete control over
-what gets written. You get an
-[OutputStream](http://docs.oracle.com/javase/7/docs/api/java/io/OutputStream.html)
-and can write the elements of the `DataSet` exactly as you see fit.
-
-A `RawOutputFormat` is created like this:
-
-```scala
-RawOutputFormat[In](writeFunction: (In, OutputStream) => Unit)
-```
-
-The function you pass in gets one element from the `DataSet` and must
-write it to the given `OutputStream`. An example would be the following:
-
-```scala
-val out: DataSet[(String, Int)]
-val sink = out.write("file:///some/file", RawOutputFormat( { (elem, output) =>
-  /* write elem._1 and elem._2 to output */ 
-}))
-```
-
-#### BinaryOutputFormat
-
-This format is very similar to the RawOutputFormat. The difference is that
-instead of an [OutputStream](http://docs.oracle.com/javase/7/docs/api/java/io/OutputStream.html)
-you get a [DataOutput](http://docs.oracle.com/javase/7/docs/api/java/io/DataOutput.html)
-to which you can write binary data. You can also specify the block size for
-the binary output file. When you don't specify a block size some default
-is used.
-
-A `BinaryOutputFormat` is created like this:
-
-```scala
-BinaryOutputFormat[In](writeFunction: (In, DataOutput) => Unit)
-BinaryOutputFormat[In](writeFunction: (In, DataOutput) => Unit, blockSize: Long)
-```
-
-#### BinarySerializedOutputFormat
-
-This output format is only meant to be used in conjunction with
-`BinarySerializedInputFormat`. You can use these to write elements to files using a
-Stratosphere-internal format that can efficiently be read again. You should only
-use this when output is only meant to be consumed by other Stratosphere jobs.
-The output format can be used on one of two ways:
-
-```scala
-BinarySerializedOutputFormat[In]()
-BinarySerializedOutputFormat[In](blocksize: Long)
-```
-
-So to write elements of some `DataSet[A]` to a binary file you could use:
-
-```scala
-val out: DataSet[(String, Int)]
-val sink = out.write("file:///some/file", BinarySerializedInputFormat())
-```
-
-As you can see the type of the elements need not be specified, it is inferred
-by Scala.
-
+<section id="delimited-output-format">
 #### DelimitedOutputFormat
 
 This output format is meant for writing textual records that are separated by
@@ -768,6 +787,7 @@ Here we use Scala String formatting to write the two fields of the tuple
 separated by a pipe character. The default newline delimiter will be inserted
 between the elements in the output files.
 
+<section id="csv-output-format">
 #### CsvOutputFormat
 
 This output format can be used to automatically write fields of tuple
@@ -792,10 +812,199 @@ val sink = out.write("file:///some/file", CsvOutputFormat())
 
 Notice how we don't need to specify the generic type here, it is inferred.
 
+<section id="raw-output-format">
+#### RawOutputFormat
+
+This input format can be used when you want to have complete control over
+what gets written. You get an
+[OutputStream](http://docs.oracle.com/javase/7/docs/api/java/io/OutputStream.html)
+and can write the elements of the `DataSet` exactly as you see fit.
+
+A `RawOutputFormat` is created like this:
+
+```scala
+RawOutputFormat[In](writeFunction: (In, OutputStream) => Unit)
+```
+
+The function you pass in gets one element from the `DataSet` and must
+write it to the given `OutputStream`. An example would be the following:
+
+```scala
+val out: DataSet[(String, Int)]
+val sink = out.write("file:///some/file", RawOutputFormat( { (elem, output) =>
+  /* write elem._1 and elem._2 to output */ 
+}))
+```
+
+<section id="binary-output-format">
+#### BinaryOutputFormat
+
+This format is very similar to the RawOutputFormat. The difference is that
+instead of an [OutputStream](http://docs.oracle.com/javase/7/docs/api/java/io/OutputStream.html)
+you get a [DataOutput](http://docs.oracle.com/javase/7/docs/api/java/io/DataOutput.html)
+to which you can write binary data. You can also specify the block size for
+the binary output file. When you don't specify a block size some default
+is used.
+
+A `BinaryOutputFormat` is created like this:
+
+```scala
+BinaryOutputFormat[In](writeFunction: (In, DataOutput) => Unit)
+BinaryOutputFormat[In](writeFunction: (In, DataOutput) => Unit, blockSize: Long)
+```
+
+<section id="binary-serialized-output-format">
+#### BinarySerializedOutputFormat
+
+This output format is only meant to be used in conjunction with
+`BinarySerializedInputFormat`. You can use these to write elements to files using a
+Stratosphere-internal format that can efficiently be read again. You should only
+use this when output is only meant to be consumed by other Stratosphere jobs.
+The output format can be used on one of two ways:
+
+```scala
+BinarySerializedOutputFormat[In]()
+BinarySerializedOutputFormat[In](blocksize: Long)
+```
+
+So to write elements of some `DataSet[A]` to a binary file you could use:
+
+```scala
+val out: DataSet[(String, Int)]
+val sink = out.write("file:///some/file", BinarySerializedInputFormat())
+```
+
+As you can see the type of the elements need not be specified, it is inferred
+by Scala.
+
 <section id="execution">
 Executing Jobs
 --------------
 
-<section id="rich-stubs">
-Advanced: Rich Stubs
---------------------
+To execute a data flow graph the sinks need to be wrapped in a
+[ScalaPlan](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-scala/src/main/scala/eu/stratosphere/api/scala/ScalaPlan.scala)
+object like this:
+
+```scala
+val out: DataSet[(String, Int)]
+val sink = out.write("file:///some/file", CsvOutputFormat())
+
+val plan = new ScalaPlan(Seq(sink))
+```
+
+You can put several sinks into the `Seq` that is passed to the constructor.
+
+There are two ways one can execute a data flow plan: local execution and
+remote/cluster execution. When using local execution the plan is executed on
+the local computer. This is handy while developing jobs because you can
+easily debug your code and iterate quickly. When a job is ready to be
+used on bigger data sets it can be executed on a cluster. We will
+now give an example for each of the two execution modes.
+
+First up is local execution:
+
+```scala
+import eu.stratosphere.client.LocalExecutor
+
+...
+
+val plan: ScalaPlan = ...
+LocalExecutor.execute(plan)
+```
+
+This is all there is to it.
+
+Remote (or cluster) execution is a bit more complicated because you have
+to package your code in a jar file so that it can be distributed on the cluster.
+Have a look at the [scala quickstart](/quickstart/scala.html) to see how you
+can set up a maven project that does the packaging. Remote execution is done
+using the [RemoteExecutor](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-clients/src/main/java/eu/stratosphere/client/RemoteExecutor.java), like this:
+
+```scala
+import eu.stratosphere.client.RemoteExecutor
+
+...
+
+val plan: ScalaPlan = ...
+val ex = new RemoteExecutor("<job manager ip address>", <job manager port>, "your.jar");
+ex.executePlan(plan);
+```
+
+The IP address and the port of the Stratosphere job manager depend on your
+setup. Have a look at [cluster quickstart](/quickstart/setup.html) for a quick
+guide about how to set up a cluster. The default cluster port is 6123, so
+if you run a job manger on your local computer you can give this and "localhost"
+as the first to parameters to the `RemoteExecutor` constructor.
+
+<section id="rich-functions">
+Rich Functions
+--------------
+
+Sometimes having a single function that is passed to an operation is not enough.
+Using Rich Functions it is possible to have state inside your operations and
+have code executed before the first element is processed and after the last
+element is processed. For example, instead of a simple function as in this
+example:
+
+```scala
+val mapped = input map { x => x + 1 }
+```
+
+you can have a rich function like this:
+
+```scala
+val mapped = input map( new MapFunction[(String, Int), (String, Int)] {
+  val someState: SomeType = ...
+  override def open(config: Configuration) = {
+    // one-time initialization code
+  }
+
+  override def close() = {
+    // one-time clean-up code
+  }
+
+  override def apply(in: (String, Int)) = {
+    // do complex stuff
+    val result = ...
+    result
+  }
+})
+```
+
+You could also create a custom class that derives from `MapFunction`
+instead of the anonymous class we used here.
+
+There are rich functions for all the various operator types. The basic
+template is the some, though. The common interface that they implement 
+is [Function](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/functions/Function.java). The `open` and `close` methods can be overridden to run set-up
+and tear-down code. The other methods can be used in a rich function to
+work with the runtime context which gives information about the context
+of the operator. Your operation code must now reside in an `apply` method
+that has the same signature as the anonymous function you would normally
+supply.
+
+The rich functions reside in the package `eu.stratosphere.api.scala.functions`.
+This is a list of all the rich functions can can be used instead of
+simple functions in the respective operations:
+
+```scala
+abstract class MapFunction[In, Out] 
+abstract class FlatMapFunction[In, Out] 
+abstract class FilterFunction[In, Out] 
+
+abstract class ReduceFunction[In]
+abstract class GroupReduceFunction[In, Out]
+abstract class CombinableGroupReduceFunction[In, Out]
+
+abstract class JoinFunction[LeftIn, RightIn, Out]
+abstract class FlatJoinFunction[LeftIn, RightIn, Out]
+
+abstract class CoGroupFunction[LeftIn, RightIn, Out]
+abstract class FlatCoGroupFunction[LeftIn, RightIn, Out]
+
+abstract class CrossFunction[LeftIn, RightIn, Out]
+abstract class FlatCrossFunction[LeftIn, RightIn, Out]
+```
+
+Note that for all the rich stubs, you need to specify the generic type of
+the input (or inputs) and the output type.
