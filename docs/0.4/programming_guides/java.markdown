@@ -299,13 +299,43 @@ Average bytes per record must be \>= 0.
 
 Average records emitted per stub call must be \>= 0.
 
-### Best Practices
+### Accumulators and Counters
+Accumulators are simple constructs with an add operation, that can be called from your stub code, and a final (accumulated) result, which is available after the job ended. The most straightforward accumulator is a counter: You can increment it, using the ```Accumulator.add(V value)``` method, and at the end of the job Stratosphere will sum up (merge) all partial results and send the result to the client. Since accumulators are very easy to use, they can be useful during debugging or if you quickly want to find out more about your data.
 
-This page only explains the technical details of how to write a Pact
-program.   
- Have a look at [Best Practices of Pact
-Programming](advancedpactprogramming.html "advancedpactprogramming")
-for concrete implementation guidelines.
+Stratosphere currently has the following built-in accumulators. Each of them implements the [Accumulator](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/Accumulator.java) interface.
+
+- [__IntCounter__](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/IntCounter.java), [__LongCounter__](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/LongCounter.java) and [__DoubleCounter__](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/DoubleCounter.java): See below for an example using a counter.
+- [__Histogram__](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/Histogram.java): A histogram implementation for a discrete number of bins. Internally it is just a map from Integer to Integer. You can use this to compute distributions of values, e.g. the distribution of words-per-line for a word count program.
+
+__How to use accumulators:__
+
+First you have to create an accumulator object (here a counter) in the stub where you want to use it.
+
+    private IntCounter numLines = new IntCounter();
+
+Second you have to register the accumulator object, typically in the ```open()``` method of the stub. Here you also define the name.
+
+    getRuntimeContext().addAccumulator("num-lines", this.numLines);
+
+You can now use the accumulator anywhere in the stub, including in the ```open()``` and ```close()``` methods.
+
+    this.numLines.add(1);
+
+The overall result will be stored in the ```JobExecutionResult``` object which is returned when running a job using the Java API (currently this only works if the execution waits for the completion of the job).
+
+    myJobExecutionResult.getAccumulatorResult("num-lines")
+
+All accumulators share a single namespace per job. Thus you can use the same accumulator in different stubs of your job. Stratosphere will internally merge all accumulators with the same name.
+
+Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCountAccumulators.java) for a complete example.
+
+A note on accumulators and iterations: Currently the result of accumulators is only available after the overall job ended. We plan to make the result of the previous iteration available in the next iteration.
+
+__Custom accumulators:__
+
+To implement your own accumulator you simply have to write your implementation of the Accumulator interface. Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/master/pact/pact-examples/src/main/java/eu/stratosphere/pact/example/wordcount/WordCountAccumulators.java) for an example. Feel free to create a pull request if you think your custom accumulator should be shipped with Stratosphere.
+
+You have the choice to implement either [Accumulator](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/Accumulator.java) or [SimpleAccumulator](https://github.com/stratosphere/stratosphere/blob/master/nephele/nephele-common/src/main/java/eu/stratosphere/nephele/services/accumulators/SimpleAccumulator.java). ```Accumulator<V,R>``` is most flexible: It defines a type ```V``` for the value to add, and a result type ```R``` for the final result. E.g. for a histogram, ```V``` is a number and ```R``` is a histogram. ```SimpleAccumulator``` is for the cases where both types are the same, e.g. for counters.
 
 Package a PACT Program
 ----------------------
