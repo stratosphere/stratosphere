@@ -11,14 +11,13 @@ sublinks:
 ---
 
 <section id="basic">
-Writing a PACT Program
-======================
+Writing Stratosphere Programs in Java
+=====================================
 
-This section assumes you are familiar with the [PACT Programming
-Model](pactpm.html "pactpm").
-It explains how you implement a designed pact program. We start with the
-implementation of a PACT program and explain later how programs are
-packaged for execution.
+This guide explains how to develop Stratosphere programs with the Java programming interface.
+It assumes you are familiar with the general concepts of Stratosphere's [Programming Model](pmodel.html "Programming Model").
+We recommend to learn about the basic concepts first, before continuing with the Java or the [Scala](scala.html "Scala Programming Guide") programming guide.
+The guide starts with a step-by-step instruction for a simple WordCount example job and delves into more details later.
 
 Implement a PACT Program
 ------------------------
