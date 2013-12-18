@@ -7,15 +7,13 @@ links:
   - { anchor: "cluster", title: "Cluster Setup" }
   - { anchor: "yarn", title: "Stratosphere on YARN" }
   - { anchor: "config", title: "Configuration" }
-  # Section: Background
-  #- { section: true, anchor: "background", title: "Background"}
-  #- { anchor: "data_flows", title: "Data Flows"}
-  #- { anchor: "iterations", title: "Iterations"}
   # Section: Programming Guides
   - { section: true, anchor: "programming_guides", title: "Programming Guides"}
   - { anchor: "pmodel", title: "Programming Model"}
+  - { anchor: "iterations", title: "Iterations"}
   - { anchor: "java", title: "Java"}
   - { anchor: "scala", title: "Scala"}
+  - { anchor: "spargel", title: "Spargel (Graph Processing)"}
   - { anchor: "examples", title: "Example Programs"}
   # Section: Internals
   - { section: true, anchor: "internals", title: "Internals"}
@@ -75,6 +73,7 @@ version: 0.4
         {% endfor %}
       </ol>
       {% endif %}
+
       {{ content }}
       <hr>
       <h3>User Comments</h3>
