@@ -3,12 +3,11 @@ layout: inner_docs_v04
 title:  "Configuration"
 sublinks:
   - {anchor: "common", title: "Most Common Options"}
-  - {anchor: "jm_tm", title: "Job &amp; TaskManager"}
-  - {anchor: "compiler", title: "Compiler"}
-  - {anchor: "web_frontend", title: "Web Frontend"}
   - {anchor: "hdfs", title: "HDFS"}
-  - {anchor: "profiling", title: "Profiling"}
-  - {anchor: "visualization", title: "Visualization"}
+  - {anchor: "jm_tm", title: "Job &amp; TaskManager"}
+  - {anchor: "jmweb", title: "JobManager Web"}
+  - {anchor: "web_frontend", title: "Web Frontend"}
+  - {anchor: "compiler", title: "Compiler"}
 ---
 
 ## Configuration
