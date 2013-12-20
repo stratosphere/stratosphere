@@ -311,10 +311,25 @@ system would allocate roughly 300 MiBytes for network buffers.
 The number and size of network buffers can be configured with the
 following parameters:
 
--   *channel.network.numberOfBuffers*, and
--   *channel.network.bufferSizeInBytes*.
+-   `channel.network.numberOfBuffers`, and
+-   `channel.network.bufferSizeInBytes`.
 
-Please see the [configuration page]({{site.baseurl}}/setup/config.html) for details.
+#### Configuring Temporary I/O Directories
+
+Although Stratosphere aims to process as much data in main memory as possible, it is not uncommon that 
+more data needs to be processed than memory is available. Stratosphere's runtime is designed to 
+write temporary data to disk to handle these situations.
+
+The `taskmanager.tmp.dirs` parameter specifies a list of directories into which Stratosphere writes temporary files.
+The paths of the directories need to be separated by ':' (colon character). 
+Stratosphere will concurrently write (or read) one temporary file to (from) each configured directory. 
+This way, temporary I/O can be evenly distributed over multiple independent I/O devices such as hard disks to improve performance. 
+To leverage fast I/O devices (e.g., SSD, RAID, NAS), it is possible to specify a directory multiple times.
+
+If the `taskmanager.tmp.dirs` parameter is not explicitly specified, Stratosphere writes temporary data to the temporary 
+directory of the operating system, such as */tmp* in Linux systems.
+
+Please see the [configuration page](config.html "Configuration") for details and additional configuration options.
 
 ### Starting Stratosphere
 
