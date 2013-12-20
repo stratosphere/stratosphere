@@ -28,7 +28,7 @@ If you’re a Debian/Ubuntu user, you’ll also find a `.deb` package here.
 Go into the build directory
 
 <pre class="prettyprint" style="padding-left:1em">
-cd stratosphere-dist/target/stratosphere-dist-0.4-SNAPSHOT-bin/stratosphere-0.4-SNAPSHOT/
+cd stratosphere-dist/target/stratosphere-dist-{{site.current_snapshot}}-bin/stratosphere-{{site.current_snapshot}}/
 </pre>
 
 Now, we can start Stratosphere in local mode:
@@ -49,7 +49,7 @@ Start the job:
 
 <pre class="prettyprint" style="padding-left:1em">
 ./bin/pact-client.sh run \
-    --jarfile ./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar \
+    --jarfile ./examples/stratosphere-java-examples-{{site.current_snapshot}}-WordCount.jar \
     --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
 </pre>
 
@@ -61,11 +61,11 @@ You will find a file called `wordcount-result.txt` in your current directory.
 Start the webinterface, using the following command:
 
 ```
-./bin/start-pact-web.sh
+./bin/start-webclient.sh
 ```
 
 * Access it using the following URL: [http://localhost:8080](http://localhost:8080).
-* Upload the WordCount.jar using the upload form in the lower right box. The jar is located in `./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar`
+* Upload the WordCount.jar using the upload form in the lower right box. The jar is located in `./examples/stratosphere-java-examples-{{site.current_snapshot}}-WordCount.jar`
 * Select the WordCount jar from the list of available jars (upper left).
 * Enter the argument line in the lower-left box: 1 file://<path to>/hamlet.txt file://<wherever you want the>/wordcount-result.txt
 * Hit "Run Job"

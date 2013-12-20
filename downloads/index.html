@@ -8,6 +8,7 @@ links:
   -       { anchor: vagrant, title: "Vagrant" }
   -       { anchor: debian, title: "Debian Package" }
   -       { anchor: source, title: "Source" }
+  -       { anchor: nightly, title: "Nightly Builds" }
 ---
 
 <p class="lead">There are plenty of ways to get Stratosphere. Pick any of the following to start.</p>
@@ -16,23 +17,23 @@ links:
     <section id="bin">
         <div class="page-header"><h2>Ready To Run Package</h2></div>
         <p class="lead">Download the ready to run binary package if you want to use Stratosphere on your computer or cluster.</p>
-        <p>Stratosphere has dependencies to Hadoop (e.g. HDFS and HBase). Choose a Stratosphere distribution that <strong>matches your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.</p>
+        <p>Stratosphere has dependencies to Hadoop (e.g. HDFS and HBase). Choose a Stratosphere distribution that <strong>matches your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.</p>
         <p>
         <ul class="nav nav-tabs">
             <li class="active"><a href="#bin-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
-            <li><a href="#bin-hadoop1" data-toggle="tab">Hadoop 1.2</a></li>
+            <li><a href="#bin-hadoop1" data-toggle="tab">Hadoop 1</a></li>
         </ul>
         <div class="tab-content text-center">
             <div class="tab-pane active" id="bin-hadoop2">
-                <a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-hadoop2-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 2</a>
-                <a style="padding-left:5px" class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-dist-0.4-SNAPSHOT-hadoop2-yarn-uberjar.jar"><i class="icon-download"> </i> Stratosphere YARN Uber-jar</a>
+                <a class="btn btn-info btn-lg" href="{{site.current_stable_dl_yarn}}"><i class="icon-download"> </i> Stratosphere 0.4 (Hadoop 2)</a>
+                <a style="padding-left:5px" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere 0.4 for YARN</a>
             </div>
             <div class="tab-pane" id="bin-hadoop1">
-                <a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 1.2</a>
+                <a class="btn btn-info btn-lg" href="{{site.current_stable_dl}}"><i class="icon-download"> </i> Download Stratosphere 0.4 (Hadoop 1)</a>
             </div>
         </div>
         </p>
-        <p>Make sure to checkout the <a href="{{ site.baseurl }}/docs">Documentation</a> for further help.</p>
+        <p>Read more in the <a href="{{ site.baseurl }}/docs">Documentation</a>.</p>
     </section>
 
     <section id="maven">
@@ -41,21 +42,10 @@ links:
         </div>
         <p class="lead">Use the Maven Dependencies to add Stratosphere to your project.</p>
         <p>These dependencies also include a local execution environment. Therefore they are sufficient for local testing.</p>
-        <p>The current development version is not pushed to Maven central yet (this will change with the release), so please make sure to add the Sonatype snapshot repository to your Maven project between:</p>
-{% highlight xml %}
-<repositories>
-  <repository>
-    <id>snapshots-repo</id>
-    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    <releases><enabled>false</enabled></releases>
-    <snapshots><enabled>true</enabled></snapshots>
-  </repository>
-</repositories>
-{% endhighlight %}
         <p>
-        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, make sure to pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.2.</p>
+        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.x.</p>
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1.2</a></li>
+            <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1</a></li>
             <li><a href="#maven-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
         </ul>
         <div class="tab-content">
@@ -63,13 +53,13 @@ links:
 {% highlight xml %}
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>pact-common</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <artifactId>stratosphere-java</artifactId>
+  <version>{{ site.current_stable }}</version>
 </dependency>
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>pact-clients</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <artifactId>stratosphere-core</artifactId>
+  <version>{{ site.current_stable }}</version>
 </dependency>
 {% endhighlight %}
             </div>
@@ -77,13 +67,13 @@ links:
 {% highlight xml %}
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>pact-common</artifactId>
-  <version>0.4-hadoop2-SNAPSHOT</version>
+  <artifactId>stratosphere-java</artifactId>
+  <version>{{ site.current_stable_yarn }}</version>
 </dependency>
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>pact-clients</artifactId>
-  <version>0.4-hadoop2-SNAPSHOT</version>
+  <artifactId>stratosphere-core</artifactId>
+  <version>{{ site.current_stable_yarn }}</version>
 </dependency>
 {% endhighlight %}
             </div>
@@ -137,7 +127,7 @@ apt-get install stratosphere-dist
         <p class="lead">Compile Stratosphere on your own machine.</p>
         <p>
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#source-hadoop1" data-toggle="tab">Hadoop 1.2.x</a></li>
+            <li class="active"><a href="#source-hadoop1" data-toggle="tab">Hadoop 1</a></li>
             <li><a href="#source-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
         </ul>
         <div class="tab-content">
@@ -160,6 +150,53 @@ mvn clean package -DskipTests -Dhadoop.profile=2
         <p>Make sure to checkout the <a href="{{ site.baseurl }}/docs">Documentation</a> for further help.</p>
     </section>
 
+    <section id="nightly">
+        <div class="page-header">
+            <h2>Nightly Builds</h2>
+        </div>
+        <p class="lead">The Nightly Builds contain the most recent development code. Use them for example if you need a feature before its release. Only builds that pass all tests are published here.</p>
+        <h3>Binaries</h3>
+        <p>
+            <a href="https://travis-ci.org/stratosphere/stratosphere">Travis CI</a> builds a new test build each time we push into the repository.
+        
+        <p>
+            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dist/target/stratosphere-dist-{{ site.current_snapshot_yarn }}-yarn-uberjar.jar"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere YARN uberjar</a>
+        </p>
+
+         <p>
+            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere for Hadoop 1</a>
+        </p>
+         <p>
+            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot_yarn}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot_yarn }}) Stratosphere for Hadoop 2</a>
+        </p>
+        <p>
+
+        Find all <a href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/">binaries on Amazon S3</a>.
+        </p>
+        <h3>SNAPSHOT-Versions in Sonatype Maven</h3>
+        Add the Sonatype Snapshots repository to into your Maven pom:
+        {% highlight xml %}
+<repositories>
+  <repository>
+    <id>snapshots-repo</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <releases><enabled>false</enabled></releases>
+    <snapshots><enabled>true</enabled></snapshots>
+  </repository>
+</repositories>
+{% endhighlight %}
+
+Set the version to the next snapshot version, for example: 0.5-SNAPSHOT
+{% highlight xml %}
+<dependency>
+  <groupId>eu.stratosphere</groupId>
+  <artifactId>stratosphere-clients</artifactId>
+  <version>{{ site.current_snapshot }}</version>
+</dependency>
+{% endhighlight %}
+    </section>
+
+
     <p class="lead" style="margin-top: 2em">Feel free to <a href="{{ site.baseurl }}/contact">contact us</a> if you have any problems or suggestions.</p>
-    <p class="lead" style="margin-top: 2em">This project uses <a href="http://www.ej-technologies.com/products/jprofiler/overview.html">Java Profiler</a> from from ej-technologies.</p>
+    <p class="lead" style="margin-top: 2em">The Stratosphere developers are using <a href="http://www.ej-technologies.com/products/jprofiler/overview.html">JProfiler</a> from ej-technologies.</p>
 </div>
