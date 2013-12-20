@@ -5,92 +5,82 @@ title:  "CLI Client"
 
 ## CLI Client
 
-The PACT Command Line Client
-============================
+Stratosphere provides a commandline client to:
 
-The PACT command-line client features actions to submit, cancel, list,
-and get information about PACT programs.   
+- submit jobs for execution,
+- cancel a running job,
+- provide information about a job, and
+- list running and waiting jobs.
 
 ### Usage
 
-    ./pact-client [[ACTION]] [[GENERAL_OPTIONS]] [[ACTION_ARGUMENTS]]
+The client is used as follows:
+
+    ./bin/stratosphere [[ACTION]] [[GENERAL_OPTIONS]] [[ACTION_ARGUMENTS]]
       general options:
          -h,--help      Show the help for the CLI Frontend.
          -v,--verbose   Print more detailed error messages.
 
-    Action "run" compiles and submits a PACT program.
+    Action "run" compiles and submits a Stratosphere program.
       "run" action arguments:
-         -a,--arguments <programArgs>   Pact program arguments
-         -c,--class <classname>         Pact program assembler class
-         -j,--jarfile <jarfile>         Pact program JAR file
-         -w,--wait                      Wait until program finishes
+         -a,--arguments <programArgs>   Program arguments
+         -c,--class <classname>         Program class that assembles the plan
+         -j,--jarfile <jarfile>         JAR file that contains the program
+         -m,--jobmanager <host:port>    Jobmanager to which the program is submitted
+         -w,--wait                      Return after program finished
 
-    Action "info" displays information about a PACT program.
+    Action "info" displays information about a Stratosphere program.
       "info" action arguments:
-         -a,--arguments <programArgs>   Pact program arguments
-         -c,--class <classname>         Pact program assembler class
-         -d,--description               Show argument description of pact
-                                        program
-         -j,--jarfile <jarfile>         Pact program JAR file
-         -p,--plan                      Show execution plan of the pact
-                                        program
+         -a,--arguments <programArgs>   Program arguments
+         -c,--class <classname>         Program class that assembles the plan
+         -d,--description               Show description of expected program arguments
+         -j,--jarfile <jarfile>         JAR file that contains the program
+         -p,--plan                      Show optimized execution plan of the program (JSON)
 
-    Action "list" lists submitted PACT programs.
+    Action "list" lists submitted Stratosphere programs.
       "list" action arguments:
-         -r,--running     Show running jobs
-         -s,--scheduled   Show scheduled jobs
+         -r,--running     Show running programs and their JobIDs
+         -s,--scheduled   Show scheduled prorgrams and their JobIDs
 
-    Action "cancel" cancels a submitted PACT program.
+    Action "cancel" cancels a submitted Stratosphere program.
       "cancel" action arguments:
          -i,--jobid <jobID>   JobID to cancel
 
-### Basic Actions
+### Example Usage:
 
--   Run WordCount PACT example program:
+-   Run WordCount example program on the JobManager configured in ./conf/stratosphere.yaml:
 
-<!-- -->
+        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                               -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
-    ./bin/pact-client.sh run -j ./examples/pact/pact-examples-0.1-WordCount.jar -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
+- Run WordCount example program on a specific JobManager:
 
--   Run WordCount PACT example program (Plan-Assembler not in JAR file
-    manifest):
+        ./bin/stratosphere run -m myJMHost:6123 \
+                               -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                               -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
-<!-- -->
+-   Run WordCount example program (program class not defined in the JAR file manifest):
 
-    ./bin/pact-client.sh run -j ./examples/pact/pact-examples-0.1-WordCount.jar -c eu.stratosphere.pact.example.wordcount.WordCount -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
+        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                               -c eu.stratosphere.example.java.record.wordcount.WordCount \
+                               -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
--   Display WordCount PACT example program argument description:
+-   Display the expected arguments for the WordCount example program:
 
-<!-- -->
+        ./bin/stratosphere info -d \
+                                -j ./examples/stratosphere-java-examples-0.4-WordCount.jar
 
-    ./bin/pact-client.sh info -d -j ./examples/pact/pact-examples-0.1-WordCount.jar
+-   Display the optimized execution plan for the WordCount example program as JSON:
 
--   Display WordCount PACT example program execution plan as JSON:
+        ./bin/stratosphere info -p \
+                                -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                                -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
-<!-- -->
+-   List scheduled and running jobs (including their JobIDs):
 
-    ./bin/pact-client.sh info -p -j ./examples/pact/pact-examples-0.1-WordCount.jar -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
-
--   List scheduled and running jobs (including job ids):
-
-<!-- -->
-
-    ./bin/pact-client.sh list -s -r
+        ./bin/stratosphere list -s \
+                                -r
 
 -   Cancel a job:
 
-<!-- -->
-
-    ./bin/pact-client.sh cancel -i <jobID>
-
-### Configure the Command Line Client
-
-The command-line client is configured in *./conf/pact-user.xml*. The
-configuration includes parameters that are used by the compiler, such as
-the default parallelism, intra-node parallelism, and the limit to the
-number of instances to use.   
- The JobManager to which PACT programs are submitted is configured by
-specifying host and port in *./conf/nephele-user.xml*.   
- Refer to the [Configuration
-Reference](configreference.html "configreference")
-for details.
+        ./bin/stratosphere cancel -i <jobID>
