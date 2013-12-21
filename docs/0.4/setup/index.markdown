@@ -5,7 +5,7 @@ title:  "Setup & Configuration"
 
 ## Setup & Configuration
 
-This section gived detailed information on how to setup and configure Stratosphere in different environments:
+This section gives detailed information on how to setup and configure Stratosphere in different environments:
 
 * [Local setup on a single machine](local.html "Local Setup")
 * [Distributed setup on multiple machines](cluster.html "Cluster Setup")
@@ -15,4 +15,4 @@ The [configuration](config.html "Configuration") page lists all available config
 
 ### QUICKSTART INSTRUCTIONS
 
-**We provide also provide a [Quickstart](http://localhost:4000/quickstart/setup.html) setup guide to setup Stratosphere in just a few simple steps!**
+**We provide a [Quickstart](http://localhost:4000/quickstart/setup.html) guide to setup Stratosphere on your machine in just a few simple steps!**
