@@ -51,19 +51,19 @@ The out of the box configuration will use your default Java installation. You ca
 $ tar xzf stratosphere-*.tgz
 $ cd stratosphere
 $ bin/start-local.sh
-Starting Nephele job manager
+Starting job manager
 {% endhighlight %}
 
 You can check that the system is running by checking the log files in the `logs` directory:
 
-{% highlight bash %}
-$ tail log/nephele-*-jobmanager-*.log
+```bash
+$ tail log/stratosphere-*-jobmanager-*.log
 INFO ... - Initializing memory manager with 409 megabytes of memory
 INFO ... - Trying to load eu.stratosphere.nephele.jobmanager.scheduler.local.LocalScheduler as scheduler
 INFO ... - Setting up web info server, using web-root directory ...
 INFO ... - Web info server will display information about nephele job-manager on localhost, port 8081.
 INFO ... - Starting web info server for JobManager on port 8081
-{% endhighlight %}
+```
 
 The JobManager will also start a web frontend on port 8081, which you can check with your browser at `http://localhost:8081`.
 </section>

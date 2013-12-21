@@ -23,7 +23,7 @@ This involves two steps. First, installing and configuring Stratosphere and seco
 Stratosphere runs on all *UNIX-like environments*, e.g. **Linux**, **Mac OS X**, and **Cygwin** (for Windows) and expects the cluster to consist of **one master node** and **one or more worker nodes**. Before you start to setup the system, make sure you have the following software installed **on each node**:
 
 -   **Java 1.6.x** or higher,
--   **ssh** (sshd must be running to use the Nephele scripts that manage
+-   **ssh** (sshd must be running to use the Stratosphere scripts that manage
     remote components)
 
 If your cluster does not fulfill these software requirements you will
@@ -250,14 +250,14 @@ After downloading the latest release, copy the archive to your master node and e
 #### Configuring the Cluster
 
 After having extracted the system files, you need to configure Stratosphere for the
-cluster by editing `conf/stratosphere-conf.yaml`.
+cluster by editing *conf/stratosphere-conf.yaml*.
 
 Set the `jobmanager.rpc.address` key to point to your master node. Furthermode define the maximum amount of main memory the JVM is allowed to
 allocate on each node by setting the `jobmanager.heap.mb` and `taskmanager.heap.mb` keys.
 
 The value is given in MB. If some worker nodes have more main memory
 which you want to allocate to the Stratosphere system you can overwrite
-the default value by setting an environment variable *NEPHELE\_TM\_HEAP*
+the default value by setting an environment variable `STRATOSPHERE_TM_HEAP`
 on the respective node.
 
 Finally you must provide a list of all nodes in your cluster
@@ -335,7 +335,7 @@ Please see the [configuration page](config.html "Configuration") for details and
 
 The following script starts a JobManager on the local node and connects via
 SSH to all worker nodes listed in the *slaves* file to start the
-TaskManager on each node. Now your Stratosphere System is up and
+TaskManager on each node. Now your Stratosphere system is up and
 running. The JobManager running on the local node will now accept jobs
 at the configured RPC port.
 
