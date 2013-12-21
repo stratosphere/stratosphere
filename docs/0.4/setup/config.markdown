@@ -125,7 +125,7 @@ These parameters configure the default HDFS used by Stratosphere. If you don't s
 <section id="jm_tm">
 ### Job & TaskManager
 
-The following parameters configure Nephele's JobManager, TaskManager,
+The following parameters configure Stratosphere's JobManager, TaskManager,
 and runtime channel management.
 
 <table class="table table-striped">
