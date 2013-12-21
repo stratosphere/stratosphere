@@ -16,35 +16,38 @@ Stratosphere provides a commandline client to:
 
 The client is used as follows:
 
-    ./bin/stratosphere [[ACTION]] [[GENERAL_OPTIONS]] [[ACTION_ARGUMENTS]]
-      general options:
-         -h,--help      Show the help for the CLI Frontend.
-         -v,--verbose   Print more detailed error messages.
+```
+./stratosphere [ACTION] [GENERAL_OPTIONS] [ACTION_ARGUMENTS]
+  general options:
+     -h,--help      Show the help for the CLI Frontend.
+     -v,--verbose   Print more detailed error messages.
 
-    Action "run" compiles and submits a Stratosphere program.
-      "run" action arguments:
-         -a,--arguments <programArgs>   Program arguments
-         -c,--class <classname>         Program class that assembles the plan
-         -j,--jarfile <jarfile>         JAR file that contains the program
-         -m,--jobmanager <host:port>    Jobmanager to which the program is submitted
-         -w,--wait                      Return after program finished
+Action "run" compiles and submits a Stratosphere program.
+  "run" action arguments:
+     -a,--arguments <programArgs>   Program arguments
+     -c,--class <classname>         Program class
+     -j,--jarfile <jarfile>         Stratosphere program JAR file
+     -m,--jobmanager <host:port>    Jobmanager to which the program is submitted
+     -w,--wait                      Wait for program to finish
 
-    Action "info" displays information about a Stratosphere program.
-      "info" action arguments:
-         -a,--arguments <programArgs>   Program arguments
-         -c,--class <classname>         Program class that assembles the plan
-         -d,--description               Show description of expected program arguments
-         -j,--jarfile <jarfile>         JAR file that contains the program
-         -p,--plan                      Show optimized execution plan of the program (JSON)
+Action "info" displays information about a Stratosphere program.
+  "info" action arguments:
+     -a,--arguments <programArgs>   Program arguments
+     -c,--class <classname>         Program class
+     -d,--description               Show description of expected program arguments
+     -j,--jarfile <jarfile>         Stratosphere program JAR file
+     -p,--plan                      Show optimized execution plan of the
+                                    program (JSON)
 
-    Action "list" lists submitted Stratosphere programs.
-      "list" action arguments:
-         -r,--running     Show running programs and their JobIDs
-         -s,--scheduled   Show scheduled prorgrams and their JobIDs
+Action "list" lists submitted Stratosphere programs.
+  "list" action arguments:
+     -r,--running     Show running programs and their JobIDs
+     -s,--scheduled   Show scheduled prorgrams and their JobIDs
 
-    Action "cancel" cancels a submitted Stratosphere program.
-      "cancel" action arguments:
-         -i,--jobid <jobID>   JobID to cancel
+Action "cancel" cancels a submitted Stratosphere program.
+  "cancel" action arguments:
+     -i,--jobid <jobID>   JobID of program to cancel
+```
 
 ### Example Usage:
 

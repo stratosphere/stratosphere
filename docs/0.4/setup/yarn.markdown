@@ -101,10 +101,10 @@ Both commands will show you a help like this:
 Action "run" compiles and submits a Stratosphere program.
   "run" action arguments:
      -a,--arguments <programArgs>   Program arguments
-     -c,--class <classname>         Program class that assembles the plan
-     -j,--jarfile <jarfile>         JAR file that contains the program
+     -c,--class <classname>         Program class
+     -j,--jarfile <jarfile>         Stratosphere program JAR file
      -m,--jobmanager <host:port>    Jobmanager to which the program is submitted
-     -w,--wait                      Return after program finished
+     -w,--wait                      Wait for program to finish
 [...]
 ```
 
