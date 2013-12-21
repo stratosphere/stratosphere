@@ -1,6 +1,5 @@
 /***********************************************************************************************************************
- *
- * Copyright (C) 2012 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,31 +9,32 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
  **********************************************************************************************************************/
 package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
 import java.util.Iterator;
 
-import eu.stratosphere.pact.client.LocalExecutor;
-import eu.stratosphere.pact.common.contract.FileDataSink;
-import eu.stratosphere.pact.common.contract.FileDataSource;
-import eu.stratosphere.pact.common.io.RecordOutputFormat;
-import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.common.plan.PlanAssembler;
-import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
-import eu.stratosphere.pact.common.type.base.PactLong;
-import eu.stratosphere.pact.common.type.base.PactNull;
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.Program;
+import eu.stratosphere.api.common.ProgramDescription;
+import eu.stratosphere.api.common.operators.FileDataSink;
+import eu.stratosphere.api.common.operators.FileDataSource;
+import eu.stratosphere.api.java.record.io.CsvInputFormat;
+import eu.stratosphere.api.java.record.io.CsvOutputFormat;
+import eu.stratosphere.client.LocalExecutor;
 import eu.stratosphere.spargel.java.MessagingFunction;
 import eu.stratosphere.spargel.java.SpargelIteration;
 import eu.stratosphere.spargel.java.VertexUpdateFunction;
+import eu.stratosphere.types.LongValue;
+import eu.stratosphere.types.NullValue;
 
-public class SpargelConnectedComponents implements PlanAssembler, PlanAssemblerDescription {
+public class SpargelConnectedComponents implements Program, ProgramDescription {
 	
 	public static void main(String[] args) throws Exception {
 		LocalExecutor.execute(new SpargelConnectedComponents(), args);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Plan getPlan(String... args) {
 		final int dop = args.length > 0 ? Integer.parseInt(args[0]) : 1;
@@ -44,14 +44,15 @@ public class SpargelConnectedComponents implements PlanAssembler, PlanAssemblerD
 		final int maxIterations = args.length > 4 ? Integer.parseInt(args[4]) : 1;
 		
 		FileDataSource initialVertices = new FileDataSource(DuplicateLongInputFormat.class, verticesPath, "Vertices");
-		FileDataSource edges = new FileDataSource(LongLongInputFormat.class, edgesPath, "Edges");
+		FileDataSource edges = new FileDataSource(new CsvInputFormat(' ', LongValue.class, LongValue.class), edgesPath, "Edges");
+		
 		// create DataSinkContract for writing the new cluster positions
-		FileDataSink result = new FileDataSink(RecordOutputFormat.class, resultPath, "Result");
-		RecordOutputFormat.configureRecordFormat(result)
+		FileDataSink result = new FileDataSink(CsvOutputFormat.class, resultPath, "Result");
+		CsvOutputFormat.configureRecordFormat(result)
 			.recordDelimiter('\n')
 			.fieldDelimiter(' ')
-			.field(PactLong.class, 0)
-			.field(PactLong.class, 1);
+			.field(LongValue.class, 0)
+			.field(LongValue.class, 1);
 		
 		SpargelIteration iteration = new SpargelIteration(
 			new CCMessager(), new CCUpdater(), "Connected Components (Spargel API)");
@@ -66,32 +67,32 @@ public class SpargelConnectedComponents implements PlanAssembler, PlanAssemblerD
 	}
 	
 	
-	public static final class CCUpdater extends VertexUpdateFunction<PactLong, PactLong, PactLong> {
+	public static final class CCUpdater extends VertexUpdateFunction<LongValue, LongValue, LongValue> {
 
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void updateVertex(PactLong vertexKey, PactLong vertexValue, Iterator<PactLong> inMessages) {
+		public void updateVertex(LongValue vertexKey, LongValue vertexValue, Iterator<LongValue> inMessages) {
 			long min = Long.MAX_VALUE;
 			while (inMessages.hasNext()) {
 				long next = inMessages.next().getValue();
 				min = Math.min(min, next);
 			}
 			if (min < vertexValue.getValue()) {
-				setNewVertexValue(new PactLong(min));
+				setNewVertexValue(new LongValue(min));
 			}
 		}
 		
 	}
 	
-	public static final class CCMessager extends MessagingFunction<PactLong, PactLong, PactLong, PactNull> {
+	public static final class CCMessager extends MessagingFunction<LongValue, LongValue, LongValue, NullValue> {
 
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void sendMessages(PactLong vertexId, PactLong componentId) {
-			sendMessageToAllTargets(componentId);
-        }
+		public void sendMessages(LongValue vertexId, LongValue componentId) {
+			sendMessageToAllNeighbors(componentId);
+		}
 
 	}
 

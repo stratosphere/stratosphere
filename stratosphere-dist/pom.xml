@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>eu.stratosphere</groupId>
 		<artifactId>stratosphere</artifactId>
-		<version>0.4-SNAPSHOT</version>
+		<version>0.4-rc1</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -19,87 +19,55 @@
 		<!-- BINARIES -->
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-common</artifactId>
+			<artifactId>stratosphere-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-clustermanager</artifactId>
+			<artifactId>stratosphere-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-examples</artifactId>
+			<artifactId>stratosphere-scala</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-hdfs</artifactId>
+			<artifactId>stratosphere-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-s3</artifactId>
+			<artifactId>stratosphere-compiler</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-management</artifactId>
+			<artifactId>stratosphere-clients</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-profiling</artifactId>
+			<artifactId>stratosphere-java-examples</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-queuescheduler</artifactId>
+			<artifactId>stratosphere-scala-examples</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-server</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-visualization</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-compiler</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-clients</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-examples</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-runtime</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-scala-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-scala-examples</artifactId>
+			<artifactId>swt-visualization</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
@@ -118,6 +86,7 @@
 				<!-- No extra dependencies: pact-hbase is currently not compatible with Hadoop v1 -->
 			</dependencies>
 		</profile>
+		
 		<profile>
 			<id>include-yarn</id>
 			<activation>
@@ -129,38 +98,39 @@
 			<dependencies>
 				<dependency>
 					<groupId>eu.stratosphere</groupId>
-					<artifactId>stratosphere-yarn</artifactId>
+					<artifactId>yarn</artifactId>
 					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 			<build>
-			<plugins>
-			    <plugin>
-			      <artifactId>maven-assembly-plugin</artifactId>
-			      <version>2.4</version>
-			         <executions>
-				      <execution>
-				      	<id>single-jar</id>
-				        <phase>package</phase>
-				        <goals>
-				          <goal>single</goal>
-				        </goals>
-				        <configuration>
-					        <archive>
-					          <manifest>
-					            <mainClass>eu.stratosphere.yarn.Client</mainClass>
-					          </manifest>
-					        </archive>
-							<descriptors>
-								<descriptor>src/main/assemblies/yarn-uberjar.xml</descriptor>
-							</descriptors>
-						 </configuration>
-				      </execution>
-				    </executions>
-			    </plugin>
-			  </plugins>
-			 </build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>2.4</version>
+						<executions>
+							<execution>
+								<id>single-jar</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<archive>
+										<manifest>
+											<mainClass>eu.stratosphere.yarn.Client</mainClass>
+										</manifest>
+									</archive>
+									<descriptors>
+										<descriptor>src/main/assemblies/yarn-uberjar.xml</descriptor>
+									</descriptors>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
+		
 		<profile>
 			<id>hadoop-2</id>
 			<activation>
@@ -172,11 +142,12 @@
 			<dependencies>
 				<dependency>
 					<groupId>eu.stratosphere</groupId>
-					<artifactId>pact-hbase</artifactId>
+					<artifactId>hbase</artifactId>
 					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 		</profile>
+		
 		<profile>
 			<id>debian-package</id>
 			<build>
@@ -196,7 +167,7 @@
 									<controlDir>${basedir}/src/deb/control</controlDir>
 									<dataSet>
 										<data>
-											<src>${basedir}/src/deb/bin/nephele-jobmanager</src>
+											<src>${basedir}/src/deb/bin/jobmanager</src>
 											<type>file</type>
 											<mapper>
 												<type>perm</type>
@@ -207,7 +178,7 @@
 											</mapper>
 										</data>
 										<data>
-											<src>${basedir}/src/deb/bin/nephele-taskmanager</src>
+											<src>${basedir}/src/deb/bin/taskmanager</src>
 											<type>file</type>
 											<mapper>
 												<type>perm</type>
@@ -218,7 +189,7 @@
 											</mapper>
 										</data>
 										<data>
-											<src>${basedir}/src/deb/bin/pact-webfrontend</src>
+											<src>${basedir}/src/deb/bin/webclient</src>
 											<type>file</type>
 											<mapper>
 												<type>perm</type>
@@ -316,6 +287,7 @@
 			</build>
 		</profile>
 	</profiles>
+	
 	<build>
 		<plugins>
 			<plugin>

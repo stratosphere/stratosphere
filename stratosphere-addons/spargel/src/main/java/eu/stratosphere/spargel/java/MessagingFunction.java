@@ -1,6 +1,5 @@
 /***********************************************************************************************************************
- *
- * Copyright (C) 2012 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,20 +9,19 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
  **********************************************************************************************************************/
 package eu.stratosphere.spargel.java;
 
 import java.io.Serializable;
 import java.util.Iterator;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.IterationRuntimeContext;
-import eu.stratosphere.pact.common.stubs.aggregators.Aggregator;
-import eu.stratosphere.pact.common.type.Key;
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.pact.common.type.Value;
+import eu.stratosphere.api.common.aggregators.Aggregator;
+import eu.stratosphere.api.common.functions.IterationRuntimeContext;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.types.Key;
+import eu.stratosphere.types.Record;
+import eu.stratosphere.types.Value;
+import eu.stratosphere.util.Collector;
 
 public abstract class MessagingFunction<VertexKey extends Key, VertexValue extends Value, Message extends Value, EdgeValue extends Value> implements Serializable {
 
@@ -50,14 +48,14 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 		return edgeIter;
 	}
 	
-	public void sendMessageToAllTargets(Message m) {
+	public void sendMessageToAllNeighbors(Message m) {
 		if (edgesUsed) {
 			throw new IllegalStateException("Can use either 'getOutgoingEdges()' or 'sendMessageToAllTargets()'.");
 		}
 		
 		edgesUsed = true;
 		while (edges.hasNext()) {
-			PactRecord next = edges.next();
+			Record next = edges.next();
 			VertexKey k = next.getField(1, this.keyClass);
 			outValue.setField(0, k);
 			outValue.setField(1, m);
@@ -65,7 +63,7 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 		}
 	}
 	
-	public void sendMessageToTarget(VertexKey target, Message m) {
+	public void sendMessageTo(VertexKey target, Message m) {
 		outValue.setField(0, target);
 		outValue.setField(1, m);
 		out.collect(outValue);
@@ -89,13 +87,13 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 	//  internal methods and state
 	// --------------------------------------------------------------------------------------------
 	
-	private PactRecord outValue;
+	private Record outValue;
 	
 	private IterationRuntimeContext runtimeContext;
 	
-	private Iterator<PactRecord> edges;
+	private Iterator<Record> edges;
 	
-	private Collector<PactRecord> out;
+	private Collector<Record> out;
 	
 	private EdgesIterator<VertexKey, EdgeValue> edgeIter;
 	
@@ -108,22 +106,21 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 	void init(IterationRuntimeContext context, VertexKey keyHolder, EdgeValue edgeValueHolder) {
 		this.runtimeContext = context;
 		this.edgeIter = new EdgesIterator<VertexKey, EdgeValue>(keyHolder, edgeValueHolder);
-		this.outValue = new PactRecord();
+		this.outValue = new Record();
 		this.keyClass = (Class<VertexKey>) keyHolder.getClass();
 	}
 	
-	void set(Iterator<PactRecord> edges, Collector<PactRecord> out) {
+	void set(Iterator<Record> edges, Collector<Record> out) {
 		this.edges = edges;
 		this.out = out;
 		this.edgesUsed = false;
 	}
 	
-	// serializability
 	private static final long serialVersionUID = 1L;
 	
 	private static final class EdgesIterator<VertexKey extends Key, EdgeValue extends Value> implements Iterator<Edge<VertexKey, EdgeValue>> {
 
-		private Iterator<PactRecord> input;
+		private Iterator<Record> input;
 		private VertexKey keyHolder;
 		private EdgeValue edgeValueHolder;
 		
@@ -134,7 +131,7 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 			this.edgeValueHolder = edgeValueHolder;
 		}
 		
-		void set(Iterator<PactRecord> input) {
+		void set(Iterator<Record> input) {
 			this.input = input;
 		}
 		
@@ -145,7 +142,7 @@ public abstract class MessagingFunction<VertexKey extends Key, VertexValue exten
 
 		@Override
 		public Edge<VertexKey, EdgeValue> next() {
-			PactRecord next = input.next();
+			Record next = input.next();
 			next.getFieldInto(0, keyHolder);
 			next.getFieldInto(1, edgeValueHolder);
 			edge.set(keyHolder, edgeValueHolder);

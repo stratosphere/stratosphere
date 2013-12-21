@@ -1,6 +1,5 @@
 /***********************************************************************************************************************
- *
- * Copyright (C) 2012 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,41 +9,40 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
  **********************************************************************************************************************/
 package eu.stratosphere.spargel.java;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.contract.CoGroupContract;
-import eu.stratosphere.pact.common.stubs.CoGroupStub;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.StubAnnotation.ConstantFieldsFirst;
-import eu.stratosphere.pact.common.type.Key;
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.pact.common.type.Value;
-import eu.stratosphere.pact.common.util.InstantiationUtil;
-import eu.stratosphere.pact.common.util.ReflectionUtil;
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.contract.WorksetIteration;
+import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.api.common.operators.DeltaIteration;
+import eu.stratosphere.api.java.record.functions.CoGroupFunction;
+import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFieldsFirst;
+import eu.stratosphere.api.java.record.operators.CoGroupOperator;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.spargel.java.util.MessageIterator;
+import eu.stratosphere.types.Key;
+import eu.stratosphere.types.Record;
+import eu.stratosphere.types.Value;
+import eu.stratosphere.util.Collector;
+import eu.stratosphere.util.InstantiationUtil;
+import eu.stratosphere.util.ReflectionUtil;
 
 
 public class SpargelIteration {
 	
 	private static final String DEFAULT_NAME = "<unnamed vertex-centric iteration>";
 	
-	private final WorksetIteration iteration;
+	private final DeltaIteration iteration;
 	
 	private final Class<? extends Key> vertexKey;
 	private final Class<? extends Value> vertexValue;
 	private final Class<? extends Value> messageType;
 	private final Class<? extends Value> edgeValue;
 	
-	private final CoGroupContract vertexUpdater;
-	private final CoGroupContract messager;
+	private final CoGroupOperator vertexUpdater;
+	private final CoGroupOperator messager;
 	
 	
 	// ----------------------------------------------------------------------------------
@@ -72,13 +70,13 @@ public class SpargelIteration {
 		}
 	
 		// instantiate the data flow
-		this.iteration = new WorksetIteration(0, name);
+		this.iteration = new DeltaIteration(0, name);
 		
-		this.messager = CoGroupContract.builder(MessagingDriver.class, vertexKey, 0, 0)
+		this.messager = CoGroupOperator.builder(MessagingDriver.class, vertexKey, 0, 0)
 			.input2(iteration.getWorkset())
 			.name("Message Sender")
 			.build();
-		this.vertexUpdater = CoGroupContract.builder(VertexUpdateDriver.class, vertexKey, 0, 0)
+		this.vertexUpdater = CoGroupOperator.builder(VertexUpdateDriver.class, vertexKey, 0, 0)
 			.input1(messager)
 			.input2(iteration.getSolutionSet())
 			.name("Vertex Updater")
@@ -112,16 +110,16 @@ public class SpargelIteration {
 	//  inputs and outputs
 	// ----------------------------------------------------------------------------------
 	
-	public void setVertexInput(Contract c) {
+	public void setVertexInput(Operator c) {
 		this.iteration.setInitialSolutionSet(c);
 		this.iteration.setInitialWorkset(c);
 	}
 	
-	public void setEdgesInput(Contract c) {
+	public void setEdgesInput(Operator c) {
 		this.messager.setFirstInput(c);
 	}
 	
-	public Contract getOutput() {
+	public Operator getOutput() {
 		return this.iteration;
 	}
 	
@@ -138,7 +136,7 @@ public class SpargelIteration {
 	// --------------------------------------------------------------------------------------------
 	
 	@ConstantFieldsFirst(0)
-	public static final class VertexUpdateDriver<K extends Key, V extends Value, M extends Value> extends CoGroupStub {
+	public static final class VertexUpdateDriver<K extends Key, V extends Value, M extends Value> extends CoGroupFunction {
 		
 		private static final String UDF_PARAM = "pact.vertex.udf";
 		private static final String KEY_PARAM = "pact.vertex.key-type";
@@ -152,9 +150,9 @@ public class SpargelIteration {
 		private MessageIterator<M> messageIter;
 
 		@Override
-		public void coGroup(Iterator<PactRecord> messages, Iterator<PactRecord> vertex, Collector<PactRecord> out) throws Exception {
+		public void coGroup(Iterator<Record> messages, Iterator<Record> vertex, Collector<Record> out) throws Exception {
 			if (vertex.hasNext()) {
-				PactRecord first = vertex.next();
+				Record first = vertex.next();
 				first.getFieldInto(0, vertexKey);
 				first.getFieldInto(1, vertexValue);
 				messageIter.setSource(messages);
@@ -164,7 +162,7 @@ public class SpargelIteration {
 				if (messages.hasNext()) {
 					String message = "Target vertex does not exist!.";
 					try {
-						PactRecord next = messages.next();
+						Record next = messages.next();
 						next.getFieldInto(0, vertexKey);
 						message = "Target vertex '" + vertexKey + "' does not exist!.";
 					} catch (Throwable t) {}
@@ -207,13 +205,13 @@ public class SpargelIteration {
 		}
 	}
 	
-	public static final class MessagingDriver<K extends Key, V extends Value, M extends Value, E extends Value> extends CoGroupStub {
+	public static final class MessagingDriver<K extends Key, V extends Value, M extends Value, E extends Value> extends CoGroupFunction {
 
-		private static final String UDF_PARAM = "pact.vertex.udf";
-		private static final String KEY_PARAM = "pact.vertex.key-type";
-		private static final String VALUE_PARAM = "pact.vertex.value-type";
-		private static final String MESSAGE_PARAM = "pact.vertex.message-type";
-		private static final String EDGE_PARAM = "pact.vertex.edge-value";
+		private static final String UDF_PARAM = "stratosphere.spargel.udf";
+		private static final String KEY_PARAM = "stratosphere.spargel.key-type";
+		private static final String VALUE_PARAM = "stratosphere.spargel.value-type";
+		private static final String MESSAGE_PARAM = "stratosphere.spargel.message-type";
+		private static final String EDGE_PARAM = "stratosphere.spargel.edge-value";
 		
 		
 		private MessagingFunction<K, V, M, E> messagingFunction;
@@ -222,9 +220,9 @@ public class SpargelIteration {
 		private V vertexValue;
 		
 		@Override
-		public void coGroup(Iterator<PactRecord> edges, Iterator<PactRecord> state, Collector<PactRecord> out) throws Exception {
+		public void coGroup(Iterator<Record> edges, Iterator<Record> state, Collector<Record> out) throws Exception {
 			if (state.hasNext()) {
-				PactRecord first = state.next();
+				Record first = state.next();
 				first.getFieldInto(0, vertexKey);
 				first.getFieldInto(1, vertexValue);
 				messagingFunction.set(edges, out);

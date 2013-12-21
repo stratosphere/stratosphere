@@ -12,7 +12,7 @@
 
 	<groupId>eu.stratosphere</groupId>
 	<artifactId>stratosphere</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.4-rc1</version>
 
 	<name>stratosphere</name>
 	<packaging>pom</packaging>
@@ -37,11 +37,16 @@
 	</developers>
 
 	<modules>
-		<module>nephele</module>
-		<module>pact</module>
-		<module>pact-scala</module>
-		<module>stratosphere-dist</module>
+		<module>stratosphere-core</module>
+		<module>stratosphere-java</module>
+		<module>stratosphere-scala</module>
+		<module>stratosphere-runtime</module>
+		<module>stratosphere-compiler</module>
+		<module>stratosphere-examples</module>
+		<module>stratosphere-clients</module>
+		<module>stratosphere-tests</module>
 		<module>stratosphere-addons</module>
+		<module>stratosphere-dist</module>
 	</modules>
 
 	<properties>
@@ -194,6 +199,41 @@
 				</repository>
 			</repositories>
 		</profile>
+		<profile>
+			<id>release</id>
+			  <build>
+				<plugins>
+				  <plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.4</version>
+					<executions>
+					  <execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+						  <goal>sign</goal>
+						</goals>
+					  </execution>
+					</executions>
+				  </plugin>
+				</plugins>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-release-plugin</artifactId>
+							<version>2.1</version>
+							<configuration>
+								<mavenExecutorId>forked-path</mavenExecutorId>
+								<useReleaseProfile>false</useReleaseProfile>
+								<arguments>${arguments} -Psonatype-oss-release</arguments>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
 	</profiles>
 
 
@@ -242,9 +282,9 @@
 			
 			<!-- test coverage reports -->
 			<plugin>
-			        <groupId>org.codehaus.mojo</groupId>
-			        <artifactId>cobertura-maven-plugin</artifactId>
-			        <version>2.6</version>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>cobertura-maven-plugin</artifactId>
+					<version>2.6</version>
 				<configuration>
 					<formats>
 						<format>html</format>

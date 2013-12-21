@@ -1,7 +1,7 @@
 #!/bin/bash
 ########################################################################################################################
 # 
-#  Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
+#  Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
 #  the License. You may obtain a copy of the License at
@@ -17,7 +17,7 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-. "$bin"/nephele-config.sh
+. "$bin"/config.sh
 
-# stop local job manager. Local job manager will take care of stopping the task manager internally
-$NEPHELE_BIN_DIR/nephele-jobmanager.sh stop
+# stop local job manager (has an internal task manager)
+$STRATOSPHERE_BIN_DIR/jobmanager.sh stop
