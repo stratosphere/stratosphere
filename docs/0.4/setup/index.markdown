@@ -15,4 +15,4 @@ The [configuration](config.html "Configuration") page lists all available config
 
 ### QUICKSTART INSTRUCTIONS
 
-**We provide a [Quickstart](http://localhost:4000/quickstart/setup.html) guide to setup Stratosphere on your machine in just a few simple steps!**
+**We provide a [Quickstart](http://stratosphere.eu/quickstart/setup.html) guide to setup Stratosphere on your machine in just a few simple steps!**
