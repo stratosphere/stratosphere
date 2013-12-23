@@ -51,7 +51,7 @@ Action "cancel" cancels a submitted Stratosphere program.
 
 ### Example Usage:
 
--   Run WordCount example program on the JobManager configured in ./conf/stratosphere.yaml:
+-   Run WordCount example program on the JobManager configured in */conf/stratosphere.yaml*:
 
         ./bin/stratosphere run -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
                                -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
