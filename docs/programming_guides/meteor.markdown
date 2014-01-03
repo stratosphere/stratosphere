@@ -177,7 +177,7 @@ The following example shows this operator:
 
 Each of the grouping operators produce the schemata of one of the defined outputs. Its important to know that the value of the grouping key of the grouping operator is used as the value for the id field of the resulting record. This id field is automatically created. The ordering of the grouping operators corresponse to the order of the output variables.
 
-Duplicate Detectio 
+Duplicate Detection
 ----------------------
 
 Fusion
