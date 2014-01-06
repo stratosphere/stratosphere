@@ -79,7 +79,10 @@ version: 0.4
         {% endfor %}
       </ol>
       {% endif %}
-
+      <p class="text-right"><a href="https://github.com/stratosphere/stratosphere/edit/gh-pages{{page.url | replace: '.html', '.markdown'}}">
+          <button type="button" class="btn btn-success btn-xs"><i class="icon-edit"></i> Improve this page</button>
+        </a>
+      </p>
       {{ content }}
       <hr>
       <h3>User Comments</h3>
