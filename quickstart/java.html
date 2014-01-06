@@ -18,15 +18,20 @@ links:
 
 <section id="create_project">
   <div class="page-header"><h2>Create Project</h2></div>
+
   <p class="lead">Use one of the following commands to <strong>create a project</strong>:</p>
 
-  <ol>
-    <li class="lead">Run the <strong>quickstart script</strong>:
+  <ul class="nav nav-tabs" style="border-bottom: none;">
+      <li class="active"><a href="#quickstart-script" data-toggle="tab">Run the <strong>quickstart script</strong></a></li>
+      <li><a href="#maven-archetype" data-toggle="tab">Use <strong>Maven archetypes</strong></a></li>
+  </ul>
+  <div class="tab-content">
+      <div class="tab-pane active" id="quickstart-script">
 {% highlight bash %}
 $ curl https://raw.github.com/stratosphere/stratosphere-quickstart/master/quickstart.sh | bash
 {% endhighlight %}
-    </li>
-    <li class="lead">Use <strong>Maven archetypes</strong>:
+      </div>
+      <div class="tab-pane" id="maven-archetype">
 {% highlight bash %}
 $ mvn archetype:generate                             \
     -DarchetypeGroupId=eu.stratosphere               \
@@ -35,8 +40,8 @@ $ mvn archetype:generate                             \
     -DarchetypeCatalog=https://oss.sonatype.org/content/repositories/snapshots/
 {% endhighlight %}
       This allows you to <strong>name your newly created project</strong>. It will interactively ask you for the groupId, artifactId, and package name.
-    </li>
-  </ol>
+      </div>
+  </div>
 </section>
 
 <section id="inspect_project">
