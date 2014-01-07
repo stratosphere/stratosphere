@@ -6,7 +6,6 @@ sublinks:
   - {anchor: "tpchq3", title: "TPC-H Query 3"}
   - {anchor: "weblog_analysis", title: "Weblog Analysis"}
   - {anchor: "kmeans", title: "K-Means Clustering"}
-  - {anchor: "psp", title: "Pairwise Shortest Paths"}
   - {anchor: "triangle_enum", title: "Triangle Enumeration"}
 ---
 
@@ -31,10 +30,9 @@ The examples consist of a task description and an in-depth discussion of the sol
 - Data Mining
     - [K-Means Iteration](#kmeans)
 - Graph Analysis Algorithms
-    - [Pairwise Shortest Paths](#psp)
     - [Triangle Enumeration](#triangle_enum)
 
-Please note that the *Graph Analysis Algorithms* do not use the new **Spargel** BSP API. Please see the [Spargel Documentation]({{site.baseurl}}/docs/0.4/programming_guides/spargel.html)
+Please note that the *Graph Analysis Algorithms* do not use the new **Spargel** BSP API. Please see the [Spargel Documentation]({{site.baseurl}}/docs/0.4/programming_guides/spargel.html).
 
 <section id="wordcount">
 <div class="page-header"><h2>Word Count</h2></div>
@@ -74,8 +72,6 @@ The [wordcount example](https://github.com/stratosphere/stratosphere/blob/releas
     emitted by the Map operator, the reduce method sums these partial
     sums and obtains the final count for each word.
 4.  The final DataSink operator writes the results back.
-
-<p class="text-center"><img width="50%" src="{{site.baseurl}}/docs/0.4/media/wiki/wordcount_pactprogram.png"></p>
 
 ### Program Arguments
 
@@ -119,8 +115,6 @@ corresponding SQL query.
 ### Stratosphere Program
 
 The example program implements the SQL Query given above in the Java class [eu.stratosphere.example.java.record.relational.TPCHQuery3](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java) in the `stratosphere-java-examples` module.
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/tpch3_pactprogram.2.png"></p>
 
 1.  The program starts with two data sources, one for the *Orders*
     relation and one for the *Lineitem* relation. 
@@ -209,8 +203,6 @@ have not been visited in a certain year.
 The weblog analysis example program is implemented in the following Java class:
 [WebLogAnalysis.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/WebLogAnalysis.java?source=cc)
 in the `stratosphere-java-examples` module.
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/weblog_pactprogram.png"></p>
 
 1.  Each relation is read by a separate DataSource operator. Each line
     is converted into a key-value-pair.
@@ -364,8 +356,6 @@ sources are annotated with `UniqueKey` OutputOperators.
 -   Finally, the DataSink (new ClusterCenters) writes the results back
     into the HDFS.
 
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/k-means_pactprogram.png"></p>
-
 As already mentioned, the program only covers steps 2, 3, and 4.
 The evaluation of the termination criterion and the iterative call of
 the program can be done by an external control program.
@@ -396,117 +386,6 @@ The parameters of the main method of the generator are:
 -   outputDir: The directory where the output files are generated.
 
 Please consult the in-line JavaDocs for further information on the generator.
-</section>
-
-<section id="psp">
-<div class="page-header"><h2>Pairwise Shortest Paths</h2></div>
-
-Known as Floyd-Warshall Algorithm, the following graph analysis
-algorithm finds the shortest path between all pairs of vertices in a
-weighted graph.
-
-A detailed description of the Floyd-Warshall algorithms can be found on
-[wikipedia](http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm).
-
-### Algorithm Description
-
-Consider a directed graph `G(V,E)`, where V is a set of vertices and E is
-a set of edges. The algorithm takes the adjacency matrix D of G and
-compares all possible path combinations between every two vertices in
-the graph G.
-
-```
-(Pseudocode)
-    for m := 1 to n
-       for i := 1 to n
-          for j := 1 to n
-             D[[i]][[j]] = min ( D[[i]][[j]], D[[i]][[m]]+D[[m]][[j]] );
-```
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/allpairs.png"></p>
-
-### Iterative approach
-
-In order to parallelize the shortest path algorithm, the following steps
-will be iteratively performed:
-
-Assuming that I(k) is the set of the shortest paths in the k-th
-iteration.
-
-1.  Generate two key/value sets from the I(k) set:
-    -   S - the set of the source vertices of all paths from I(k)
-    -   T - the set of the target vertices of all paths from I(k)
-
-2.  Perform an equi-join on the two sets of pairs:
-    -   J - the set, consisting of paths, constructed from T and S,
-        where T-th element (path's target) equals the S-th element
-        (path's source)
-
-3.  Union this J joined set with the intermediate result of the previous
-    iteration I(k):
-    -   U = J+I(k)
-
-4.  For all pairwise distances from U set, only the shortest will remain
-    in the I(k+1) set:
-    -   dist(i,j) = min { dist(i,j) | dist(i,m)+dist(m,j) }.
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/all2all_sp_taskdescription.png"></p>
-
-### Stratosphere Program
-
-The example program implements one iteration step of the all pairs
-shortest path algorithm.   
-The implementation resides in the following Java class:
-[PairwiseSP.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/shortestpaths/PairwiseSP.java?source=cc)
-in the `stratosphere-java-examples` module.
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/all2all_sp_pactprogram.png"></p>
-
-1.  The program supports two data input formats, namely RDF triples
-    with foaf:knows predicates and our custom path format. The single
-    DataSourceOperator of the program is configured with the appropriate
-    InputFormat during plan construction via a parameter. From both
-    input formats, key-value-pairs of the same type are generated. The
-    keys consist of the source and target vertices of the paths. Values
-    is the detailed path information: the source vertex, the target
-    vertex, the path length and a list of all intermediate vertices
-    (hops) between the source and target vertices.
-2.  The following two Map operators project the input paths on their
-    source and target vertices by setting the keys. The values are not
-    changed and simply forwarded.
-3.  The outputs of both Map operators are fed into the following Match
-    operator. The Match concatenates all two paths if the start vertex
-    of one path is the end vertex of the other one. The key of the
-    output key-value pair is built from the newly constructed paths'
-    from- and to-vertex. The value is the detailed information of the
-    new path including the updated length and hop-list.
-4.  The CoGroup operator operates on the output set of the Match
-    (recently combined paths) and the original (incoming) paths. The
-    emitted set contains the shortest path (with minimal length) between
-    each pair of from-vertex and to-vertex.
-5.  Finally, a DataSink operator writes the data into the HDFS for the
-    next iteration.
-
-### Program Arguments
-
-Four arguments must be provided to the `getPlan()` method of the example
-job:
-
-1.  `int noSubStasks`: Degree of parallelism of all tasks.
-2.  `String inputPaths`: Path to the input paths.
-3.  `String outputPaths`: Destination path for the result paths.
-4.  `boolean RDFInputFlag`: Input format flag. If set to true, RDF input
-    must be provided. Otherwise, the custom path format is required.
-
-### Test Data Sets
-
-We provide a small RDF test data set which is a subset of a
-Billion-Triple-Challenge data set
-[RDFDataSet.tar.gz]({{site.baseurl}}/docs/0.4/media/wiki/rdfdataset.tar.gz)
-(77KB, 1.8MB uncompressed). If you want to run the example with (a lot)
-more test data, you can download a larger subset (or the whole)
-Billion-Triple-Challenge data set from
-[http://km.aifb.kit.edu/projects/btc-2009/](http://km.aifb.kit.edu/projects/btc-2009/ "http://km.aifb.kit.edu/projects/btc-2009/").
 </section>
 
 <section id="triangle_enum">
@@ -551,8 +430,6 @@ The figure above shows how the algorithm works to achieve that:
 The triangle enumeration example program is implemented in the
 following Java class: [EnumTrianglesRdfFoaf.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/triangles/EnumTrianglesRdfFoaf.java?source=cc)
 in the `stratosphere-java-examples` module.
-
-<p class="text-center"><img src="{{site.baseurl}}/docs/0.4/media/wiki/triangleenum_pactprogram.png"></p>
 
 1.  The triangle enumeration example program supports RDF triples
     with `<http://xmlns.com/foaf/0.1/knows>` predicates as data input
