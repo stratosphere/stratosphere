@@ -48,7 +48,7 @@ wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
 Start the job:
 
 <pre class="prettyprint" style="padding-left:1em">
-./bin/pact-client.sh run \
+./bin/stratosphere run \
     --jarfile ./examples/stratosphere-java-examples-{{site.current_snapshot}}-WordCount.jar \
     --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
 </pre>
