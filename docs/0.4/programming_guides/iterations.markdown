@@ -49,9 +49,19 @@ The following table provides an overview of both operators:
 		<td class="text-center">Solution set state after last iteration</td>
 	</tr>
 	<tr>
-		<td class="text-center"><strong>Default Termination</strong></td>
-		<td class="text-center"><strong>Maximum number of iterations</strong></td>
-		<td class="text-center"><strong>Maximum number of iterations</strong> or <strong>empty workset</strong></td>
+		<td class="text-center"><strong>Termination</strong></td>
+		<td>
+			<ul>
+				<li><strong>Maximum number of iterations</strong> (default)</li>
+				<li>Custom aggregator convergence</li>
+			</ul>
+		</td>
+		<td>
+			<ul>
+				<li><strong>Maximum number of iterations or empty workset</strong> (default)</li>
+				<li>Custom aggregator convergence</li>
+			</ul>
+		</td>
 	</tr>
 </table>
 
