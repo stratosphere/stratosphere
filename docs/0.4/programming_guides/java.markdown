@@ -202,7 +202,7 @@ For the full example code, [check it out on GitHub]
 Records
 -------
 
-All data sets are collections of records. These records are produced by data sources and transformed by the operations. The records (*eu.stratosphere.types.Record*) can be thought of as dynamically typed tuples. Fields are accessed by position and type, as shown in the examples below.
+All data sets are collections of records. These records are produced by data sources and transformed by the operations. The records (*eu.stratosphere.types.Record*) can be thought of as dynamically typed tuples. Fields are accessed by position (starting from zero) and type, as shown in the example below.
 
 {% highlight java %}
 Record r = ...
@@ -238,7 +238,7 @@ The operations applied on the data sets to transform them form the core of a Str
 {% highlight java %}
 public class MyMapper extends MapFunction {
   public void map(Record record, Collector<Record> out) {
-    out.collect(record);
+    out.collect(...);
   }
 }
 {% endhighlight %}
@@ -254,18 +254,23 @@ MapOperator mapper = MapOperator.builder(new MyMapper())
         <p>Groups the records on one or more fields and transforms each group. Typical examples are aggregations that combine the records in the group into a single record.</p>
 
 {% highlight java %}
-ReduceOperator reducer = ReduceOperator.builder(new MyCount(), StringValue.class, 0)
-    .input(mapper).build();
+public class MyReducer extends ReduceFunction {
+  public void reduce(Iterator<Record> records, Collector<Record> out) {
+    out.collect(...);
+  }
+}
 {% endhighlight %}
-      </td>
-    </tr>
-    <tr>
-      <td><strong>Join</strong></td>
-      <td>
-        <p>Joins two data sets on one or more fields. The transformation function gets each pair of joining records.</p>
 
 {% highlight java %}
+ReduceOperator reducer = ReduceOperator.builder(new MyReducer(), StringValue.class, 0)
+    .input(mapper).build();
 {% endhighlight %}
+        
+        <p>This reduce operator groups on the 0th field of type StringValue.</p>
+
+        <p>You can add further key fields with the <code>keyField(keyClass, keyColumn)</code> method. You can also specify a secondary ordering via <code>secondaryOrder(order)</code>.</p>
+
+        <p>If you annotate your class with the <code>@Combinable</code> annotation, Stratosphere will by default use the reduce method to pre-aggregate results. You can also provide your own <em>combine</em> implementation by overriding the default <code>combine(Iterator, Collector)</code> method.</p>
       </td>
     </tr>
     <tr>
@@ -274,16 +279,71 @@ ReduceOperator reducer = ReduceOperator.builder(new MyCount(), StringValue.class
         <p>The two-dimensional variant of the reduce operation. Groups each input on one or more fields and then joins the groups. The transformation function is called per pair of groups.</p>
 
 {% highlight java %}
+public class MyCoGrouper extends CoGroupFunction {
+  public void coGroup(Iterator<Record> r1, Iterator<Record> r2, Collector<Record> out) {
+    out.collect(...);
+  }
+}
 {% endhighlight %}
+
+{% highlight java %}
+CoGroupOperator joiner = CoGroupOperator.builder(new MyCoGrouper(), IntValue.class, 0, 1)
+    .input1(source1)
+    .input2(source2)
+    .build();
+{% endhighlight %}
+
+        <p>This join operator groups on field 0 of source1 and field 1 of source2, both of which are of type IntValue.</p>
+
+        <p>You can add further key fields with the <code>keyField(keyClass, keyColumn1, keyColumn2)</code> method. You can also specify a secondary ordering via <code>secondaryOrder1(order)</code> or <code>secondaryOrder2(order)</code> for the respective inputs.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Join</strong></td>
+      <td>
+        <p>Joins two data sets on one or more fields. The transformation function gets each pair of joining records.</p>
+
+{% highlight java %}
+public class MyJoiner extends JoinFunction {
+  public void join(Record value1, Record value2, Collector<Record> out) {
+    out.collect(...);
+  }
+}
+{% endhighlight %}
+
+{% highlight java %}
+JoinOperator joiner = JoinOperator.builder(new MyJoiner(), IntValue.class, 0, 1)
+    .input1(source1)
+    .input2(source2)
+    .build();
+{% endhighlight %}
+
+        <p>This join operator groups on field 0 of source1 and field 1 of source2, both of which are of type IntValue.</p>
+
+        <p>You can add further key fields with the <code>keyField(keyClass, keyColumn1, keyColumn2)</code> method.</p>
       </td>
     </tr>
     <tr>
       <td><strong>Cross</strong></td>
       <td>
-        <p>Builds the cartesian product (cross product) of two inputs. The transformation function gets all pairs or records in the product.</p>
+        <p>Builds the cartesian product (cross product) of two inputs. The transformation function gets all pairs of records in the product.</p>
 
 {% highlight java %}
+public class MyCrosser extends CrossFunction {
+  public void cross(Record record1, Record record2, Collector<Record> out) {
+    out.collect(...);
+  }
+}
 {% endhighlight %}
+
+{% highlight java %}
+CrossOperator crosser = CrossOperator.builder(new SomeCrosser())
+    .input1(source1)
+    .input2(source2)
+    .build();
+{% endhighlight %}
+
+        <p>If you expect the first input to be large and the second small, use the <code>CrossWithSmallOperator</code> instead of <code>CrossOperator</code>. If it is the other way around and you expect the first input to be small and the second to be large, use <code>CrossWithLargeOperator</code>.<p>
       </td>
     </tr>
     <tr>
@@ -295,6 +355,8 @@ ReduceOperator reducer = ReduceOperator.builder(new MyCount(), StringValue.class
 MapOperator mapper = MapOperator.builder(new SomeMapper())
     .input(source1, source2, source3).build();
 {% endhighlight %}
+
+        <p>In the same fashion, you can also provide multiple inputs to the other operators.</p>
       </td>
     </tr>
   </tbody>
