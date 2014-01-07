@@ -58,9 +58,7 @@ $ mvn archetype:generate                             \
 <section id="next_steps">
   <div class="page-header"><h2>Next Steps</h2></div>
   <p class="lead"><strong>Write your application!</strong></p>
-  <p>The quickstart project contains the classical Word Count (“Hello World” of Big Data) example. 
-    The goal of Word count is to determine the number of occurrences of each word in a text.
-So imagine you want to know how often the term “the” or “house” occurs in all wikipedia texts. The result is a file that has a line for each term and its count.</p>
+  <p>The quickstart project contains the classical Word Count (“Hello World” of Big Data) example. The goal of Word count is to determine the number of occurrences of each word in a text. So imagine you want to know how often the term "the" or "house" occurs in all Wikipedia texts. The result is a file that has a line for each term and its count.</p>
  <br>
 <b>Sample Input:</b> <br>
 {% highlight bash %}
@@ -72,54 +70,63 @@ big 2
 data 1
 is 1
 {% endhighlight %}
-<p>This code shows how the Stratosphere plan for wordcount is created. You see a source (FileDataSource), two operators (Map and Reduce) and a Sink (CsvOutputFormat).</p>
+<p>This code shows how the plan for Word Count is created. You see a source
+(FileDataSource), two operators (map and reduce), and a sink (CsvOutputFormat).</p>
 
 {% highlight java %}
-FileDataSource source = new FileDataSource(new TextInputFormat(), dataInput, "Input Lines");
-MapOperator mapper = MapOperator.builder(new SplitWords())
-  .input(source)
-  .name("Tokenize Lines")
-  .build();
-ReduceOperator reducer = ReduceOperator.builder(CountWords.class, StringValue.class, 0)
-  .input(mapper)
-  .name("Count Words")
-  .build();
-FileDataSink out = new FileDataSink(new CsvOutputFormat(), output, reducer, "Word Counts");
-CsvOutputFormat.configureRecordFormat(out)
-  .recordDelimiter('\n')
-  .fieldDelimiter(' ')
-  .field(StringValue.class, 0)
-  .field(IntValue.class, 1);
-Plan plan = new Plan(out, "WordCount Example");
-{% endhighlight %}
+public class WordCount implements Program {
 
+    @Override
+    public Plan getPlan(String... args) {
+        FileDataSource source = new FileDataSource(new TextInputFormat(), inputPath, "Input Lines");
 
-<p>
-The operations of the operators are defined by specialized classes, here the SplitWords and CountWords class. The following snippet shows the implementation of the SplitWords function: </p>
+        MapOperator mapper = MapOperator.builder(new SplitWords())
+            .input(source)
+            .name("Tokenize Lines")
+            .build();
 
-{% highlight java %}
-public static class SplitWords extends MapFunction {
-       private final Record output = new Record();
-       private final StringValue word = new StringValue();
-       private final IntValue one = new IntValue(1);
-       @Override
-       public void map(Record record, Collector<Record> collector) {
-               StringValue line = record.getField(0, StringValue.class);
-               for (String currentWord : line.getValue().split(" ")) {
-                       this.word.setValue(currentWord);
-                       this.output.setField(0, this.word);
-                       this.output.setField(1, this.one);
-                       collector.collect(this.output);
-               }
-       }
+        ReduceOperator reducer = ReduceOperator.builder(new CountWords(), StringValue.class, 0)
+            .input(mapper)
+            .name("Count Words")
+            .build();
+
+        FileDataSink sink = new FileDataSink(new CsvOutputFormat(), outputPath, reducer, "Word Counts"); 
+        CsvOutputFormat.configureRecordFormat(sink)
+            .recordDelimiter('\n')
+            .fieldDelimiter(' ')
+            .field(StringValue.class, 0)
+            .field(IntValue.class, 1);
+
+        return new Plan(sink, "Word Count Example");
+    }
 }
 {% endhighlight %}
 
-<br>
-<p class="lead">
-For a complete overview over our Java API, have a look at the <a href="{{ site.baseurl }}/docs/{{site.current_stable_documentation}}/programming_guides/java.html">Stratosphere Documentation</a>. 
-<br>
+<p>The operations are defined by specialized classes, here the *SplitWords* and
+*CountWords* classes. The following snippet shows the implementation of the *SplitWords* class:</p>
 
- If you have any troubles, ask on our <a href="https://groups.google.com/forum/#!forum/stratosphere-dev">Mailing list</a>. We are happy to provide help.</p>
-  </p>
+{% highlight java %}
+public static class SplitWords extends MapFunction {
+
+    private final Record output = new Record();
+    private final StringValue word = new StringValue();
+    private final IntValue one = new IntValue(1);
+
+    @Override
+    public void map(Record record, Collector<Record> collector) {
+        StringValue line = record.getField(0, StringValue.class);
+
+        for (String currentWord : line.getValue().split("")) {
+            this.word.setValue(currentWord);
+            this.output.setField(0, this.word);
+            this.output.setField(1, this.one);
+            collector.collect(this.output);
+        }
+    }
+}
+{% endhighlight %}
+
+<p><a href="(https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java?source=cc">Check GitHub</a> for the full example code.</p>
+
+<p class="lead">For a complete overview over our Java API, have a look at the <a href="{{ site.baseurl }}/docs/{{site.current_stable_documentation}}/programming_guides/java.html">Stratosphere Documentation</a>. If you have any trouble, ask on our <a href="https://groups.google.com/forum/#!forum/stratosphere-dev">Mailing list</a>. We are happy to provide help.</p>
 </section>
