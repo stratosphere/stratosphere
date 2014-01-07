@@ -564,7 +564,14 @@ color: #3a87ad;
     color:black !important;
     text-decoration: none;
 }
-/*.features-detail p {
-    font-size:21px;
+
+/* documentation v04 */
+
+#docs_v04 img {
+    width: 75%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
- */
+
+
