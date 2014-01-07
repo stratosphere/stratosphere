@@ -14,7 +14,7 @@ Iterative algorithms occur in many domains of data analysis, such as *machine le
 
 Stratosphere programs implement iterative algorithms by defining a **step function** and embedding it into a special iteration operator. There are two  variants of this operator: **Iterate** and **Delta Iterate**. Both operators repeatedly invoke the step function on the current iteration state until a certain termination condition is reached.
 
-Here, we provide background on both operator variants and outline their usage. The [programming guides]({{ site.baseurl }}/docs/0.4/programming_guides/) explain how to implement the operators in both [Scala]({{ site.baseurl }}/docs/0.4/programming_guides/scala.html) and [Java]({{ site.baseurl }}/docs/0.4/programming_guides/java.html). We also provide a **vertex-centric graph processing API** called [Spargel]({{ site.baseurl }}/docs/0.4/programming_guides/spargel.html).
+Here, we provide background on both operator variants and outline their usage. The [programming guides]({{ site.baseurl }}/docs/0.4/programming_guides/) explain how to implement the operators in both [Scala]({{ site.baseurl }}/docs/0.4/programming_guides/scala.html) and [Java]({{ site.baseurl }}/docs/0.4/programming_guides/java.html#iterations). We also provide a **vertex-centric graph processing API** called [Spargel]({{ site.baseurl }}/docs/0.4/programming_guides/spargel.html).
 
 The following table provides an overview of both operators:
 
@@ -25,7 +25,7 @@ The following table provides an overview of both operators:
 		<th class="text-center">Delta Iterate</th>
 	</thead>
 	<tr>
-		<td class="text-center" width="20%"><strong>Input</strong></td>
+		<td class="text-center" width="20%"><strong>Iteration Input</strong></td>
 		<td class="text-center" width="40%"><strong>Partial Solution</strong></td>
 		<td class="text-center" width="40%"><strong>Workset</strong> and <strong>Solution Set</strong></td>
 	</tr>
@@ -35,16 +35,16 @@ The following table provides an overview of both operators:
 	</tr>
 	<tr>
 		<td class="text-center"><strong>State Update</strong></td>
-		<td class="text-center">Next <strong>partial solution</strong> (usually of <strong>same size</strong>)</td>
+		<td class="text-center">Next <strong>partial solution</strong></td>
 		<td>
 			<ul>
-				<li>Next workset (usually of <strong>smaller size</strong>)</li>
-				<li><strong>Point updates</strong> to solution set</li>
+				<li>Next workset</li>
+				<li><strong>Changes to solution set</strong></li>
 			</ul>
 		</td>
 	</tr>
 	<tr>
-		<td class="text-center"><strong>Final Output</strong></td>
+		<td class="text-center"><strong>Iteration Result</strong></td>
 		<td class="text-center">Last partial solution</td>
 		<td class="text-center">Solution set state after last iteration</td>
 	</tr>
@@ -65,10 +65,10 @@ The **iterate operator** covers the *simple form of iterations*: in each iterati
     <img alt="Iterate Operator" width="60%" src="{{ site.baseurl }}/docs/0.4/img/iterations_iterate_operator.png" />
 </p>
 
-  1. **Initial Input**: Initial input for the *first iteration* from a *data source* or *previous operators*.
+  1. **Iteration Input**: Initial input for the *first iteration* from a *data source* or *previous operators*.
   2. **Step Function**: The step function will be executed in each iteration. It is an arbitrary data flow consisting of operators like `map`, `reduce`, `join`, etc. (see [programming model]({{ site.baseurl }}/docs/0.4/programming_guides/pmodel.html) for details) and depends on your specific task at hand.
   3. **Next Partial Solution**: In each iteration, the output of the step function will be fed back into the *next iteration*.
-  4. **Final Result**: Output of the *last iteration* is written to a *data sink* or used as input to the *following operators*.
+  4. **Iteration Result**: Output of the *last iteration* is written to a *data sink* or used as input to the *following operators*.
 
 There are multiple options to specify **termination conditions** for an iteration:
 
@@ -89,7 +89,7 @@ setFinalState(state);
 
 <div class="panel panel-default">
 	<div class="panel-body">
-	See the <strong><a href="{{ site.baseurl }}/docs/0.4/programming_guides/scala.html">Scala</a> and <a href="{{ site.baseurl }}/docs/0.4/programming_guides/java.html">Java</a> programming guides</strong> for details and code examples.</div>
+	See the <strong><a href="{{ site.baseurl }}/docs/0.4/programming_guides/scala.html">Scala</a> and <a href="{{ site.baseurl }}/docs/0.4/programming_guides/java.html#iterations">Java</a> programming guides</strong> for details and code examples.</div>
 </div>
 
 ### Example: Incrementing Numbers
@@ -100,10 +100,10 @@ In the following example, we **iteratively incremenet a set numbers**:
     <img alt="Iterate Operator Example" width="60%" src="{{ site.baseurl }}/docs/0.4/img/iterations_iterate_operator_example.png" />
 </p>
 
-  1. **Initial Input**: The inital input is read from a data source and consists of five single-field records (integers `1` to `5`).
+  1. **Iteration Input**: The inital input is read from a data source and consists of five single-field records (integers `1` to `5`).
   2. **Step function**: The step function is a single `map` operator, which increments the integer field from `i` to `i+1`. It will be applied to every record of the input.
   3. **Next Partial Solution**: The output of the step function will be the output of the map operator, i.e. records with incremented integers.
-  4. **Final Result**: After ten iterations, the initial numbers will have been incremented ten times, resulting in integers `11` to `15`.
+  4. **Iteration Result**: After ten iterations, the initial numbers will have been incremented ten times, resulting in integers `11` to `15`.
 
 ```
 // 1st           2nd                       10th
@@ -114,7 +114,7 @@ map(4) -> 5      map(5) -> 6      ...      map(13) -> 14
 map(5) -> 6      map(6) -> 7      ...      map(14) -> 15
 ```
 
-Note that **1**, **2**, and **3** can be arbitrary data flows and therefore allow to model *real-world data analysis* tasks.
+Note that **1**, **2**, and **4** can be arbitrary data flows.
 </section>
 
 <section id="delta_iterate">
@@ -129,10 +129,10 @@ Where applicable, this leads to **more efficient algorithms**, because not every
     <img alt="Delta Iterate Operator" width="60%" src="{{ site.baseurl }}/docs/0.4/img/iterations_delta_iterate_operator.png" />
 </p>
 
-  1. **Initial Workset/Solution Set**: Initial inputs for the *first iteration* from *data sources* or *previous operators*.
+  1. **Iteration Input**: The initial workset and solution set are read from *data sources* or *previous operators* as input to the first iteration.
   2. **Step Function**: The step function will be executed in each iteration. It is an arbitrary data flow consisting of operators like `map`, `reduce`, `join`, etc. (see [programming model]({{ site.baseurl }}/docs/0.4/programming_guides/pmodel.html) for details) and depends on your specific task at hand.
-  3. **Next Workset/Update Solution Set**: The *next workset* drives the iterative computation and will be fed back into the *next iteration*. Furthermore, the solution set will be updated and implicitly forwarded (it is not required to be rebuild).
-  4. **Final Solution Set**: After the *last iteration*, the *solution set* is written to a *data sink* or used as input to the *following operators*.
+  3. **Next Workset/Update Solution Set**: The *next workset* drives the iterative computation and will be fed back into the *next iteration*. Furthermore, the solution set will be updated and implicitly forwarded (it is not required to be rebuild). Both data sets can be updated by different operators of the step function.
+  4. **Iteration Result**: After the *last iteration*, the *solution set* is written to a *data sink* or used as input to the *following operators*.
 
 The default **termination condition** for delta iterations is specified by the **empty workset convergence criterion** and a **maximum number of iterations**. The iteration will terminate when a produced *next workset* is empty or when the maximum number of iterations is reached. It is also possible to specify a **custom aggregator** and **convergence criterion**.
 
@@ -142,7 +142,7 @@ IterationState workset = getInitialState();
 IterationState solution = getInitialSolution();
 
 while (!terminationCriterion()) {
-	(delta, workset) = step(workset);
+	(delta, workset) = step(workset, solution);
 
 	solution.update(delta)
 }
@@ -152,7 +152,7 @@ setFinalState(solution);
 
 <div class="panel panel-default">
 	<div class="panel-body">
-	See the <strong><a href="{{ site.baseurl }}/docs/0.4/programming_guides/scala.html">Scala</a> and <a href="{{ site.baseurl }}/docs/0.4/programming_guides/java.html">Java</a> programming guides</strong> for details and code examples.</div>
+	See the <strong><a href="{{ site.baseurl }}/docs/0.4/programming_guides/scala.html">Scala</a> and <a href="{{ site.baseurl }}/docs/0.4/programming_guides/java.html#iterations">Java</a> programming guides</strong> for details and code examples.</div>
 </div>
 
 ### Example: Propagate Minimum in Graph
