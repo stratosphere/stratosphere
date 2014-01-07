@@ -13,6 +13,6 @@ This section gives detailed information on how to setup and configure Stratosphe
 
 The [configuration](config.html "Configuration") page lists all available configuration parameters of the system.
 
-### QUICKSTART INSTRUCTIONS
+### Quickstart Instructions
 
 **We provide a [Quickstart](http://stratosphere.eu/quickstart/setup.html) guide to setup Stratosphere on your machine in just a few simple steps!**
