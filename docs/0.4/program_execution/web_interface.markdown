@@ -26,12 +26,12 @@ Please consult the [configuration](../setup/config.html#web_frontend "Configurat
 
 The web interface provides two views:
 
-1.  The **submission view** to upload, preview, and submit Stratosphere programs.
+1.  The **job view** to upload, preview, and submit Stratosphere programs.
 2.  The **plan view** to analyze the optimized execution plans of Stratosphere programs.
 
-#### Submission View
+#### Job View
 
-The interface starts serving the submission view. 
+The interface starts serving the job view. 
 
 You can **upload** a Stratosphere program as a jar file. <br/>
 To **execute** an uploaded program:
