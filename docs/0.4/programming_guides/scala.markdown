@@ -116,7 +116,7 @@ following lines to your POM.
   ```
 
 To quickly get started you can use the Stratosphere Scala quickstart available
-[here](quickstart/scala.html). This will give you a complete Maven project
+[here]({{site.baseurl}}/quickstart/scala.html). This will give you a complete Maven project
 with some working example code that you can use to explore the system or as
 basis for your own projects.
 
@@ -177,9 +177,9 @@ the primitive Scala types, case classes (which includes tuples), and custom
 data types.
 
 Custom data types must implement the interface
-[Key](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java).
+[Key](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java).
 For custom data types that should also be used as a grouping key or join key
-the [Value](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java)
+the [Value](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java)
 interface must be implemented.
 
 

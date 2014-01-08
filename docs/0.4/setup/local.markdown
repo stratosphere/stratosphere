@@ -40,7 +40,7 @@ The command should output something comparable to the following:
 
 **For local mode Stratosphere is ready to go out of the box and you don't need to change the default configuration.**
 
-The out of the box configuration will use your default Java installation. You can manually set the environment variable `JAVA_HOME` or the configuration key `env.java.home` in `conf/stratosphere-conf.yaml` if you want to manually override the Java runtime to use. Consult the [configuration page]({{site.baseurl}}/setup/config.html) for further details about configuring Stratosphere.
+The out of the box configuration will use your default Java installation. You can manually set the environment variable `JAVA_HOME` or the configuration key `env.java.home` in `conf/stratosphere-conf.yaml` if you want to manually override the Java runtime to use. Consult the [configuration page]({{site.baseurl}}/docs/0.4/setup/config.html) for further details about configuring Stratosphere.
 </section>
 
 <section id="start">

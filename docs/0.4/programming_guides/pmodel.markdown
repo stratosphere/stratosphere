@@ -5,7 +5,6 @@ sublinks:
   - {anchor: "datamodel", title: "Record Data Model"}
   - {anchor: "operators", title: "Parallelizable Operators"}
   - {anchor: "dataflows", title: "Sequential Data Flows"}
-  - {anchor: "iterations", title: "Iterative Data Flows"}
 ---
 
 ## Stratosphere Programming Model
@@ -156,21 +155,3 @@ A data flow is composed of any number of data sources, operators, and data sinks
 <img src="../img/dataflow.svg" width="800" alt="Data Flow">
 
 ----
-
-<section id="iterations">
-### Iterative Data Flows
-
-Stratosphere provides two programming abstractions for iterative data flows:
-
-* Bulk Iterations and
-* Workset Iterations.
-
-Both abstractions have an own set of operators which will be presented in the following.
-
-#### Bulk Iterations
-
-**To be written**
-
-#### Workset Iterations
-
-**To be written**
