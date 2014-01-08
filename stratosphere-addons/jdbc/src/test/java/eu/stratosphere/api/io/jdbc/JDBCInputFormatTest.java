@@ -11,7 +11,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package eu.stratosphere.pact.common.io;
+package eu.stratosphere.api.io.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -26,23 +26,24 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.pact.common.type.Value;
-import eu.stratosphere.pact.common.type.base.PactDouble;
-import eu.stratosphere.pact.common.type.base.PactInteger;
-import eu.stratosphere.pact.common.type.base.PactString;
+import eu.stratosphere.api.io.jdbc.JDBCInputFormat;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
+import eu.stratosphere.types.Value;
 
 public class JDBCInputFormatTest {
     JDBCInputFormat jdbcInputFormat;
     Configuration config;
     static Connection conn;
     static final Value[][] dbData = {
-        {new PactInteger(1001), new PactString("Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(11.11), new PactInteger(11)},
-        {new PactInteger(1002), new PactString("More Java for dummies"), new PactString("Tan Ah Teck"), new PactDouble(22.22), new PactInteger(22)},
-        {new PactInteger(1003), new PactString("More Java for more dummies"), new PactString("Mohammad Ali"), new PactDouble(33.33), new PactInteger(33)},
-        {new PactInteger(1004), new PactString("A Cup of Java"), new PactString("Kumar"), new PactDouble(44.44), new PactInteger(44)},
-        {new PactInteger(1005), new PactString("A Teaspoon of Java"), new PactString("Kevin Jones"), new PactDouble(55.55), new PactInteger(55)}};
+        {new IntValue(1001), new StringValue("Java for dummies"), new StringValue("Tan Ah Teck"), new DoubleValue(11.11), new IntValue(11)},
+        {new IntValue(1002), new StringValue("More Java for dummies"), new StringValue("Tan Ah Teck"), new DoubleValue(22.22), new IntValue(22)},
+        {new IntValue(1003), new StringValue("More Java for more dummies"), new StringValue("Mohammad Ali"), new DoubleValue(33.33), new IntValue(33)},
+        {new IntValue(1004), new StringValue("A Cup of Java"), new StringValue("Kumar"), new DoubleValue(44.44), new IntValue(44)},
+        {new IntValue(1005), new StringValue("A Teaspoon of Java"), new StringValue("Kevin Jones"), new DoubleValue(55.55), new IntValue(55)}};
 
     @BeforeClass
     public static void setUpClass() {
@@ -55,6 +56,7 @@ public class JDBCInputFormatTest {
     }
 
     private static void prepareDerbyDatabase() throws ClassNotFoundException {
+    	System.setProperty("derby.stream.error.field","eu.stratosphere.api.io.jdbc.util.DevNullLogStream.DEV_NULL");
         String dbURL = "jdbc:derby:memory:ebookshop;create=true";
         createConnection(dbURL);
     }
@@ -157,13 +159,13 @@ public class JDBCInputFormatTest {
     public void testUnsupportedSQLType() {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from bookscontent");
         jdbcInputFormat.configure(null);
-        jdbcInputFormat.nextRecord(new PactRecord());
+        jdbcInputFormat.nextRecord(new Record());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNotConfiguredFormatNext() {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
-        jdbcInputFormat.nextRecord(new PactRecord());
+        jdbcInputFormat.nextRecord(new Record());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -176,19 +178,19 @@ public class JDBCInputFormatTest {
     public void testJDBCInputFormat() throws IOException {
         jdbcInputFormat = new JDBCInputFormat("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:ebookshop", "select * from books");
         jdbcInputFormat.configure(null);
-        PactRecord record = new PactRecord();
+        Record record = new Record();
         int recordCount = 0;
         while (!jdbcInputFormat.reachedEnd()) {
             jdbcInputFormat.nextRecord(record);
             Assert.assertEquals(5, record.getNumFields());
-            Assert.assertEquals("Field 0 should be int", PactInteger.class, record.getField(0, PactInteger.class).getClass());
-            Assert.assertEquals("Field 1 should be String", PactString.class, record.getField(1, PactString.class).getClass());
-            Assert.assertEquals("Field 2 should be String", PactString.class, record.getField(2, PactString.class).getClass());
-            Assert.assertEquals("Field 3 should be float", PactDouble.class, record.getField(3, PactDouble.class).getClass());
-            Assert.assertEquals("Field 4 should be int", PactInteger.class, record.getField(4, PactInteger.class).getClass());
+            Assert.assertEquals("Field 0 should be int", IntValue.class, record.getField(0, IntValue.class).getClass());
+            Assert.assertEquals("Field 1 should be String", StringValue.class, record.getField(1, StringValue.class).getClass());
+            Assert.assertEquals("Field 2 should be String", StringValue.class, record.getField(2, StringValue.class).getClass());
+            Assert.assertEquals("Field 3 should be float", DoubleValue.class, record.getField(3, DoubleValue.class).getClass());
+            Assert.assertEquals("Field 4 should be int", IntValue.class, record.getField(4, IntValue.class).getClass());
 
             int[] pos = {0, 1, 2, 3, 4};
-            Value[] values = {new PactInteger(), new PactString(), new PactString(), new PactDouble(), new PactInteger()};
+            Value[] values = {new IntValue(), new StringValue(), new StringValue(), new DoubleValue(), new IntValue()};
             Assert.assertTrue(record.equalsFields(pos, dbData[recordCount], values));
 
             recordCount++;
