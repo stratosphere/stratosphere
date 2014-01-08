@@ -3,6 +3,6 @@ layout: inner_docs_v04
 title:  "Local Executor"
 ---
 
-## Local Executer
+## Local Executor
 
 To be written...
