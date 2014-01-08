@@ -13,6 +13,7 @@
       <ul class="nav navbar-nav">
         <li class="{% if page.url contains '/quickstart/' %}active{% endif %}"><a href="{{ site.baseurl }}/quickstart">Quickstart</a></li>
         <li class="{% if page.url contains '/downloads/' %}active{% endif %}"><a href="{{ site.baseurl }}/downloads/">Downloads</a></li>
+        <li class="{% if page.url contains '/examples/' %}active{% endif %}"><a href="{{ site.baseurl }}/examples/">Examples</a></li>
         <li class="dropdown{% if page.url contains '/docs/' %} active{% endif %}">
           <a href="{{site.baseurl}}/docs/0.4/" style="display:inline-block;padding-right:0px;">Documentation</a>
           <a data-toggle="dropdown" class="dropdown-toggle" href="#" style="display:inline-block;padding-left:0px;"><b class="caret"></b></a>
