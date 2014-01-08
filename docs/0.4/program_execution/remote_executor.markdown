@@ -1,8 +1,8 @@
 ---
 layout: inner_docs_v04
-title:  "Local Executer"
+title:  "Remote Executor"
 ---
 
-## Local Executer
+## Remote Executer
 
 To be written...
