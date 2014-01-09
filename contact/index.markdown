@@ -19,4 +19,4 @@ Contact us here for all general questions.
 
 ### Official
 
-For *project management issues, organizational questions, and university/corperate collaboration requests*, please contact the speaker of the Stratosphere project, as found on our [Legal]({{ site.baseurl }}/legal) page.
+For *project management issues, organizational questions, and university/corperate collaboration requests*, please contact the speaker of the Stratosphere project, as found on our [Legal]({{ site.baseurl }}/project/legal) page.

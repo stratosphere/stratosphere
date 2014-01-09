@@ -26,10 +26,10 @@ links:
 		</ul>
 		<div class="tab-content text-center">
 			<div class="tab-pane active" id="bin-hadoop1">
-				<a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 1.2</a>
+				<a class="btn btn-info btn-lg" href="{{site.current_stable_dl}}"><i class="icon-download"> </i> Download Stratosphere for Hadoop 1.2</a>
 	    </div>
 			<div class="tab-pane" id="bin-hadoop2">
-	      <a class="btn btn-info btn-lg" href="http://dopa.dima.tu-berlin.de/bin/stratosphere-0.4-hadoop2-SNAPSHOT.tgz"><i class="icon-download"> </i> Download Stratosphere for Hadoop 2 (YARN)</a>
+	      <a class="btn btn-info btn-lg" href="{{site.current_stable_dl_yarn}}"><i class="icon-download"> </i> Download Stratosphere for Hadoop 2 (YARN)</a>
 	    </div>
 	  </div>
 	</p>
@@ -67,8 +67,8 @@ $ wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
 		</li>
   	<li class="lead"><strong>Start the example program</strong>:
 {% highlight bash %}
-$ bin/pact-client.sh run \
-    --jarfile ./examples/pact/pact-examples-0.4-SNAPSHOT-WordCount.jar \
+$ bin/stratosphere run \
+    --jarfile ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar \
     --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
 {% endhighlight %}
       You will find a file called <strong>wordcount-result.txt</strong> in your current directory.
