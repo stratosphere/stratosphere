@@ -6,6 +6,6 @@ categories: news blog
 ---
 
 
-The Stratosphere team is proud to announce that it is going to present at the [Hadoop Summit 2014 in Amsterdam](http://hadoopsummit.org/amsterdam/) in April 2-3 with our talk "Big Data looks tiny from Stratosphere" on the "Future of Hadoop Track". Stratosphere already made it into the top 5 in the [Community Vote](https://hadoopsummit.uservoice.com/forums/196822-future-of-apache-hadoop/filters/top) that took place by the end of last year.
+The Stratosphere team is proud to announce that it is going to present at the [Hadoop Summit 2014 in Amsterdam](http://hadoopsummit.org/amsterdam/) in April 2-3 with our talk "Big Data looks tiny from Stratosphere" on the "Future of Hadoop" Track. Stratosphere already made it into the top 5 in the [Community Vote](https://hadoopsummit.uservoice.com/forums/196822-future-of-apache-hadoop/filters/top) that took place by the end of last year.
 
 We are hoping to see many of you in Amsterdam.
