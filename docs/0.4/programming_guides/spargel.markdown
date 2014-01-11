@@ -6,7 +6,7 @@ title: Spargel
 Spargel
 =======
 
-Spargel is our [Giraph](http://giraph.apache.org) like **graph processing** Java API. It supports basic graph computations, which are run as a sequence of [supersteps]({{ site.baseurl }}/docs/0.4/programming_guides/iterations.html#supersteps).
+Spargel is our [Giraph](http://giraph.apache.org) like **graph processing** Java API. It supports basic graph computations, which are run as a sequence of [supersteps]({{ site.baseurl }}/docs/0.4/programming_guides/iterations.html#supersteps). Spargel and Giraph both implement the [Bulk Synchronous Parallel (BSP)](https://en.wikipedia.org/wiki/Bulk_Synchronous_Parallel) programming model, propsed by Google's [Pregel](http://googleresearch.blogspot.de/2009/06/large-scale-graph-computing-at-google.html).
 
 The API provides a **vertex-centric** view on graph processing with two basic operations per superstep:
 
@@ -19,6 +19,18 @@ Spargel API
 -----------
 
 The Spargel API is part of the *addons* Maven project. All relevant classes are located in the *eu.stratosphere.spargel.java* package.
+
+Add the following dependency to your `pom.xml` to use the Spargel.
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>eu.stratosphere</groupId>
+    <artifactId>spargel</artifactId>
+    <version>{{site.current_stable}}</version>
+  </dependency>
+</dependencies>
+```
 
 Extend **VertexUpdateFunction&lt;***VertexKeyType*, *VertexValueType*, *MessageType***&gt;** to implement your *custom vertex update logic*.
 
