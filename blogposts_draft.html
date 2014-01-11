@@ -1,0 +1,12 @@
+  <div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-8">
+      <h3 class="feature-highlights"><a href="{{ site.baseurl }}/feed.xml"><i class="icon-rss-sign"></i></a> <a href="#latest_posts" href="{{ site.baseurl }}/blog/">Latest Blog Posts</a></h3>
+        {% for post in site.posts limit:3 %}
+        <a href="{{ site.baseurl }}{{ post.url}}">{{post.title | truncate: 120 }}</a> {{ post.date | date_to_string }} <br>
+        {% endfor %}
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>

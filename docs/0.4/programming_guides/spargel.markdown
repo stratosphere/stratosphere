@@ -23,13 +23,11 @@ The Spargel API is part of the *addons* Maven project. All relevant classes are 
 Add the following dependency to your `pom.xml` to use the Spargel.
 
 ```xml
-<dependencies>
-  <dependency>
-    <groupId>eu.stratosphere</groupId>
-    <artifactId>spargel</artifactId>
-    <version>{{site.current_stable}}</version>
-  </dependency>
-</dependencies>
+<dependency>
+	<groupId>eu.stratosphere</groupId>
+	<artifactId>spargel</artifactId>
+	<version>{{site.current_stable}}</version>
+</dependency>
 ```
 
 Extend **VertexUpdateFunction&lt;***VertexKeyType*, *VertexValueType*, *MessageType***&gt;** to implement your *custom vertex update logic*.
