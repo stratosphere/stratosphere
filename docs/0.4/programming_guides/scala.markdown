@@ -106,12 +106,12 @@ following lines to your POM.
   <dependency>
     <groupId>eu.stratosphere</groupId>
     <artifactId>stratosphere-scala</artifactId>
-    <version>0.4-rc1</version>
+    <version>0.4</version>
   </dependency>
   <dependency>
     <groupId>eu.stratosphere</groupId>
     <artifactId>stratosphere-clients</artifactId>
-    <version>0.4-rc1</version>
+    <version>0.4</version>
   </dependency>
 </dependencies>
   ```
