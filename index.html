@@ -40,7 +40,8 @@ $( document ).ready(function() {
     </a>
     <a href="https://github.com/stratosphere/stratosphere" target="_blanc" onclick="_gaq.push(['_trackEvent','Action','github',this.href]);" class="btn btn-primary btn-lg">
       <i class="icon-github"> </i>View on GitHub
-    </a>
+    </a><br>
+    <p style="font-size:60%">Stable: {{site.current_stable}}, Beta:  {{site.current_snapshot}}</p>
   </p>
 </div>
 <div class="container features">
@@ -63,6 +64,8 @@ $( document ).ready(function() {
       <h3><i class="icon-rocket"></i> <a href="#feature_operators" class="smsc">Advanced Analytics</a></h3>
       <p>Iterative, arbitrarily large programs with multiple inputs and outputs.</p>
     </div>
+  </div>
+  <div class="row feature-highlights">
     <div class="col-md-4">
       <h3><i class="icon-cloud"></i> <a href="#feature_stack">Run in the Cloud</a></h3>
       <p>Instantly deploy Stratosphere on Amazon's EC2 and run your data analysis in the cloud.</p>
@@ -76,9 +79,22 @@ $( document ).ready(function() {
       <p>Our optimizer automatically parallelizes and optimizes your programs.</p>
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-8">
+      <h3 class="feature-highlights"><a href="{{ site.baseurl }}/feed.xml"><i class="icon-rss-sign"></i></a> <a href="#latest_posts" href="{{ site.baseurl }}/blog/">Latest Blog Posts</a></h3>
+        {% for post in site.posts limit:3 %}
+        <a href="{{ site.baseurl }}{{ post.url}}">{{post.title | truncate: 120 }}</a> {{ post.date | date_to_string }} <br>
+        {% endfor %}
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
 </div>
 
 <hr style="border-top: 10px solid #eeeeee;margin-top:60px">
+
 
 
 <div class="container features-detail" style="padding-top:40px;padding-bottom:40px;">

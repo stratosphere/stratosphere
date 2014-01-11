@@ -1,0 +1,21 @@
+---
+layout: none
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+	<title>Stratosphere.eu Blog Feed</title>
+	<description>Stratosphere.eu Blog</description>
+	<link>http://stratosphere.eu</link>
+	<atom:link href="http://stratosphere.eu/feed.xml" rel="self" type="application/rss+xml" />
+	{% for post in site.posts limit:100 %}
+		<item>
+			<title>{{ post.title | xml_escape }}</title>
+			<description>{{ post.content | xml_escape }}</description>
+			<pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
+			<link>http://stratosphere.eu{{ post.url }}</link>
+			<guid isPermaLink="true">http://stratosphere.eu{{ post.url }}</guid>
+		</item>
+	{% endfor %}
+</channel>
+</rss>

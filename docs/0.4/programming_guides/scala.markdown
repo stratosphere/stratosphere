@@ -106,15 +106,15 @@ following lines to your POM.
   <dependency>
     <groupId>eu.stratosphere</groupId>
     <artifactId>stratosphere-scala</artifactId>
-    <version>0.4</version>
+    <version>{{site.current_stable}}</version>
   </dependency>
   <dependency>
     <groupId>eu.stratosphere</groupId>
     <artifactId>stratosphere-clients</artifactId>
-    <version>0.4</version>
+    <version>{{site.current_stable}}</version>
   </dependency>
 </dependencies>
-  ```
+```
 
 To quickly get started you can use the Stratosphere Scala quickstart available
 [here]({{site.baseurl}}/quickstart/scala.html). This will give you a
