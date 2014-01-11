@@ -882,7 +882,7 @@ Executing Jobs
 --------------
 
 To execute a data flow graph the sinks need to be wrapped in a
-[ScalaPlan](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-scala/src/main/scala/eu/stratosphere/api/scala/ScalaPlan.scala)
+[ScalaPlan](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-scala/src/main/scala/eu/stratosphere/api/scala/ScalaPlan.scala)
 object like this:
 
 ```scala
@@ -918,7 +918,7 @@ Remote (or cluster) execution is a bit more complicated because you have
 to package your code in a jar file so that it can be distributed on the cluster.
 Have a look at the [scala quickstart](/quickstart/scala.html) to see how you
 can set up a maven project that does the packaging. Remote execution is done
-using the [RemoteExecutor](https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-clients/src/main/java/eu/stratosphere/client/RemoteExecutor.java), like this:
+using the [RemoteExecutor](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-clients/src/main/java/eu/stratosphere/client/RemoteExecutor.java), like this:
 
 ```scala
 import eu.stratosphere.client.RemoteExecutor

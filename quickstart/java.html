@@ -36,7 +36,7 @@ $ curl https://raw.github.com/stratosphere/stratosphere-quickstart/master/quicks
 $ mvn archetype:generate                             \
     -DarchetypeGroupId=eu.stratosphere               \
     -DarchetypeArtifactId=quickstart-java            \
-    -DarchetypeVersion=0.4                  
+    -DarchetypeVersion={{site.current_stable}}
 {% endhighlight %}
       This allows you to <strong>name your newly created project</strong>. It will interactively ask you for the groupId, artifactId, and package name.
       </div>
@@ -126,7 +126,7 @@ public static class SplitWords extends MapFunction {
 }
 {% endhighlight %}
 
-<p><a href="(https://github.com/stratosphere/stratosphere/blob/release-0.4-rc1/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java?source=cc">Check GitHub</a> for the full example code.</p>
+<p><a href="(https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java?source=cc">Check GitHub</a> for the full example code.</p>
 
 <p class="lead">For a complete overview over our Java API, have a look at the <a href="{{ site.baseurl }}/docs/{{site.current_stable_documentation}}/programming_guides/java.html">Stratosphere Documentation</a>. If you have any trouble, ask on our <a href="https://groups.google.com/forum/#!forum/stratosphere-dev">Mailing list</a>. We are happy to provide help.</p>
 </section>
