@@ -41,9 +41,9 @@ links:
             <h2>Maven Dependencies</h2>
         </div>
         <p class="lead">Use the Maven Dependencies to add Stratosphere to your project.</p>
-        <p>These dependencies also include a local execution environment. Therefore they are sufficient for local testing.</p>
+        <p>These dependencies also include a local execution environment and thus support local testing.</p>
         <p>
-        <p>Maven will now be able to find the Stratosphere dependencies. If you want to interact with Hadoop, pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.x.</p>
+        <p>Adding the entries below to your project's dependencies (in the pom.xml file) causes Maven to include the Stratosphere classes in your project. If you want to interact with Hadoop (HDFS), pick the dependency <strong>matching your Hadoop version</strong>. In doubt, use the Stratosphere version for Hadoop 1.x.</p>
         <ul class="nav nav-tabs">
             <li class="active"><a href="#maven-hadoop1" data-toggle="tab">Hadoop 1</a></li>
             <li><a href="#maven-hadoop2" data-toggle="tab">Hadoop 2 (YARN)</a></li>
@@ -58,7 +58,7 @@ links:
 </dependency>
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>stratosphere-core</artifactId>
+  <artifactId>stratosphere-clients</artifactId>
   <version>{{ site.current_stable }}</version>
 </dependency>
 {% endhighlight %}
@@ -72,13 +72,14 @@ links:
 </dependency>
 <dependency>
   <groupId>eu.stratosphere</groupId>
-  <artifactId>stratosphere-core</artifactId>
+  <artifactId>stratosphere-clients</artifactId>
   <version>{{ site.current_stable_yarn }}</version>
 </dependency>
 {% endhighlight %}
             </div>
         </div>
         </p>
+        <p>The listed dependencies reference the Java API. To use the Scala API, replace the <i>stratosphere-java</i> artifact id with <i>stratosphere-scala</i>.</p>
         <p>If you don't have a Maven project yet, we encourage you to use our <a href="{{ site.baseurl }}/quickstart">Quickstart scripts</a> to create one with all the Stratosphere dependencies already in place.</p>
     </section>
 
