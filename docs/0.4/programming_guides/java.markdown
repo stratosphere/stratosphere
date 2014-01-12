@@ -83,7 +83,7 @@ The simplest way to do this is to use the [quickstart scripts]({{site.baseurl}}/
 mvn archetype:generate /
     -DarchetypeGroupId=eu.stratosphere /
     -DarchetypeArtifactId=quickstart-java /
-    -DarchetypeVersion=0.4
+    -DarchetypeVersion={{site.current_stable}}
 {% endhighlight %}
 
 If you want to add Stratosphere to an existing Maven project, add the following entry to your *dependencies* in the *pom.xml* file of your project:
@@ -92,12 +92,12 @@ If you want to add Stratosphere to an existing Maven project, add the following 
 <dependency>
   <groupId>eu.stratosphere</groupId>
   <artifactId>stratosphere-java</artifactId>
-  <version>0.4</version>
+  <version>{{site.current_stable}}</version>
 </dependency>
 <dependency>
   <groupId>eu.stratosphere</groupId>
   <artifactId>stratosphere-clients</artifactId>
-  <version>0.4</version>
+  <version>{{site.current_stable}}</version>
 </dependency>
 {% endhighlight %}
 
@@ -363,7 +363,7 @@ You can implement your own arbitrary format as extensions of *eu.stratosphere.ap
 Iterations
 ----------
 
-Iterations allow you to implement *loops* in Stratosphere programs. [This page]({{site.baseurl}}/docs/0.4/programming_guides/iterations.html) gives a general introduction to iterations. This section here provides quick examples.
+Iterations allow you to implement *loops* in Stratosphere programs. [This page]({{site.baseurl}}/docs/{{site.current_stable_documentation}}/programming_guides/iterations.html) gives a general introduction to iterations. This section here provides quick examples.
 The iteration operators encapsulate a part of the program and execute it repeatedly, feeding back the result of one iteration (the partial solution) into the next iteration. Stratosphere has two different types of iterations, *BulkIteration* and *DeltaIteration*.
 
 ### Bulk Iterations
@@ -399,7 +399,7 @@ Bulk iterations terminate after a given number of iterations, or after a termina
 
 ### Delta Iterations
 
-Delta iterations exploit the fact that many algorithms do not change every record in the solution in each iteration. In addition to the partial solution data set that is fed back (here called the workset), delta iterations maintain a state across iterations (solution set), which can be joined with and which is updated through deltas. The result of the iterative computation is the state after the last iteration. Please see [this page]({{site.baseurl}}/docs/0.4/programming_guides/iterations.html) for an introduction to the basic principle of delta iterations.
+Delta iterations exploit the fact that many algorithms do not change every record in the solution in each iteration. In addition to the partial solution data set that is fed back (here called the workset), delta iterations maintain a state across iterations (solution set), which can be joined with and which is updated through deltas. The result of the iterative computation is the state after the last iteration. Please see [this page]({{site.baseurl}}/docs/{{site.current_stable_documentation}}/programming_guides/iterations.html) for an introduction to the basic principle of delta iterations.
 
 Defining delta iterations is similar to defining a bulk iteration. For delta iterations, two data sets form the input to each iteration (workset and solution set), and two data sets are produced as the result (new workset, solution set delta). In addition, the elements in the workset must be uniquely defined through a key. That key is used to replace elements in the solution set with elements from the delta. The code below shows this in an example:
 
@@ -434,10 +434,10 @@ Accumulators and Counters
 
 Accumulators are simple constructs with an add operation and a final (accumulated) result, which is available after the job ended. The most straightforward accumulator is a counter: You can increment it, using the ```Accumulator.add(V value)``` method, and at the end of the job Stratosphere will sum up (merge) all partial results and send the result to the client. Since accumulators are very easy to use, they can be useful during debugging or if you quickly want to find out more about your data.
 
-Stratosphere currently has the following built-in accumulators. Each of them implements the [Accumulator](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Accumulator.java) interface.
+Stratosphere currently has the following built-in accumulators. Each of them implements the [Accumulator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Accumulator.java) interface.
 
-- [__IntCounter__](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/IntCounter.java), [__LongCounter__](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/LongCounter.java) and [__DoubleCounter__](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/DoubleCounter.java): See below for an example using a counter.
-- [__Histogram__](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Histogram.java): A histogram implementation for a discrete number of bins. Internally it is just a map from Integer to Integer. You can use this to compute distributions of values, e.g. the distribution of words-per-line for a word count program.
+- [__IntCounter__](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/IntCounter.java), [__LongCounter__](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/LongCounter.java) and [__DoubleCounter__](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/DoubleCounter.java): See below for an example using a counter.
+- [__Histogram__](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Histogram.java): A histogram implementation for a discrete number of bins. Internally it is just a map from Integer to Integer. You can use this to compute distributions of values, e.g. the distribution of words-per-line for a word count program.
 
 __How to use accumulators:__
 
@@ -459,13 +459,13 @@ The overall result will be stored in the ```JobExecutionResult``` object which i
 
 All accumulators share a single namespace per job. Thus you can use the same accumulator in different stubs of your job. Stratosphere will internally merge all accumulators with the same name.
 
-Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCountAccumulators.java) for a complete example.
+Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCountAccumulators.java) for a complete example.
 
 A note on accumulators and iterations: Currently the result of accumulators is only available after the overall job ended. We plan to make the result of the previous iteration available in the next iteration.
 
 __Custom accumulators:__
 
-To implement your own accumulator you simply have to write your implementation of the Accumulator interface. Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCountAccumulators.java) for an example. Feel free to create a pull request if you think your custom accumulator should be shipped with Stratosphere.
+To implement your own accumulator you simply have to write your implementation of the Accumulator interface. Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCountAccumulators.java) for an example. Feel free to create a pull request if you think your custom accumulator should be shipped with Stratosphere.
 
-You have the choice to implement either [Accumulator](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Accumulator.java) or [SimpleAccumulator](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/SimpleAccumulator.java). ```Accumulator<V,R>``` is most flexible: It defines a type ```V``` for the value to add, and a result type ```R``` for the final result. E.g. for a histogram, ```V``` is a number and ```R``` is a histogram. ```SimpleAccumulator``` is for the cases where both types are the same, e.g. for counters.
+You have the choice to implement either [Accumulator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Accumulator.java) or [SimpleAccumulator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/SimpleAccumulator.java). ```Accumulator<V,R>``` is most flexible: It defines a type ```V``` for the value to add, and a result type ```R``` for the final result. E.g. for a histogram, ```V``` is a number and ```R``` is a histogram. ```SimpleAccumulator``` is for the cases where both types are the same, e.g. for counters.
 </section>

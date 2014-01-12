@@ -96,7 +96,7 @@ Project Setup
 
 We will only cover maven here but the concepts should work equivalently with
 other build systems such as Gradle or sbt. When wanting to develop a Scala job
-all that is needed as dependency is is `pact-scala-core` (and `pact-clients`, if
+all that is needed as dependency is is `stratosphere-scala` (and `stratosphere-clients`, if
 you want to execute your jobs). So all that needs to be done is to add the
 following lines to your POM.
 
@@ -178,9 +178,9 @@ the primitive Scala types, case classes (which includes tuples), and custom
 data types.
 
 Custom data types must implement the interface
-[Value](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java).
+[Value](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/types/Value.java).
 For custom data types that should also be used as a grouping key or join key
-the [Key](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java)
+the [Key](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/types/Key.java)
 interface must be implemented.
 
 
@@ -976,7 +976,7 @@ instead of the anonymous class we used here.
 
 There are rich functions for all the various operator types. The basic
 template is the some, though. The common interface that they implement 
-is [Function](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-core/src/main/java/eu/stratosphere/api/common/functions/Function.java). The `open` and `close` methods can be overridden to run set-up
+is [Function](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/functions/Function.java). The `open` and `close` methods can be overridden to run set-up
 and tear-down code. The other methods can be used in a rich function to
 work with the runtime context which gives information about the context
 of the operator. Your operation code must now reside in an `apply` method

@@ -25,11 +25,11 @@ links:
         </ul>
         <div class="tab-content text-center">
             <div class="tab-pane active" id="bin-hadoop2">
-                <a class="btn btn-info btn-lg" href="{{site.current_stable_dl_yarn}}"><i class="icon-download"> </i> Stratosphere 0.4 (Hadoop 2)</a>
-                <a style="padding-left:5px" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere 0.4 for YARN</a>
+                <a class="btn btn-info btn-lg" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-2',this.href]);" href="{{site.current_stable_dl_yarn}}"><i class="icon-download"> </i> Stratosphere {{ site.current_stable }} (Hadoop 2)</a>
+                <a style="padding-left:5px" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-yarn',this.href]);" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere {{ site.current_stable }} for YARN</a>
             </div>
             <div class="tab-pane" id="bin-hadoop1">
-                <a class="btn btn-info btn-lg" href="{{site.current_stable_dl}}"><i class="icon-download"> </i> Download Stratosphere 0.4 (Hadoop 1)</a>
+                <a class="btn btn-info btn-lg" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-1',this.href]);" href="{{site.current_stable_dl}}"><i class="icon-download"> </i> Download Stratosphere {{ site.current_stable }} (Hadoop 1)</a>
             </div>
         </div>
         </p>
@@ -91,7 +91,7 @@ links:
 
         <p>We provide a virtual machine image that comes with a fresh Stratosphere installation and small data sets to play around with. The image will run on both <strong><a href="https://www.virtualbox.org/">Virtual Box</a></strong> and <strong><a href="http://www.vmware.com/products/player/">VMWare</a></strong>.</p>
 
-        <p class="text-center"><a class="btn btn-info btn-lg" href="http://dev.stratosphere.eu/vm/"><i class="icon-download"> </i> Download VM Image</a></p>
+        <p class="text-center"><a class="btn btn-info btn-lg" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-vmimage',this.href]);" href="http://dev.stratosphere.eu/vm/"><i class="icon-download"> </i> Download VM Image</a></p>
     </section>
 
     <section id="vagrant">
@@ -161,18 +161,18 @@ mvn clean package -DskipTests -Dhadoop.profile=2
             <a href="https://travis-ci.org/stratosphere/stratosphere">Travis CI</a> builds a new test build each time we push into the repository.
         
         <p>
-            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dist/target/stratosphere-dist-{{ site.current_snapshot_yarn }}-yarn-uberjar.jar"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere YARN uberjar</a>
+            <a class="btn btn-warning btn-default" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-yarn-snapshot',this.href]);" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dist/target/stratosphere-dist-{{ site.current_snapshot_yarn }}-yarn-uberjar.jar"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere YARN uberjar</a>
         </p>
 
          <p>
-            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere for Hadoop 1</a>
+            <a class="btn btn-warning btn-default" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-1-snapshot',this.href]);" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot }}) Stratosphere for Hadoop 1</a>
         </p>
          <p>
-            <a class="btn btn-warning btn-default" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot_yarn}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot_yarn }}) Stratosphere for Hadoop 2</a>
+            <a class="btn btn-warning btn-default" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-2-snapshot',this.href]);" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-{{site.current_snapshot_yarn}}.tgz"><i class="icon-download"> </i> Download Latest ({{ site.current_snapshot_yarn }}) Stratosphere for Hadoop 2</a>
         </p>
         <p>
 
-        Find all <a href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/">binaries on Amazon S3</a>.
+        Find all <a onclick="_gaq.push(['_trackEvent','Action','download-dlpage-s3binlink',this.href]);" href="http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/">binaries on Amazon S3</a>.
         </p>
         <h3>SNAPSHOT-Versions in Sonatype Maven</h3>
         Add the Sonatype Snapshots repository to into your Maven pom:
