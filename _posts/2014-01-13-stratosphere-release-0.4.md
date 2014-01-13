@@ -29,6 +29,9 @@ Read more about the new iteration feature in [the documentation]({{ site.baseurl
 YARN (Yet Another Resource Negotiator) is the major new feature of the recently announced [Hadoop 2.2](http://hadoop.apache.org/docs/r2.2.0/). It allows to share existing clusters with different runtimes. So you can run MapReduce alongside Storm and others. With the 0.4 release, Stratosphere supports YARN.
 Follow [our guide]({{ site.baseurl }}/docs/0.4/setup/yarn.html) on how to start a Stratosphere YARN session.
 
+### Improved Scripting Language Meteor
+The high-level language Meteor now natively serializes JSON trees for greater performance and offers additional operators and file formats. We greatly empowered the user to write crispier scripts by adding second-order functions, multi-output operators, and other syntactical sugar. For developers of Meteor packages, the API is much more comprehensive and allows to define custom data types that can be easily embedded in JSON trees through ad-hoc byte code generation.
+
 ### Spargel: Pregel Inspired Graph Processing
 Spargel is a vertex-centric API similar to the interface proposed in Google's Pregel paper and implemented in Apache Giraph. Spargel is implemented in 500 lines of code (including comments) on top of Stratosphere's delta iterations feature. This confirms the flexibility of Stratosphere's architecture. 
 
