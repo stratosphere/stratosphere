@@ -53,30 +53,30 @@ Action "cancel" cancels a submitted Stratosphere program.
 
 -   Run WordCount example program on the JobManager configured in */conf/stratosphere.yaml*:
 
-        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar \
                                -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
 - Run WordCount example program on a specific JobManager:
 
         ./bin/stratosphere run -m myJMHost:6123 \
-                               -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                               -j ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar \
                                -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
 -   Run WordCount example program (program class not defined in the JAR file manifest):
 
-        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+        ./bin/stratosphere run -j ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar \
                                -c eu.stratosphere.example.java.record.wordcount.WordCount \
                                -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
 -   Display the expected arguments for the WordCount example program:
 
         ./bin/stratosphere info -d \
-                                -j ./examples/stratosphere-java-examples-0.4-WordCount.jar
+                                -j ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar
 
 -   Display the optimized execution plan for the WordCount example program as JSON:
 
         ./bin/stratosphere info -p \
-                                -j ./examples/stratosphere-java-examples-0.4-WordCount.jar \
+                                -j ./examples/stratosphere-java-examples-{{site.current_stable}}-WordCount.jar \
                                 -a 4 file:///home/user/hamlet.txt file:///home/user/wordcount_out
 
 -   List scheduled and running jobs (including their JobIDs):

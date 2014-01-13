@@ -1,17 +1,15 @@
 ---
-layout: default
+layout: blog_layout
 ---
-<div class="container">
 
+<article>
 	<h2>{{ page.title }}</h2>
 	<p class="meta">{{ page.date | date_to_string }}</p>
 	
-	<div class="post">
+	<div>
 	{{ content }}
 	</div>
 	
 	{% include comment_box.html %}
-    
+</article>
 	
-</div>
-<!-- /.container -->

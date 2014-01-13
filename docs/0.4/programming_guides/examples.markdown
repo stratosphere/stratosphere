@@ -16,7 +16,7 @@ sublinks:
 <div class="panel panel-default"><div class="panel-body">Please note that this page is based on our old documentation. There might be some differences between the text and the code. We are planning to rewrite the examples section.</div></div>
 
 The examples consist of a task description and an in-depth discussion of the solving program. Sample data for the jobs is either provided by data set generators or links to external data sets or data set generators. The source code of all example jobs can be found in the `stratosphere-java-examples` module
-([https://github.com/stratosphere/stratosphere/tree/release-0.4/stratosphere-examples/stratosphere-java-examples](https://github.com/stratosphere/stratosphere/tree/release-0.4/stratosphere-examples/stratosphere-java-examples)).
+([https://github.com/stratosphere/stratosphere/tree/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples](https://github.com/stratosphere/stratosphere/tree/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples)).
 
 **Please note:** The goal of the programs is to assist you in understanding the programming model. Hence, the code often written in a more understandable way rather than in the most efficient way. 
 
@@ -40,7 +40,7 @@ Please note that the *Graph Analysis Algorithms* do not use the new **Spargel** 
 Counting words is the classic example to introduce parallelized data processing with MapReduce. It demonstrates how the frequencies of words in a document collection are computed.
 
 The source code of this example can be found
-[here](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java).
+[here](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java).
 
 ### Algorithm Description
 
@@ -57,7 +57,7 @@ A detailed description of the implementation of the WordCount algorithm for Hado
 
 ### Stratosphere Program
 
-The [wordcount example](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java) implements the above described algorithm.
+The [wordcount example](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCount.java) implements the above described algorithm.
 
 1.  The program starts with an input data source. The
     `FileDataSource` produces a list strings. Each string represents a line of
@@ -97,7 +97,7 @@ will download Hamlet and put the text into a file called `hamlet.txt` in your cu
 <section id="tpchq3">
 <div class="page-header"><h2>TPCH - Query 3</h2></div>
 
-The source code of this example can be found [here](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java).
+The source code of this example can be found [here](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java).
 
 ### Task Description
 
@@ -114,7 +114,7 @@ corresponding SQL query.
 
 ### Stratosphere Program
 
-The example program implements the SQL Query given above in the Java class [eu.stratosphere.example.java.record.relational.TPCHQuery3](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java) in the `stratosphere-java-examples` module.
+The example program implements the SQL Query given above in the Java class [eu.stratosphere.example.java.record.relational.TPCHQuery3](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java) in the `stratosphere-java-examples` module.
 
 1.  The program starts with two data sources, one for the *Orders*
     relation and one for the *Lineitem* relation. 
@@ -201,7 +201,7 @@ have not been visited in a certain year.
 ### Stratosphere Program
 
 The weblog analysis example program is implemented in the following Java class:
-[WebLogAnalysis.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/WebLogAnalysis.java?source=cc)
+[WebLogAnalysis.java](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/WebLogAnalysis.java?source=cc)
 in the `stratosphere-java-examples` module.
 
 1.  Each relation is read by a separate DataSource operator. Each line
@@ -237,7 +237,7 @@ Both generators produce identically structured test data.
 ### Stand-Alone Generator
 
 We provide a data set generator to generate the docs, ranks, and visits
-relations. The generator is implemented as Java class [eu.stratosphere.example.java.record.relational.generator.WebLogGenerator.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/generator/WebLogGenerator.java?source=cc)
+relations. The generator is implemented as Java class [eu.stratosphere.example.java.record.relational.generator.WebLogGenerator.java](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/generator/WebLogGenerator.java?source=cc)
 in the `stratosphere-java-examples` module.
 
 The parameters of the main method of the generator are:
@@ -263,7 +263,7 @@ For generating larger data sets in a distributed environment, you can use a gene
 <div class="page-header"><h2>K-Means Iteration</h2></div>
 
 The source code of this example can be found
-[here](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSingleStep.java).
+[here](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSingleStep.java).
 
 ### Task description
 
@@ -305,7 +305,7 @@ here: [http://en.wikipedia.org/wiki/K-means\_clustering](http://en.wikipedia.org
 
 The example program implements one iteration step (steps 2,3, and
 4) of the k-means algorithm. The implementation resides in the following
-Java class: [eu.stratosphere.example.java.record.kmeans.KMeansSingleStep.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSingleStep.java)
+Java class: [eu.stratosphere.example.java.record.kmeans.KMeansSingleStep.java](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSingleStep.java)
 in the `stratosphere-java-examples` module. All required classes (data types, data
 formats, functions, etc.) are contained in this class as static inline
 classes.
@@ -374,7 +374,7 @@ job:
 
 We provide a data set generator to generate data points and cluster
 centers input files. The generator is implemented as Java class:
-[KMeansSampleDataGenerator](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSampleDataGenerator.java).   
+[KMeansSampleDataGenerator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeansSampleDataGenerator.java).   
 
 The parameters of the main method of the generator are:
 
@@ -428,7 +428,7 @@ The figure above shows how the algorithm works to achieve that:
 ### Stratosphere Program
 
 The triangle enumeration example program is implemented in the
-following Java class: [EnumTrianglesRdfFoaf.java](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/triangles/EnumTrianglesRdfFoaf.java?source=cc)
+following Java class: [EnumTrianglesRdfFoaf.java](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/triangles/EnumTrianglesRdfFoaf.java?source=cc)
 in the `stratosphere-java-examples` module.
 
 1.  The triangle enumeration example program supports RDF triples
