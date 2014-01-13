@@ -5,11 +5,11 @@ title:  "Local Executor"
 
 ## Local Executor
 
-Stratosphere is designed to run on a single machine, even in a single Java Virtual Machine. This allows users to test and debug Stratosphere programs (plans) locally.
+Stratosphere can run on a single machine, even in a single Java Virtual Machine. This allows users to test and debug Stratosphere programs (plans) locally.
 
 ### Maven Dependency
 
-If you are developing your program in a maven project, you have to add the `stratosphere-clients` module using this dependency:
+If you are developing your program in a Maven project, you have to add the `stratosphere-clients` module using this dependency:
 
 ```xml
 <dependency>
