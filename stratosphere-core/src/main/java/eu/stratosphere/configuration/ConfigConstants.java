@@ -305,12 +305,6 @@ public final class ConfigConstants {
 	 */
 	public static final int DEFAULT_FS_STREAM_OPENING_TIMEOUT = 0;
 	
-	/**
-	 * The config parameter defining whether to use the special multicast logic
-	 * for broadcasts.
-	 */
-	public static final boolean DEFAULT_USE_MULTICAST_FOR_BROADCAST = false;
-	
 	
 	// ---------------------------- Compiler -------------------------------
 

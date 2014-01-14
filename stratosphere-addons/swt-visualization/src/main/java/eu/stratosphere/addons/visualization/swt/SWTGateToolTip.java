@@ -27,7 +27,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
-import eu.stratosphere.nephele.io.channels.ChannelType;
+import eu.stratosphere.runtime.io.channels.ChannelType;
 import eu.stratosphere.nephele.managementgraph.ManagementGate;
 import eu.stratosphere.nephele.managementgraph.ManagementGroupEdge;
 

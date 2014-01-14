@@ -14,9 +14,9 @@
 package eu.stratosphere.pact.runtime.iterative.task;
 
 import eu.stratosphere.api.common.functions.Function;
-import eu.stratosphere.nephele.io.AbstractRecordWriter;
+import eu.stratosphere.runtime.io.api.BufferWriter;
 import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannel;
-import eu.stratosphere.nephele.io.channels.bytebuffered.EndOfSuperstepEvent;
+import eu.stratosphere.runtime.io.channels.EndOfSuperstepEvent;
 import eu.stratosphere.pact.runtime.iterative.event.TerminationEvent;
 import eu.stratosphere.pact.runtime.iterative.io.WorksetUpdateOutputCollector;
 import eu.stratosphere.pact.runtime.hash.MutableHashTable;
@@ -112,7 +112,7 @@ public class IterationIntermediatePactTask<S extends Function, OT> extends Abstr
 	}
 
 	private void sendEndOfSuperstep() throws IOException, InterruptedException {
-		for (AbstractRecordWriter<?> eventualOutput : eventualOutputs) {
+		for (BufferWriter eventualOutput : this.eventualOutputs) {
 			eventualOutput.sendEndOfSuperstep();
 		}
 	}

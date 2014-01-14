@@ -24,8 +24,7 @@ import eu.stratosphere.example.java.record.kmeans.KMeans.PointBuilder;
 import eu.stratosphere.example.java.record.kmeans.KMeans.PointOutFormat;
 import eu.stratosphere.example.java.record.kmeans.KMeans.RecomputeClusterCenter;
 import eu.stratosphere.example.java.record.kmeans.KMeans.SelectNearestCenter;
-import eu.stratosphere.nephele.io.DistributionPattern;
-import eu.stratosphere.nephele.io.channels.ChannelType;
+import eu.stratosphere.nephele.jobgraph.DistributionPattern;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobGraphDefinitionException;
 import eu.stratosphere.nephele.jobgraph.JobInputVertex;
@@ -44,6 +43,7 @@ import eu.stratosphere.pact.runtime.task.ReduceDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedMapDriver;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
+import eu.stratosphere.runtime.io.channels.ChannelType;
 import eu.stratosphere.test.iterative.nephele.JobGraphUtils;
 import eu.stratosphere.test.testdata.KMeansData;
 import eu.stratosphere.test.util.TestBase2;
@@ -293,8 +293,6 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 		JobGraphUtils.connect(head, output, ChannelType.NETWORK, DistributionPattern.POINTWISE);
 		
 		JobGraphUtils.connect(head, sync, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
-		
-		
 
 		// -- instance sharing -------------------------------------------------------------------------------------
 		points.setVertexToShareInstancesWith(output);

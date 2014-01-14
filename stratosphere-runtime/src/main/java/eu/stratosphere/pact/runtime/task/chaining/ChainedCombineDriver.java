@@ -122,6 +122,7 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 		}
 		
 		this.sorter.close();
+		this.outputCollector.close();
 		
 		if (this.canceled)
 			return;

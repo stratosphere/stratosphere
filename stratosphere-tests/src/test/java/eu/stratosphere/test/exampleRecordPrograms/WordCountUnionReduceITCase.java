@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
+
 package eu.stratosphere.test.exampleRecordPrograms;
 
 import java.util.regex.Matcher;
@@ -23,10 +24,10 @@ import eu.stratosphere.api.java.record.io.TextInputFormat;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator;
 import eu.stratosphere.example.java.record.wordcount.WordCount.CountWords;
-import eu.stratosphere.example.java.record.wordcount.WordCount.TokenizeLine;
-import eu.stratosphere.nephele.io.MutableUnionRecordReader;
-import eu.stratosphere.nephele.io.UnionRecordReader;
+import eu.stratosphere.example.java.record.wordcount.WordCount.TokenizeLine;;
 import eu.stratosphere.test.testdata.WordCountData;
+import eu.stratosphere.runtime.io.api.MutableUnionRecordReader;
+import eu.stratosphere.runtime.io.api.UnionRecordReader;
 import eu.stratosphere.test.util.TestBase2;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.StringValue;

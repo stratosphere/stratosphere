@@ -51,8 +51,8 @@ import eu.stratosphere.compiler.plan.WorksetPlanNode;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.configuration.ConfigConstants;
-import eu.stratosphere.nephele.io.DistributionPattern;
-import eu.stratosphere.nephele.io.channels.ChannelType;
+import eu.stratosphere.nephele.jobgraph.DistributionPattern;
+import eu.stratosphere.runtime.io.channels.ChannelType;
 import eu.stratosphere.nephele.jobgraph.AbstractJobOutputVertex;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
@@ -1206,7 +1206,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		
 		// connect the fake tail
 		try {
-			rootOfStepFunctionVertex.connectTo(fakeTail, ChannelType.INMEMORY, DistributionPattern.POINTWISE);
+			rootOfStepFunctionVertex.connectTo(fakeTail, ChannelType.IN_MEMORY, DistributionPattern.POINTWISE);
 		} catch (JobGraphDefinitionException e) {
 			throw new CompilerException("Bug: Cannot connect iteration tail vertex fake tail task");
 		}
@@ -1336,7 +1336,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					
 					// connect the fake tail
 					try {
-						nextWorksetVertex.connectTo(fakeTail, ChannelType.INMEMORY, DistributionPattern.POINTWISE);
+						nextWorksetVertex.connectTo(fakeTail, ChannelType.IN_MEMORY, DistributionPattern.POINTWISE);
 					} catch (JobGraphDefinitionException e) {
 						throw new CompilerException("Bug: Cannot connect iteration tail vertex fake tail task");
 					}
@@ -1375,7 +1375,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					
 					// connect the fake tail
 					try {
-						solutionDeltaVertex.connectTo(fakeTail, ChannelType.INMEMORY, DistributionPattern.POINTWISE);
+						solutionDeltaVertex.connectTo(fakeTail, ChannelType.IN_MEMORY, DistributionPattern.POINTWISE);
 					} catch (JobGraphDefinitionException e) {
 						throw new CompilerException("Bug: Cannot connect iteration tail vertex fake tail task");
 					}

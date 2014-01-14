@@ -23,7 +23,7 @@ import com.google.common.base.Preconditions;
 
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
 import eu.stratosphere.nephele.event.task.EventListener;
-import eu.stratosphere.nephele.io.channels.bytebuffered.EndOfSuperstepEvent;
+import eu.stratosphere.runtime.io.channels.EndOfSuperstepEvent;
 import eu.stratosphere.pact.runtime.iterative.event.TerminationEvent;
 import eu.stratosphere.pact.runtime.iterative.task.Terminable;
 import eu.stratosphere.util.MutableObjectIterator;

@@ -41,7 +41,11 @@ import eu.stratosphere.util.Collector;
 
 
 public class ChainTaskTest extends TaskTestBase {
-	
+
+	private static final int MEMORY_MANAGER_SIZE = 1024 * 1024 * 3;
+
+	private static final int NETWORK_BUFFER_SIZE = 1024;
+
 	private final List<Record> outList = new ArrayList<Record>();
 	
 	@SuppressWarnings("unchecked")
@@ -54,9 +58,8 @@ public class ChainTaskTest extends TaskTestBase {
 		final int valCnt = 20;
 		
 		try {
-		
 			// environment
-			initEnvironment(3*1024*1024);
+			super.initEnvironment(MEMORY_MANAGER_SIZE, NETWORK_BUFFER_SIZE);
 			addInput(new UniformRecordGenerator(keyCnt, valCnt, false), 0);
 			addOutput(this.outList);
 			
@@ -112,7 +115,7 @@ public class ChainTaskTest extends TaskTestBase {
 		
 		try {
 			// environment
-			initEnvironment(3*1024*1024);
+			super.initEnvironment(MEMORY_MANAGER_SIZE, NETWORK_BUFFER_SIZE);
 			addInput(new UniformRecordGenerator(keyCnt, valCnt, false), 0);
 			addOutput(this.outList);
 	

@@ -98,6 +98,7 @@ public class IterationTailPactTask<S extends Function, OT> extends AbstractItera
 				// aggregate workset update element count
 				long numCollected = worksetUpdateOutputCollector.getElementsCollectedAndReset();
 				worksetAggregator.aggregate(numCollected);
+
 			}
 
 			if (log.isInfoEnabled()) {
