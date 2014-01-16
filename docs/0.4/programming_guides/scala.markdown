@@ -56,7 +56,7 @@ object WordCount {
     val counts = words.groupBy { case (word, _) => word }
       .reduce { (w1, w2) => (w1._1, w1._2 + w2._2) }
 
-    val output = counts.write(wordsOutput, CsvOutputFormat()))
+    val output = counts.write(wordsOutput, CsvOutputFormat())
     val plan = new ScalaPlan(Seq(output))
 
     LocalExecutor.execute(plan)
