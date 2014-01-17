@@ -10,6 +10,7 @@ sublinks:
   - {anchor: "io", title: "Input/Output Formats"}
   - {anchor: "iterations", title: "Iterations"}
   - {anchor: "accumulators", title: "Accumulators and Counters"}
+  - {anchor: "config", title: "Configuration"}
 ---
 
 Java API
@@ -293,7 +294,6 @@ MapOperator mapper = MapOperator.builder(new SomeMapper())
     </tr>
   </tbody>
 </table>
-
 </section>
 
 <section id="io">
@@ -468,4 +468,66 @@ __Custom accumulators:__
 To implement your own accumulator you simply have to write your implementation of the Accumulator interface. Please look at the [WordCountAccumulator example](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/wordcount/WordCountAccumulators.java) for an example. Feel free to create a pull request if you think your custom accumulator should be shipped with Stratosphere.
 
 You have the choice to implement either [Accumulator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/Accumulator.java) or [SimpleAccumulator](https://github.com/stratosphere/stratosphere/blob/release-{{site.current_stable}}/stratosphere-core/src/main/java/eu/stratosphere/api/common/accumulators/SimpleAccumulator.java). ```Accumulator<V,R>``` is most flexible: It defines a type ```V``` for the value to add, and a result type ```R``` for the final result. E.g. for a histogram, ```V``` is a number and ```R``` is a histogram. ```SimpleAccumulator``` is for the cases where both types are the same, e.g. for counters.
+</section>
+
+<section id="config">
+Configuration
+-------------
+
+All functions provide **open(Configuration)** and **close()** methods, which are called when the respective function instance (e.g. *MapFunction*) is opened and closed.
+
+This allows to instantiate data structures to be used *across user-defined functions calls*. It also improves the *re-usability of function implementations* as functions can be parametrized, e.g. to have configurable filter values instead of hard-coding them into the function implementation.
+
+Stratosphere calls **open(Configuration)** with a *Configuration* object that holds all parameters which were passed to the function. To set parameters, you can use the following methods at the driver:
+
+  - **setParameter(String key, int value)**,
+  - **setParameter(String key, String value)**, or
+  - **setParameter(String key, boolean value)**.
+
+{% highlight java %}
+// --- program assembly ---
+public class Skeleton implements Program {
+
+    @Override
+    public Plan getPlan(String... args) {
+        ...
+        MapOperator mapper = MapOperator.builder(new MyMapper())
+            .input(source)
+            .name("MyMapper")
+            .build();
+
+        // configuration parameters
+        mapper.setParameter("param.year", 2014);
+        mapper.setParameter("param.name", "Stratosphere");
+        ...
+
+        return plan;
+    }
+}
+
+// --- map function ---
+public class MyMapper extends MapFunction {
+
+    private int year;
+
+    private String name;
+
+    public void open(Configuration config) {
+        this.year = config.getInteger("param.year", 0);
+        this.year = config.getString("param.name",  "");
+    }
+
+    public void map(Record record, Collector<Record> out) {
+        out.collect(...);
+    }
+}
+
+{% endhighlight %}
+
+
+This code excerpt has been adapted from the [TPCHQuery3 example program](https://github.com/stratosphere/stratosphere/blob/release-0.4/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/relational/TPCHQuery3.java), where the parameters are used to set filtering and join parameters.
+
+
+
+
 </section>
