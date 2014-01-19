@@ -1,6 +1,6 @@
 --- 
 layout: inner_docs_v04
-title: Documentation
+title: "Documentation (0.4)"
 ---
 
 ## Documentation (0.4)

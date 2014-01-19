@@ -17,6 +17,7 @@
           <a href="{{site.baseurl}}/docs/0.4/" style="display:inline-block;padding-right:0px;">Documentation</a>
           <a data-toggle="dropdown" class="dropdown-toggle" href="#" style="display:inline-block;padding-left:0px;"><b class="caret"></b></a>
           <ul class="dropdown-menu">
+            <li class="{% if page.url contains '/docs/0.5/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/0.5/">Beta (0.5-SNAPSHOT)</a></li>
             <li class="{% if page.url contains '/docs/0.4/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/0.4/">Latest (0.4)</a></li>
             <li class="{% if page.url contains '/docs/pre-0.4/' %}active{% endif %}"><a href="{{ site.baseurl }}/docs/pre-0.4/">pre-0.4</a></li>
           </ul>
