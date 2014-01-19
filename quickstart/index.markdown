@@ -1,6 +1,8 @@
 --- 
 layout: inner_simple
 title: Quick Start - Overview
+description: Getting started with a Stratosphere in just a few minutes.
+keywords: stratosphere, setup, java, scala, learn, howto, quickstart, big data, data analytics
 ---
 
 <div class="page-header text-center">
