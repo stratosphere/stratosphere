@@ -1,6 +1,8 @@
 --- 
 layout: inner_docs_v04
 title: "Documentation (0.4)"
+description: Documentation for the Stratosphere Big Data Analytics platform.
+keywords: stratosphere, documentation, usage, help, setup, java, scala, program, howto, configuration, api, big data, data analytics
 ---
 
 ## Documentation (0.4)

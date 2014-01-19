@@ -1,6 +1,8 @@
 --- 
 layout: inner_faq
 title: Frequently Asked Questions (FAQ)
+description: Frequently Asked Questions for the Stratosphere system.
+keywords: stratosphere, faq, question, problem, help, answers, howto, support, big data, data analytics
 questions: 
   - {section: "true", anchor: "usage", title: "Usage"}
   - {anchor: "usage_progress", title: "How do I assess the progress of a Stratosphere program?"}
