@@ -1,6 +1,8 @@
 --- 
 layout: inner_simple
 title: Quick Start - Build
+description: Learn to build Stratosphere.
+keywords: stratosphere, build, setup, howto, quickstart, big data, data analytics
 ---
 
 # Quickstart: Build Stratosphere
