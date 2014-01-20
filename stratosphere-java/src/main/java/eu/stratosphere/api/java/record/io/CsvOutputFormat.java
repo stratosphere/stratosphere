@@ -85,13 +85,77 @@ public class CsvOutputFormat extends FileOutputFormat {
 	
 	private boolean lenient;
 	
+	private boolean genericInstantiation;
+		// --------------------------------------------------------------------------------------------
+	//  Constructors and getters/setters for the configurable parameters
 	// --------------------------------------------------------------------------------------------
+		
+	public CsvOutputFormat() {
+		genericInstantiation = true;
+	}
 	
+	/**
+	 * Creates an instance of CsvOutputFormat. The position of the fields in the record is determined by the order in which the classes are given to this constructor.
+	 * As the default value for separating records '\n' is used. The default field delimiter is '|'.
+	 * @param fieldDelimiter The delimiter that is used to separate the different fields in the record.
+	 * @param types The types of the fields that are in the record.
+	 */
+	public CsvOutputFormat(Class<? extends Value> ... types) {
+		this("\n", "|", types);
+	}
+	/**
+	 * Creates an instance of CsvOutputFormat. The position of the fields in the record is determined by the order in which the classes are given to this constructor.
+	 * As the default value for separating records '\n' is used.
+	 * @param fieldDelimiter The delimiter that is used to separate the different fields in the record.
+	 * @param types The types of the fields that are in the record.
+	 */
+	public CsvOutputFormat(String fieldDelimiter, Class<? extends Value> ... types) {
+		this("\n", fieldDelimiter, types);
+	}
+	
+	/**
+	 * Creates an instance of CsvOutputFormat. The position of the fields in the record is determined by the order in which the classes are given to this constructor.
+	 * 
+	 * @param recordDelimiter The delimiter that is used to separate the different records.
+	 * @param fieldDelimiter The delimiter that is used to separate the different fields in the record.
+	 * @param types The types of the fields that are in the record.
+	 */
+	public CsvOutputFormat(String recordDelimiter, String fieldDelimiter, Class<? extends Value> ... types) {
+		if (recordDelimiter == null)
+			throw new IllegalArgumentException("RecordDelmiter shall not be null.");
+		if (fieldDelimiter == null)
+			throw new IllegalArgumentException("FieldDelimiter shall not be null.");
+		if (types.length == 0)
+			throw new IllegalArgumentException("No field types given.");
+		
+		this.fieldDelimiter = fieldDelimiter;
+		this.recordDelimiter = recordDelimiter;
+		this.numFields = types.length;
+			
+		@SuppressWarnings("unchecked")
+		Class<Value>[] classes = new Class[types.length];
+		
+		this.classes = classes;
+		this.recordPositions = new int[types.length];
+		this.lenient = false;
+		
+		for (int i = 0; i < types.length; i++) {
+			if (types[i] == null)
+				throw new IllegalArgumentException("Invalid Constructor Parameter: No type class for parameter " + (2 + i));
+			
+			this.classes[i] = types[i];
+			this.recordPositions[i] = i;
+		}	
+		genericInstantiation = false;
+	}
 
 	@Override
 	public void configure(Configuration parameters)
 	{
 		super.configure(parameters);
+		
+		if (!genericInstantiation)
+			return;
 		
 		this.numFields = parameters.getInteger(NUM_FIELDS_PARAMETER, -1);
 		if (this.numFields < 1) {
