@@ -47,7 +47,8 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
 			f.setIter((SerializableIterator<Object>)data[0]);
 		}
 		else if (data.length == 1 && data[0] instanceof Collection) {
-			f.setData((Collection<Object>)data[0]);
+			checkFormat((Collection<Object>)data[0]);
+            f.setData((Collection<Object>)data[0]);
 		}
 		else {
 			Collection<Object> tmp = new ArrayList<Object>();
@@ -87,23 +88,25 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
 	 * check whether the input field has the same type
 	 */
 	private void checkFormat(Collection<Object> c) {
-		String type = null;
-		List<String> typeList = new ArrayList<String>();
+        Class<?> type = null;
+		List<Class<?>> typeList = new ArrayList<Class<?>>();
 		Iterator<Object> it = c.iterator();
 		while (it.hasNext()) {
 			Object o = it.next();
+
 			//check the input types for 1-dimension
-			if (type != null && !type.equals(o.getClass().getName())) {
+			if (type != null && !type.equals(o.getClass())) {
 				throw new RuntimeException("elements of input list should have the same type");
 			}
 			else {
-				type = o.getClass().getName();
+				type = o.getClass();
 			}
+
 		
 			//check the input types for 2-dimension array
 			if (typeList.size() == 0 && o.getClass().isArray()) {
 				for (Object s: (Object[])o) {
-					typeList.add(s.getClass().getName());
+					typeList.add(s.getClass());
 				}
 			}
 			else if (o.getClass().isArray()) {
@@ -112,7 +115,7 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
 					throw new RuntimeException("elements of input list should have the same size");
 				}
 				for (Object s:(Object[])o) 
-					if (!s.getClass().getName().equals(typeList.get(index++))) {
+					if (!s.getClass().equals(typeList.get(index++))) {
 						throw new RuntimeException("elements of input list should have the same type");
 					}
 			}
@@ -124,7 +127,7 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
 				while (tmpIt.hasNext())
 				{
 					Object s = tmpIt.next();
-					typeList.add(s.getClass().getName());
+					typeList.add(s.getClass());
 				}
 			}
 			else if (o instanceof Collection) {
@@ -133,7 +136,7 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
 				Iterator<Object> tmpIt = ((Collection<Object>) o).iterator();
 				while (tmpIt.hasNext()) {
 					Object s = tmpIt.next();
-					if (!s.getClass().getName().equals(typeList.get(index++))) {
+					if (!s.getClass().equals(typeList.get(index++))) {
 						throw new RuntimeException("elements of input list should have the same type");
 					}
 				}
