@@ -15,11 +15,8 @@ package eu.stratosphere.nephele.instance.local;
 
 import eu.stratosphere.nephele.taskmanager.TaskManager;
 
-import java.io.IOException;
-
 /**
- * This class represents the thread which runs the task manager when Nephele is executed in local mode.
- * 
+ * This class holds a local task manager when Stratosphere is executed in local mode.
  */
 public class LocalTaskManagerThread extends Thread {
 
@@ -31,7 +28,7 @@ public class LocalTaskManagerThread extends Thread {
 	/**
 	 * Constructs a new thread to run the task manager in Nephele's local mode.
 	 */
-	public LocalTaskManagerThread(final String name, final int taskManagersPerJVM) {
+	public LocalTaskManagerThread(String name, final int taskManagersPerJVM) {
 		super(name);
 		TaskManager tmpTaskManager = null;
 		try {

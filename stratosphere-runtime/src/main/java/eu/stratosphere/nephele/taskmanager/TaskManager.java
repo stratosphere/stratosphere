@@ -356,6 +356,14 @@ public class TaskManager implements TaskOperationProtocol {
 			DEFAULTPERIODICTASKSINTERVAL);
 
 		while (!Thread.interrupted()) {
+			
+			// Send heartbeat
+			try {
+				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
+			} catch (IOException e) {
+				e.printStackTrace();
+				LOG.info("sending the heart beat caused an IO Exception");
+			}
 
 			// Sleep
 			try {
@@ -363,14 +371,6 @@ public class TaskManager implements TaskOperationProtocol {
 			} catch (InterruptedException e1) {
 				LOG.debug("Heartbeat thread was interrupted");
 				break;
-			}
-
-			// Send heartbeat
-			try {
-				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
-			} catch (IOException e) {
-				e.printStackTrace();
-				LOG.info("sending the heart beat caused an IO Exception");
 			}
 
 			// Check the status of the task threads to detect unexpected thread terminations

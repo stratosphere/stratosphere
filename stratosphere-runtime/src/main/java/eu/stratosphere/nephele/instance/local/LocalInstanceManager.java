@@ -19,9 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
@@ -55,19 +52,6 @@ import eu.stratosphere.nephele.util.SerializableHashMap;
 public class LocalInstanceManager implements InstanceManager {
 
 	/**
-	 * The log object used to report events and errors.
-	 */
-	private static final Log LOG = LogFactory.getLog(LocalInstanceManager.class);
-
-	/**
-	 * The key for the configuration parameter defining the instance type to be used by the local instance manager. If
-	 * the parameter is not set, a default instance type with the identifier "default" is generated from the machine's
-	 * hardware characteristics.
-	 */
-
-	private static final String LOCALINSTANCE_TYPE_KEY = "instancemanager.local.type";
-
-	/**
 	 * The instance listener registered with this instance manager.
 	 */
 	private InstanceListener instanceListener;
@@ -86,12 +70,12 @@ public class LocalInstanceManager implements InstanceManager {
 	/**
 	 * Stores if the local task manager is currently by a job.
 	 */
-	private AllocatedResource allocatedResource = null;
+	private AllocatedResource allocatedResource;
 
 	/**
 	 * The local instance encapsulating the task manager
 	 */
-	private LocalInstance localInstance = null;
+	private LocalInstance localInstance ;
 
 	/**
 	 * The thread running the local task manager.
@@ -116,53 +100,35 @@ public class LocalInstanceManager implements InstanceManager {
 	 */
 	public LocalInstanceManager() {
 
-		final Configuration config = GlobalConfiguration.getConfiguration();
-
-		// get the default instance type
-		InstanceType type = null;
-		final String descr = config.getString(LOCALINSTANCE_TYPE_KEY, null);
-		if (descr != null) {
-			LOG.info("Attempting to parse default instance type from string " + descr);
-			type = InstanceTypeFactory.constructFromDescription(descr);
-			if (type == null) {
-				LOG.warn("Unable to parse default instance type from configuration, using hardware profile instead");
-			}
-		}
-
-		this.defaultInstanceType = (type != null) ? type : createDefaultInstanceType();
-
-		LOG.info("Default instance type is " + this.defaultInstanceType.getIdentifier());
+		this.defaultInstanceType = createDefaultInstanceType();
 
 		this.networkTopology = NetworkTopology.createEmptyTopology();
 
 		this.instanceTypeDescriptionMap = new SerializableHashMap<InstanceType, InstanceTypeDescription>();
 
-		this.localTaskManagerThread = new LocalTaskManagerThread("Local Taskmanager IO Loop",1);
+		this.localTaskManagerThread = new LocalTaskManagerThread("Local Taskmanager Loop",1);
 		this.localTaskManagerThread.start();
 	}
 
 
 	@Override
 	public InstanceType getDefaultInstanceType() {
-
 		return this.defaultInstanceType;
 	}
 
 
 	@Override
-	public InstanceType getInstanceTypeByName(final String instanceTypeName) {
-
+	public InstanceType getInstanceTypeByName(String instanceTypeName) {
 		if (this.defaultInstanceType.getIdentifier().equals(instanceTypeName)) {
 			return this.defaultInstanceType;
 		}
-
 		return null;
 	}
 
 
 	@Override
-	public InstanceType getSuitableInstanceType(final int minNumComputeUnits, final int minNumCPUCores,
-			final int minMemorySize, final int minDiskCapacity, final int maxPricePerHour) {
+	public InstanceType getSuitableInstanceType(int minNumComputeUnits, int minNumCPUCores,
+			int minMemorySize, int minDiskCapacity, int maxPricePerHour) {
 
 		if (minNumComputeUnits > this.defaultInstanceType.getNumberOfComputeUnits()) {
 			return null;
@@ -258,15 +224,13 @@ public class LocalInstanceManager implements InstanceManager {
 
 
 	@Override
-	public NetworkTopology getNetworkTopology(final JobID jobID) {
-
+	public NetworkTopology getNetworkTopology(JobID jobID) {
 		return this.networkTopology;
 	}
 
 
 	@Override
-	public void setInstanceListener(final InstanceListener instanceListener) {
-
+	public void setInstanceListener(InstanceListener instanceListener) {
 		this.instanceListener = instanceListener;
 	}
 
@@ -300,15 +264,14 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public Map<InstanceType, InstanceTypeDescription> getMapOfAvailableInstanceTypes() {
-
 		return this.instanceTypeDescriptionMap;
 	}
 
 	@Override
-	public void requestInstance(final JobID jobID, final Configuration conf,
-			final InstanceRequestMap instanceRequestMap,
-			final List<String> splitAffinityList) throws InstanceException {
-
+	public void requestInstance(JobID jobID, Configuration conf,
+			InstanceRequestMap instanceRequestMap, List<String> splitAffinityList)
+		throws InstanceException
+	{
 		// TODO: This can be implemented way simpler...
 		// Iterate over all instance types
 		final Iterator<Map.Entry<InstanceType, Integer>> it = instanceRequestMap.getMinimumIterator();
@@ -351,8 +314,7 @@ public class LocalInstanceManager implements InstanceManager {
 
 
 	@Override
-	public AbstractInstance getInstanceByName(final String name) {
-
+	public AbstractInstance getInstanceByName(String name) {
 		if (name == null) {
 			throw new IllegalArgumentException("Argument name must not be null");
 		}
@@ -371,7 +333,6 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public void cancelPendingRequests(final JobID jobID) {
-
 		// The local instance manager does not support pending requests, so nothing to do here
 	}
 

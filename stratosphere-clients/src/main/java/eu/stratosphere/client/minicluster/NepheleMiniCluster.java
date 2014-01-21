@@ -156,7 +156,7 @@ public class NepheleMiniCluster {
 			};
 			runner.setDaemon(true);
 			runner.start();
-	
+			
 			waitForJobManagerToBecomeReady();
 		}
 	}
@@ -211,6 +211,8 @@ public class NepheleMiniCluster {
 		if (hdfsConfigFile != null) {
 			config.setString("fs.hdfs.hdfsdefault", hdfsConfigFile);
 		}
+		
+		config.setInteger(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, 128);
 		return config;
 	}
 }

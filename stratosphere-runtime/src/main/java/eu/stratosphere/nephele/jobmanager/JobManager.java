@@ -170,15 +170,14 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
 
-	private final static int SLEEPINTERVAL = 1000;
-
 	private final static int FAILURERETURNCODE = 1;
 
 	private final AtomicBoolean isShutdownInProgress = new AtomicBoolean(false);
 
-	private volatile boolean isShutDown = false;
+	private volatile boolean isShutDown;
 	
 	private WebInfoServer server;
+	
 	
 	public JobManager(ExecutionMode executionMode) {
 
@@ -248,8 +247,8 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		if (executionMode == ExecutionMode.LOCAL) {
 			try {
 				this.instanceManager = new LocalInstanceManager();
-			} catch (RuntimeException rte) {
-				LOG.fatal("Cannot instantiate local instance manager: " + StringUtils.stringifyException(rte));
+			} catch (Throwable t) {
+				LOG.fatal("Cannot instantiate local instance manager: " + t.getMessage(), t);
 				System.exit(FAILURERETURNCODE);
 			}
 		} else {
@@ -292,24 +291,16 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		// Add shutdown hook for clean up tasks
 		Runtime.getRuntime().addShutdownHook(new JobManagerCleanUp(this));
-
 	}
 
-	/**
-	 * This is the main
-	 */
+
 	public void runTaskLoop() {
-
-		while (!Thread.interrupted()) {
-
-			// Sleep
+		// we need to keep the main thread alive until it is interrupted
+		Object o = new Object();
+		synchronized (o) {
 			try {
-				Thread.sleep(SLEEPINTERVAL);
-			} catch (InterruptedException e) {
-				break;
-			}
-
-			// Do nothing here
+				o.wait();
+			} catch (InterruptedException e) {}
 		}
 	}
 
