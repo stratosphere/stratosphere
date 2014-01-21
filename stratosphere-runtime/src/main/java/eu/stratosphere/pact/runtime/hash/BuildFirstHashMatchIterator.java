@@ -116,22 +116,22 @@ public class BuildFirstHashMatchIterator<V1, V2, O> implements JoinTaskIterator<
 					this.probeSideSerializer.copyTo(probeRecord, probeCopy);
 					
 					// call match on the first pair
-					matchFunction.match(nextBuildSideRecord, probeCopy, collector);
+					matchFunction.join(nextBuildSideRecord, probeCopy, collector);
 					
 					// call match on the second pair
 					this.probeSideSerializer.copyTo(probeRecord, probeCopy);
-					matchFunction.match(tmpRec, probeCopy, collector);
+					matchFunction.join(tmpRec, probeCopy, collector);
 					
 					while (this.running && buildSideIterator.next(nextBuildSideRecord)) {
 						// call match on the next pair
 						// make sure we restore the value of the probe side record
 						this.probeSideSerializer.copyTo(probeRecord, probeCopy);
-						matchFunction.match(nextBuildSideRecord, probeCopy, collector);
+						matchFunction.join(nextBuildSideRecord, probeCopy, collector);
 					}
 				}
 				else {
 					// only single pair matches
-					matchFunction.match(nextBuildSideRecord, probeRecord, collector);
+					matchFunction.join(nextBuildSideRecord, probeRecord, collector);
 				}
 			}
 			return true;
@@ -155,8 +155,7 @@ public class BuildFirstHashMatchIterator<V1, V2, O> implements JoinTaskIterator<
 			MemoryManager memManager, IOManager ioManager, AbstractInvokable ownerTask, long totalMemory)
 	throws MemoryAllocationException
 	{
-		totalMemory = memManager.roundDownToPageSizeMultiple(totalMemory);
-		final int numPages = (int) (totalMemory / memManager.getPageSize());
+		final int numPages = memManager.computeNumberOfPages(totalMemory);
 		final List<MemorySegment> memorySegments = memManager.allocatePages(ownerTask, numPages);
 		return new MutableHashTable<BT, PT>(buildSideSerializer, probeSideSerializer, buildSideComparator, probeSideComparator, pairComparator, memorySegments, ioManager);
 	}

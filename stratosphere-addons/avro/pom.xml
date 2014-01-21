@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<artifactId>stratosphere-addons</artifactId>
+		<groupId>eu.stratosphere</groupId>
+		<version>0.5-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+	<artifactId>avro</artifactId>
+	<name>avro</name>
+
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>stratosphere-java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>stratosphere-clients</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.apache.avro</groupId>
+		  <artifactId>avro</artifactId>
+		  <version>1.7.5</version>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<!-- A bug with java6 is causing the javadoc generation
+			to fail because the test case contains junit?
+			See https://github.com/stratosphere/stratosphere/pull/405#issuecomment-32591978
+			for further links -->
+			<id>disable-javadocs-in-java6</id>
+			<activation>
+				 <jdk>(,1.6]</jdk> <!-- disable javadocs for java6 or lower. -->
+			</activation>
+			<properties>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+			</properties>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-maven-plugin</artifactId>
+				<version>1.7.5</version>
+				<executions>
+					<execution>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>schema</goal>
+						</goals>
+						<configuration>
+							<sourceDirectory>${project.basedir}/src/test/resources/avro</sourceDirectory>
+							<outputDirectory>${project.basedir}/src/test/java/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

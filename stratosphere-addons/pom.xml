@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>eu.stratosphere</groupId>
 		<artifactId>stratosphere</artifactId>
-		<version>0.4-rc1</version>
+		<version>0.5-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>array-datamodel</module>
-		<!-- To come here: hbase-simple, jdbc, sequenceFile, avro -->
+		<module>avro</module>
 		<module>jdbc</module>
 		<module>spargel</module>
 		<module>swt-visualization</module>

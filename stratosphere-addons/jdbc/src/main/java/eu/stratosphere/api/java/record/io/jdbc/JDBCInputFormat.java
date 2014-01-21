@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
-package eu.stratosphere.api.io.jdbc;
+package eu.stratosphere.api.java.record.io.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -55,31 +55,21 @@ public class JDBCInputFormat extends GenericInputFormat implements UnsplittableI
 	
 
 	public final String DRIVER_KEY = "driver";
-
 	public final String USERNAME_KEY = "username";
-
 	public final String PASSWORD_KEY = "password";
-
 	public final String URL_KEY = "url";
-
 	public final String QUERY_KEY = "query";
 
 
 	private String username;
-
 	private String password;
-
 	private String driverName;
-
 	private String dbURL;
-
 	private String query;
 
 	
 	private transient Connection dbConn;
-
 	private transient Statement statement;
-
 	private transient ResultSet resultSet;
 
 

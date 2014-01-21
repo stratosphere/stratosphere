@@ -427,7 +427,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					conf.setDriver(inputNum == 0 ? SolutionSetFirstCoGroupDriver.class : SolutionSetSecondCoGroupDriver.class);
 				}
 				else {
-					throw new CompilerException("Found join with solution set using incompatible operator (only Match/CoGroup are valid.");
+					throw new CompilerException("Found join with solution set using incompatible operator (only Join/CoGroup are valid.");
 				}
 				
 				// set the serializer / comparator information
@@ -753,7 +753,8 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		} else {
 			// create task vertex
 			vertex = new JobTaskVertex(taskName, this.jobGraph);
-			vertex.setTaskClass(this.currentIteration == null ? RegularPactTask.class : IterationIntermediatePactTask.class);
+			vertex.setTaskClass( (this.currentIteration != null && node.isOnDynamicPath()) ? IterationIntermediatePactTask.class : RegularPactTask.class);
+			
 			config = new TaskConfig(vertex.getConfiguration());
 			config.setDriver(ds.getDriverClass());
 		}
@@ -778,7 +779,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		final DriverStrategy ds = node.getDriverStrategy();
 		final JobTaskVertex vertex = new JobTaskVertex(taskName, this.jobGraph);
 		final TaskConfig config = new TaskConfig(vertex.getConfiguration());
-		vertex.setTaskClass(this.currentIteration == null ? RegularPactTask.class : IterationIntermediatePactTask.class);
+		vertex.setTaskClass( (this.currentIteration != null && node.isOnDynamicPath()) ? IterationIntermediatePactTask.class : RegularPactTask.class);
 		
 		// set user code
 		config.setStubWrapper(node.getPactContract().getUserCodeWrapper());

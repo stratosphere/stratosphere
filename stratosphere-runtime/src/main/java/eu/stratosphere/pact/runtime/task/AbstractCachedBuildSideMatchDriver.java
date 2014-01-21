@@ -62,8 +62,9 @@ public abstract class AbstractCachedBuildSideMatchDriver<IT1, IT2, OT> extends M
 		TypePairComparatorFactory<IT1, IT2> pairComparatorFactory = 
 				this.taskContext.getTaskConfig().getPairComparatorFactory(this.taskContext.getUserCodeClassLoader());
 
+		int numMemoryPages = this.taskContext.getMemoryManager().computeNumberOfPages(config.getMemoryDriver());
 		List<MemorySegment> memSegments = this.taskContext.getMemoryManager().allocatePages(
-			this.taskContext.getOwningNepheleTask(), config.getMemoryDriver());
+			this.taskContext.getOwningNepheleTask(), numMemoryPages);
 
 		if (getBuildSideIndex() == 0 && getProbeSideIndex() == 1) {
 			MutableHashTable<IT1, IT2> hashJoin = new MutableHashTable<IT1, IT2>(serializer1, serializer2, comparator1, comparator2,
@@ -111,9 +112,9 @@ public abstract class AbstractCachedBuildSideMatchDriver<IT1, IT2, OT> extends M
 				if (bucket.next(buildSideRecordFirst)) {
 					while (bucket.next(buildSideRecordOther)) {
 						probeSideSerializer.copyTo(probeSideRecord, probeSideRecordCopy);
-						matchStub.match(buildSideRecordOther, probeSideRecordCopy, collector);
+						matchStub.join(buildSideRecordOther, probeSideRecordCopy, collector);
 					}
-					matchStub.match(buildSideRecordFirst, probeSideRecord, collector);
+					matchStub.join(buildSideRecordFirst, probeSideRecord, collector);
 				}
 			}
 		} else if (getBuildSideIndex() == 1) {
@@ -136,9 +137,9 @@ public abstract class AbstractCachedBuildSideMatchDriver<IT1, IT2, OT> extends M
 				if (bucket.next(buildSideRecordFirst)) {
 					while (bucket.next(buildSideRecordOther)) {
 						probeSideSerializer.copyTo(probeSideRecord, probeSideRecordCopy);
-						matchStub.match(probeSideRecordCopy, buildSideRecordOther, collector);
+						matchStub.join(probeSideRecordCopy, buildSideRecordOther, collector);
 					}
-					matchStub.match(probeSideRecord, buildSideRecordFirst, collector);
+					matchStub.join(probeSideRecord, buildSideRecordFirst, collector);
 				}
 			}
 		} else {
