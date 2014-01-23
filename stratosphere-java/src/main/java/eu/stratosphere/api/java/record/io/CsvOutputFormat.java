@@ -99,7 +99,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 	 * Creates an instance of CsvOutputFormat. The position of the fields in the
 	 * record is determined by the order in which the classes are given to this
 	 * constructor. As the default value for separating records '\n' is used.
-	 * The default field delimiter is '|'.
+	 * The default field delimiter is ','.
 	 * 
 	 * @param fieldDelimiter
 	 *            The delimiter that is used to separate the different fields in
