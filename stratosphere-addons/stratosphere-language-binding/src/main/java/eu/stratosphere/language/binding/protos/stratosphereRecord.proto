@@ -1,0 +1,38 @@
+package eu.stratosphere.language.binding.protos;
+
+//option java_package = "eu.stratosphere.language.binding.protos";
+option java_outer_classname = "StratosphereRecordProtoBuffers";
+
+//As test for a fixed size length sending
+message ProtoRecordSize{
+	required fixed32 value = 1;
+}
+
+message ProtoStratosphereRecord{
+
+	enum ProtoValueType {
+		StringValue = 0;
+    	IntegerValue32 = 1;
+    	IntegerValue64 = 2;
+    	DoubleValue = 3;
+    	FloatValue = 4;
+    	BooleanValue = 5;
+  	}
+
+  	message ProtoValue{
+  		required ProtoValueType valueType = 1;
+  		optional string stringVal = 2;
+  		// Automatically using variable-length encoding,
+  		// but int32 is equivalent to int, int64 to long...
+  		// TODO look if we really need this differentiation
+		optional int32 int32Val = 3;
+		optional int64 int64Val = 4;
+		optional double doubleVal = 5;
+		optional float floatVal = 6;
+		optional bool boolVal = 7;
+  	}
+
+	// Due to language-guide [packed = true] should be more efficient,
+	// but it can only be applied to primitive fields
+  	repeated ProtoValue values = 1;
+}
