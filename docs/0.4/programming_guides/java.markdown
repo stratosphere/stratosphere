@@ -514,7 +514,7 @@ public class MyMapper extends MapFunction {
 
     public void open(Configuration config) {
         this.year = config.getInteger("param.year", 0);
-        this.year = config.getString("param.name",  "");
+        this.name = config.getString("param.name",  "");
     }
 
     public void map(Record record, Collector<Record> out) {
