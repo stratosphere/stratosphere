@@ -9,6 +9,7 @@ links:
   - {anchor: "start", title: "Start"}
   - {anchor: "example", title: "Run Example"}
   - {anchor: "cluster", title: "Cluster Setup"}
+  - {anchor: "yarn", title: "Stratosphere on YARN"}
 ---
 
 <p class="lead">Get Stratosphere up and running in a few simple steps.</p>
@@ -81,15 +82,61 @@ $ bin/stratosphere run \
 
 <section id="cluster">
   <div class="page-header"><h2>Cluster Setup</h2></div>
-  <p class="lead"><strong>Running Stratosphere on a cluster</strong> is as easy as running it locally. Having <strong>passwordless SSH</strong> and a <strong>the same directory structure</strong> on all your cluster nodes lets you use our scripts to control everything.</p>
+  <p class="lead"><strong>Running Stratosphere on a cluster</strong> is as easy as running it locally. Having <strong>passwordless SSH</strong> and <strong>the same directory structure</strong> on all your cluster nodes lets you use our scripts to control everything.</p>
   <ol>
-  	<li class="lead">Copy <strong>Stratosphere</strong> to the same file system path on each node of your setup,</li>
+  	<li class="lead">Copy the unpacked <strong>stratosphere</strong> directory from the downloaded archive to the same file system path on each node of your setup.</li>
   	<li class="lead">Choose a <strong>master node</strong> (JobManager) and set the <code>jobmanager.rpc.address</code> key in <code>conf/stratosphere-conf.yaml</code> to its IP or hostname. Make sure that all nodes in your cluster have the same <code>jobmanager.rpc.address</code> configured.</li>
   	<li class="lead">Add the IPs or hostnames (one per line) of all <strong>worker nodes</strong> (TaskManager) to the slaves files in <code>conf/slaves</code>.</li>
   </ol>
   <p class="lead">You can now <strong>start the cluster</strong> at your master node with <code>bin/start-cluster.sh</code>.</p>
-  <p class="lead">If you have a more individual setup, you can also start the JobManager on the <strong>master node</strong> and the TaskManagers on the nodes on your own.</p>
+  <p class="lead">
+    The following <strong>example</strong> illustrates the setup with three nodes and shows the contents of the configuration files, which need to be accessible at the same path on all machines:
+  </p>
+  <div class="row">
+    <div class="col-md-6 text-center">
+      <img src="{{ site.baseurl }}/img/quickstart_cluster.png" style="width: 85%">
+    </div>
+    <div class="col-md-6">
+      <div class="row">
+        <p class="lead text-center">
+        /path/to/<strong>stratosphere/conf/<br>stratosphere-conf.yaml</strong>
+<pre>
+jobmanager.rpc.address: 10.0.0.1
+</pre>
+        </p>
+      </div>
+      <div class="row" style="margin-top: 1em;">
+        <p class="lead text-center">
+        /path/to/<strong>stratosphere/<br>conf/slaves</strong>
+<pre>
+10.0.0.2
+10.0.0.3
+</pre>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="yarn">
+  <div class="page-header"><h2>Stratosphere on YARN</h2></div>
+  <p class="lead">You can easily deploy Stratosphere on your existing <strong>YARN cluster</strong>. 
+    <ol>
+    <li class="lead">Download the <strong>Stratosphere Uber-Jar</strong> YARN client:
+      <div class="text-center" style="padding: 1em;">
+      <a style="padding-left:10px" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-yarn',this.href]);" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere {{ site.current_stable }} for YARN</a>
+      </div>
+    </li>
+    <li class="lead">Make sure your <strong>HADOOP_HOME</strong> (or <em>YARN_CONF_DIR</em> or <em>HADOOP_CONF_DIR</em>) <strong>environment variable</strong> is set to read your YARN and HDFS configuration.</li>
+    <li class="lead">Run the <strong>YARN client</strong> with:
+      <div class="text-center" style="padding:1em;">
+        <code>java -jar stratosphere-dist-0.4-yarn-uberjar.jar</code>
+      </div>
+      
+      You can run the client with options <code>-n 10 -tm 8192</code> to allocate 10 TaskManagers with 8GB of memory each.</li>
+  </ol>
+  </p>
 </section>
 
 <hr />
-<p class="lead">For <strong>more detailed instructions</strong>, check out the <a href="{{site.baseurl}}/docs/">Documentation</a>.</p>
+<p class="lead">For <strong>more detailed instructions</strong>, check out the <a href="{{site.baseurl}}/docs/{{site.current_stable_documentation}}">Documentation</a>.</p>
