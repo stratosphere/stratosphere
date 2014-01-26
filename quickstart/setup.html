@@ -90,7 +90,7 @@ $ bin/stratosphere run \
   </ol>
   <p class="lead">You can now <strong>start the cluster</strong> at your master node with <code>bin/start-cluster.sh</code>.</p>
   <p class="lead">
-    The following <strong>example</strong> illustrates the setup with three nodes and shows the contents of the configuration files, which need to be accessible at the same path on all machines:
+    The following <strong>example</strong> illustrates the setup with three nodes (with IP addresses from <em>10.0.0.1</em> to <em>10.0.0.3</em> and hostnames <em>master</em>, <em>worker1</em>, <em>worker2</em>) and shows the contents of the configuration files, which need to be accessible at the same path on all machines:
   </p>
   <div class="row">
     <div class="col-md-6 text-center">
@@ -124,7 +124,7 @@ jobmanager.rpc.address: 10.0.0.1
     <ol>
     <li class="lead">Download the <strong>Stratosphere Uber-Jar</strong> YARN client:
       <div class="text-center" style="padding: 1em;">
-      <a style="padding-left:10px" onclick="_gaq.push(['_trackEvent','Action','download-dlpage-yarn',this.href]);" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere {{ site.current_stable }} for YARN</a>
+      <a style="padding-left:10px" onclick="_gaq.push(['_trackEvent','Action','download-quickstart-yarn',this.href]);" class="btn btn-info btn-lg" href="{{site.current_stable_uberjar}}"><i class="icon-download"> </i> Stratosphere {{ site.current_stable }} for YARN</a>
       </div>
     </li>
     <li class="lead">Make sure your <strong>HADOOP_HOME</strong> (or <em>YARN_CONF_DIR</em> or <em>HADOOP_CONF_DIR</em>) <strong>environment variable</strong> is set to read your YARN and HDFS configuration.</li>
