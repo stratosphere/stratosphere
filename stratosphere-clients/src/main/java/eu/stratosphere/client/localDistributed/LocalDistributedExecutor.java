@@ -29,10 +29,11 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.nephele.client.JobExecutionResult;
-import eu.stratosphere.nephele.instance.local.LocalTaskManagerThread;
+import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.jobmanager.JobManager.ExecutionMode;
+import eu.stratosphere.nephele.taskmanager.TaskManager;
 
 /**
  * This executor allows to execute jobs locally on a single machine using multiple task managers.
@@ -45,7 +46,7 @@ public class LocalDistributedExecutor implements PlanExecutor {
 	
 	private static final int JOB_MANAGER_RPC_PORT = 6498;
 
-	private static final int SLEEP_TIME = 100;
+	private static final int SLEEP_TIME = 50;
 
 	private static final int START_STOP_TIMEOUT = 2000;
 
@@ -55,7 +56,8 @@ public class LocalDistributedExecutor implements PlanExecutor {
 
 	private JobManagerThread jobManagerThread;
 
-	private List<LocalTaskManagerThread> taskManagerThreads = new ArrayList<LocalTaskManagerThread>();
+	private List<TaskManager> taskManagers = new ArrayList<TaskManager>();
+	
 
 	public static class JobManagerThread extends Thread {
 		JobManager jm;
@@ -78,13 +80,18 @@ public class LocalDistributedExecutor implements PlanExecutor {
 		}
 	}
 
-	public synchronized void start(int numTaskMgr) throws InterruptedException {
+	public synchronized void start(int numTaskMgr) throws Exception {
 		if (this.running) {
 			return;
 		}
 		
+		// we need to down size the memory. determine the memory and divide it by the
+		// number of task managers
+		long javaMem = HardwareDescriptionFactory.extractFromSystem().getSizeOfFreeMemory();
+		javaMem /= numTaskMgr;
+		
 		Configuration conf = NepheleMiniCluster.getMiniclusterDefaultConfig(
-				JOB_MANAGER_RPC_PORT, 6500, 7501, null, true);
+				JOB_MANAGER_RPC_PORT, 6500, 7501, javaMem, null, true, true);
 		GlobalConfiguration.includeConfiguration(conf);
 			
 		// start job manager
@@ -114,14 +121,11 @@ public class LocalDistributedExecutor implements PlanExecutor {
 
 			GlobalConfiguration.includeConfiguration(tmConf);
 
-			LocalTaskManagerThread t = new LocalTaskManagerThread(
-					"LocalDistributedExecutor: LocalTaskManagerThread-#" + tm, numTaskMgr);
-
-			t.start();
-			taskManagerThreads.add(t);
+			TaskManager t = new TaskManager();
+			taskManagers.add(t);
 		}
 
-		int timeout = START_STOP_TIMEOUT * this.taskManagerThreads.size();
+		int timeout = START_STOP_TIMEOUT * this.taskManagers.size();
 
 		// wait for all task managers to register at the JM
 		for (int sleep = 0; sleep < timeout; sleep += SLEEP_TIME) {
@@ -129,7 +133,9 @@ public class LocalDistributedExecutor implements PlanExecutor {
 				break;
 			}
 
-			Thread.sleep(SLEEP_TIME);
+			try {
+				Thread.sleep(SLEEP_TIME);
+			} catch (InterruptedException e) {}
 		}
 
 		if (jobManager.getNumberOfTaskTrackers() < numTaskMgr) {
@@ -138,6 +144,7 @@ public class LocalDistributedExecutor implements PlanExecutor {
 
 		this.running = true;
 	}
+	
 
 	public synchronized void stop() throws InterruptedException, IOException {
 		if (!this.running) {
@@ -145,35 +152,8 @@ public class LocalDistributedExecutor implements PlanExecutor {
 		}
 
 		// 1. shut down task managers
-		for (LocalTaskManagerThread t : this.taskManagerThreads) {
-			t.shutDown();
-			t.interrupt();
-			t.join(START_STOP_TIMEOUT);
-		}
-
-		boolean isTaskManagersShutDown = false;
-
-		// wait for task managers to shut down
-		int timeout = START_STOP_TIMEOUT * this.taskManagerThreads.size();
-
-		for (int sleep = 0; sleep < timeout; sleep += SLEEP_TIME) {
-			isTaskManagersShutDown = true;
-
-			for (LocalTaskManagerThread t : this.taskManagerThreads) {
-				if (!t.isShutDown()) {
-					isTaskManagersShutDown = false;
-				}
-			}
-
-			if (isTaskManagersShutDown) {
-				break;
-			}
-
-			Thread.sleep(SLEEP_TIME);
-		}
-
-		if (!isTaskManagersShutDown) {
-			throw new RuntimeException(String.format("Task managers shut down timed out (%d ms).", timeout));
+		for (TaskManager t : this.taskManagers) {
+			t.shutdown();
 		}
 
 		// 2. shut down job manager
@@ -194,7 +174,7 @@ public class LocalDistributedExecutor implements PlanExecutor {
 				throw new RuntimeException(String.format("Job manager shut down timed out (%d ms).", START_STOP_TIMEOUT));
 			}
 		} finally {
-			this.taskManagerThreads.clear();
+			this.taskManagers.clear();
 			this.jobManagerThread = null;
 			this.running = false;
 		}

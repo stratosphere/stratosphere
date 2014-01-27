@@ -73,25 +73,16 @@ public class HardwareDescriptionFactory {
 	 *         one value for the hardware description cannot be determined
 	 */
 	public static HardwareDescription extractFromSystem() {
-		return extractFromSystem(1);
-	}
-	
-	public static HardwareDescription extractFromSystem(final int taskManagersPerJVM) {
+		int numberOfCPUCores = Runtime.getRuntime().availableProcessors();
 
-		final int numberOfCPUCores = Runtime.getRuntime().availableProcessors();
-
-		final long sizeOfPhysicalMemory = getSizeOfPhysicalMemory();
+		long sizeOfPhysicalMemory = getSizeOfPhysicalMemory();
 		if (sizeOfPhysicalMemory < 0) {
-			return null;
+			sizeOfPhysicalMemory = 1;
 		}
 
-		final long sizeOfFreeMemory = getSizeOfFreeMemory() / taskManagersPerJVM;
-		if (sizeOfFreeMemory < 0) {
-			return null;
-		}
+		long sizeOfFreeMemory = getSizeOfFreeMemory();
 
-		return new HardwareDescription(numberOfCPUCores, sizeOfPhysicalMemory,
-				sizeOfFreeMemory);
+		return new HardwareDescription(numberOfCPUCores, sizeOfPhysicalMemory, sizeOfFreeMemory);
 	}
 
 	/**

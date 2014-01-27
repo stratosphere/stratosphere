@@ -81,6 +81,11 @@ public final class ConfigConstants {
 	 * The config parameter defining the fraction of free memory allocated by the memory manager.
 	 */
 	public static final String TASK_MANAGER_MEMORY_FRACTION_KEY = "taskmanager.memory.fraction";
+	
+    /**
+     * The key for the config parameter defining whether the memory manager allocates memory lazy.
+     */
+    public static final String TASK_MANAGER_MEMORY_LAZY_ALLOCATION_KEY = "taskmanager.memory.lazyalloc";
 
 	/**
 	 * The config parameter defining the number of buffers used in the network stack. This defines the
@@ -92,6 +97,12 @@ public final class ConfigConstants {
 	 * The config parameter defining the size of the buffers used in the network stack.
 	 */
 	public static final String TASK_MANAGER_NETWORK_BUFFER_SIZE_KEY = "taskmanager.network.bufferSizeInBytes";
+
+	/**
+	 * Parameter for the interval in which the RaskManager sends the periodic heartbeat messages
+	 * to the JobManager (in msecs).
+	 */
+	public static final String TASK_MANAGER_HEARTBEAT_INTERVAL_KEY = "taskmanager.heartbeat-interval";
 	
 	/**
 	 * Parameter for the maximum fan for out-of-core algorithms.
@@ -124,7 +135,6 @@ public final class ConfigConstants {
 	public static final String JOBCLIENT_POLLING_INTERVAL_KEY = "jobclient.polling.interval";
 	
 
-		
 	// ------------------------ Hadoop Configuration ------------------------
 	
 	
@@ -273,7 +283,12 @@ public final class ConfigConstants {
 	/**
 	 * The default fraction of the free memory allocated by the task manager's memory manager.
 	 */
-	public static final float DEFAULT_MEMORY_MANAGER_MEMORY_FRACTION = 0.7f;
+	public static final float DEFAULT_MEMORY_MANAGER_MEMORY_FRACTION = 0.8f;
+	
+    /**
+     * The default setting for the memory manager lazy allocation feature.
+     */
+    public static final boolean DEFAULT_TASK_MANAGER_MEMORY_LAZY_ALLOCATION = false;
 
 	/**
 	 * Default number of buffers used in the network stack.
@@ -284,6 +299,11 @@ public final class ConfigConstants {
 	 * Default size of network stack buffers.
 	 */
 	public static final int DEFAULT_TASK_MANAGER_NETWORK_BUFFER_SIZE = 32768;
+	
+	/**
+	 * The default interval for TaskManager heartbeats (2000 msecs).
+	 */
+	public static final int DEFAULT_TASK_MANAGER_HEARTBEAT_INTERVAL = 2000;
 	
 	/**
 	 * The default value for the JobClient's polling interval. 2 Seconds.

@@ -48,17 +48,11 @@ import eu.stratosphere.nephele.template.AbstractInvokable;
  * exceed 2GB and must be contained in a single memory chunk.
  * 
  */
-public class DefaultMemoryManager implements MemoryManager
-{
-	/**
-	 * The default memory page size. Currently set to 32 KiBytes.
-	 */
-	public static final int DEFAULT_PAGE_SIZE = 32 * 1024;
+public class DefaultMemoryManager implements MemoryManager {
 	
-	/**
-	 * The minimal memory page size. Currently set to 4 KiBytes.
-	 */
-	public static final int MIN_PAGE_SIZE = 4 * 1024;
+	private static final int MIN_PAGE_SIZE = 4 * 1024;
+	
+	private static final int DEFAULT_PAGE_SIZE = 32 * 1024;
 	
 	/**
 	 * The Log.
@@ -81,29 +75,35 @@ public class DefaultMemoryManager implements MemoryManager
 	
 	private final int totalNumPages;		// The initial total size, for verification.
 	
+	private int numLazyPagesRemaining;		// The number of pages that remain for lazy allocation
+	
 	private boolean isShutDown;				// flag whether the close() has already been invoked.
 
 	// ------------------------------------------------------------------------
 	// Constructors / Destructors
 	// ------------------------------------------------------------------------
 
-	/**
-	 * Creates a memory manager with the given capacity, using the default page size.
-	 * 
-	 * @param memorySize The total size of the memory to be managed by this memory manager.
-	 */
 	public DefaultMemoryManager(long memorySize) {
-		this(memorySize, DEFAULT_PAGE_SIZE);
+		this (memorySize, DEFAULT_PAGE_SIZE, false);
 	}
-
+	
 	/**
 	 * Creates a memory manager with the given capacity and given page size.
 	 * 
 	 * @param memorySize The total size of the memory to be managed by this memory manager.
 	 * @param pageSize The size of the pages handed out by the memory manager.
 	 */
-	public DefaultMemoryManager(long memorySize, int pageSize)
-	{
+	public DefaultMemoryManager(long memorySize, int pageSize) {
+		this (memorySize, pageSize, false);
+	}
+	
+	/**
+	 * Creates a memory manager with the given capacity and given page size.
+	 * 
+	 * @param memorySize The total size of the memory to be managed by this memory manager.
+	 * @param pageSize The size of the pages handed out by the memory manager.
+	 */
+	public DefaultMemoryManager(long memorySize, int pageSize, boolean lazyAllocation) {
 		// sanity checks
 		if (memorySize <= 0) {
 			throw new IllegalArgumentException("Size of total memory must be positive.");
@@ -130,24 +130,25 @@ public class DefaultMemoryManager implements MemoryManager
 		}
 		
 		// initialize the free segments and allocated segments tracking structures
-		this.freeSegments = new ArrayDeque<byte[]>();
+		this.freeSegments = new ArrayDeque<byte[]>(this.totalNumPages);
 		this.allocatedSegments = new HashMap<AbstractInvokable, Set<DefaultMemorySegment>>();
 
-		
-		// add the full chunks
-		for (int i = 0; i < this.totalNumPages; i++) {
-			// allocate memory of the specified size
-			this.freeSegments.add(new byte[this.pageSize]);
+		if (lazyAllocation) {
+			this.numLazyPagesRemaining = this.totalNumPages;
+		} else {
+			// add the full chunks
+			for (int i = 0; i < this.totalNumPages; i++) {
+				// allocate memory of the specified size
+				this.freeSegments.add(new byte[this.pageSize]);
+			}
 		}
 	}
 
 
 	@Override
-	public void shutdown()
-	{
+	public void shutdown() {
 		// -------------------- BEGIN CRITICAL SECTION -------------------
-		synchronized (this.lock)
-		{
+		synchronized (this.lock) {
 			if (!this.isShutDown) {
 				if (LOG.isDebugEnabled())
 					LOG.debug("Shutting down MemoryManager instance " + toString());
@@ -167,9 +168,7 @@ public class DefaultMemoryManager implements MemoryManager
 		// -------------------- END CRITICAL SECTION -------------------
 	}
 	
-
-	public boolean verifyEmpty()
-	{
+	public boolean verifyEmpty() {
 		synchronized (this.lock) {
 			return this.freeSegments.size() == this.totalNumPages;
 		}
@@ -179,9 +178,6 @@ public class DefaultMemoryManager implements MemoryManager
 	//                 MemoryManager interface implementation
 	// ------------------------------------------------------------------------
 	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.nephele.services.memorymanager.MemoryManager#allocatePages(eu.stratosphere.nephele.template.AbstractInvokable, int)
-	 */
 	@Override
 	public List<MemorySegment> allocatePages(AbstractInvokable owner, int numPages) throws MemoryAllocationException {
 		final ArrayList<MemorySegment> segs = new ArrayList<MemorySegment>(numPages);
@@ -189,9 +185,6 @@ public class DefaultMemoryManager implements MemoryManager
 		return segs;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.nephele.services.memorymanager.MemoryManager#allocatePages(eu.stratosphere.nephele.template.AbstractInvokable, java.util.List, int)
-	 */
 	@Override
 	public void allocatePages(AbstractInvokable owner, List<MemorySegment> target, int numPages)
 			throws MemoryAllocationException
@@ -213,9 +206,21 @@ public class DefaultMemoryManager implements MemoryManager
 				throw new IllegalStateException("Memory manager has been shut down.");
 			}
 			
+			// check if there is enough memory left
 			if (numPages > this.freeSegments.size()) {
-				throw new MemoryAllocationException("Could not allocate " + numPages + " pages. Only " + 
-					this.freeSegments.size() + " pages are remaining.");
+				// allocate lazy pages
+				if (numPages > this.freeSegments.size() + this.numLazyPagesRemaining) {
+					throw new MemoryAllocationException("Could not allocate " + numPages + " pages. Only " + 
+						this.freeSegments.size() + " pages are remaining.");
+				}
+				else {
+					final int lazyPagesToGet = numPages - this.freeSegments.size();
+					this.numLazyPagesRemaining -= lazyPagesToGet;
+					
+					for (int i = 0; i < lazyPagesToGet; i++) {
+						this.freeSegments.add(new byte[this.pageSize]);
+					}
+				}
 			}
 			
 			Set<DefaultMemorySegment> segmentsForOwner = this.allocatedSegments.get(owner);
@@ -343,8 +348,7 @@ public class DefaultMemoryManager implements MemoryManager
 
 
 	@Override
-	public void releaseAll(AbstractInvokable owner)
-	{
+	public void releaseAll(AbstractInvokable owner) {
 		// -------------------- BEGIN CRITICAL SECTION -------------------
 		synchronized (this.lock)
 		{

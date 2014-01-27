@@ -37,6 +37,7 @@ import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.instance.InstanceTypeDescriptionFactory;
 import eu.stratosphere.nephele.instance.InstanceTypeFactory;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.taskmanager.TaskManager;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.util.SerializableHashMap;
 
@@ -50,7 +51,12 @@ import eu.stratosphere.nephele.util.SerializableHashMap;
  * 
  */
 public class LocalInstanceManager implements InstanceManager {
-
+	
+	/**
+	 * A synchronization object to protect critical sections.
+	 */
+	private final Object synchronizationObject = new Object();
+	
 	/**
 	 * The instance listener registered with this instance manager.
 	 */
@@ -63,11 +69,6 @@ public class LocalInstanceManager implements InstanceManager {
 	private final InstanceType defaultInstanceType;
 
 	/**
-	 * A synchronization object to protect critical sections.
-	 */
-	private final Object synchronizationObject = new Object();
-
-	/**
 	 * Stores if the local task manager is currently by a job.
 	 */
 	private AllocatedResource allocatedResource;
@@ -78,9 +79,9 @@ public class LocalInstanceManager implements InstanceManager {
 	private LocalInstance localInstance ;
 
 	/**
-	 * The thread running the local task manager.
+	 * The local task manager.
 	 */
-	private final LocalTaskManagerThread localTaskManagerThread;
+	private final TaskManager taskManager;
 
 	/**
 	 * The network topology the local instance is part of.
@@ -99,15 +100,18 @@ public class LocalInstanceManager implements InstanceManager {
 	 *        the path to the configuration directory
 	 */
 	public LocalInstanceManager() {
-
 		this.defaultInstanceType = createDefaultInstanceType();
 
 		this.networkTopology = NetworkTopology.createEmptyTopology();
 
 		this.instanceTypeDescriptionMap = new SerializableHashMap<InstanceType, InstanceTypeDescription>();
 
-		this.localTaskManagerThread = new LocalTaskManagerThread("Local Taskmanager Loop",1);
-		this.localTaskManagerThread.start();
+		// start the task manager
+		try {
+			this.taskManager = new TaskManager();
+		} catch (Throwable t) {
+			throw new RuntimeException("Could not start local task manager.", t);
+		}
 	}
 
 
@@ -195,23 +199,10 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public void shutdown() {
-
-		// Stop the internal instance of the task manager
-		if (this.localTaskManagerThread != null) {
-
-			while (!this.localTaskManagerThread.isShutDown()) {
-				try {
-					// Interrupt the thread running the task manager
-					this.localTaskManagerThread.interrupt();
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					break;
-				}
-			}
-
-			// Clear the instance type description list
-			this.instanceTypeDescriptionMap.clear();
-		}
+		this.taskManager.shutdown();
+		
+		// Clear the instance type description list
+		this.instanceTypeDescriptionMap.clear();
 
 		// Destroy local instance
 		synchronized (this.synchronizationObject) {
@@ -305,11 +296,8 @@ public class LocalInstanceManager implements InstanceManager {
 				} else {
 					throw new InstanceException("No instance of type " + entry.getKey() + " available");
 				}
-
 			}
-
 		}
-
 	}
 
 
