@@ -25,7 +25,7 @@ HadoopDataSource src = new HadoopDataSource(new MongoInputFormat(), conf, "Read 
 ### Example Program
 The example program reads data from the [enron dataset](http://www.cs.cmu.edu/~enron/) that contains about 500k internal e-mails. The data is stored in MongoDB and the Stratosphere program counts the number of e-mails per day.
 
-The complete code of this sample program is available on [GitHub](https://github.com/rmetzger/scratch/tree/mongodb-input).
+The complete code of this sample program is available on [GitHub](https://github.com/stratosphere/stratosphere-mongodb-example).
 
 #### Prepare MongoDB and the Data
 
@@ -73,7 +73,7 @@ The jar-file is now located in `core/target`.
 Now we have everything prepared to run the Stratosphere program. I only ran it on my local computer, out of Eclipse. To do that, check out the code ...
 
 ```bash
-git clone -b mongodb-input https://github.com/rmetzger/scratch mongodb-input
+git clone https://github.com/stratosphere/stratosphere-mongodb-example.git
 ```
 
 ... and import it as a Maven project into your Eclipse. You have to manually add the previously build mongo-hadoop jar-file as a dependency.
@@ -106,3 +106,5 @@ public void map(Record record, Collector<Record> out) throws Exception {
 ```
 
 Please use the comments if you have questions or if you want to showcase your own MongoDB-Stratosphere integration.
+<br><br>
+<small>Written by Robert Metzger ([@rmetzger_](https://twitter.com/rmetzger_)).</small>
