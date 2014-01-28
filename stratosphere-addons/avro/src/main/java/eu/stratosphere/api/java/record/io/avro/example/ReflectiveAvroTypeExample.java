@@ -12,7 +12,7 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.avro.example;
+package eu.stratosphere.api.java.record.io.avro.example;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -36,9 +36,6 @@ import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
 
 
-/**
- *
- */
 public class ReflectiveAvroTypeExample {
 	
 	

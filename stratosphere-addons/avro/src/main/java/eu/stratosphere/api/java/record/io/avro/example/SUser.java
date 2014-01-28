@@ -12,10 +12,10 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.avro.example;
+package eu.stratosphere.api.java.record.io.avro.example;
 
-import eu.stratosphere.api.avro.SAvroValue;
+import eu.stratosphere.api.avro.AvroBaseValue;
 
-public class SUser extends SAvroValue<User> {
+public class SUser extends AvroBaseValue<User> {
 	private static final long serialVersionUID = 1L;
 }

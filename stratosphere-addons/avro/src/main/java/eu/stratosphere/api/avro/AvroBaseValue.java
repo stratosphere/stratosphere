@@ -26,14 +26,14 @@ import eu.stratosphere.types.Key;
 import eu.stratosphere.util.ReflectionUtil;
 
 
-public abstract class SAvroValue<T> extends AvroValue<T> implements Key {
+public abstract class AvroBaseValue<T> extends AvroValue<T> implements Key {
 	
 	private static final long serialVersionUID = 1L;
 
 
-	public SAvroValue() {}
+	public AvroBaseValue() {}
 	
-	public SAvroValue(T datum) {
+	public AvroBaseValue(T datum) {
 		super(datum);
 	}
 
@@ -117,7 +117,7 @@ public abstract class SAvroValue<T> extends AvroValue<T> implements Key {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj.getClass() == this.getClass()) {
-			Object otherDatum = ((SAvroValue<?>) obj).datum();
+			Object otherDatum = ((AvroBaseValue<?>) obj).datum();
 			Object thisDatum = datum();
 			
 			if (thisDatum == null) {
@@ -138,7 +138,7 @@ public abstract class SAvroValue<T> extends AvroValue<T> implements Key {
 	@SuppressWarnings("unchecked")
 	@Override
 	public int compareTo(Key o) {
-		Object otherDatum = ((SAvroValue<?>) o).datum();
+		Object otherDatum = ((AvroBaseValue<?>) o).datum();
 		Object thisDatum = datum();
 		
 		if (thisDatum == null) {

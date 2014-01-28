@@ -3,7 +3,7 @@
  * 
  * DO NOT EDIT DIRECTLY
  */
-package eu.stratosphere.api.avro.example;  
+package eu.stratosphere.api.java.record.io.avro.example;  
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class User extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
@@ -96,18 +96,18 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
   }
 
   /** Creates a new User RecordBuilder */
-  public static eu.stratosphere.api.avro.example.User.Builder newBuilder() {
-    return new eu.stratosphere.api.avro.example.User.Builder();
+  public static eu.stratosphere.api.java.record.io.avro.example.User.Builder newBuilder() {
+    return new eu.stratosphere.api.java.record.io.avro.example.User.Builder();
   }
   
   /** Creates a new User RecordBuilder by copying an existing Builder */
-  public static eu.stratosphere.api.avro.example.User.Builder newBuilder(eu.stratosphere.api.avro.example.User.Builder other) {
-    return new eu.stratosphere.api.avro.example.User.Builder(other);
+  public static eu.stratosphere.api.java.record.io.avro.example.User.Builder newBuilder(eu.stratosphere.api.java.record.io.avro.example.User.Builder other) {
+    return new eu.stratosphere.api.java.record.io.avro.example.User.Builder(other);
   }
   
   /** Creates a new User RecordBuilder by copying an existing User instance */
-  public static eu.stratosphere.api.avro.example.User.Builder newBuilder(eu.stratosphere.api.avro.example.User other) {
-    return new eu.stratosphere.api.avro.example.User.Builder(other);
+  public static eu.stratosphere.api.java.record.io.avro.example.User.Builder newBuilder(eu.stratosphere.api.java.record.io.avro.example.User other) {
+    return new eu.stratosphere.api.java.record.io.avro.example.User.Builder(other);
   }
   
   /**
@@ -122,11 +122,11 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
 
     /** Creates a new Builder */
     private Builder() {
-      super(eu.stratosphere.api.avro.example.User.SCHEMA$);
+      super(eu.stratosphere.api.java.record.io.avro.example.User.SCHEMA$);
     }
     
     /** Creates a Builder by copying an existing Builder */
-    private Builder(eu.stratosphere.api.avro.example.User.Builder other) {
+    private Builder(eu.stratosphere.api.java.record.io.avro.example.User.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.name)) {
         this.name = data().deepCopy(fields()[0].schema(), other.name);
@@ -143,8 +143,8 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Creates a Builder by copying an existing User instance */
-    private Builder(eu.stratosphere.api.avro.example.User other) {
-            super(eu.stratosphere.api.avro.example.User.SCHEMA$);
+    private Builder(eu.stratosphere.api.java.record.io.avro.example.User other) {
+            super(eu.stratosphere.api.java.record.io.avro.example.User.SCHEMA$);
       if (isValidValue(fields()[0], other.name)) {
         this.name = data().deepCopy(fields()[0].schema(), other.name);
         fieldSetFlags()[0] = true;
@@ -165,7 +165,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Sets the value of the 'name' field */
-    public eu.stratosphere.api.avro.example.User.Builder setName(java.lang.CharSequence value) {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder setName(java.lang.CharSequence value) {
       validate(fields()[0], value);
       this.name = value;
       fieldSetFlags()[0] = true;
@@ -178,7 +178,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Clears the value of the 'name' field */
-    public eu.stratosphere.api.avro.example.User.Builder clearName() {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder clearName() {
       name = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -190,7 +190,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Sets the value of the 'favorite_number' field */
-    public eu.stratosphere.api.avro.example.User.Builder setFavoriteNumber(java.lang.Integer value) {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder setFavoriteNumber(java.lang.Integer value) {
       validate(fields()[1], value);
       this.favorite_number = value;
       fieldSetFlags()[1] = true;
@@ -203,7 +203,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Clears the value of the 'favorite_number' field */
-    public eu.stratosphere.api.avro.example.User.Builder clearFavoriteNumber() {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder clearFavoriteNumber() {
       favorite_number = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -215,7 +215,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Sets the value of the 'favorite_color' field */
-    public eu.stratosphere.api.avro.example.User.Builder setFavoriteColor(java.lang.CharSequence value) {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder setFavoriteColor(java.lang.CharSequence value) {
       validate(fields()[2], value);
       this.favorite_color = value;
       fieldSetFlags()[2] = true;
@@ -228,7 +228,7 @@ public class User extends org.apache.avro.specific.SpecificRecordBase implements
     }
     
     /** Clears the value of the 'favorite_color' field */
-    public eu.stratosphere.api.avro.example.User.Builder clearFavoriteColor() {
+    public eu.stratosphere.api.java.record.io.avro.example.User.Builder clearFavoriteColor() {
       favorite_color = null;
       fieldSetFlags()[2] = false;
       return this;
