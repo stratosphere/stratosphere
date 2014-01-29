@@ -23,6 +23,15 @@ keywords: stratosphere, setup, java, scala, learn, howto, quickstart, big data, 
     
     <div class="text-center" style="font-weight: bold; font-size: 1.2em; margin-top: 1em;">Install Stratosphere on one or more computers.</div>
   </div>
+
+  <div class="col-md-3">
+    <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','demo',this.href]); location.href='{{ site.baseurl }}/quickstart/example.html'">
+      <i class="icon-lightbulb icon-4x"></i><br> <br>Run an example: Clustering
+    </button>
+    <div class="text-center" style="font-weight: bold; font-size: 1.2em; margin-top: 1em;">See how Stratosphere works by computing K-Means Clustering.
+    </div>
+  </div>
+
   <div class="col-md-3">
   	<button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','scala',this.href]); location.href='{{ site.baseurl }}/quickstart/scala.html'">
   		<i class="icon-code icon-4x"></i><br> <br>Write job in Scala
@@ -36,11 +45,5 @@ keywords: stratosphere, setup, java, scala, learn, howto, quickstart, big data, 
     <div class="text-center" style="font-weight: bold; font-size: 1.2em; margin-top: 1em;">Write Stratosphere programs with the classic Java API. Run and debug your programs locally.
     </div>
   </div>
-  <div class="col-md-3">
-    <button type="button" class="btn btn-primary btn-lg btn-block gettingstarted-choices" onclick="_gaq.push(['_trackEvent','Quickstart','java',this.href]); location.href='{{ site.baseurl }}/quickstart/example.html'">
-      <i class="icon-lightbulb icon-4x"></i><br> <br>Run an example: Clustering
-    </button>
-    <div class="text-center" style="font-weight: bold; font-size: 1.2em; margin-top: 1em;">See how Stratosphere works by computing K-Means Clustering.
-    </div>
-  </div>
+
 </div>

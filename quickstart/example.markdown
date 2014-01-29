@@ -1,6 +1,6 @@
 --- 
 layout: inner_with_sidebar
-title: "Quick Start: Example"
+title: "Quick Start: Stratosphere K-Means Example"
 description: Run an example Stratosphere Program
 keywords: stratosphere, scala, program, howto, quickstart, big data, data analytics
 links:
@@ -11,7 +11,7 @@ links:
 
 
 <p class="lead">
-	This guide will demonstrate Stratosphere's features by example. You will see how you can leverage Stratosphere's Iteration-feature to find clusters in a dataset using <a href="http://en.wikipedia.org/wiki/K-means_clustering">K-Means clustering</a>.<br>
+	This guide will demonstrate Stratosphere's features by example. You will see how you can leverage Stratosphere's Iteration-feature to find clusters in a dataset using <a href="http://en.wikipedia.org/wiki/K-means_clustering">K-Means clustering</a>. 
 	On the way, you will see the compiler, the status interface and the result of the algorithm.
 </p>
 
@@ -35,12 +35,12 @@ The generator has the following arguments:
 {% highlight bash %}
 KMeansDataGenerator <numberOfDataPoints> <numberOfClusterCenters> [<relative stddev>] [<centroid range>] [<seed>]
 {% endhighlight %}
-The *relative standard deviation* is an interesting tuning parameter: it determines the closeness of the points to the centers.
-<p>The `kmeans/` directory should now contain two files: <code>centers</code> and <code>points</code>.</p>
+The <i>relative standard deviation</i> is an interesting tuning parameter: it determines the closeness of the points to the centers.
+<p>The <code>kmeans/</code> directory should now contain two files: <code>centers</code> and <code>points</code>.</p>
 
 
 <h2>Review Input Data</h2>
-Use the `plotPoints.py` tool to review the result of the data generator. <a href="{{site.baseurl}}/quickstart/example-data/plotPoints.py">Download Python Script</a>
+Use the <code>plotPoints.py</code> tool to review the result of the data generator. <a href="{{site.baseurl}}/quickstart/example-data/plotPoints.py">Download Python Script</a>
 {% highlight bash %}
 python2.7 plotPoints.py points input
 {% endhighlight %}
