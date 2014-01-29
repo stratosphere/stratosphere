@@ -5,7 +5,7 @@ date:   2014-01-28 9:00:00
 categories: news blog tutorial
 ---
 
-We recently merged a [pull request](https://github.com/stratosphere/stratosphere/pull/437) that allows to use any existing Hadoop [InputFormat](http://developer.yahoo.com/hadoop/tutorial/module5.html#inputformat) with Stratosphere. So you can now (in the `0.5-SNAPSHOT` and upwards versions) define a Hadoop-based data source:
+We recently merged a [pull request](https://github.com/stratosphere/stratosphere/pull/437) that allows you to use any existing Hadoop [InputFormat](http://developer.yahoo.com/hadoop/tutorial/module5.html#inputformat) with Stratosphere. So you can now (in the `0.5-SNAPSHOT` and upwards versions) define a Hadoop-based data source:
 
 ```java
 HadoopDataSource source = new HadoopDataSource(new TextInputFormat(), new JobConf(), "Input Lines");
@@ -76,7 +76,7 @@ Now we have everything prepared to run the Stratosphere program. I only ran it o
 git clone https://github.com/stratosphere/stratosphere-mongodb-example.git
 ```
 
-... and import it as a Maven project into your Eclipse. You have to manually add the previously build mongo-hadoop jar-file as a dependency.
+... and import it as a Maven project into your Eclipse. You have to manually add the previously built mongo-hadoop jar-file as a dependency.
 You can now press the "Run" button and see how Stratosphere executes the little program. It was running for about 8 seconds on the 1.5 GB dataset.
 
 
