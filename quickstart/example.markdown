@@ -6,7 +6,7 @@ keywords: stratosphere, scala, program, howto, quickstart, big data, data analyt
 links:
   - {anchor: "data", title: "Generate Input Data"}
   - {anchor: "run", title: "Run Clustering"}
-  - {anchor: "result", title: "Analyze Result"}
+  - {anchor: "result", title: "Analyze the Result"}
 ---
 
 
@@ -49,15 +49,15 @@ The following overview presents the impact of the different standard deviations 
 <div class="row" style="padding-top:15px">
 	<div class="col-md-4">
 		<div class="text-center" style="font-weight:bold;">relative stddev = 0.03</div>
-		<img src="{{site.baseurl}}/img/quickstart-example/kmeans003.png" class="img-responsive">
+		<a data-lightbox="inputs" href="{{site.baseurl}}/img/quickstart-example/kmeans003.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/kmeans003.png" /></a>
 	</div>
 	<div class="col-md-4">
 		<div class="text-center" style="font-weight:bold;">relative stddev = 0.08</div>
-		<img src="{{site.baseurl}}/img/quickstart-example/kmeans008.png" class="img-responsive">
+		<a data-lightbox="inputs" href="{{site.baseurl}}/img/quickstart-example/kmeans008.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/kmeans008.png" /></a>
 	</div>
 	<div class="col-md-4">
 		<div class="text-center" style="font-weight:bold;">relative stddev = 0.15</div>
-		<img src="{{site.baseurl}}/img/quickstart-example/kmeans015.png" class="img-responsive">
+		<a data-lightbox="inputs" href="{{site.baseurl}}/img/quickstart-example/kmeans015.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/kmeans015.png" /></a>
 	</div>
 </div>
 </section>
@@ -82,7 +82,7 @@ The Stratosphere webclient allows to submit Stratosphere programs using a graphi
 
 <div class="row" style="padding-top:15px">
 	<div class="col-md-6">
-		<img src="{{site.baseurl}}/img/quickstart-example/run-webclient.png" class="img-rounded img-responsive">
+		<a data-lightbox="compiler" href="{{site.baseurl}}/img/quickstart-example/run-webclient.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/run-webclient.png" /></a>
 	</div>
 	<div class="col-md-6">
 		1. <a href="http://localhost:8080/launch.html">Open webclient on localhost:8080</a> <br>
@@ -104,7 +104,7 @@ For example:
 <hr>
 <div class="row" style="padding-top:15px">
 	<div class="col-md-6">
-		<img src="{{site.baseurl}}/img/quickstart-example/compiler-webclient.png" class="img-rounded img-responsive">
+		<a data-lightbox="compiler" href="{{site.baseurl}}/img/quickstart-example/compiler-webclient.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/compiler-webclient.png" /></a>
 	</div>
 
 	<div class="col-md-6">
@@ -115,7 +115,7 @@ For example:
 <hr>
 <div class="row" style="padding-top:15px">
 	<div class="col-md-6">
-		<img src="{{site.baseurl}}/img/quickstart-example/jobmanager-running.png" class="img-rounded img-responsive">
+		<a data-lightbox="compiler" href="{{site.baseurl}}/img/quickstart-example/jobmanager-running.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/jobmanager-running.png" /></a>
 	</div>
 	<div class="col-md-6">
 		1. Press the <b>Continue</b> button to start executing the job. <br>
@@ -127,11 +127,34 @@ For example:
 
 <section id="result">
  <div class="page-header">
-  	<h2>Analyze Result</h2>
+  	<h2>Analyze the Result</h2>
   </div>
+Use the <a href="{{site.baseurl}}/quickstart/example-data/plotPoints.py">Python Script</a> again to visualize the result
+
+{% highlight bash %}
+python2.7 plotPoints.py result/points result
+{% endhighlight %}
+
+The following three pictures show the results for the sample input above. Play around with the parameters (number of iterations, number of clusters) to see how they affect the result.
+
+<div class="row" style="padding-top:15px">
+	<div class="col-md-4">
+		<div class="text-center" style="font-weight:bold;">relative stddev = 0.03</div>
+		<a data-lightbox="results" href="{{site.baseurl}}/img/quickstart-example/result003.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/result003.png" /></a>
+	</div>
+	<div class="col-md-4">
+		<div class="text-center" style="font-weight:bold;">relative stddev = 0.08</div>
+		<a data-lightbox="results" href="{{site.baseurl}}/img/quickstart-example/result008.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/result008.png" /></a>
+	</div>
+	<div class="col-md-4">
+		<div class="text-center" style="font-weight:bold;">relative stddev = 0.15</div>
+		<a data-lightbox="results" href="{{site.baseurl}}/img/quickstart-example/result015.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/result015.png" /></a>
+	</div>
+</div>
 
 
-1 file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/points file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/centers file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/result 10
+
+<!-- 1 file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/points file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/centers file:///home/robert/Projekte/ozone/ozone/stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/kmeans/result 10 -->
 
 
 </section>
