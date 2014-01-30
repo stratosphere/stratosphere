@@ -24,25 +24,25 @@ import eu.stratosphere.api.common.operators.util.FieldSet;
 public class DualInputSemanticProperties extends SemanticProperties {
 	
 	/**
-	 * Mapping from fields in the original record(s) to fields in the destination
-	 * record(s).  
+	 * Mapping from fields in the source record(s) in the first input to fields
+	 * in the destination record(s).  
 	 */
 	private Map<Integer,FieldSet> forwardedFields1;
 	
 	/**
-	 * Mapping from fields in the original record(s) to fields in the destination
-	 * record(s).  
+	 * Mapping from fields in the source record(s) in the second input to fields
+	 * in the destination record(s).  
 	 */
 	private Map<Integer,FieldSet> forwardedFields2;
 	
 	/**
-	 * Set of fields that are read in the origin record(s) from the
+	 * Set of fields that are read in the source record(s) from the
 	 * first input.
 	 */
 	private FieldSet readFields1;
 
 	/**
-	 * Set of fields that are read in the origin record(s) from the
+	 * Set of fields that are read in the source record(s) from the
 	 * second input.
 	 */
 	private FieldSet readFields2;
@@ -53,7 +53,14 @@ public class DualInputSemanticProperties extends SemanticProperties {
 		this.init();
 	}
 	
-	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) in the first input to the destination
+	 * record(s).
+	 * 
+	 * @param sourceField the position in the source record(s) from the first input
+	 * @param destinationField the position in the destination record(s)
+	 */
 	public void addForwardedField1(int sourceField, int destinationField) {
 		FieldSet fs;
 		if((fs = this.forwardedFields1.get(sourceField)) != null)
@@ -64,6 +71,14 @@ public class DualInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) in the first input to multiple fields in
+	 * the destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
 	public void addForwardedField1(int sourceField, FieldSet destinationFields) {
 		FieldSet fs;
 		if((fs = this.forwardedFields1.get(sourceField)) != null)
@@ -74,14 +89,37 @@ public class DualInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
+	/**
+	 * Sets a field that is forwarded directly from the source
+	 * record(s) in the first input to multiple fields in the
+	 * destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
 	public void setForwardedField1(int sourceField, FieldSet destinationFields) {
 		this.forwardedFields1.put(sourceField, destinationFields);
 	}
 	
-	public FieldSet getForwardedField1(int source) {
-		return this.forwardedFields1.get(source);
+	/**
+	 * Gets the fields in the destination record where the source
+	 * field from the first input is forwarded.
+	 * 
+	 * @param sourceField the position in the source record
+	 * @return the destination fields, or null if they do not exist
+	 */
+	public FieldSet getForwardedField1(int sourceField) {
+		return this.forwardedFields1.get(sourceField);
 	}
 	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) in the second input to the destination
+	 * record(s).
+	 * 
+	 * @param sourceField the position in the source record(s) from the first input
+	 * @param destinationField the position in the destination record(s)
+	 */
 	public void addForwardedField2(int sourceField, int destinationField) {
 		FieldSet fs;
 		if((fs = this.forwardedFields2.get(sourceField)) != null)
@@ -92,6 +130,14 @@ public class DualInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) in the second input to multiple fields in
+	 * the destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
 	public void addForwardedField2(int sourceField, FieldSet destinationFields) {
 		FieldSet fs;
 		if((fs = this.forwardedFields2.get(sourceField)) != null)
@@ -102,44 +148,98 @@ public class DualInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
+	/**
+	 * Sets a field that is forwarded directly from the source
+	 * record(s) in the second input to multiple fields in the
+	 * destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
 	public void setForwardedField2(int sourceField, FieldSet destinationFields) {
 		this.forwardedFields2.put(sourceField, destinationFields);
 	}
 	
-	public FieldSet getForwardedField2(int source) {
-		return this.forwardedFields2.get(source);
+	/**
+	 * Gets the fields in the destination record where the source
+	 * field from the second input is forwarded.
+	 * 
+	 * @param sourceField the position in the source record
+	 * @return the destination fields, or null if they do not exist
+	 */
+	public FieldSet getForwardedField2(int sourceField) {
+		return this.forwardedFields2.get(sourceField);
 	}
 	
-	public void addReadFields1(FieldSet readFields1) {
+	/**
+	 * Adds, to the existing information, field(s) that are read in
+	 * the source record(s) from the first input.
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
+	public void addReadFields1(FieldSet readFields) {
 		if(this.readFields1 == null)
-			this.readFields1 = new FieldSet(readFields1);
+			this.readFields1 = new FieldSet(readFields);
 		else
-			this.readFields1.addAll(readFields1);
+			this.readFields1.addAll(readFields);
 	}
 	
-	public void setReadFields1(FieldSet readFields1) {
-		this.readFields1 = readFields1;
+	/**
+	 * Sets the field(s) that are read in the source record(s) from the first
+	 * input.
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
+	public void setReadFields1(FieldSet readFields) {
+		this.readFields1 = readFields;
 	}
 	
+	/**
+	 * Gets the field(s) in the source record(s) from the first input
+	 * that are read.
+	 * 
+	 * @return the field(s) in the record, or null if they are not set
+	 */
 	public FieldSet getReadFields1() {
 		return this.readFields1;
 	}
 	
-	public void addReadFields2(FieldSet readFields2) {
+	/**
+	 * Adds, to the existing information, field(s) that are read in
+	 * the source record(s) from the second input.
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
+	public void addReadFields2(FieldSet readFields) {
 		if(this.readFields2 == null)
-			this.readFields2 = new FieldSet(readFields2);
+			this.readFields2 = new FieldSet(readFields);
 		else
-			this.readFields2.addAll(readFields2);
+			this.readFields2.addAll(readFields);
 	}
 	
-	public void setReadFields2(FieldSet readFields2) {
-		this.readFields2 = readFields2;
+	/**
+	 * Sets the field(s) that are read in the source record(s) from the second
+	 * input.
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
+	public void setReadFields2(FieldSet readFields) {
+		this.readFields2 = readFields;
 	}
 	
+	/**
+	 * Gets the field(s) in the source record(s) from the second input
+	 * that are read.
+	 * 
+	 * @return the field(s) in the record, or null if they are not set
+	 */
 	public FieldSet getReadFields2() {
 		return this.readFields2;
 	}
 	
+	/**
+	 * Clears the object.
+	 */
 	@Override
 	public void clearProperties() {
 		this.init();

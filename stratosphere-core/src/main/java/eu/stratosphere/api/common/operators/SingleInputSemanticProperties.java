@@ -19,7 +19,7 @@ import java.util.Map;
 import eu.stratosphere.api.common.operators.util.FieldSet;
 
 /**
- * Container for the semantic properties associated to a dual input operator.
+ * Container for the semantic properties associated to a single input operator.
  */
 public class SingleInputSemanticProperties extends SemanticProperties {
 		
@@ -40,7 +40,13 @@ public class SingleInputSemanticProperties extends SemanticProperties {
 		this.init();
 	}
 	
-	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) to the destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationField the position in the destination record(s)
+	 */
 	public void addForwardedField(int sourceField, int destinationField) {
 		FieldSet fs;
 		if((fs = this.forwardedFields.get(sourceField)) != null)
@@ -51,6 +57,14 @@ public class SingleInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
+	/**
+	 * Adds, to the existing information, a field that is forwarded directly
+	 * from the source record(s) to multiple fields in the destination
+	 * record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
 	public void addForwardedField(int sourceField, FieldSet destinationFields) {
 		FieldSet fs;
 		if((fs = this.forwardedFields.get(sourceField)) != null)
@@ -61,14 +75,34 @@ public class SingleInputSemanticProperties extends SemanticProperties {
 		}
 	}
 	
-	public FieldSet setForwardedField(int source, FieldSet destinationFields) {
-		return this.forwardedFields.put(source,destinationFields);
+	/**
+	 * Sets a field that is forwarded directly from the source
+	 * record(s) to multiple fields in the destination record(s).
+	 * 
+	 * @param sourceField the position in the source record(s)
+	 * @param destinationFields the position in the destination record(s)
+	 */
+	public void setForwardedField(int sourceField, FieldSet destinationFields) {
+		this.forwardedFields.put(sourceField,destinationFields);
 	}
 	
-	public FieldSet getForwardedField(int source) {
-		return this.forwardedFields.get(source);
+	/**
+	 * Gets the fields in the destination record where the source
+	 * field is forwarded.
+	 * 
+	 * @param sourceField the position in the source record
+	 * @return the destination fields, or null if they do not exist
+	 */
+	public FieldSet getForwardedField(int sourceField) {
+		return this.forwardedFields.get(sourceField);
 	}
 	
+	/**
+	 * Adds, to the existing information, field(s) that are read in
+	 * the source record(s).
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
 	public void addReadFields(FieldSet readFields) {
 		if(this.readFields == null)
 			this.readFields = new FieldSet(readFields);
@@ -76,14 +110,27 @@ public class SingleInputSemanticProperties extends SemanticProperties {
 			this.readFields.addAll(readFields);
 	}
 	
+	/**
+	 * Sets the field(s) that are read in the source record(s).
+	 * 
+	 * @param readFields the position(s) in the source record(s)
+	 */
 	public void setReadFields(FieldSet readFields) {
 		this.readFields = readFields;
 	}
 	
+	/**
+	 * Gets the field(s) in the source record(s) that are read.
+	 * 
+	 * @return the field(s) in the record, or null if they are not set
+	 */
 	public FieldSet getReadFields() {
 		return this.readFields;
 	}
 	
+	/**
+	 * Clears the object.
+	 */
 	@Override
 	public void clearProperties() {
 		this.init();

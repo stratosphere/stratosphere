@@ -697,6 +697,7 @@ public abstract class TwoInputNode extends OptimizerNode {
 					return !fs.contains(fieldNumber);
 				}
 			}
+			break;
 		case 1:
 			if(semanticProperties != null) {
 				FieldSet fs;
@@ -707,9 +708,12 @@ public abstract class TwoInputNode extends OptimizerNode {
 					return !fs.contains(fieldNumber);
 				}
 			}
+			break;
 		default:
 			throw new IndexOutOfBoundsException();
 		}
+		
+		return false;
 	}
 	
 	
