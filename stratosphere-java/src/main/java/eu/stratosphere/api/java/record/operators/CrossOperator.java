@@ -22,6 +22,7 @@ import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.record.functions.CrossFunction;
+import eu.stratosphere.api.java.record.functions.FunctionAnnotation;
 import eu.stratosphere.types.Key;
 
 
@@ -62,6 +63,7 @@ public class CrossOperator extends CrossOperatorBase<CrossFunction> implements R
 		super(builder.udf, builder.name);
 		setFirstInputs(builder.inputs1);
 		setSecondInputs(builder.inputs2);
+		setSemanticProperties(FunctionAnnotation.readDualConstantAnnotations(builder.udf));
 	}
 	
 

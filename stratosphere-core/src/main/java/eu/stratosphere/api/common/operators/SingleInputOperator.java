@@ -35,6 +35,11 @@ public abstract class SingleInputOperator<T extends Function> extends AbstractUd
 	 */
 	private final int[] keyFields;
 	
+	/**
+	 * Semantic properties of the associated function.
+	 */
+	private SingleInputSemanticProperties semanticProperties;
+	
 	// --------------------------------------------------------------------------------------------
 
 	/**
@@ -131,7 +136,19 @@ public abstract class SingleInputOperator<T extends Function> extends AbstractUd
 		addInputs(inputs);
 	}
 	
+
 	// --------------------------------------------------------------------------------------------
+
+	public SingleInputSemanticProperties getSemanticProperties() {
+		return this.semanticProperties;
+	}
+	
+	public void setSemanticProperties(SingleInputSemanticProperties semanticProperties) {
+		this.semanticProperties = semanticProperties;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+
 	
 	@Override
 	public final int getNumberOfInputs() {

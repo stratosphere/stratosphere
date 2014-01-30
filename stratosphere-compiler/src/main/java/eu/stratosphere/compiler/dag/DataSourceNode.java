@@ -280,9 +280,6 @@ public class DataSourceNode extends OptimizerNode {
 	}
 	
 	@Override
-	protected void readConstantAnnotation() {}
-
-	@Override
 	public void accept(Visitor<OptimizerNode> visitor) {
 		if (visitor.preVisit(this)) {
 			visitor.postVisit(this);

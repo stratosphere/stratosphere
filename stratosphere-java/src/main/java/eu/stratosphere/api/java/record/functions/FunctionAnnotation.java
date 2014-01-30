@@ -18,6 +18,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
+import eu.stratosphere.api.common.operators.util.FieldSet;
+import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
+
 
 /**
  * This class defines the PACT annotations, realized as java annotations. To use
@@ -212,4 +217,84 @@ public class FunctionAnnotation {
 	 * Private constructor to prevent instantiation. This class is intended only as a container.
 	 */
 	private FunctionAnnotation() {}
+	
+	// --------------------------------------------------------------------------------------------
+	//                                   Function Annotation Handling
+	// --------------------------------------------------------------------------------------------
+	
+	public static SingleInputSemanticProperties readSingleConstantAnnotations(UserCodeWrapper<?> udf) {		
+		SingleInputSemanticProperties semanticProperties = new SingleInputSemanticProperties();
+		
+		// get constantSet annotation from stub
+		ConstantFields constantSet = udf.getUserCodeAnnotation(ConstantFields.class);
+		
+		// extract constantSet from annotation
+		if(constantSet != null) {
+			for(int value: constantSet.value()) {
+				semanticProperties.addForwardedField(value,value);
+			}
+		}
+		
+		ConstantFieldsExcept notConstantSet = udf.getUserCodeAnnotation(ConstantFieldsExcept.class);
+		
+		// extract notConstantSet from annotation
+		if(notConstantSet != null) {
+			semanticProperties.addWrittenFields(new FieldSet(notConstantSet.value()));
+		}
+			
+		if (notConstantSet != null && constantSet != null) {
+			throw new RuntimeException("Either ConstantFields or ConstantFieldsExcept can be specified, not both.");
+		}
+		
+		return semanticProperties;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	public static DualInputSemanticProperties readDualConstantAnnotations(UserCodeWrapper<?> udf) {
+		DualInputSemanticProperties semanticProperties = new DualInputSemanticProperties();
+
+		// get readSet annotation from stub
+		ConstantFieldsFirst constantSet1Annotation = udf.getUserCodeAnnotation(ConstantFieldsFirst.class);
+		ConstantFieldsSecond constantSet2Annotation = udf.getUserCodeAnnotation(ConstantFieldsSecond.class);
+		
+		// extract readSets from annotations
+		if(constantSet1Annotation != null) {
+			for(int value: constantSet1Annotation.value()) {
+				semanticProperties.addForwardedField1(value, value);
+			}
+		}
+		
+		if(constantSet2Annotation != null) {
+			for(int value: constantSet2Annotation.value()) {
+				semanticProperties.addForwardedField2(value, value);
+			}
+		}
+		
+		// get readSet annotation from stub
+		ConstantFieldsFirstExcept notConstantSet1Annotation = udf.getUserCodeAnnotation(ConstantFieldsFirstExcept.class);
+		ConstantFieldsSecondExcept notConstantSet2Annotation = udf.getUserCodeAnnotation(ConstantFieldsSecondExcept.class);
+		
+		// extract readSets from annotations
+		if(notConstantSet1Annotation != null) {
+			semanticProperties.addWrittenFields(new FieldSet(notConstantSet1Annotation.value()));
+		}
+		
+		if(notConstantSet2Annotation != null) {
+			semanticProperties.addWrittenFields(new FieldSet(notConstantSet2Annotation.value()));
+		}
+		
+		
+		if (notConstantSet1Annotation != null && constantSet1Annotation != null) {
+			throw new RuntimeException("Either ConstantFieldsFirst or ConstantFieldsFirstExcept can be specified, not both.");
+		}
+		
+		if (constantSet2Annotation != null && notConstantSet2Annotation != null) {
+			throw new RuntimeException("Either ConstantFieldsSecond or ConstantFieldsSecondExcept can be specified, not both.");
+		}
+		
+		return semanticProperties;
+	}
+	
+	
 }

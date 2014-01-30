@@ -23,9 +23,8 @@ import java.util.Set;
 import eu.stratosphere.api.common.operators.CompilerHints;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.operators.SingleInputOperator;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.util.FieldSet;
-import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
-import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFieldsExcept;
 import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.costs.CostEstimator;
@@ -57,9 +56,6 @@ public abstract class SingleInputNode extends OptimizerNode {
 	
 	protected PactConnection inConn; 		// the input of the node
 	
-	private FieldSet constantSet; 			// set of fields that are left unchanged by the stub
-	private FieldSet notConstantSet;		// set of fields that are changed by the stub
-
 	// --------------------------------------------------------------------------------------------
 	
 	/**
@@ -83,9 +79,6 @@ public abstract class SingleInputNode extends OptimizerNode {
 		super(contractToCopy);
 		
 		this.keys = contractToCopy.keys;
-		
-		this.constantSet = contractToCopy.constantSet;
-		this.notConstantSet = contractToCopy.notConstantSet;
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -133,15 +126,27 @@ public abstract class SingleInputNode extends OptimizerNode {
 	}
 	
 
+	@Override
 	public boolean isFieldConstant(int input, int fieldNumber) {
 		if (input != 0) {
 			throw new IndexOutOfBoundsException();
 		}
-		if (this.constantSet == null) {
-			return this.notConstantSet == null ? false : !this.notConstantSet.contains(fieldNumber);
-		} else {
-			return this.constantSet.contains(fieldNumber);
+		
+		SingleInputOperator<?> c = (SingleInputOperator<?>)super.getPactContract();
+
+		SingleInputSemanticProperties semanticProperties = c.getSemanticProperties();
+		
+		if(semanticProperties != null) {
+			FieldSet fs;
+			if((fs = semanticProperties.getForwardedField(fieldNumber)) != null) {
+				return fs.contains(fieldNumber);
+			}
+			if((fs = semanticProperties.getWrittenFields()) != null) {
+				return !fs.contains(fieldNumber);
+			}
 		}
+		
+		return false;
 	}
 	
 
@@ -425,38 +430,6 @@ public abstract class SingleInputNode extends OptimizerNode {
 			return 1;
 		else 
 			return width;
-	}
-	
-	// --------------------------------------------------------------------------------------------
-	//                                   Function Annotation Handling
-	// --------------------------------------------------------------------------------------------
-	
-	@Override
-	protected void readConstantAnnotation() {
-		final SingleInputOperator<?> c = (SingleInputOperator<?>) super.getPactContract();
-		
-		// get constantSet annotation from stub
-		ConstantFields constantSet = c.getUserCodeAnnotation(ConstantFields.class);
-		
-		// extract constantSet from annotation
-		if(constantSet == null) {
-			this.constantSet = null;
-		} else {
-			this.constantSet = new FieldSet(constantSet.value());
-		}
-		
-		ConstantFieldsExcept notConstantSet = c.getUserCodeAnnotation(ConstantFieldsExcept.class);
-		
-		// extract notConstantSet from annotation
-		if(notConstantSet == null) {
-			this.notConstantSet = null;
-		} else {
-			this.notConstantSet = new FieldSet(notConstantSet.value());
-		}
-		
-		if (this.notConstantSet != null && this.constantSet != null) {
-			throw new CompilerException("Either ConstantFields or ConstantFieldsExcept can be specified, not both.");
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------

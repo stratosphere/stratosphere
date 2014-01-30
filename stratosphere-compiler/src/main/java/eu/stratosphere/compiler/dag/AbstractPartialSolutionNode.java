@@ -97,9 +97,6 @@ public abstract class AbstractPartialSolutionNode extends OptimizerNode
 	}
 	
 	@Override
-	protected void readConstantAnnotation() {}
-	
-	@Override
 	protected void readStubAnnotations() {}
 
 	@Override
