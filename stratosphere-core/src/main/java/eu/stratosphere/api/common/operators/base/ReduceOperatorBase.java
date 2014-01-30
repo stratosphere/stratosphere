@@ -13,11 +13,6 @@
 
 package eu.stratosphere.api.common.operators.base;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import eu.stratosphere.api.common.functions.GenericReducer;
 import eu.stratosphere.api.common.operators.SingleInputOperator;
 import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
@@ -37,81 +32,45 @@ import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
  */
 public class ReduceOperatorBase<T extends GenericReducer<?, ?>> extends SingleInputOperator<T> {
 	
+	private boolean combinable;
+	
+	
 	public ReduceOperatorBase(UserCodeWrapper<T> udf, int[] keyPositions, String name) {
 		super(udf, keyPositions, name);
+		this.combinable = false;
 	}
 	
 	public ReduceOperatorBase(T udf, int[] keyPositions, String name) {
 		super(new UserCodeObjectWrapper<T>(udf), keyPositions, name);
+		this.combinable = false;
 	}
 	
 	public ReduceOperatorBase(Class<? extends T> udf, int[] keyPositions, String name) {
 		super(new UserCodeClassWrapper<T>(udf), keyPositions, name);
+		this.combinable = false;
 	}
 	
 	public ReduceOperatorBase(UserCodeWrapper<T> udf, String name) {
 		super(udf, name);
+		this.combinable = false;
 	}
 	
 	public ReduceOperatorBase(T udf, String name) {
 		super(new UserCodeObjectWrapper<T>(udf), name);
+		this.combinable = false;
 	}
 	
 	public ReduceOperatorBase(Class<? extends T> udf, String name) {
 		super(new UserCodeClassWrapper<T>(udf), name);
+		this.combinable = false;
+	}
+	
+	public void setCombinable(boolean combinable) {
+		this.combinable = combinable;
+	}
+	
+	public boolean isCombinable() {
+		return this.combinable;
 	}
 
-	// --------------------------------------------------------------------------------------------
-	
-	/**
-	 * Returns true if the ReduceContract is annotated with a Combinable annotation.
-	 * The annotation indicates that the contract's {@link ReduceStub} implements the 
-	 * {@link ReduceStub#combine(Iterator, Collector)}
-	 * method.
-	 *  
-	 * @return True, if the ReduceContract is combinable, false otherwise.
-	 */
-	public boolean isCombinable() {
-		return getUserCodeAnnotation(Combinable.class) != null;
-	}
-	
-	/**
-	 * This annotation marks reduce stubs as eligible for the usage of a combiner.
-	 * 
-	 * The following code excerpt shows how to make a simple reduce stub combinable (assuming here that
-	 * the reducer function and combiner function do the same):
-	 * 
-	 * <code>
-	 * \@Combinable
-	 * public static class CountWords extends ReduceStub&lt;StringValue&gt;
-	 * {
-	 *     private final IntValue theInteger = new IntValue();
-	 * 
-	 *     \@Override
-	 *     public void reduce(StringValue key, Iterator&lt;Record&gt; records, Collector out) throws Exception
-	 *     {
-	 *         Record element = null;
-	 *         int sum = 0;
-	 *         while (records.hasNext()) {
-	 *             element = records.next();
-	 *             element.getField(1, this.theInteger);
-	 *             // we could have equivalently used IntValue i = record.getField(1, IntValue.class);
-	 *          
-	 *             sum += this.theInteger.getValue();
-	 *         }
-	 *      
-	 *         element.setField(1, this.theInteger);
-	 *         out.collect(element);
-	 *     }
-	 *     
-	 *     public void combine(StringValue key, Iterator&lt;Record&gt; records, Collector out) throws Exception
-	 *     {
-	 *         this.reduce(key, records, out);
-	 *     }
-	 * }
-	 * </code>
-	 */
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.TYPE)
-	public static @interface Combinable {};
 }

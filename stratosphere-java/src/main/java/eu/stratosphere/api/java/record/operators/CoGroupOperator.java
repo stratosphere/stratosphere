@@ -27,7 +27,6 @@ import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.record.functions.CoGroupFunction;
-import eu.stratosphere.api.java.record.functions.JoinFunction;
 import eu.stratosphere.types.Key;
 
 /**
