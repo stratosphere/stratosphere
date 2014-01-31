@@ -52,7 +52,7 @@ The following overview presents the impact of the different standard deviations 
 		<a data-lightbox="inputs" href="{{site.baseurl}}/img/quickstart-example/kmeans003.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/kmeans003.png" /></a>
 	</div>
 	<div class="col-md-4">
-		<div style="padding-bottom:2px"  class="text-center" style="font-weight:bold;">relative stddev = 0.08</div>
+		<div class="text-center" style="font-weight:bold;padding-bottom:2px">relative stddev = 0.08</div>
 		<a data-lightbox="inputs" href="{{site.baseurl}}/img/quickstart-example/kmeans008.png" data-lightbox="example-1"><img class="img-responsive" src="{{site.baseurl}}/img/quickstart-example/kmeans008.png" /></a>
 	</div>
 	<div class="col-md-4">
