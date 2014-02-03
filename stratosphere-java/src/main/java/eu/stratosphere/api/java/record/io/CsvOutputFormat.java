@@ -50,19 +50,19 @@ import eu.stratosphere.types.Value;
 public class CsvOutputFormat extends FileOutputFormat {
 	private static final long serialVersionUID = 1L;
 
-	public static final String RECORD_DELIMITER_PARAMETER = "pact.output.record.delimiter";
+	public static final String RECORD_DELIMITER_PARAMETER = "output.record.delimiter";
 
-	private static final String RECORD_DELIMITER_ENCODING = "pact.output.record.delimiter-encoding";
+	private static final String RECORD_DELIMITER_ENCODING = "output.record.delimiter-encoding";
 
-	public static final String FIELD_DELIMITER_PARAMETER = "pact.output.record.field-delimiter";
+	public static final String FIELD_DELIMITER_PARAMETER = "output.record.field-delimiter";
 
-	public static final String NUM_FIELDS_PARAMETER = "pact.output.record.num-fields";
+	public static final String NUM_FIELDS_PARAMETER = "output.record.num-fields";
 
-	public static final String FIELD_TYPE_PARAMETER_PREFIX = "pact.output.record.type_";
+	public static final String FIELD_TYPE_PARAMETER_PREFIX = "output.record.type_";
 
-	public static final String RECORD_POSITION_PARAMETER_PREFIX = "pact.output.record.position_";
+	public static final String RECORD_POSITION_PARAMETER_PREFIX = "output.record.position_";
 
-	public static final String LENIENT_PARSING = "pact.output.record.lenient";
+	public static final String LENIENT_PARSING = "output.record.lenient";
 
 	@SuppressWarnings("unused")
 	private static final Log LOG = LogFactory.getLog(CsvOutputFormat.class);
@@ -122,8 +122,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 	 * @param types
 	 *            The types of the fields that are in the record.
 	 */
-	public CsvOutputFormat(String fieldDelimiter,
-			Class<? extends Value>... types) {
+	public CsvOutputFormat(String fieldDelimiter, Class<? extends Value>... types) {
 		this("\n", fieldDelimiter, types);
 	}
 
@@ -140,15 +139,12 @@ public class CsvOutputFormat extends FileOutputFormat {
 	 * @param types
 	 *            The types of the fields that are in the record.
 	 */
-	public CsvOutputFormat(String recordDelimiter, String fieldDelimiter,
-			Class<? extends Value>... types) {
+	public CsvOutputFormat(String recordDelimiter, String fieldDelimiter, Class<? extends Value>... types) {
 		if (recordDelimiter == null) {
-			throw new IllegalArgumentException(
-					"RecordDelmiter shall not be null.");
+			throw new IllegalArgumentException("RecordDelmiter shall not be null.");
 		}
 		if (fieldDelimiter == null) {
-			throw new IllegalArgumentException(
-					"FieldDelimiter shall not be null.");
+			throw new IllegalArgumentException("FieldDelimiter shall not be null.");
 		}
 		if (types.length == 0) {
 			throw new IllegalArgumentException("No field types given.");
@@ -156,25 +152,27 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 		this.fieldDelimiter = fieldDelimiter;
 		this.recordDelimiter = recordDelimiter;
-		this.numFields = types.length;
-
-		@SuppressWarnings("unchecked")
-		Class<Value>[] classes = new Class[types.length];
-
-		this.classes = classes;
-		this.recordPositions = new int[types.length];
 		this.lenient = false;
 
+		setTypes(types);
+		
+		genericInstantiation = false;
+	}
+	
+	public void setTypes(Class<? extends Value>... types) {
+		this.classes = types;
+		this.numFields = types.length;
+		this.recordPositions = new int[types.length];
 		for (int i = 0; i < types.length; i++) {
 			if (types[i] == null)
-				throw new IllegalArgumentException(
-						"Invalid Constructor Parameter: No type class for parameter "
-								+ (2 + i));
-
-			this.classes[i] = types[i];
+				throw new IllegalArgumentException("Invalid Constructor Parameter: No type class for parameter " + (2 + i));
 			this.recordPositions[i] = i;
 		}
 		genericInstantiation = false;
+	}
+	
+	public void setLenient(boolean lenient) {
+		this.lenient = lenient;
 	}
 
 	@Override
@@ -186,9 +184,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 		this.numFields = parameters.getInteger(NUM_FIELDS_PARAMETER, -1);
 		if (this.numFields < 1) {
-			throw new IllegalArgumentException(
-					"Invalid configuration for CsvOutputFormat: "
-							+ "Need to specify number of fields > 0.");
+			throw new IllegalArgumentException("Invalid configuration for CsvOutputFormat: " + "Need to specify number of fields > 0.");
 		}
 
 		@SuppressWarnings("unchecked")
@@ -197,12 +193,9 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 		for (int i = 0; i < this.numFields; i++) {
 			@SuppressWarnings("unchecked")
-			Class<? extends Value> clazz = (Class<? extends Value>) parameters
-					.getClass(FIELD_TYPE_PARAMETER_PREFIX + i, null);
+			Class<? extends Value> clazz = (Class<? extends Value>) parameters.getClass(FIELD_TYPE_PARAMETER_PREFIX + i, null);
 			if (clazz == null) {
-				throw new IllegalArgumentException(
-						"Invalid configuration for CsvOutputFormat: "
-								+ "No type class for parameter " + i);
+				throw new IllegalArgumentException("Invalid configuration for CsvOutputFormat: " + "No type class for parameter " + i);
 			}
 
 			this.classes[i] = clazz;
@@ -214,17 +207,14 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 		for (int i = 0; i < this.numFields; i++) {
 
-			int pos = parameters.getInteger(RECORD_POSITION_PARAMETER_PREFIX
-					+ i, Integer.MIN_VALUE);
+			int pos = parameters.getInteger(RECORD_POSITION_PARAMETER_PREFIX + i, Integer.MIN_VALUE);
 
 			if (pos != Integer.MIN_VALUE) {
 				anyRecordPosDefined = true;
 
 				if (pos < 0) {
-					throw new IllegalArgumentException(
-							"Invalid configuration for CsvOutputFormat: "
-									+ "Invalid record position for parameter "
-									+ i);
+					throw new IllegalArgumentException("Invalid configuration for CsvOutputFormat: "
+							+ "Invalid record position for parameter " + i);
 				}
 
 				this.recordPositions[i] = pos;
@@ -237,31 +227,24 @@ public class CsvOutputFormat extends FileOutputFormat {
 		}
 
 		if (anyRecordPosDefined && !allRecordPosDefined) {
-			throw new IllegalArgumentException(
-					"Invalid configuration for CsvOutputFormat: "
-							+ "Either none or all record positions must be defined.");
+			throw new IllegalArgumentException("Invalid configuration for CsvOutputFormat: "
+					+ "Either none or all record positions must be defined.");
 		}
 
-		this.recordDelimiter = parameters.getString(RECORD_DELIMITER_PARAMETER,
-				AbstractConfigBuilder.NEWLINE_DELIMITER);
+		this.recordDelimiter = parameters.getString(RECORD_DELIMITER_PARAMETER, AbstractConfigBuilder.NEWLINE_DELIMITER);
 		if (this.recordDelimiter == null) {
-			throw new IllegalArgumentException(
-					"The delimiter in the DelimitedOutputFormat must not be null.");
+			throw new IllegalArgumentException("The delimiter in the DelimitedOutputFormat must not be null.");
 		}
-		this.charsetName = parameters
-				.getString(RECORD_DELIMITER_ENCODING, null);
-		this.fieldDelimiter = parameters.getString(FIELD_DELIMITER_PARAMETER,
-				"|");
+		this.charsetName = parameters.getString(RECORD_DELIMITER_ENCODING, null);
+		this.fieldDelimiter = parameters.getString(FIELD_DELIMITER_PARAMETER, "|");
 		this.lenient = parameters.getBoolean(LENIENT_PARSING, false);
 	}
 
 	@Override
 	public void open(int taskNumber) throws IOException {
 		super.open(taskNumber);
-		this.wrt = this.charsetName == null ? new OutputStreamWriter(
-				new BufferedOutputStream(this.stream, 4096))
-				: new OutputStreamWriter(new BufferedOutputStream(this.stream,
-						4096), this.charsetName);
+		this.wrt = this.charsetName == null ? new OutputStreamWriter(new BufferedOutputStream(this.stream, 4096)) : new OutputStreamWriter(
+				new BufferedOutputStream(this.stream, 4096), this.charsetName);
 	}
 
 	@Override
@@ -285,8 +268,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 			if (readPos < numRecFields) {
 
-				Value v = record.getField(this.recordPositions[i],
-						this.classes[i]);
+				Value v = record.getField(this.recordPositions[i], this.classes[i]);
 
 				if (v != null) {
 					if (i != 0)
@@ -298,9 +280,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 						if (i != 0)
 							this.wrt.write(this.fieldDelimiter);
 					} else {
-						throw new RuntimeException(
-								"Cannot serialize record with <null> value at position: "
-										+ readPos);
+						throw new RuntimeException("Cannot serialize record with <null> value at position: " + readPos);
 					}
 				}
 
@@ -309,9 +289,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 					if (i != 0)
 						this.wrt.write(this.fieldDelimiter);
 				} else {
-					throw new RuntimeException(
-							"Cannot serialize record with out field at position: "
-									+ readPos);
+					throw new RuntimeException("Cannot serialize record with out field at position: " + readPos);
 				}
 			}
 
@@ -337,8 +315,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 	 * Abstract builder used to set parameters to the input format's
 	 * configuration in a fluent way.
 	 */
-	protected static abstract class AbstractConfigBuilder<T> extends
-			FileOutputFormat.AbstractConfigBuilder<T> {
+	protected static abstract class AbstractConfigBuilder<T> extends FileOutputFormat.AbstractConfigBuilder<T> {
 		private static final String NEWLINE_DELIMITER = "\n";
 
 		// --------------------------------------------------------------------
@@ -367,11 +344,9 @@ public class CsvOutputFormat extends FileOutputFormat {
 		 */
 		public T recordDelimiter(char delimiter) {
 			if (delimiter == '\n') {
-				this.config.setString(RECORD_DELIMITER_PARAMETER,
-						NEWLINE_DELIMITER);
+				this.config.setString(RECORD_DELIMITER_PARAMETER, NEWLINE_DELIMITER);
 			} else {
-				this.config.setString(RECORD_DELIMITER_PARAMETER,
-						String.valueOf(delimiter));
+				this.config.setString(RECORD_DELIMITER_PARAMETER, String.valueOf(delimiter));
 			}
 			@SuppressWarnings("unchecked")
 			T ret = (T) this;
@@ -425,8 +400,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 		 * @return The builder itself.
 		 */
 		public T fieldDelimiter(char delimiter) {
-			this.config.setString(FIELD_DELIMITER_PARAMETER,
-					String.valueOf(delimiter));
+			this.config.setString(FIELD_DELIMITER_PARAMETER, String.valueOf(delimiter));
 			@SuppressWarnings("unchecked")
 			T ret = (T) this;
 			return ret;
@@ -447,8 +421,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 		public T field(Class<? extends Value> type, int recordPosition) {
 			final int numYet = this.config.getInteger(NUM_FIELDS_PARAMETER, 0);
 			this.config.setClass(FIELD_TYPE_PARAMETER_PREFIX + numYet, type);
-			this.config.setInteger(RECORD_POSITION_PARAMETER_PREFIX + numYet,
-					recordPosition);
+			this.config.setInteger(RECORD_POSITION_PARAMETER_PREFIX + numYet, recordPosition);
 			this.config.setInteger(NUM_FIELDS_PARAMETER, numYet + 1);
 			@SuppressWarnings("unchecked")
 			T ret = (T) this;
@@ -477,8 +450,7 @@ public class CsvOutputFormat extends FileOutputFormat {
 	 * A builder used to set parameters to the input format's configuration in a
 	 * fluent way.
 	 */
-	public static final class ConfigBuilder extends
-			AbstractConfigBuilder<ConfigBuilder> {
+	public static final class ConfigBuilder extends AbstractConfigBuilder<ConfigBuilder> {
 		/**
 		 * Creates a new builder for the given configuration.
 		 * 
