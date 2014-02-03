@@ -160,8 +160,16 @@ public class CsvOutputFormat extends FileOutputFormat {
 		this.recordPositions = new int[types.length];
 		for (int i = 0; i < types.length; i++) {
 			if (types[i] == null)
-				throw new IllegalArgumentException("Invalid Constructor Parameter: No type class for parameter " + (2 + i));
+				throw new IllegalArgumentException("Invalid Constructor Parameter: No type class for parameter " + (2 * i));
 			this.recordPositions[i] = i;
+		}
+		
+		if (this.fieldDelimiter == null) {
+			this.fieldDelimiter = ",";
+		}
+		
+		if (this.recordDelimiter == null) {
+			this.recordDelimiter = "\n";
 		}
 	}
 	
