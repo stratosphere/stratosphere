@@ -85,14 +85,11 @@ public class CsvOutputFormat extends FileOutputFormat {
 
 	private boolean lenient;
 
-	private boolean genericInstantiation;
-
 	// --------------------------------------------------------------------------------------------
 	// Constructors and getters/setters for the configurable parameters
 	// --------------------------------------------------------------------------------------------
 
 	public CsvOutputFormat() {
-		genericInstantiation = true;
 	}
 
 	/**
@@ -155,8 +152,6 @@ public class CsvOutputFormat extends FileOutputFormat {
 		this.lenient = false;
 
 		setTypes(types);
-		
-		genericInstantiation = false;
 	}
 	
 	public void setTypes(Class<? extends Value>... types) {
@@ -168,7 +163,6 @@ public class CsvOutputFormat extends FileOutputFormat {
 				throw new IllegalArgumentException("Invalid Constructor Parameter: No type class for parameter " + (2 + i));
 			this.recordPositions[i] = i;
 		}
-		genericInstantiation = false;
 	}
 	
 	public void setLenient(boolean lenient) {
@@ -179,13 +173,20 @@ public class CsvOutputFormat extends FileOutputFormat {
 	public void configure(Configuration parameters) {
 		super.configure(parameters);
 
-		if (!genericInstantiation)
-			return;
-
-		this.numFields = parameters.getInteger(NUM_FIELDS_PARAMETER, -1);
-		if (this.numFields < 1) {
-			throw new IllegalArgumentException("Invalid configuration for CsvOutputFormat: " + "Need to specify number of fields > 0.");
+		int configNumFields = parameters.getInteger(NUM_FIELDS_PARAMETER, -1);
+		
+		if (this.classes != null) {						//instantiated with parameters
+			if (configNumFields > 0) {
+				throw new IllegalStateException("CsvOutputFormat instantiated via both parameters and config.");
+			}				
+			return;										//already configured, no further actions required
 		}
+		
+		if (configNumFields < 1) {			
+			throw new IllegalStateException("CsvOutputFormat not configured via parameters or config.");			
+		}
+		
+		this.numFields = configNumFields;
 
 		@SuppressWarnings("unchecked")
 		Class<Value>[] arr = new Class[this.numFields];
