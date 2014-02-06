@@ -952,6 +952,7 @@ public class PactCompiler {
 
 			// first connect to the predecessors
 			n.setInputs(this.con2node);
+			n.setBroadcastInputs(this.con2node);
 
 			// read id again as it might have been incremented for newly created union nodes
 			this.id = n.getId() + 1;
