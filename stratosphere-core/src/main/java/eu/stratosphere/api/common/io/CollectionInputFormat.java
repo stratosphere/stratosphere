@@ -32,10 +32,12 @@ public class CollectionInputFormat extends GenericInputFormat<Record> implements
 	@Override
 	public void open(GenericInputSplit split) throws IOException {
         super.open(split);
-		if (serializableIter != null)
+		if (serializableIter != null) {
 			it = serializableIter;
-		else
+        }
+		else {
 			it = this.dataSet.iterator();
+        }
 	}
 
 	@Override
@@ -51,10 +53,9 @@ public class CollectionInputFormat extends GenericInputFormat<Record> implements
             }
             else if (b instanceof Collection) {
                 @SuppressWarnings("unchecked")
-                Iterator<Object> tmp_it = ((Collection<Object>) b).iterator();
-                while (tmp_it.hasNext())
-                {
-                    Object s = tmp_it.next();
+                Iterator<Object> tmpIter = ((Collection<Object>) b).iterator();
+                while (tmpIter.hasNext()) {
+                    Object s = tmpIter.next();
                     record.addField(ValueUtil.toStratosphere(s));
                 }
             }
@@ -72,7 +73,7 @@ public class CollectionInputFormat extends GenericInputFormat<Record> implements
 		this.serializableIter = null;
 	}
 
-	public<T extends Iterator<?>,Serializable> void setIter(T iter) {
+	public<T extends Iterator<?>,Serializable> void setIter(T iter)  {
 		this.serializableIter = iter;
 	}
 
