@@ -109,7 +109,8 @@ public class CollectionSourceTest extends TestBase2 {
         private String [] s = COUNTS.split("\n");
         private int pos = 0;
 
-        public void remove(){}
+        public void remove(){
+        }
         public List<Object> next() {
             List<Object> tmp = new ArrayList<Object>();
             tmp.add(pos);

@@ -58,8 +58,9 @@ public class CollectionValidationTest {
          */
         try {
             List<Object> tmp= new ArrayList<Object>();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++) {
                 tmp.add(i);
+            }
             CollectionDataSource source = new CollectionDataSource(tmp,"test_valid_collection");
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,8 +86,9 @@ public class CollectionValidationTest {
          */
         try {
             List<Object> tmp= new ArrayList<Object>();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++) {
                 tmp.add(i);
+            }
             tmp.add("a");
             CollectionDataSource source = new CollectionDataSource(tmp,"test_invalid_collection");
             Assert.fail("input type is different");

@@ -156,8 +156,7 @@ public class CollectionDataSource extends GenericDataSource<GenericInputFormat<?
             if (typeList.size() == 0 && o instanceof Collection) {
                 @SuppressWarnings("unchecked")
                 Iterator<Object> tmpIt = ((Collection<Object>) o).iterator();
-                while (tmpIt.hasNext())
-                {
+                while (tmpIt.hasNext()) {
                     Object s = tmpIt.next();
                     typeList.add(s.getClass());
                 }
