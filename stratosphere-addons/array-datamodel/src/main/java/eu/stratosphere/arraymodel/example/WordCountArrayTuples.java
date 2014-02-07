@@ -22,7 +22,6 @@ import eu.stratosphere.api.common.operators.FileDataSink;
 import eu.stratosphere.api.common.operators.FileDataSource;
 import eu.stratosphere.api.common.operators.base.MapOperatorBase;
 import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
-import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
 import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
 import eu.stratosphere.api.java.record.io.TextInputFormat;
 import eu.stratosphere.arraymodel.ArrayModelPlan;
@@ -82,7 +81,6 @@ public class WordCountArrayTuples implements Program, ProgramDescription {
 	 * Sums up the counts for a certain given key. The counts are assumed to be at position <code>1</code>
 	 * in the record. The other fields are not modified.
 	 */
-	@Combinable
 	@ConstantFields(0)
 	public static class CountWords extends ReduceFunction {
 		
@@ -119,6 +117,7 @@ public class WordCountArrayTuples implements Program, ProgramDescription {
 		mapper.setInput(source);
 		
 		ReduceOperatorBase<CountWords> reducer = new ReduceOperatorBase<CountWords>(CountWords.class, new int[] {0}, "Count Words");
+		reducer.setCombinable(true);
 		reducer.setInput(mapper);
 		
 		FileDataSink out = new FileDataSink(new StringIntOutputFormat(), output, reducer, "Word Counts");

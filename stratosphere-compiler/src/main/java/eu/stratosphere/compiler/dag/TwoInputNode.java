@@ -13,6 +13,10 @@
 
 package eu.stratosphere.compiler.dag;
 
+import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE;
+import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE_AND_DAM;
+import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.NOT_FOUND;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,6 +26,7 @@ import java.util.Set;
 
 import eu.stratosphere.api.common.operators.CompilerHints;
 import eu.stratosphere.api.common.operators.DualInputOperator;
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.operators.util.FieldList;
 import eu.stratosphere.api.common.operators.util.FieldSet;
@@ -51,8 +56,6 @@ import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.util.Visitor;
 
-import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.*;
-
 /**
  * A node in the optimizer plan that represents a PACT with a two different inputs, such as MATCH or CROSS.
  * The two inputs are not substitutable in their sides.
@@ -68,17 +71,7 @@ public abstract class TwoInputNode extends OptimizerNode {
 	protected PactConnection input1; // The first input edge
 
 	protected PactConnection input2; // The second input edge
-	
-	// ------------- Function Annotations
-	
-	protected FieldSet constant1; // set of fields that are left unchanged by the stub
-	
-	protected FieldSet constant2; // set of fields that are left unchanged by the stub
-	
-	protected FieldSet notConstant1; // set of fields that are changed by the stub
-	
-	protected FieldSet notConstant2; // set of fields that are changed by the stub
-	
+		
 	// --------------------------------------------------------------------------------------------
 	
 	/**
@@ -635,59 +628,6 @@ public abstract class TwoInputNode extends OptimizerNode {
 		mergeLists(result1, result2, result);
 		this.openBranches = result.isEmpty() ? Collections.<UnclosedBranchDescriptor>emptyList() : result;
 	}
-
-	// --------------------------------------------------------------------------------------------
-	//                                 Function Annotation Handling
-	// --------------------------------------------------------------------------------------------
-	
-	@Override
-	protected void readConstantAnnotation() {
-		DualInputOperator<?> c = (DualInputOperator<?>)super.getPactContract();
-		
-		// get readSet annotation from stub
-		ConstantFieldsFirst constantSet1Annotation = c.getUserCodeAnnotation(ConstantFieldsFirst.class);
-		ConstantFieldsSecond constantSet2Annotation = c.getUserCodeAnnotation(ConstantFieldsSecond.class);
-		
-		// extract readSets from annotations
-		if(constantSet1Annotation == null) {
-			this.constant1 = null;
-		} else {
-			this.constant1 = new FieldSet(constantSet1Annotation.value());
-		}
-		
-		if(constantSet2Annotation == null) {
-			this.constant2 = null;
-		} else {
-			this.constant2 = new FieldSet(constantSet2Annotation.value());
-		}
-		
-		
-		// get readSet annotation from stub
-		ConstantFieldsFirstExcept notConstantSet1Annotation = c.getUserCodeAnnotation(ConstantFieldsFirstExcept.class);
-		ConstantFieldsSecondExcept notConstantSet2Annotation = c.getUserCodeAnnotation(ConstantFieldsSecondExcept.class);
-		
-		// extract readSets from annotations
-		if(notConstantSet1Annotation == null) {
-			this.notConstant1 = null;
-		} else {
-			this.notConstant1 = new FieldSet(notConstantSet1Annotation.value());
-		}
-		
-		if(notConstantSet2Annotation == null) {
-			this.notConstant2 = null;
-		} else {
-			this.notConstant2 = new FieldSet(notConstantSet2Annotation.value());
-		}
-		
-		
-		if (this.notConstant1 != null && this.constant1 != null) {
-			throw new CompilerException("Either ConstantFieldsFirst or ConstantFieldsFirstExcept can be specified, not both.");
-		}
-		
-		if (this.notConstant2 != null && this.constant2 != null) {
-			throw new CompilerException("Either ConstantFieldsSecond or ConstantFieldsSecondExcept can be specified, not both.");
-		}
-	}
 	
 	/**
 	 * Computes the width of output records
@@ -739,33 +679,43 @@ public abstract class TwoInputNode extends OptimizerNode {
 		}
 	}
 
+	
 	@Override
 	public boolean isFieldConstant(int input, int fieldNumber) {
+		DualInputOperator<?> c = (DualInputOperator<?>)super.getPactContract();
+
+		DualInputSemanticProperties semanticProperties = c.getSemanticProperties();
+		
 		switch(input) {
 		case 0:
-			if (this.constant1 == null) {
-				if (this.notConstant1 == null) {
-					return false;
-				} else {
-					return !this.notConstant1.contains(fieldNumber);
+			if(semanticProperties != null) {
+				FieldSet fs;
+				if((fs = semanticProperties.getForwardedField1(fieldNumber)) != null) {
+					return fs.contains(fieldNumber);
 				}
-			} else {
-				return this.constant1.contains(fieldNumber);
+				if((fs = semanticProperties.getWrittenFields()) != null) {
+					return !fs.contains(fieldNumber);
+				}
 			}
+			break;
 		case 1:
-			if (this.constant2 == null) {
-				if (this.notConstant2 == null) {
-					return false;
-				} else {
-					return !this.notConstant2.contains(fieldNumber);
+			if(semanticProperties != null) {
+				FieldSet fs;
+				if((fs = semanticProperties.getForwardedField2(fieldNumber)) != null) {
+					return fs.contains(fieldNumber);
 				}
-			} else {
-				return this.constant2.contains(fieldNumber);
+				if((fs = semanticProperties.getWrittenFields()) != null) {
+					return !fs.contains(fieldNumber);
+				}
 			}
+			break;
 		default:
 			throw new IndexOutOfBoundsException();
 		}
+		
+		return false;
 	}
+	
 	
 	// --------------------------------------------------------------------------------------------
 	//                                     Miscellaneous

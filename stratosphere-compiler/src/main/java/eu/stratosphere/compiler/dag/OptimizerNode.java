@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import eu.stratosphere.api.common.operators.AbstractUdfOperator;
 import eu.stratosphere.api.common.operators.CompilerHints;
@@ -224,11 +224,6 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 * @return True, if this node contains logic that requires memory usage, false otherwise.
 	 */
 	public abstract boolean isMemoryConsumer();
-	
-	/**
-	 * Reads all constant stub annotations. Constant stub annotations are defined per input.
-	 */
-	protected abstract void readConstantAnnotation();
 	
 	/**
 	 * Checks whether a field is modified by the user code or whether it is kept unchanged.
@@ -734,7 +729,6 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 * functions have, which fields remain unique.
 	 */
 	protected void readStubAnnotations() {
-		readConstantAnnotation();
 		readUniqueFieldsAnnotation();
 	}
 	
