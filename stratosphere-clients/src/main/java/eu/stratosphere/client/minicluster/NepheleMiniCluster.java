@@ -34,7 +34,11 @@ public class NepheleMiniCluster {
 	
 	private static final int DEFAULT_TM_DATA_PORT = 7501;
 	
-	private static final boolean DEFAULT_VISUALIZER_ENABLED = true;
+	private static final long DEFAULT_MEMORY_SIZE = -1;
+	
+	private static final boolean DEFAULT_VISUALIZER_ENABLED = false;
+	
+	private static final boolean DEFAULT_LAZY_MEMORY_ALLOCATION = true;
 
 	// --------------------------------------------------------------------------------------------
 	
@@ -46,9 +50,13 @@ public class NepheleMiniCluster {
 	
 	private int taskManagerDataPort = DEFAULT_TM_DATA_PORT;
 	
+	private long memorySize = DEFAULT_MEMORY_SIZE;
+	
 	private String configDir;
 
 	private String hdfsConfigFile;
+	
+	private boolean lazyMemoryAllocation = DEFAULT_LAZY_MEMORY_ALLOCATION;
 
 	private boolean visualizerEnabled = DEFAULT_VISUALIZER_ENABLED;
 
@@ -85,6 +93,14 @@ public class NepheleMiniCluster {
 		this.taskManagerDataPort = taskManagerDataPort;
 	}
 	
+	public long getMemorySize() {
+		return memorySize;
+	}
+	
+	public void setMemorySize(long memorySize) {
+		this.memorySize = memorySize;
+	}
+
 	public String getConfigDir() {
 		return configDir;
 	}
@@ -101,6 +117,14 @@ public class NepheleMiniCluster {
 		this.hdfsConfigFile = hdfsConfigFile;
 	}
 	
+	public boolean isLazyMemoryAllocation() {
+		return lazyMemoryAllocation;
+	}
+	
+	public void setLazyMemoryAllocation(boolean lazyMemoryAllocation) {
+		this.lazyMemoryAllocation = lazyMemoryAllocation;
+	}
+
 	public boolean isVisualizerEnabled() {
 		return visualizerEnabled;
 	}
@@ -128,11 +152,11 @@ public class NepheleMiniCluster {
 				GlobalConfiguration.loadConfiguration(configDir);
 			} else {
 				Configuration conf = getMiniclusterDefaultConfig(jobManagerRpcPort, taskManagerRpcPort,
-					taskManagerDataPort, hdfsConfigFile, visualizerEnabled);
+					taskManagerDataPort, memorySize, hdfsConfigFile, lazyMemoryAllocation, visualizerEnabled);
 				GlobalConfiguration.includeConfiguration(conf);
 			}
 			
-			// before we start the jobmanager, we need to make sure that there are no lingering IPC threads from before
+			// before we start the JobManager, we need to make sure that there are no lingering IPC threads from before
 			// check that all threads are done before we return
 			Thread[] allThreads = new Thread[Thread.activeCount()];
 			int numThreads = Thread.enumerate(allThreads);
@@ -140,7 +164,7 @@ public class NepheleMiniCluster {
 			for (int i = 0; i < numThreads; i++) {
 				Thread t = allThreads[i];
 				String name = t.getName();
-				if (name.equals("Local Taskmanager IO Loop") || name.startsWith("IPC")) {
+				if (name.startsWith("IPC")) {
 					t.join();
 				}
 			}
@@ -156,7 +180,7 @@ public class NepheleMiniCluster {
 			};
 			runner.setDaemon(true);
 			runner.start();
-	
+			
 			waitForJobManagerToBecomeReady();
 		}
 	}
@@ -183,12 +207,12 @@ public class NepheleMiniCluster {
 	private void waitForJobManagerToBecomeReady() throws InterruptedException {
 		Map<InstanceType, InstanceTypeDescription> instanceMap;
 		while ((instanceMap = jobManager.getMapOfAvailableInstanceTypes()) == null || instanceMap.isEmpty()) {
-			Thread.sleep(100);
+			Thread.sleep(50);
 		}
 	}
 	
 	public static Configuration getMiniclusterDefaultConfig(int jobManagerRpcPort, int taskManagerRpcPort,
-			int taskManagerDataPort, String hdfsConfigFile, boolean visualization)
+			int taskManagerDataPort, long memorySize, String hdfsConfigFile, boolean lazyMemory, boolean visualization)
 	{
 		final Configuration config = new Configuration();
 		
@@ -204,12 +228,18 @@ public class NepheleMiniCluster {
 		// polling interval
 		config.setInteger(ConfigConstants.JOBCLIENT_POLLING_INTERVAL_KEY, 2);
 		
+		config.setBoolean(ConfigConstants.TASK_MANAGER_MEMORY_LAZY_ALLOCATION_KEY, lazyMemory);
+		
 		// enable / disable features
 		config.setBoolean("jobmanager.visualization.enable", visualization);
 		
 		// hdfs
 		if (hdfsConfigFile != null) {
 			config.setString("fs.hdfs.hdfsdefault", hdfsConfigFile);
+		}
+		
+		if (memorySize > 0) {
+			config.setLong(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, memorySize);
 		}
 		return config;
 	}

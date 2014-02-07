@@ -164,7 +164,7 @@ public class ClusterManagerTest {
 				2L * 1024L * 1024L * 1024L);
 
 			String ipAddress = "192.168.198.1";
-			InstanceConnectionInfo ici = new InstanceConnectionInfo(InetAddress.getByName(ipAddress), ipAddress, null,
+			InstanceConnectionInfo ici = new InstanceConnectionInfo(InetAddress.getByName(ipAddress),
 				ipcPort, dataPort);
 
 			// Although the hardware description indicates an instance of type "small", the cluster manager is supposed
@@ -198,7 +198,7 @@ public class ClusterManagerTest {
 				1024L * 1024L * 1024L);
 
 			ipAddress = "192.168.198.3";
-			ici = new InstanceConnectionInfo(InetAddress.getByName(ipAddress), ipAddress, null, ipcPort, dataPort);
+			ici = new InstanceConnectionInfo(InetAddress.getByName(ipAddress), ipcPort, dataPort);
 			cm.reportHeartBeat(ici, hardwareDescription);
 
 			instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
@@ -253,7 +253,7 @@ public class ClusterManagerTest {
 
 			final String ipAddress = "192.168.198.1";
 			final InstanceConnectionInfo instanceConnectionInfo = new InstanceConnectionInfo(
-				InetAddress.getByName(ipAddress), ipAddress, null, 1234, 1235);
+				InetAddress.getByName(ipAddress), 1234, 1235);
 			final HardwareDescription hardwareDescription = HardwareDescriptionFactory.construct(8,
 				8L * 1024L * 1024L * 1024L, 8L * 1024L * 1024L * 1024L);
 			cm.reportHeartBeat(instanceConnectionInfo, hardwareDescription);
@@ -350,7 +350,7 @@ public class ClusterManagerTest {
 
 			final String ipAddress = "192.168.198.3";
 			final InstanceConnectionInfo instanceConnectionInfo = new InstanceConnectionInfo(
-				InetAddress.getByName(ipAddress), ipAddress, null, 1234, 1235);
+				InetAddress.getByName(ipAddress), 1234, 1235);
 			final HardwareDescription hardwareDescription = HardwareDescriptionFactory.construct(8,
 				8L * 1024L * 1024L * 1024L, 8L * 1024L * 1024L * 1024L);
 			cm.reportHeartBeat(instanceConnectionInfo, hardwareDescription);

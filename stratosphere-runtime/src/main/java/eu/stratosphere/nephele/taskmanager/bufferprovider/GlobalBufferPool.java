@@ -89,7 +89,6 @@ public final class GlobalBufferPool {
 	 * @return the maximum size of a buffer available at this pool in bytes
 	 */
 	public int getMaximumBufferSize() {
-
 		return this.bufferSizeInBytes;
 	}
 
@@ -99,7 +98,6 @@ public final class GlobalBufferPool {
 	 * @return the locked buffer from the pool or <code>null</code> if currently no global buffer is available
 	 */
 	public MemorySegment lockGlobalBuffer() {
-
 		return this.buffers.poll();
 	}
 
@@ -119,7 +117,6 @@ public final class GlobalBufferPool {
 	 * @return the total number of buffers managed by this pool
 	 */
 	public int getTotalNumberOfBuffers() {
-
 		return this.numberOfBuffers;
 	}
 
@@ -129,7 +126,6 @@ public final class GlobalBufferPool {
 	 * @return the number of buffers which are currently available at this pool
 	 */
 	public int getCurrentNumberOfBuffers() {
-
 		return this.buffers.size();
 	}
 }

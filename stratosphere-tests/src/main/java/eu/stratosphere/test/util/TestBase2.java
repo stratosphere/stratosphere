@@ -55,6 +55,9 @@ import eu.stratosphere.util.LogUtils;
 public abstract class TestBase2 {
 	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
+	
+	private static final long TASK_MANAGER_MEMORY_SIZE = 96;
+	
 
 	protected final Configuration config;
 	
@@ -65,6 +68,7 @@ public abstract class TestBase2 {
 	protected boolean printPlan = false;
 	
 	private JobExecutionResult jobExecutionResult;
+	
 	
 	public TestBase2(Configuration config) {
 		verifyJvmOptions();
@@ -85,6 +89,9 @@ public abstract class TestBase2 {
 	@Before
 	public void startCluster() throws Exception {
 		this.executor = new NepheleMiniCluster();
+		this.executor.setVisualizerEnabled(false);
+		this.executor.setLazyMemoryAllocation(true);
+		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
 		this.executor.start();
 	}
 
