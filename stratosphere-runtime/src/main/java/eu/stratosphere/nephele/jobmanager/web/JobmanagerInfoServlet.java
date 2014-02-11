@@ -235,26 +235,26 @@ public class JobmanagerInfoServlet extends HttpServlet {
 			wrt.write("\"CANCELED\": "+ jobmanager.getArchive().getJobTime(jobEvent.getJobID(), JobStatus.CANCELED) + ",");
 			wrt.write("\"CREATED\": " + jobmanager.getArchive().getJobTime(jobEvent.getJobID(), JobStatus.CREATED)+",");
 
-            if (jobEvent.getJobStatus() == JobStatus.FAILED) {
-                ManagementGraphIterator managementGraphIterator =  new ManagementGraphIterator(jobManagementGraph,true);
-                wrt.write("\"failednodes\": [");
-                HashSet<String> map = new HashSet<String>();
-                boolean first = true;
-                while (managementGraphIterator.hasNext()) {
-                    ManagementVertex managementVertex = managementGraphIterator.next();
-                    String instanceName = managementVertex.getInstanceName();
-                    if (managementVertex.getExecutionState() == ExecutionState.FAILED && !map.contains(instanceName)) {
-                        if (first) {
-                            first = false;
-                        } else {
-                            wrt.write(",");
-                        }
-                        wrt.write("{\"node\": \"" + instanceName + "\"}");
-                        map.add(instanceName);
-                    }
-                }
-                wrt.write("],");
-            }
+			if (jobEvent.getJobStatus() == JobStatus.FAILED) {
+			ManagementGraphIterator managementGraphIterator =  new ManagementGraphIterator(jobManagementGraph,true);
+			wrt.write("\"failednodes\": [");
+			HashSet<String> map = new HashSet<String>();
+			boolean first = true;
+			while (managementGraphIterator.hasNext()) {
+				ManagementVertex managementVertex = managementGraphIterator.next();
+				String instanceName = managementVertex.getInstanceName();
+				if (managementVertex.getExecutionState() == ExecutionState.FAILED && !map.contains(instanceName)) {
+					if (first) {
+						first = false;
+					} else {
+						wrt.write(",");
+					}
+					wrt.write("{\"node\": \"" + instanceName + "\"}");
+					map.add(instanceName);
+				}
+			}
+			wrt.write("],");
+			}
 
 			// Serialize ManagementGraph to json
 			wrt.write("\"groupvertices\": [");
