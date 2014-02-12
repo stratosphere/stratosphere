@@ -298,6 +298,7 @@
 
 							<includes>
 								<include>**/wordcount/*.class</include>
+								<include>**/util/*.class</include>
 							</includes>
 						</configuration>
 					</execution>

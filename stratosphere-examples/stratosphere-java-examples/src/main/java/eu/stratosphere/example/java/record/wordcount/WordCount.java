@@ -13,6 +13,7 @@
 
 package eu.stratosphere.example.java.record.wordcount;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
 import eu.stratosphere.client.LocalExecutor;
+import eu.stratosphere.example.java.record.util.WordCountDataGenerator;
 import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
@@ -141,9 +143,15 @@ public class WordCount implements Program, ProgramDescription {
 	public static void main(String[] args) throws Exception {
 		WordCount wc = new WordCount();
 		
-		if (args.length < 3) {
-			System.err.println(wc.getDescription());
-			System.exit(1);
+		if(args.length < 3) {
+			System.err.println("No arguments given.");
+			String tmp = System.getProperty("java.io.tmpdir");
+			String in = "file://"+tmp+"/wordcount-input";
+			if(!new File(tmp+"/wordcount-input").exists()) {
+				WordCountDataGenerator.generateWCInput(in);
+			}
+			String[] newArgs = {"1", in, "file://"+System.getProperty("java.io.tmpdir")+"/wordcount-output" };
+			args = newArgs;
 		}
 		
 		Plan plan = wc.getPlan(args);
@@ -152,6 +160,8 @@ public class WordCount implements Program, ProgramDescription {
 		// succeeding line to send the job to a local installation or to a cluster for execution
 		JobExecutionResult result = LocalExecutor.execute(plan);
 		System.err.println("Total runtime: " + result.getNetRuntime());
+		
+		System.err.println("\nWordcount has finished. Find the output in "+args[2]);
 //		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCount.jar");
 //		ex.executePlan(plan);
 	}
