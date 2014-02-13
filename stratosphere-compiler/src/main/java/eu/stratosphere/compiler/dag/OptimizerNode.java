@@ -55,6 +55,10 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 
 	private final Operator pactContract; // The contract (Reduce / Match / DataSource / ...)
 	
+	private List<String> broadcastConnectionNames = new ArrayList<String>(); // the broadcast inputs names of this node
+	
+	private List<PactConnection> broadcastConnections = new ArrayList<PactConnection>(); // the broadcast inputs of this node
+	
 	private List<PactConnection> outgoingConnections; // The links to succeeding nodes
 
 	private InterestingProperties intProps; // the interesting properties of this node
@@ -103,10 +107,10 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	/**
 	 * Creates a new node for the optimizer plan.
 	 * 
-	 * @param pactContract The PACT that the node represents.
+	 * @param op The operator that the node represents.
 	 */
-	public OptimizerNode(Operator pactContract) {
-		this.pactContract = pactContract;
+	public OptimizerNode(Operator op) {
+		this.pactContract = op;
 		readStubAnnotations();
 		
 		if (this.pactContract instanceof AbstractUdfOperator) {
@@ -168,6 +172,35 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 *        The map to translate the contracts to their corresponding optimizer nodes.
 	 */
 	public abstract void setInputs(Map<Operator, OptimizerNode> contractToNode);
+
+	/**
+	 * This function is for plan translation purposes. Upon invocation, this method creates a {@link PactConnection}
+	 * for each one of the broadcast inputs associated with the {@code Operator} referenced by this node.
+	 * <p>
+	 * The {@code PactConnections} must set its shipping strategy type to BROADCAST.
+	 * 
+	 * @param operatorToNode
+	 *        The map associating operators with their corresponding optimizer nodes.
+	 * @throws CompilerException
+	 */
+	public void setBroadcastInputs(Map<Operator, OptimizerNode> operatorToNode) throws CompilerException {
+
+		// skip for Operators that don't support broadcast variables 
+		if (!(getPactContract() instanceof AbstractUdfOperator<?>)) {
+			return;
+		}
+
+		// get all broadcast inputs
+		AbstractUdfOperator<?> operator = ((AbstractUdfOperator<?>) getPactContract());
+
+		// create connections and add them
+		for (Map.Entry<String, Operator> input: operator.getBroadcastInputs().entrySet()) {
+			OptimizerNode predecessor = operatorToNode.get(input.getValue());
+			PactConnection connection = new PactConnection(predecessor, this, ShipStrategyType.BROADCAST);
+			addBroadcastConnection(input.getKey(), connection);
+			predecessor.addOutgoingConnection(connection);
+		}
+	}
 
 	/**
 	 * This method needs to be overridden by subclasses to return the children.
@@ -289,6 +322,31 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 		} else {
 			throw new IllegalStateException("Id has already been initialized.");
 		}
+	}
+
+	/**
+	 * Adds the broadcast connection identified by the given {@code name} to this node.
+	 * 
+	 * @param broadcastConnection
+	 *        The connection to add.
+	 */
+	public void addBroadcastConnection(String name, PactConnection broadcastConnection) {
+		this.broadcastConnectionNames.add(name);
+		this.broadcastConnections.add(broadcastConnection);
+	}
+
+	/**
+	 * Return the list of names associated with broadcast inputs for this node.
+	 */
+	public List<String> getBroadcastConnectionNames() {
+		return this.broadcastConnectionNames;
+	}
+
+	/**
+	 * Return the list of inputs associated with broadcast variables for this node.
+	 */
+	public List<PactConnection> getBroadcastConnections() {
+		return this.broadcastConnections;
 	}
 
 	/**
@@ -422,6 +480,12 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 			allDynamic &= dynamicIn;
 		}
 		
+		for (PactConnection conn : getBroadcastConnections()) {
+			boolean dynamicIn = conn.isOnDynamicPath();
+			anyDynamic |= dynamicIn;
+			allDynamic &= dynamicIn;
+		}
+		
 		if (anyDynamic) {
 			this.onDynamicPath = true;
 			this.costWeight = costWeight;
@@ -433,6 +497,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 						conn.setMaterializationMode(conn.getMaterializationMode().makeCached());
 					}
 				}
+				
+				// broadcast variables are always cached, because they stay unchanged available in the
+				// runtime context of the functions
 			}
 		}
 	}
@@ -446,6 +513,10 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 		for (PactConnection conn : getIncomingConnections()) {
 			maxDepth = Math.max(maxDepth, conn.getMaxDepth());
 		}
+		for (PactConnection conn : getBroadcastConnections()) {
+			maxDepth = Math.max(maxDepth, conn.getMaxDepth());
+		}
+		
 		return maxDepth;
 	}
 
@@ -540,6 +611,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	public void clearInterestingProperties() {
 		this.intProps = null;
 		for (PactConnection conn : getIncomingConnections()) {
+			conn.clearInterestingProperties();
+		}
+		for (PactConnection conn : getBroadcastConnections()) {
 			conn.clearInterestingProperties();
 		}
 	}

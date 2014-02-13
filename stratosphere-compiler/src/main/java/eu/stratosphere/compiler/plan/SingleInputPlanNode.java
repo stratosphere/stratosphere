@@ -135,6 +135,9 @@ public class SingleInputPlanNode extends PlanNode {
 	public void accept(Visitor<PlanNode> visitor) {
 		if (visitor.preVisit(this)) {
 			this.input.getSource().accept(visitor);
+			for (Channel broadcastInput : this.broadcastInputs) {
+				broadcastInput.getSource().accept(visitor);
+			}
 			visitor.postVisit(this);
 		}
 	}

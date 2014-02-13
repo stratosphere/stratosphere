@@ -12,6 +12,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.pact.runtime.udf;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import eu.stratosphere.api.common.accumulators.Accumulator;
@@ -34,6 +35,8 @@ public class RuntimeUDFContext implements RuntimeContext {
 	private final int subtaskIndex;
 
 	private HashMap<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
+
+	private HashMap<String, Collection<?>> broadcastVars = new HashMap<String, Collection<?>>();
 
 	public RuntimeUDFContext(String name, int numParallelSubtasks, int subtaskIndex) {
 		this.name = name;
@@ -118,4 +121,18 @@ public class RuntimeUDFContext implements RuntimeContext {
 		return this.accumulators;
 	}
 
+	public void setBroadcastVariable(String name, Collection<?> value) {
+		this.broadcastVars.put(name, value);
+	}
+
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <RT> Collection<RT> getBroadcastVariable(String name) {
+		if (!this.broadcastVars.containsKey(name)) {
+			throw new IllegalArgumentException("Trying to access an unbound broadcast variable '" 
+					+ name + "'.");
+		}
+		return (Collection<RT>) this.broadcastVars.get(name);
+	}
 }

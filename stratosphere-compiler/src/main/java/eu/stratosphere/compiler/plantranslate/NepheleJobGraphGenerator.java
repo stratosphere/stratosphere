@@ -39,6 +39,7 @@ import eu.stratosphere.compiler.plan.Channel;
 import eu.stratosphere.compiler.plan.DualInputPlanNode;
 import eu.stratosphere.compiler.plan.IterationPlanNode;
 import eu.stratosphere.compiler.plan.NAryUnionPlanNode;
+import eu.stratosphere.compiler.plan.NamedChannel;
 import eu.stratosphere.compiler.plan.OptimizedPlan;
 import eu.stratosphere.compiler.plan.PlanNode;
 import eu.stratosphere.compiler.plan.SingleInputPlanNode;
@@ -147,12 +148,12 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	 * {@link eu.stratosphere.nephele.jobgraph.JobGraph}.
 	 * This is an 1-to-1 mapping. No optimization whatsoever is applied.
 	 * 
-	 * @param pactPlan
+	 * @param program
 	 *        Optimized PACT plan that is translated into a JobGraph.
 	 * @return JobGraph generated from PACT plan.
 	 */
-	public JobGraph compileJobGraph(OptimizedPlan pactPlan) {
-		this.jobGraph = new JobGraph(pactPlan.getJobName());
+	public JobGraph compileJobGraph(OptimizedPlan program) {
+		this.jobGraph = new JobGraph(program.getJobName());
 		this.vertices = new HashMap<PlanNode, AbstractJobVertex>();
 		this.chainedTasks = new HashMap<PlanNode, TaskInChain>();
 		this.chainedTasksInSequence = new ArrayList<TaskInChain>();
@@ -161,7 +162,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		this.maxDegreeVertex = null;
 		
 		// generate Nephele job graph
-		pactPlan.accept(this);
+		program.accept(this);
 		
 		// finalize the iterations
 		for (IterationDescriptor iteration : this.iterations.values()) {
@@ -184,10 +185,10 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 
 		// now that all have been created, make sure that all share their instances with the one
 		// with the highest degree of parallelism
-		if (pactPlan.getInstanceTypeName() != null) {
-			this.maxDegreeVertex.setInstanceType(pactPlan.getInstanceTypeName());
+		if (program.getInstanceTypeName() != null) {
+			this.maxDegreeVertex.setInstanceType(program.getInstanceTypeName());
 		} else {
-			LOG.warn("No instance type assigned to Nephele JobVertex.");
+			LOG.warn("No instance type assigned to JobVertex.");
 		}
 		for (AbstractJobVertex vertex : this.vertices.values()) {
 			if (vertex != this.maxDegreeVertex) {
@@ -397,7 +398,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					TaskConfig headConfig = new TaskConfig(headVertex.getConfiguration());
 					int inputIndex = headConfig.getDriverStrategy().getNumInputs();
 					headConfig.setIterationHeadSolutionSetInputIndex(inputIndex);
-					translateChannel(wsNode.getInitialSolutionSetInput(), inputIndex, headVertex, headConfig);
+					translateChannel(wsNode.getInitialSolutionSetInput(), inputIndex, headVertex, headConfig, false);
 				}
 				
 				return;
@@ -557,7 +558,15 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			int inputIndex = 0;
 			while (inConns.hasNext()) {
 				Channel input = inConns.next();
-				inputIndex += translateChannel(input, inputIndex, targetVertex,targetVertexConfig);
+				inputIndex += translateChannel(input, inputIndex, targetVertex, targetVertexConfig, false);
+			}
+			// broadcast variables
+			int broadcastInputIndex = 0;
+			for (NamedChannel broadcastInput: node.getBroadcastInputs()) {
+				int broadcastInputIndexDelta = translateChannel(broadcastInput, broadcastInputIndex, targetVertex, targetVertexConfig, true);
+				targetVertexConfig.setBroadcastInputName(broadcastInput.getName(), broadcastInputIndex);
+				targetVertexConfig.setBroadcastInputSerializer(broadcastInput.getSerializer(), broadcastInputIndex);
+				broadcastInputIndex += broadcastInputIndexDelta;
 			}
 		} catch (Exception e) {
 			throw new CompilerException(
@@ -566,7 +575,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	}
 	
 	private int translateChannel(Channel input, int inputIndex, AbstractJobVertex targetVertex,
-			TaskConfig targetVertexConfig) throws Exception
+			TaskConfig targetVertexConfig, boolean isBroadcast) throws Exception
 	{
 		final PlanNode inputPlanNode = input.getSource();
 		final Iterator<Channel> allInChannels;
@@ -666,7 +675,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 				sourceVertexConfig = new TaskConfig(sourceVertex.getConfiguration());
 			}
 			DistributionPattern pattern = connectJobVertices(
-				inConn, inputIndex, sourceVertex, sourceVertexConfig, targetVertex, targetVertexConfig);
+				inConn, inputIndex, sourceVertex, sourceVertexConfig, targetVertex, targetVertexConfig, isBroadcast);
 			
 			// accounting on channels and senders
 			numChannelsTotal++;
@@ -684,7 +693,11 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			throw new CompilerException("Error: It is currently not supported to union between dynamic and static path in an iteration.");
 		}
 		if (numDynamicSenderTasksTotal > 0) {
-			targetVertexConfig.setGateIterativeWithNumberOfEventsUntilInterrupt(inputIndex, numDynamicSenderTasksTotal);
+			if (isBroadcast) {
+				targetVertexConfig.setBroadcastGateIterativeWithNumberOfEventsUntilInterrupt(inputIndex, numDynamicSenderTasksTotal);
+			} else {
+				targetVertexConfig.setGateIterativeWithNumberOfEventsUntilInterrupt(inputIndex, numDynamicSenderTasksTotal);
+			}
 		}
 		
 		// the local strategy is added only once. in non-union case that is the actual edge,
@@ -737,7 +750,8 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					inConn.getLocalStrategy() == LocalStrategy.NONE &&
 					pred.getOutgoingChannels().size() == 1 &&
 					node.getDegreeOfParallelism() == pred.getDegreeOfParallelism() && 
-					node.getSubtasksPerInstance() == pred.getSubtasksPerInstance();
+					node.getSubtasksPerInstance() == pred.getSubtasksPerInstance() &&
+					node.getBroadcastInputs().isEmpty();
 			
 			// cannot chain the nodes that produce the next workset or the next solution set, if they are not the
 			// in a tail 
@@ -894,7 +908,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			// instantiate the head vertex and give it a no-op driver as the driver strategy.
 			// everything else happens in the post visit, after the input (the initial partial solution)
 			// is connected.
-			headVertex = new JobTaskVertex("PartialSolution("+iteration.getNodeName()+")", this.jobGraph);
+			headVertex = new JobTaskVertex("PartialSolution ("+iteration.getNodeName()+")", this.jobGraph);
 			headVertex.setTaskClass(IterationHeadPactTask.class);
 			headConfig = new TaskConfig(headVertex.getConfiguration());
 			headConfig.setDriver(NoOpDriver.class);
@@ -1018,7 +1032,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	 */
 	private DistributionPattern connectJobVertices(Channel channel, int inputNumber,
 			final AbstractJobVertex sourceVertex, final TaskConfig sourceConfig,
-			final AbstractJobVertex targetVertex, final TaskConfig targetConfig)
+			final AbstractJobVertex targetVertex, final TaskConfig targetConfig, boolean isBroadcast)
 	throws JobGraphDefinitionException, CompilerException
 	{
 		// ------------ connect the vertices to the job graph --------------
@@ -1072,7 +1086,11 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 //		}
 		
 		// ---------------- configure the receiver -------------------
-		targetConfig.addInputToGroup(inputNumber);
+		if (isBroadcast) {
+			targetConfig.addBroadcastInputToGroup(inputNumber);
+		} else {
+			targetConfig.addInputToGroup(inputNumber);
+		}
 		return distributionPattern;
 	}
 	

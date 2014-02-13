@@ -26,7 +26,6 @@ import eu.stratosphere.api.common.accumulators.AccumulatorHelper;
 import eu.stratosphere.api.common.distributions.DataDistribution;
 import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.api.common.functions.GenericReducer;
-import eu.stratosphere.api.common.functions.RuntimeContext;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
@@ -96,10 +95,15 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	protected volatile PactDriver<S, OT> driver;
 
 	/**
-	 * The instantiated user code of this task's main driver.
+	 * The instantiated user code of this task's main operator (driver). May be null if the operator has no udf.
 	 */
 	protected S stub;
 	
+	/**
+	 * The udf's runtime context.
+	 */
+	protected RuntimeUDFContext runtimeUdfContext;
+
 	/**
 	 * The collector that forwards the user code's results. May forward to a channel or to chained drivers within
 	 * this task.
@@ -118,9 +122,24 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	protected MutableReader<?>[] inputReaders;
 	
 	/**
+	 * The input readers for the configured broadcast variables for this task.
+	 */
+	protected MutableReader<?>[] broadcastInputReaders;
+	
+	/**
 	 * The inputs reader, wrapped in an iterator. Prior to the local strategies, etc...
 	 */
 	protected MutableObjectIterator<?>[] inputIterators;
+	
+	/**
+	 * The input readers for the configured broadcast variables, wrapped in an iterator. 
+	 * Prior to the local strategies, etc...
+	 */
+	protected MutableObjectIterator<?>[] broadcastInputIterators;
+	
+	protected int[] iterativeInputs;
+	
+	protected int[] iterativeBroadcastInputs;
 	
 	/**
 	 * The local strategies that are applied on the inputs.
@@ -139,7 +158,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	protected volatile SpillingResettableMutableObjectIterator<?>[] resettableInputs;
 	
 	/**
-	 * The inputs to the driver. Return the readers' data after the application of the local strategy
+	 * The inputs to the operator. Return the readers' data after the application of the local strategy
 	 * and the temp-table barrier.
 	 */
 	protected MutableObjectIterator<?>[] inputs;
@@ -148,6 +167,11 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	 * The serializers for the input data type.
 	 */
 	protected TypeSerializer<?>[] inputSerializers;
+
+	/**
+	 * The serializers for the broadcast input data types.
+	 */
+	protected TypeSerializer<?>[] broadcastInputSerializers;
 
 	/**
 	 * The comparators for the central driver.
@@ -197,7 +221,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	protected volatile boolean running = true;
 
 	// --------------------------------------------------------------------------------------------
-	//                                  Nephele Task Interface
+	//                                  Task Interface
 	// --------------------------------------------------------------------------------------------
 
 
@@ -234,6 +258,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 		// however, this does not trigger any local processing.
 		try {
 			initInputReaders();
+			initBroadcastInputReaders();
 		} catch (Exception e) {
 			throw new RuntimeException("Initializing the input streams failed" +
 				e.getMessage() == null ? "." : ": " + e.getMessage(), e);
@@ -274,7 +299,56 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			// the local processing includes building the dams / caches
 			try {
 				int numInputs = driver.getNumberOfInputs();
+				int numBroadcastInputs = this.config.getNumBroadcastInputs();
+				
 				initInputsSerializersAndComparators(numInputs);
+				initBroadcastInputsSerializers(numBroadcastInputs);
+				
+				// set the iterative status for inputs and broadcast inputs
+				{
+					List<Integer> iterativeInputs = new ArrayList<Integer>();
+					
+					for (int i = 0; i < numInputs; i++) {
+						final int numberOfEventsUntilInterrupt = getTaskConfig().getNumberOfEventsUntilInterruptInIterativeGate(i);
+			
+						if (numberOfEventsUntilInterrupt < 0) {
+							throw new IllegalArgumentException();
+						}
+						else if (numberOfEventsUntilInterrupt > 0) {
+							this.inputReaders[i].setIterative(numberOfEventsUntilInterrupt);
+							iterativeInputs.add(i);
+				
+							if (LOG.isDebugEnabled()) {
+								LOG.debug(formatLogString("Input [" + i + "] reads in supersteps with [" +
+										+ numberOfEventsUntilInterrupt + "] event(s) till next superstep."));
+							}
+						}
+					}
+					this.iterativeInputs = asArray(iterativeInputs);
+				}
+				
+				{
+					List<Integer> iterativeBcInputs = new ArrayList<Integer>();
+					
+					for (int i = 0; i < numBroadcastInputs; i++) {
+						final int numberOfEventsUntilInterrupt = getTaskConfig().getNumberOfEventsUntilInterruptInIterativeBroadcastGate(i);
+						
+						if (numberOfEventsUntilInterrupt < 0) {
+							throw new IllegalArgumentException();
+						}
+						else if (numberOfEventsUntilInterrupt > 0) {
+							this.broadcastInputReaders[i].setIterative(numberOfEventsUntilInterrupt);
+							iterativeBcInputs.add(i);
+				
+							if (LOG.isDebugEnabled()) {
+								LOG.debug(formatLogString("Broadcast input [" + i + "] reads in supersteps with [" +
+										+ numberOfEventsUntilInterrupt + "] event(s) till next superstep."));
+							}
+						}
+					}
+					this.iterativeBroadcastInputs = asArray(iterativeBcInputs);
+				}
+				
 				initLocalStrategies(numInputs);
 			} catch (Exception e) {
 				throw new RuntimeException("Initializing the input processing failed" +
@@ -289,6 +363,12 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			
 			// pre main-function initialization
 			initialize();
+			
+			// read the broadcast variables
+			for (int i = 0; i < this.config.getNumBroadcastInputs(); i++) {
+				final String name = this.config.getBroadcastInputName(i);
+				readAndSetBroadcastInput(i, name, this.runtimeUdfContext);
+			}
 	
 			// the work goes here
 			run();
@@ -338,6 +418,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	// --------------------------------------------------------------------------------------------
 
 	protected void initialize() throws Exception {
+		// create the operator
 		try {
 			this.driver.setup(this);
 		}
@@ -346,6 +427,9 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				"' , caused an error: " + t.getMessage(), t);
 		}
 		
+		this.runtimeUdfContext = createRuntimeContext(getEnvironment().getTaskName());
+		
+		// instantiate the UDF
 		try {
 			final Class<? super S> userCodeFunctionType = this.driver.getStubType();
 			// if the class is null, the driver has no user code 
@@ -353,9 +437,28 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				this.stub = initStub(userCodeFunctionType);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Initializing the user code and the configuration failed" +
+			throw new RuntimeException("Initializing the UDF" +
 				e.getMessage() == null ? "." : ": " + e.getMessage(), e);
 		}
+	}
+	
+	protected <X> void readAndSetBroadcastInput(int inputNum, String bcVarName, RuntimeUDFContext context) throws IOException {
+		// drain the broadcast inputs
+
+		@SuppressWarnings("unchecked")
+		final MutableObjectIterator<X> reader =  (MutableObjectIterator<X>) this.broadcastInputIterators[inputNum];
+		
+		@SuppressWarnings("unchecked")
+		final TypeSerializer<X> serializer =  (TypeSerializer<X>) this.broadcastInputSerializers[inputNum];
+
+		ArrayList<X> collection = new ArrayList<X>();
+		
+		X record = serializer.createInstance();
+		while (this.running && reader.next(record)) {
+			collection.add(record);
+			record = serializer.createInstance();
+		}
+		context.setBroadcastVariable(bcVarName, collection);
 	}
 	
 	protected void run() throws Exception {
@@ -417,9 +520,9 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			// JobManager. close() has been called earlier for all involved UDFs
 			// (using this.stub.close() and closeChainedTasks()), so UDFs can no longer
 			// modify accumulators.ll;
-			if (stub != null) {
+			if (this.stub != null) {
 				// collect the counters from the stub
-				Map<String, Accumulator<?,?>> accumulators = stub.getRuntimeContext().getAllAccumulators();
+				Map<String, Accumulator<?,?>> accumulators = this.stub.getRuntimeContext().getAllAccumulators();
 				RegularPactTask.reportAndClearAccumulators(getEnvironment(), accumulators, this.chainedTasks);
 			}
 		}
@@ -574,7 +677,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				throw new RuntimeException("The class '" + stub.getClass().getName() + "' is not a subclass of '" + 
 						stubSuperClass.getName() + "' as is required.");
 			}
-			stub.setRuntimeContext(getRuntimeContext(getEnvironment().getTaskName()));
+			stub.setRuntimeContext(this.runtimeUdfContext);
 			return stub;
 		}
 		catch (ClassCastException ccex) {
@@ -622,13 +725,44 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	}
 	
 	/**
+	 * Creates the record readers for the extra broadcast inputs as configured by {@link TaskConfig#getNumBroadcastInputs()}.
+	 *
+	 * This method requires that the task configuration, the driver, and the user-code class loader are set.
+	 */
+	@SuppressWarnings("unchecked")
+	protected void initBroadcastInputReaders() throws Exception {
+		final int numBroadcastInputs = this.config.getNumBroadcastInputs();
+		final MutableReader<?>[] broadcastInputReaders = new MutableReader[numBroadcastInputs];
+		
+		for (int i = 0; i < this.config.getNumBroadcastInputs(); i++) {
+			//  ---------------- create the input readers ---------------------
+			// in case where a logical input unions multiple physical inputs, create a union reader
+			final int groupSize = this.config.getBroadcastGroupSize(i);
+			if (groupSize == 1) {
+				// non-union case
+				broadcastInputReaders[i] = new MutableRecordReader<IOReadableWritable>(this);
+			} else if (groupSize > 1){
+				// union case
+				MutableRecordReader<IOReadableWritable>[] readers = new MutableRecordReader[groupSize];
+				for (int j = 0; j < groupSize; ++j) {
+					readers[j] = new MutableRecordReader<IOReadableWritable>(this);
+				}
+				broadcastInputReaders[i] = new MutableUnionRecordReader<IOReadableWritable>(readers);
+			} else {
+				throw new Exception("Illegal input group size in task configuration: " + groupSize);
+			}
+		}
+		this.broadcastInputReaders = broadcastInputReaders;
+	}
+	
+	/**
 	 * Creates all the serializers and comparators.
 	 */
 	protected void initInputsSerializersAndComparators(int numInputs) throws Exception {
 		this.inputSerializers = new TypeSerializer[numInputs];
 		this.inputComparators = this.driver.requiresComparatorOnInput() ? new TypeComparator[numInputs] : null;
 		this.inputIterators = new MutableObjectIterator[numInputs];
-
+		
 		for (int i = 0; i < numInputs; i++) {
 			//  ---------------- create the serializer first ---------------------
 			final TypeSerializerFactory<?> serializerFactory = this.config.getInputSerializer(i, this.userCodeClassLoader);
@@ -640,7 +774,23 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				this.inputComparators[i] = comparatorFactory.createComparator();
 			}
 			
-			this.inputIterators[i] = createInputIterator(i, this.inputReaders[i], this.inputSerializers[i]);
+			this.inputIterators[i] = createInputIterator(this.inputReaders[i], this.inputSerializers[i]);
+		}
+	}
+	
+	/**
+	 * Creates all the serializers and iterators for the broadcast inputs.
+	 */
+	protected void initBroadcastInputsSerializers(int numBroadcastInputs) throws Exception {
+		this.broadcastInputSerializers = new TypeSerializer[numBroadcastInputs];
+		this.broadcastInputIterators = new MutableObjectIterator[numBroadcastInputs];
+
+		for (int i = 0; i < numBroadcastInputs; i++) {
+			//  ---------------- create the serializer first ---------------------
+			final TypeSerializerFactory<?> serializerFactory = this.config.getInputSerializer(i, this.userCodeClassLoader);
+			this.broadcastInputSerializers[i] = serializerFactory.getSerializer();
+
+			this.broadcastInputIterators[i] = createInputIterator(this.broadcastInputReaders[i], this.broadcastInputSerializers[i]);
 		}
 	}
 	
@@ -852,9 +1002,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 		return compFact.createComparator();
 	}
 	
-	protected MutableObjectIterator<?> createInputIterator(int inputIndex, 
-		MutableReader<?> inputReader, TypeSerializer<?> serializer)
-	{
+	protected MutableObjectIterator<?> createInputIterator(MutableReader<?> inputReader, TypeSerializer<?> serializer) {
 		if (serializer.getClass() == RecordSerializer.class) {
 			// record specific deserialization
 			@SuppressWarnings("unchecked")
@@ -884,7 +1032,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 		this.output = initOutputs(this, this.userCodeClassLoader, this.config, this.chainedTasks, this.eventualOutputs);
 	}
 	
-	public RuntimeContext getRuntimeContext(String taskName) {
+	public RuntimeUDFContext createRuntimeContext(String taskName) {
 		Environment env = getEnvironment();
 		return new RuntimeUDFContext(taskName, env.getCurrentNumberOfSubtasks(), env.getIndexInSubtaskGroup());
 	}
@@ -990,7 +1138,6 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	}
 
 
-
 	@Override
 	public <X> TypeComparator<X> getInputComparator(int index) {
 		if (this.inputComparators == null) {
@@ -1003,16 +1150,6 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 		@SuppressWarnings("unchecked")
 		final TypeComparator<X> comparator = (TypeComparator<X>) this.inputComparators[index];
 		return comparator;
-	}
-	
-	/**
-	 * Gets the serializer for the output data type of the main (i.e. the non-chained) driver.
-	 * 
-	 * @return The serializer for the output data type of the main driver.
-	 */
-	public <T> TypeSerializer<T> getOutputTypeSerializer() {
-		TypeSerializerFactory<T> factory = this.config.getOutputSerializer(this.userCodeClassLoader);
-		return factory.getSerializer();
 	}
 
 	// ============================================================================================
@@ -1036,18 +1173,9 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	 *
 	 * @return The string for logging.
 	 */
-	public static String constructLogString(String message, String taskName, AbstractInvokable parent)
-	{
-		final StringBuilder bld = new StringBuilder(128);
-		bld.append(message);
-		bld.append(':').append(' ');
-		bld.append(taskName);
-		bld.append(' ').append('(');
-		bld.append(parent.getEnvironment().getIndexInSubtaskGroup() + 1);
-		bld.append('/');
-		bld.append(parent.getEnvironment().getCurrentNumberOfSubtasks());
-		bld.append(')');
-		return bld.toString();
+	public static String constructLogString(String message, String taskName, AbstractInvokable parent) {
+		return message + ":  " + taskName + " (" + (parent.getEnvironment().getIndexInSubtaskGroup() + 1) +
+				'/' + parent.getEnvironment().getCurrentNumberOfSubtasks() + ')';
 	}
 
 	/**
@@ -1059,8 +1187,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	 * @param parent The parent task, whose information is included in the log message.
 	 * @throws Exception Always thrown.
 	 */
-	public static void logAndThrowException(Exception ex, AbstractInvokable parent) throws Exception
-	{
+	public static void logAndThrowException(Exception ex, AbstractInvokable parent) throws Exception {
 		String taskName;
 		if (ex instanceof ExceptionInChainedStubException) {
 			do {
@@ -1372,7 +1499,17 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			return stub;
 		}
 		catch (ClassCastException ccex) {
-			throw new RuntimeException("The stub class is not a proper subclass of " + superClass.getName(), ccex);
+			throw new RuntimeException("The UDF class is not a proper subclass of " + superClass.getName(), ccex);
 		}
+	}
+	
+	private static int[] asArray(List<Integer> list) {
+		int[] a = new int[list.size()];
+		
+		int i = 0;
+		for (int val : list) {
+			a[i++] = val;
+		}
+		return a;
 	}
 }
