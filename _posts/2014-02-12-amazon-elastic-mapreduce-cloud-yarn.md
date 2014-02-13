@@ -48,7 +48,7 @@ chmod og-rwx ~/work-laptop.pem
 		<ul>
 			<li>Choose a Cluster name</li>
 			<li>You can let the other settings remain unchanged (termination protection, logging, debugging)</li>
-			<li>For the Hadoop distribution, it is very important to choose one with YARN support. We use <b>3.0.2 (Hadoop 2.2.0)</b></li>
+			<li>For the Hadoop distribution, it is very important to choose one with YARN support. We use <b>3.0.3 (Hadoop 2.2.0)</b> (the minor version might change over time)</li>
 			<li>Remove all applications to be installed (unless you want to use them)</li>
 			<li>Choose the instance types you want to start. Stratosphere runs fine with m1.large instances. Core and Task instances both run Stratosphere, but only core instances contain HDFS data nodes.</li>
 			<li>Choose the <b>EC2 key pair</b> you've created in the previous step!</li>
@@ -81,7 +81,7 @@ wget http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dis
 	<li>Start Stratosphere in the cluster using Hadoop YARN</li>
 
 {% highlight bash %}
-java -jar stratosphere-dist-0.4-hadoop2-yarn-uberjar.jar -n 4 -jm 3000 -tm 3000
+java -jar stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar -n 4 -jm 3000 -tm 3000
 {% endhighlight %}
 
 The arguments have the following meaning
@@ -140,8 +140,19 @@ Notice the <code>-D localhost:2001</code> argument: It opens a SOCKS proxy on yo
 </ul>
 
 Since you're connected to the master now, you can open several web interfaces: <br>
-<b>YARN Resource Manager</b>: <code>http://&lt;yourMasterDNSName>:9026/</code> <br>
-<b>HDFS NameNode</b>: <code>http://&lt;yourMasterDNSName>:9101/</code>
+<b>YARN Resource Manager</b>: <code>http://&lt;masterIPAddress>:9026/</code> <br>
+<b>HDFS NameNode</b>: <code>http://&lt;masterIPAddress>:9101/</code>
+
+You find the `masterIPAddress` by entering `ifconfig` into the terminal:
+{% highlight bash %}
+[hadoop@ip-172-31-38-95 ~]$ ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:CF:8E:CB:28:B2  
+          inet addr:172.31.38.95  Bcast:172.31.47.255  Mask:255.255.240.0
+          inet6 addr: fe80::cf:8eff:fecb:28b2/64 Scope:Link
+          RX bytes:166314967 (158.6 MiB)  TX bytes:89319246 (85.1 MiB)
+{% endhighlight %}
+
+**Optional:** If you want to use the hostnames within your Firefox (that also makes the NameNode links work), you have to enable DNS resolution over the SOCKS proxy. Open the Firefox config `about:config` and set `network.proxy.socks_remote_dns` to `true`.
 
 The YARN ResourceManager also allows you to connect to <b>Stratosphere's JobManager web interface</b>. Click the <b>ApplicationMaster</b> link in the "Tracking UI" column.
 
@@ -155,22 +166,23 @@ hadoop fs -copyFromLocal gpl.txt /input
 
 To run a Job, enter the following command into the master's command line:
 {% highlight bash %}
-java -cp stratosphere-dist-0.5-SNAPSHOT-yarn-uberjar.jar \
+java -cp stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar \
 	eu.stratosphere.client.CliFrontend run \
 	-m <your JobManagers hostname>:6123 \
-	-j stratosphere-dist-0.5-SNAPSHOT-yarn-uberjar.jar -c eu.stratosphere.example.java.record.wordcount.Wordcount \
+	-j stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar -c eu.stratosphere.example.java.record.wordcount.WordCount \
 	-a 16 hdfs:///input hdfs:///output
 {% endhighlight %}
 
 Lets go through the command in detail:
 
-* `-cp stratosphere-dist-0.5-SNAPSHOT-yarn-uberjar.jar` sets puts the YARN-jar into the classpath of Java
+* `-cp stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar` sets puts the YARN-jar into the classpath of Java
 * `eu.stratosphere.client.CliFrontend run` is the main class (the same that is actually called when you use `/bin/stratosphere`) with the `run` command
 * `-m ip-172-31-14-146.us-west-2.compute.internal:6123` is the address of the JobManager. The exact address in for your case is visible in the terminal that contains the YARN output. (`-m` is short for *master*)
-* `-j stratosphere-dist-0.5-SNAPSHOT-yarn-uberjar.jar` the `-j` command sets the jar file containing the job. Since the example is contained in the main jar, you can just re-use it here to submit it to the cluster. If you have you own application, place your Jar-file here.
+* `-j stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar` the `-j` command sets the jar file containing the job. Since the example is contained in the main jar, you can just re-use it here to submit it to the cluster. If you have you own application, place your Jar-file here.
 * `-c eu.stratosphere.example.java.record.wordcount.Wordcount` is the name of the main class you want to run and that contains your job.
 * `-a 16 hdfs:///input hdfs:///output` the `-a` command specifies the Job-specific arguments. In this case, the wordcount expects the following input `<numSubStasks> <input> <output>`.
 
+You can monitor the progress of your job in the JobManager webinterface. Once the job has finished (which should be the case after less than 10 seconds), you can analyze it there.
 Inspect the result in HDFS using:
 
 {% highlight bash %}
