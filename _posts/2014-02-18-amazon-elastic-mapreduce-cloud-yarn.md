@@ -10,7 +10,7 @@ categories: blog tutorial
 This step-by-step tutorial will guide you through the setup of Stratosphere using Amazon Elastic MapReduce.
 
 ### Background
-[Amazon Elastic MapReduce](http://aws.amazon.com/elasticmapreduce/) (Amazon EMR) is part of Amazon Web services. EMR allows to create Hadoop clusters that analyze data stored in Amazon S3 (AWS' cloud storage). Stratosphere runs atop of Hadoop using the [recently](http://hadoop.apache.org/docs/r2.2.0/hadoop-project-dist/hadoop-common/releasenotes.html) released cluster resource manager [YARN](http://hadoop.apache.org/docs/current2/hadoop-yarn/hadoop-yarn-site/YARN.html). YARN allows to use many different data analysis tools in your cluster side by side. Tools that run with YARN are, for example [Apache Giraph](https://giraph.apache.org/), [Spark](http://spark.incubator.apache.org/) or [HBase](http://hortonworks.com/blog/introducing-hoya-hbase-on-yarn/). Stratosphere also [runs on YARN]({{site.baseurl}}/docs/0.4/setup/yarn.html) and that's the approach for this tutorial.
+[Amazon Elastic MapReduce](http://aws.amazon.com/elasticmapreduce/) (Amazon EMR) is part of Amazon Web services. EMR allows to create Hadoop clusters that analyze data stored in Amazon S3 (AWS' cloud storage). Stratosphere runs on top of Hadoop using the [recently](http://hadoop.apache.org/docs/r2.2.0/hadoop-project-dist/hadoop-common/releasenotes.html) released cluster resource manager [YARN](http://hadoop.apache.org/docs/current2/hadoop-yarn/hadoop-yarn-site/YARN.html). YARN allows to use many different data analysis tools in your cluster side by side. Tools that run with YARN are, for example [Apache Giraph](https://giraph.apache.org/), [Spark](http://spark.incubator.apache.org/) or [HBase](http://hortonworks.com/blog/introducing-hoya-hbase-on-yarn/). Stratosphere also [runs on YARN]({{site.baseurl}}/docs/0.4/setup/yarn.html) and that's the approach for this tutorial.
 
 ### 1. Step: Login to AWS and prepare secure access
 
@@ -123,9 +123,9 @@ We recommend to create a SOCKS-proxy with your SSH that allows you to easily con
 ssh -D localhost:2001 hadoop@<your master dns name> -i <your pem file>
 {% endhighlight %}
 
-Notice the <code>-D localhost:2001</code> argument: It opens a SOCKS proxy on your computer allowing any application to use it to communicate through the master node.
+Notice the <code>-D localhost:2001</code> argument: It opens a SOCKS proxy on your computer allowing any application to use it to communicate through the proxy via an SSH tunnel to the master node. This allows you to access all services in your EMR cluster, such as the HDFS NameNode or the YARN web interface.
 
-<li>Configure a browser to use the SOCKS proxy. I therefore used a browser that I do not use regularly (Firefox).</li>
+<li>Configure a browser to use the SOCKS proxy. Open a browser with SOCKS proxy support (such as Firefox). Ideally, do not use your primary browser for this, since ALL traffic will be routed through Amazon.</li>
 
 <div class="row" style="padding-top:15px">
 	<div class="col-md-6">
@@ -172,12 +172,13 @@ To run a Job, enter the following command into the master's command line:
 # optional: go to the extracted directory
 cd stratosphere-yarn-0.5-SNAPSHOT/
 # run the wordcount example
-./bin/stratosphere run -m  <your JobManagers hostname>:6123 -j examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar  -a 16 hdfs:///input hdfs:///output
+./bin/stratosphere run -w -m  <your JobManagers hostname>:6123 -j examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar  -a 16 hdfs:///input hdfs:///output
 {% endhighlight %}
 
 Lets go through the command in detail:
 
 * `./bin/stratosphere` is the standard launcher for Stratosphere jobs from the command line
+* The `-w` flag stands for "wait". It is a very useful to track the progress of the job.
 * `-m ip-172-31-14-146.us-west-2.compute.internal:6123` is the address of the JobManager. The exact address in for your case is visible in the terminal that contains the YARN output. (`-m` is short for *master*)
 * `-j examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar` the `-j` command sets the jar file containing the job. If you have you own application, place your Jar-file here.
 * `-a 16 hdfs:///input hdfs:///output` the `-a` command specifies the Job-specific arguments. In this case, the wordcount expects the following input `<numSubStasks> <input> <output>`.
