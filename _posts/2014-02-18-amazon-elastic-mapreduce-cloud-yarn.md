@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  'Use Stratosphere with Amazon Elastic MapReduce'
-date:   2014-02-12 10:57:18
-categories: tutorial blog
+date:   2014-02-18 19:57:18
+categories: blog tutorial
 ---
 
 <div class="lead">Get started with Stratosphere within 10 minutes using Amazon Elastic MapReduce.</div>
@@ -71,17 +71,20 @@ ssh hadoop@ec2-54-213-61-105.us-west-2.compute.amazonaws.com -i ~/Downloads/work
 {% endhighlight %}
 
 
-Windows users have to follow <a href="ttp://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-connect-master-node-ssh.html">these instructions</a> to SSH into the machine running the master. </br>
-
+(Windows users have to follow <a href="ttp://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-connect-master-node-ssh.html">these instructions</a> to SSH into the machine running the master.) </br></br>
+Once connected to the master, download and start Stratosphere for YARN: 
 <ul>
-	<li>Download Stratosphere-YARN</li>
+	<li>Download and extract Stratosphere-YARN</li>
 {% highlight bash %}
-wget http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dist/target/stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar
+wget http://stratosphere-bin.s3-website-us-east-1.amazonaws.com/stratosphere-dist-0.5-SNAPSHOT-yarn.tar.gz
+# extract it
+tar xvzf stratosphere-dist-0.5-SNAPSHOT-yarn.tar.gz
 {% endhighlight %}
 	<li>Start Stratosphere in the cluster using Hadoop YARN</li>
 
 {% highlight bash %}
-java -jar stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar -n 4 -jm 3000 -tm 3000
+cd stratosphere-yarn-0.5-SNAPSHOT/
+./bin/yarn-session.sh -n 4 -jm 1024 -tm 3000
 {% endhighlight %}
 
 The arguments have the following meaning
@@ -166,20 +169,17 @@ hadoop fs -copyFromLocal gpl.txt /input
 
 To run a Job, enter the following command into the master's command line:
 {% highlight bash %}
-java -cp stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar \
-	eu.stratosphere.client.CliFrontend run \
-	-m <your JobManagers hostname>:6123 \
-	-j stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar -c eu.stratosphere.example.java.record.wordcount.WordCount \
-	-a 16 hdfs:///input hdfs:///output
+# optional: go to the extracted directory
+cd stratosphere-yarn-0.5-SNAPSHOT/
+# run the wordcount example
+./bin/stratosphere run -m  <your JobManagers hostname>:6123 -j examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar  -a 16 hdfs:///input hdfs:///output
 {% endhighlight %}
 
 Lets go through the command in detail:
 
-* `-cp stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar` sets puts the YARN-jar into the classpath of Java
-* `eu.stratosphere.client.CliFrontend run` is the main class (the same that is actually called when you use `/bin/stratosphere`) with the `run` command
+* `./bin/stratosphere` is the standard launcher for Stratosphere jobs from the command line
 * `-m ip-172-31-14-146.us-west-2.compute.internal:6123` is the address of the JobManager. The exact address in for your case is visible in the terminal that contains the YARN output. (`-m` is short for *master*)
-* `-j stratosphere-dist-0.5-hadoop2-SNAPSHOT-yarn-uberjar.jar` the `-j` command sets the jar file containing the job. Since the example is contained in the main jar, you can just re-use it here to submit it to the cluster. If you have you own application, place your Jar-file here.
-* `-c eu.stratosphere.example.java.record.wordcount.Wordcount` is the name of the main class you want to run and that contains your job.
+* `-j examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar` the `-j` command sets the jar file containing the job. If you have you own application, place your Jar-file here.
 * `-a 16 hdfs:///input hdfs:///output` the `-a` command specifies the Job-specific arguments. In this case, the wordcount expects the following input `<numSubStasks> <input> <output>`.
 
 You can monitor the progress of your job in the JobManager webinterface. Once the job has finished (which should be the case after less than 10 seconds), you can analyze it there.
@@ -189,7 +189,7 @@ Inspect the result in HDFS using:
 hadoop fs -tail /output
 {% endhighlight %}
 
-If you want to shut down the whole cluster in the cloud, us Amazon's webinterface and click on "Terminate cluster".
+If you want to shut down the whole cluster in the cloud, use Amazon's webinterface and click on "Terminate cluster". If you just want to stop the YARN session, press CTRL+C in the terminal. The Stratosphere instances will be killed by YARN.
 
 
 <br><br>
