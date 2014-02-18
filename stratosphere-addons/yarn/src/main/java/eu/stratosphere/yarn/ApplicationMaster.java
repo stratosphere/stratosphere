@@ -19,7 +19,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class ApplicationMaster {
 		Map<String, String> envs = System.getenv();
 		final String currDir = envs.get(Environment.PWD.key());
 		final String ownHostname = envs.get(Environment.NM_HOST.key());
-		int appId = Integer.valueOf(envs.get(Client.ENV_APP_ID));
+		final String appId = envs.get(Client.ENV_APP_ID);
 		final String localDirs = envs.get(Environment.LOCAL_DIRS.key());
 		final String applicationMasterHost = envs.get(Environment.NM_HOST.key());
 		final String remoteStratosphereJarPath = envs.get(Client.STRATOSPHERE_JAR_PATH);
@@ -163,8 +162,6 @@ public class ApplicationMaster {
 			LOG.info("Requesting TaskManager container " + i);
 			rmClient.addContainerRequest(containerAsk);
 		}
-
-		
 		
 		LocalResource stratosphereJar = Records.newRecord(LocalResource.class);
 		LocalResource stratosphereConf = Records.newRecord(LocalResource.class);

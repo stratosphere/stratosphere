@@ -294,13 +294,13 @@ public class Client {
 		
 		// Set-up ApplicationSubmissionContext for the application
 		ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
-		ApplicationId appId = appContext.getApplicationId();
+		final ApplicationId appId = appContext.getApplicationId();
 		
 		// Setup jar for ApplicationMaster
 		LocalResource appMasterJar = Records.newRecord(LocalResource.class);
 		LocalResource stratosphereConf = Records.newRecord(LocalResource.class);
-		Path remotePathJar = Utils.setupLocalResource(conf, fs, appId.getId(), localJarPath, appMasterJar);
-		Utils.setupLocalResource(conf, fs, appId.getId(), confPath, stratosphereConf);
+		Path remotePathJar = Utils.setupLocalResource(conf, fs, appId.toString(), localJarPath, appMasterJar);
+		Utils.setupLocalResource(conf, fs, appId.toString(), confPath, stratosphereConf);
 		
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>(2);
 		localResources.put("stratosphere.jar", appMasterJar);
@@ -318,7 +318,7 @@ public class Client {
 		appMasterEnv.put(Client.ENV_TM_CORES, String.valueOf(tmCores));
 		appMasterEnv.put(Client.ENV_TM_MEMORY, String.valueOf(tmMemory));
 		appMasterEnv.put(Client.STRATOSPHERE_JAR_PATH, remotePathJar.toString() );
-		appMasterEnv.put(Client.ENV_APP_ID, String.valueOf(appId.getId()));
+		appMasterEnv.put(Client.ENV_APP_ID, appId.toString());
 		
 		amContainer.setEnvironment(appMasterEnv);
 
@@ -337,9 +337,17 @@ public class Client {
 		LOG.info("Submitting application master " + appId);
 		yarnClient.submitApplication(appContext);
 		
+		
+		
 		 Runtime.getRuntime().addShutdownHook(new Thread() {
 		   @Override
 		   public void run() {
+		    try {
+		    	LOG.info("Killing the Stratosphere-YARN application.");
+				yarnClient.killApplication(appId);
+			} catch (Exception e) {
+				LOG.warn("Exception while killing the YARN application", e);
+			}
 		    LOG.info("YARN Client is shutting down");
 		    yarnClient.stop();
 		   }
@@ -393,9 +401,9 @@ public class Client {
 		formatter.setSyntaxPrefix("   Optional");
 		Options opt = new Options();
 		opt.addOption(VERBOSE);
-		opt.addOption(GEN_CONF);
-		opt.addOption(STRATOSPHERE_CONF);
-		opt.addOption(STRATOSPHERE_JAR);
+	//	opt.addOption(GEN_CONF);
+	//	opt.addOption(STRATOSPHERE_CONF);
+	//	opt.addOption(STRATOSPHERE_JAR);
 		opt.addOption(JM_MEMORY);
 		opt.addOption(TM_MEMORY);
 		opt.addOption(TM_CORES);
