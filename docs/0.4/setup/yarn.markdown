@@ -5,6 +5,7 @@ sublinks:
   - {anchor: "session", title: "Start Stratosphere Session"}
   - {anchor: "submission", title: "Job Submission"}
   - {anchor: "build", title: "Advanced Building"}
+  - {anchor: "background", title: "Background"}
 ---
 
 ## Stratosphere on YARN
@@ -148,6 +149,28 @@ The commands in detail:
 * `-Dhadoop.version=2.0.0-cdh4.2.0` sets a special version of the Hadoop dependencies. Make sure that the specified Hadoop version is compatible with the profile you activated (non-YARN probably need `-Dhadoop.profile=1`)
 * `-P!include-yarn` this command disables YARN in Stratosphere. This is required in this case because the Hadoop version we are using here `2.0.0-cdh4.2.0` is using the old YARN interface. As stated above, we expect Hadoop 2.2 (but Hadoop 2.1-betas might also work since they use the new APIs.)
 
-Please post to the [Stratosphere mailinglist](https://groups.google.com/d/forum/stratosphere-dev) or create an issue on [Github](https://github.com/stratosphere/stratosphere/issues), if you have issues with your Hadoop compatabiliy.
+Please post to the [Stratosphere mailinglist](https://groups.google.com/d/forum/stratosphere-users) or create an issue on [Github](https://github.com/stratosphere/stratosphere/issues), if you have issues with your YARN setup and Stratosphere.
+
+</section>
+
+<section id="background">
+### Background
+
+This section briefly describes how Stratosphere and YARN are working together. 
+<img src="{{site.baseurl}}/img/StratosphereOnYarn.svg" class="img-responsive">
+
+The YARN client needs to access the Hadoop configuration to connect to the YARN resource manager and to HDFS. The client determines the Hadoop configuration using the following strategy:
+
+* Test if `YARN_CONF_DIR`, `HADOOP_CONF_DIR` or `HADOOP_CONF_PATH` are set (in that order). If one of these variables are set, they are used to read the configuration.
+* If the above strategy failed (this should not be the case in a correct YARN setup.), the client is using the `HADOOP_HOME` environment variable. If it set, the client tries to access `$HADOOP_HOME/etc/hadoop` (Hadoop 2) and `$HADOOP_HOME/conf` (Hadoop 1).
+
+When starting a new Stratosphere YARN session, the client first checks if the requested resources (containers and memory) are available. After that, it is uploading a jar that contains Stratosphere and the configuration to HDFS (step 1).
+
+The next step of the client is to request (step 2) a YARN container to start the *ApplicationMaster* (step 3). Since the client registered the configuration and jar-file as a resource for the container, the NodeManager of YARN running on that particular machine will take care of preparing the container (e.g. downloading the files). Once that has finished, the *ApplicationMaster* (AM) is started.
+
+The *JobManager* and AM are running in the same container. Once they successfully started, the AM knows the address of the JobManager (its own host). It is generating a new Stratosphere configuration file for the TaskManagers (so that they can connect to the JobManager). The file is also uploaded into HDFS. Additionally, the *AM* container is also serving Stratosphere's web interface.
+
+After that, the AM starts allocating the containers for the TaskManagers for Stratosphere. They will also download the jar file and the modified configuration from the HDFS. Once these steps completed, Stratosphere is set up for accepting Jobs.
+
 
 </section>
