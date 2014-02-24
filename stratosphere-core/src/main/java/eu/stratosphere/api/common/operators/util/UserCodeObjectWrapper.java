@@ -18,8 +18,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import org.apache.commons.lang3.SerializationUtils;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -83,14 +81,9 @@ public class UserCodeObjectWrapper<T> implements UserCodeWrapper<T> {
 		return getUserCodeObject();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public T getUserCodeObject() {
-		// return a clone because some code retrieves this and runs configure() on it before
-		// the job is actually run. This way we can always hand out a pristine copy.
-		Serializable ser = (Serializable) userCodeObject;
-		T cloned = (T) SerializationUtils.clone(ser);
-		return cloned;
+		return userCodeObject;
 		
 	}
 
