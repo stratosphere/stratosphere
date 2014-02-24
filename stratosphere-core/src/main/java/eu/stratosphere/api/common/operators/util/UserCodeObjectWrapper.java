@@ -64,7 +64,7 @@ public class UserCodeObjectWrapper<T> implements UserCodeWrapper<T> {
 						newCurrent = f.get(current);
 					}
 
-					if (!hasCustomSerialization && !Modifier.isStatic(f.getModifiers()) && f.get(current) != null &&  !(f.get(current) instanceof Serializable)) {
+					if (!hasCustomSerialization && !Modifier.isTransient(f.getModifiers()) && !Modifier.isStatic(f.getModifiers()) && f.get(current) != null &&  !(f.get(current) instanceof Serializable)) {
 						throw new RuntimeException("User code object " +
 								userCodeObject + " contains non-serializable field " + f.getName() + " = " + f.get(current));
 					}
@@ -91,7 +91,10 @@ public class UserCodeObjectWrapper<T> implements UserCodeWrapper<T> {
 		Serializable ser = (Serializable) userCodeObject;
 		T cloned = (T) SerializationUtils.clone(ser);
 		return cloned;
-		
+	}
+	
+	public T getInitialUserCodeObject() {
+		return userCodeObject;
 	}
 
 	@Override
