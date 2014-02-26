@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.stratosphere.runtime.io.api.BufferWriter;
 import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannel;
 import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannelBroker;
 import eu.stratosphere.pact.runtime.iterative.concurrent.Broker;
@@ -35,12 +36,9 @@ import eu.stratosphere.api.common.typeutils.TypePairComparator;
 import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
-import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.MemorySegment;
-import eu.stratosphere.nephele.io.AbstractRecordWriter;
-import eu.stratosphere.nephele.io.RecordWriter;
-import eu.stratosphere.nephele.io.channels.bytebuffered.EndOfSuperstepEvent;
+import eu.stratosphere.runtime.io.channels.EndOfSuperstepEvent;
 import eu.stratosphere.pact.runtime.hash.MutableHashTable;
 import eu.stratosphere.pact.runtime.io.InputViewIterator;
 import eu.stratosphere.pact.runtime.iterative.event.AllWorkersDoneEvent;
@@ -82,13 +80,13 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 
 	private Collector<X> finalOutputCollector;
 
-	private List<AbstractRecordWriter<?>> finalOutputWriters;
+	private List<BufferWriter> finalOutputWriters;
 
 	private TypeSerializer<Y> feedbackTypeSerializer;
 
 	private TypeSerializer<X> solutionTypeSerializer;
 
-	private RecordWriter<?> toSync;
+	private BufferWriter toSync;
 
 	private int initialSolutionSetInput; // undefined for bulk iterations
 
@@ -112,7 +110,7 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 
 		// at this time, the outputs to the step function are created
 		// add the outputs for the final solution
-		this.finalOutputWriters = new ArrayList<AbstractRecordWriter<?>>();
+		this.finalOutputWriters = new ArrayList<BufferWriter>();
 		final TaskConfig finalOutConfig = this.config.getIterationHeadFinalOutputConfig();
 		this.finalOutputCollector = RegularPactTask.getOutputCollector(this, finalOutConfig,
 			this.userCodeClassLoader, this.finalOutputWriters, finalOutConfig.getNumOutputs());
@@ -126,7 +124,7 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 			throw new Exception("Error: Inconsistent head task setup - wrong mapping of output gates.");
 		}
 		// now, we can instantiate the sync gate
-		this.toSync = new RecordWriter<IOReadableWritable>(this, IOReadableWritable.class);
+		this.toSync = new BufferWriter(this);
 	}
 
 	/**
@@ -220,6 +218,8 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 
 	@Override
 	public void run() throws Exception {
+		// initialize the serializers (one per channel) of the record writers
+		RegularPactTask.initOutputWriters(this.finalOutputWriters);
 
 		final String brokerKey = brokerKey();
 		final int workerIndex = getEnvironment().getIndexInSubtaskGroup();
@@ -340,6 +340,8 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 				streamOutFinalOutputBulk(new InputViewIterator<X>(superstepResult, this.solutionTypeSerializer));
 			}
 
+			this.finalOutputCollector.close();
+
 		} finally {
 			// make sure we unregister everything from the broker:
 			// - backchannel
@@ -399,7 +401,8 @@ public class IterationHeadPactTask<X, Y, S extends Function, OT> extends Abstrac
 		if (log.isInfoEnabled()) {
 			log.info(formatLogString("sending " + WorkerDoneEvent.class.getSimpleName() + " to sync"));
 		}
-		this.toSync.publishEvent(event);
+
+		this.toSync.broadcastEvent(event);
 	}
 
 }

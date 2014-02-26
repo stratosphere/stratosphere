@@ -93,7 +93,7 @@ import eu.stratosphere.nephele.instance.InstanceManager;
 import eu.stratosphere.nephele.instance.InstanceType;
 import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.instance.local.LocalInstanceManager;
-import eu.stratosphere.nephele.io.channels.ChannelID;
+import eu.stratosphere.runtime.io.channels.ChannelID;
 import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.AbstractJobVertex;
@@ -109,7 +109,6 @@ import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitWrapper;
 import eu.stratosphere.nephele.jobmanager.web.WebInfoServer;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
-import eu.stratosphere.nephele.multicast.MulticastManager;
 import eu.stratosphere.nephele.profiling.JobManagerProfiler;
 import eu.stratosphere.nephele.profiling.ProfilingUtils;
 import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
@@ -123,9 +122,9 @@ import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
 import eu.stratosphere.nephele.taskmanager.TaskExecutionState;
 import eu.stratosphere.nephele.taskmanager.TaskKillResult;
 import eu.stratosphere.nephele.taskmanager.TaskSubmissionResult;
-import eu.stratosphere.nephele.taskmanager.bytebuffered.ConnectionInfoLookupResponse;
-import eu.stratosphere.nephele.taskmanager.bytebuffered.RemoteReceiver;
-import eu.stratosphere.nephele.taskmanager.runtime.ExecutorThreadFactory;
+import eu.stratosphere.runtime.io.network.ConnectionInfoLookupResponse;
+import eu.stratosphere.runtime.io.network.RemoteReceiver;
+import eu.stratosphere.nephele.taskmanager.ExecutorThreadFactory;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import eu.stratosphere.nephele.util.SerializableArrayList;
@@ -159,8 +158,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	private final InputSplitManager inputSplitManager;
 
 	private final AbstractScheduler scheduler;
-
-	private final MulticastManager multicastManager;
 	
 	private AccumulatorManager accumulatorManager;
 
@@ -272,9 +269,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			LOG.error("Unable to load scheduler " + schedulerClassName);
 			System.exit(FAILURERETURNCODE);
 		}
-
-		// Create multicastManager
-		this.multicastManager = new MulticastManager(this.scheduler);
 
 		// Load profiler if it should be used
 		if (GlobalConfiguration.getBoolean(ProfilingUtils.ENABLE_PROFILING_KEY, false)) {
@@ -812,72 +806,61 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				// Receiver runs on a different task manager
 
 				final InstanceConnectionInfo ici = assignedInstance.getInstanceConnectionInfo();
-				final InetSocketAddress isa = new InetSocketAddress(ici.getAddress(), ici.getDataPort());
+				final InetSocketAddress isa = new InetSocketAddress(ici.address(), ici.dataPort());
 
 				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa, edge
 					.getConnectionID()));
 			}
 		}
 
-		if (edge.isBroadcast()) {
+		// Find vertex of connected input channel
+		final ExecutionVertex targetVertex = edge.getInputGate().getVertex();
 
-			return multicastManager.lookupConnectionInfo(caller, jobID, sourceChannelID);
+		// Check execution state
+		final ExecutionState executionState = targetVertex.getExecutionState();
 
+		if (executionState != ExecutionState.RUNNING && executionState != ExecutionState.FINISHING
+				&& executionState != ExecutionState.FINISHED) {
+
+			if (executionState == ExecutionState.ASSIGNED) {
+
+				final Runnable command = new Runnable() {
+
+					/**
+					 * {@inheritDoc}
+					 */
+					@Override
+					public void run() {
+						scheduler.deployAssignedVertices(targetVertex);
+					}
+				};
+
+				eg.executeCommand(command);
+			}
+
+			// LOG.info("Created receiverNotReady for " + targetVertex + " in state " + executionState + " 3");
+			return ConnectionInfoLookupResponse.createReceiverNotReady();
+		}
+
+		final AbstractInstance assignedInstance = targetVertex.getAllocatedResource().getInstance();
+		if (assignedInstance == null) {
+			LOG.error("Cannot resolve lookup: vertex found for channel ID " + edge.getInputChannelID()
+				+ " but no instance assigned");
+			// LOG.info("Created receiverNotReady for " + targetVertex + " in state " + executionState + " 4");
+			return ConnectionInfoLookupResponse.createReceiverNotReady();
+		}
+
+		if (assignedInstance.getInstanceConnectionInfo().equals(caller)) {
+			// Receiver runs on the same task manager
+			return ConnectionInfoLookupResponse.createReceiverFoundAndReady(edge.getInputChannelID());
 		} else {
+			// Receiver runs on a different task manager
+			final InstanceConnectionInfo ici = assignedInstance.getInstanceConnectionInfo();
+			final InetSocketAddress isa = new InetSocketAddress(ici.address(), ici.dataPort());
 
-			// Find vertex of connected input channel
-			final ExecutionVertex targetVertex = edge.getInputGate().getVertex();
-
-			// Check execution state
-			final ExecutionState executionState = targetVertex.getExecutionState();
-
-			if (executionState != ExecutionState.RUNNING && executionState != ExecutionState.FINISHING
-					&& executionState != ExecutionState.FINISHED) {
-
-				if (executionState == ExecutionState.ASSIGNED) {
-
-					final Runnable command = new Runnable() {
-
-						/**
-						 * {@inheritDoc}
-						 */
-						@Override
-						public void run() {
-							scheduler.deployAssignedVertices(targetVertex);
-						}
-					};
-
-					eg.executeCommand(command);
-				}
-
-				// LOG.info("Created receiverNotReady for " + targetVertex + " in state " + executionState + " 3");
-				return ConnectionInfoLookupResponse.createReceiverNotReady();
-			}
-
-			final AbstractInstance assignedInstance = targetVertex.getAllocatedResource().getInstance();
-			if (assignedInstance == null) {
-				LOG.error("Cannot resolve lookup: vertex found for channel ID " + edge.getInputChannelID()
-					+ " but no instance assigned");
-				// LOG.info("Created receiverNotReady for " + targetVertex + " in state " + executionState + " 4");
-				return ConnectionInfoLookupResponse.createReceiverNotReady();
-			}
-
-			if (assignedInstance.getInstanceConnectionInfo().equals(caller)) {
-				// Receiver runs on the same task manager
-				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(edge.getInputChannelID());
-			} else {
-				// Receiver runs on a different task manager
-				final InstanceConnectionInfo ici = assignedInstance.getInstanceConnectionInfo();
-				final InetSocketAddress isa = new InetSocketAddress(ici.getAddress(), ici.getDataPort());
-
-				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa, edge
-					.getConnectionID()));
-			}
+			return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa, edge
+				.getConnectionID()));
 		}
-
-		// LOG.error("Receiver(s) not found");
-
-		// return ConnectionInfoLookupResponse.createReceiverNotFound();
 	}
 
 	/**

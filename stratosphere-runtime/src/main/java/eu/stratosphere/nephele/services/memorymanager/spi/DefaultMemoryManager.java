@@ -13,7 +13,6 @@
 
 package eu.stratosphere.nephele.services.memorymanager.spi;
 
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +30,6 @@ import eu.stratosphere.nephele.services.memorymanager.MemoryAllocationException;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 
-
 /**
  * Default MemoryManager implementation giving hard memory guarantees. The implementation has the following properties:
  * <ul>
@@ -42,14 +40,13 @@ import eu.stratosphere.nephele.template.AbstractInvokable;
  * <li>automatic re-integration of released segments</li>
  * </ul>
  * This implementation uses internal byte arrays to allocate the required memory and allows allocation sizes greater
- * than 2GB. Due to the fact that the length of a single java byte array is bounded by {@link #java.lang.Integer.MAX_VALUE} (2GB),
+ * than 2GB. Due to the fact that the length of a single Java byte array is bounded by {@link java.lang.Integer#MAX_VALUE} (2GB),
  * the manager works 2 dimensional byte array (i.e. with memory chunks). Please be aware that in order to keep the array
  * access methods in the {@link DefaultMemorySegment} fast and simple, the actual allocated memory segments must not
  * exceed 2GB and must be contained in a single memory chunk.
- * 
  */
-public class DefaultMemoryManager implements MemoryManager
-{
+public class DefaultMemoryManager implements MemoryManager {
+
 	/**
 	 * The default memory page size. Currently set to 32 KiBytes.
 	 */
@@ -141,7 +138,6 @@ public class DefaultMemoryManager implements MemoryManager
 		}
 	}
 
-
 	@Override
 	public void shutdown()
 	{
@@ -166,7 +162,6 @@ public class DefaultMemoryManager implements MemoryManager
 		}
 		// -------------------- END CRITICAL SECTION -------------------
 	}
-	
 
 	public boolean verifyEmpty()
 	{
@@ -178,10 +173,7 @@ public class DefaultMemoryManager implements MemoryManager
 	// ------------------------------------------------------------------------
 	//                 MemoryManager interface implementation
 	// ------------------------------------------------------------------------
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.nephele.services.memorymanager.MemoryManager#allocatePages(eu.stratosphere.nephele.template.AbstractInvokable, int)
-	 */
+
 	@Override
 	public List<MemorySegment> allocatePages(AbstractInvokable owner, int numPages) throws MemoryAllocationException {
 		final ArrayList<MemorySegment> segs = new ArrayList<MemorySegment>(numPages);
@@ -189,9 +181,6 @@ public class DefaultMemoryManager implements MemoryManager
 		return segs;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.nephele.services.memorymanager.MemoryManager#allocatePages(eu.stratosphere.nephele.template.AbstractInvokable, java.util.List, int)
-	 */
 	@Override
 	public void allocatePages(AbstractInvokable owner, List<MemorySegment> target, int numPages)
 			throws MemoryAllocationException
@@ -235,7 +224,6 @@ public class DefaultMemoryManager implements MemoryManager
 	}
 	
 	// ------------------------------------------------------------------------
-	
 
 	@Override
 	public void release(MemorySegment segment)
@@ -277,7 +265,6 @@ public class DefaultMemoryManager implements MemoryManager
 		}
 		// -------------------- END CRITICAL SECTION -------------------
 	}
-
 
 	@Override
 	public <T extends MemorySegment> void release(Collection<T> segments) {
@@ -341,7 +328,6 @@ public class DefaultMemoryManager implements MemoryManager
 		// -------------------- END CRITICAL SECTION -------------------
 	}
 
-
 	@Override
 	public void releaseAll(AbstractInvokable owner)
 	{
@@ -351,40 +337,37 @@ public class DefaultMemoryManager implements MemoryManager
 			if (this.isShutDown) {
 				throw new IllegalStateException("Memory manager has been shut down.");
 			}
-			
+
 			// get all segments
 			final Set<DefaultMemorySegment> segments = this.allocatedSegments.remove(owner);
-			
+
 			// all segments may have been freed previously individually
 			if (segments == null || segments.isEmpty()) {
 				return;
 			}
-			
+
 			// free each segment
 			for (DefaultMemorySegment seg : segments) {
 				final byte[] buffer = seg.destroy();
 				this.freeSegments.add(buffer);
 			}
-			
+
 			segments.clear();
 		}
 		// -------------------- END CRITICAL SECTION -------------------
 	}
 	
 	// ------------------------------------------------------------------------
-	
 
 	@Override
 	public int getPageSize() {
 		return this.pageSize;
 	}
 
-
 	@Override
 	public int computeNumberOfPages(long numBytes) {
 		return getNumPages(numBytes);
 	}
-
 
 	@Override
 	public long roundDownToPageSizeMultiple(long numBytes) {

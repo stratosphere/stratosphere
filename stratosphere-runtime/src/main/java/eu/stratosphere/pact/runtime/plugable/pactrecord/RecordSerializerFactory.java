@@ -42,9 +42,6 @@ public class RecordSerializerFactory implements TypeSerializerFactory<Record>
 	public void writeParametersToConfig(Configuration config)
 	{}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.generic.types.TypeSerializerFactory#readParametersFromConfig(eu.stratosphere.nephele.configuration.Configuration, java.lang.ClassLoader)
-	 */
 	@Override
 	public void readParametersFromConfig(Configuration config, ClassLoader cl) throws ClassNotFoundException
 	{}
