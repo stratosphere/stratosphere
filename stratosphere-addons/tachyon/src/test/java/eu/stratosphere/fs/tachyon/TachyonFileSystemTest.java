@@ -1,6 +1,6 @@
 package eu.stratosphere.fs.tachyon;
 
-import eu.stratosphere.fs.tachyon.TachyonFileSystem;
+import eu.stratosphere.fs.tachyon.util.LocalTachyonCluster;
 import eu.stratosphere.core.fs.BlockLocation;
 import eu.stratosphere.core.fs.FSDataInputStream;
 import eu.stratosphere.core.fs.FSDataOutputStream;
@@ -16,13 +16,15 @@ import static org.junit.Assert.*;
 
 public class TachyonFileSystemTest {
     private static final FileSystem fs = new TachyonFileSystem();
-    private static final Path testDir = new Path("tachyon://127.0.0.1:19998/test");
-    private static final Path testFilePath1 = new Path("tachyon://127.0.0.1:19998/test/file1");
-    private static final Path testFilePath2 = new Path("tachyon://127.0.0.1:19998/test/file2");
+    private static final String SCHEME_HOST = "tachyon://127.0.0.1:18998";
+    private static final Path testDir = new Path(SCHEME_HOST + "/test");
+    private static final Path testFilePath1 = new Path(SCHEME_HOST + "/test/file1");
+    private static final Path testFilePath2 = new Path(SCHEME_HOST + "/test/file2");
 
     @BeforeClass
-    public static void setUpClass() throws IOException {
-        fs.initialize(URI.create("tachyon://127.0.0.1:19998"));
+    public static void setUpClass() throws IOException, Exception {
+        LocalTachyonCluster.main(new String[0]);
+        fs.initialize(URI.create(SCHEME_HOST));
     }
 
     @After
