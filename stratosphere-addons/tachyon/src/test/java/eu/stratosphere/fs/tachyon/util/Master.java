@@ -221,7 +221,7 @@ public class Master {
    * Get MasterInfo instance for Unit Test
    * @return MasterInfo of the Master
    */
-  public MasterInfo getMasterInfo() {
+  MasterInfo getMasterInfo() {
     return mMasterInfo;
   }
 
