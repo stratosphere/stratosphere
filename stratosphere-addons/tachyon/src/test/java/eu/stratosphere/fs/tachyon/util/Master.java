@@ -185,7 +185,6 @@ public class Master {
         System.exit(-1);
       }
 
-      mWebServer.startWebServer();
       LOG.info("The master server started @ " + mMasterAddress);
       mMasterServiceServer.serve();
       LOG.info("The master server ended @ " + mMasterAddress);

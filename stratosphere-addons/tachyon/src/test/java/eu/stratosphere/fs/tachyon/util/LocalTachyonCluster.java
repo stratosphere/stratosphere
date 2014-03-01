@@ -146,6 +146,7 @@ public class LocalTachyonCluster {
     mMaster = new Master(
         new InetSocketAddress(mLocalhostName, mMasterPort), mMasterPort + 1, 1, 1, 1);
     Runnable runMaster = new Runnable() {
+            @Override
       public void run() {
         mMaster.start();
       }
@@ -160,6 +161,7 @@ public class LocalTachyonCluster {
         new InetSocketAddress(mLocalhostName, mWorkerPort),
         mWorkerPort + 1, 1, 1, 1, mWorkerDataFolder, mWorkerCapacityBytes);
     Runnable runWorker = new Runnable() {
+            @Override
       public void run() {
         mWorker.start();
       }
@@ -205,19 +207,5 @@ public class LocalTachyonCluster {
 
   public String getWorkerDataFolder() {
     return mWorkerDataFolder;
-  }
-
-  public static void main(String[] args) throws Exception {
-    LocalTachyonCluster cluster = new LocalTachyonCluster(100);
-    cluster.start();
-    CommonUtils.sleepMs(null, 1000);
-    cluster.stop();
-    CommonUtils.sleepMs(null, 1000);
-
-    cluster = new LocalTachyonCluster(100);
-    cluster.start();
-    CommonUtils.sleepMs(null, 1000);
-    cluster.stop();
-    CommonUtils.sleepMs(null, 1000);
   }
 }

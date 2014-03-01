@@ -1,5 +1,7 @@
 package eu.stratosphere.fs.tachyon;
 
+import java.net.InetAddress;
+import org.junit.AfterClass;
 import eu.stratosphere.fs.tachyon.util.LocalTachyonCluster;
 import eu.stratosphere.core.fs.BlockLocation;
 import eu.stratosphere.core.fs.FSDataInputStream;
@@ -15,16 +17,27 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TachyonFileSystemTest {
+    private static final LocalTachyonCluster cluster = new LocalTachyonCluster(100);
     private static final FileSystem fs = new TachyonFileSystem();
-    private static final String SCHEME_HOST = "tachyon://127.0.0.1:18998";
-    private static final Path testDir = new Path(SCHEME_HOST + "/test");
-    private static final Path testFilePath1 = new Path(SCHEME_HOST + "/test/file1");
-    private static final Path testFilePath2 = new Path(SCHEME_HOST + "/test/file2");
+    private static String SCHEME_HOST;
+    private static Path testDir;
+    private static Path testFilePath1;
+    private static Path testFilePath2;
 
     @BeforeClass
-    public static void setUpClass() throws IOException, Exception {
-        LocalTachyonCluster.main(new String[0]);
+    public static void setUpClass() throws Exception {
+        SCHEME_HOST = "tachyon://" + InetAddress.getLocalHost().getCanonicalHostName() + ":18998";
+        testDir = new Path(SCHEME_HOST + "/test");
+        testFilePath1 = new Path(SCHEME_HOST + "/test/file1");
+        testFilePath2 = new Path(SCHEME_HOST + "/test/file2");
+
+        cluster.start();
         fs.initialize(URI.create(SCHEME_HOST));
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        cluster.stop();
     }
 
     @After
