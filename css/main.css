@@ -324,7 +324,7 @@ Download page
 }
 
 .affix {
-    position: fixed;
+    position: static;
 }
 
 .affix-bottom {
