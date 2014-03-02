@@ -157,7 +157,7 @@ Some of our colleagues are also in the #dima irc channel on freenode.
 ## Documentation
 
 The [Documentation Website](http://stratosphere.eu/docs/0.4/) has comprehensive documentation for users and contributors.
-The [Documentation Website](http://stratosphere.eu/docs/0.5/) has documentation on new features and changes in 0.5 version.
+The [0.5 version documentation page](http://stratosphere.eu/docs/0.5/) describe new features and changes in 0.5 version.
 The [GitHub Wiki](https://github.com/stratosphere/stratosphere/wiki/_pages) has a collection of topics that are in the process of being fleshed out.
 
 Please make edits to the Wiki if you find inconsistencies or [Open an issue](https://github.com/stratosphere/stratosphere/issues/new) 
