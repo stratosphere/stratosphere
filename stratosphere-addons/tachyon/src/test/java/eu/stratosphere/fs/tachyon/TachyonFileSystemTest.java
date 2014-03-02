@@ -1,5 +1,6 @@
 package eu.stratosphere.fs.tachyon;
 
+import eu.stratosphere.example.java.record.wordcount.WordCount;
 import java.net.InetAddress;
 import org.junit.AfterClass;
 import eu.stratosphere.fs.tachyon.util.LocalTachyonCluster;
@@ -17,17 +18,19 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TachyonFileSystemTest {
-    private static final LocalTachyonCluster cluster = new LocalTachyonCluster(100);
+    private static final LocalTachyonCluster cluster = new LocalTachyonCluster(256);
     private static final FileSystem fs = new TachyonFileSystem();
     private static String SCHEME_HOST;
-    private static Path testDir;
+    private static Path testDir1;
+    private static Path testDir2;
     private static Path testFilePath1;
     private static Path testFilePath2;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         SCHEME_HOST = "tachyon://" + InetAddress.getLocalHost().getCanonicalHostName() + ":18998";
-        testDir = new Path(SCHEME_HOST + "/test");
+        testDir1 = new Path(SCHEME_HOST + "/test");
+        testDir2 = new Path(SCHEME_HOST + "/test/result");
         testFilePath1 = new Path(SCHEME_HOST + "/test/file1");
         testFilePath2 = new Path(SCHEME_HOST + "/test/file2");
 
@@ -42,14 +45,32 @@ public class TachyonFileSystemTest {
 
     @After
     public void tearDown() throws IOException {
-        if (fs.exists(testDir)) {
-            fs.delete(testDir, true);
+        if (fs.exists(testDir1)) {
+            fs.delete(testDir1, true);
         }
     }
 
     @Test
+    public void testWordCount() throws Exception {
+        fs.mkdirs(testDir1);
+        FSDataOutputStream out = fs.create(testFilePath1, true, 0, (short)0, 32);
+        for (int x = 0; x < 10; x++) {
+            out.write("hello\n".getBytes());
+            out.write("world\n".getBytes());
+        }
+        out.close();
+        WordCount.main(new String[]{"1", testFilePath1.toString(), testDir2.toString()});
+        FSDataInputStream in = fs.open(testDir2);
+        String text="";
+        for(int x=0;x<18;x++){
+            text+=(char)in.read();
+        }
+        assertEquals("hello 10\nworld 10\n",text);
+    }
+
+    @Test
     public void testGetFileStatus() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         fs.create(testFilePath1, true);
         FileStatus info = fs.getFileStatus(testFilePath1);
         assertEquals(0, info.getLen());
@@ -59,7 +80,7 @@ public class TachyonFileSystemTest {
 
     @Test
     public void testGetFileBlockLocations() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         BlockLocation[] info;
         FSDataOutputStream out;
 
@@ -80,7 +101,7 @@ public class TachyonFileSystemTest {
 
     @Test
     public void testOpenPath1() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
 
         FSDataOutputStream out = fs.create(testFilePath1, true);
         out.write("teststring".getBytes());
@@ -93,7 +114,7 @@ public class TachyonFileSystemTest {
 
     @Test
     public void testOpenPath2() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
 
         FSDataOutputStream out = fs.create(testFilePath1, true);
         out.write("teststring".getBytes());
@@ -106,34 +127,34 @@ public class TachyonFileSystemTest {
 
     @Test
     public void testListStatus() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         fs.create(testFilePath1, true);
         fs.create(testFilePath2, true);
-        FileStatus[] info = fs.listStatus(testDir);
+        FileStatus[] info = fs.listStatus(testDir1);
         assertEquals(2, info.length);
     }
 
     @Test
     public void testDelete() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         fs.create(testFilePath1, true);
 
         fs.delete(testFilePath1, true);
         assertFalse(fs.exists(testFilePath1));
 
-        fs.delete(testDir, true);
-        assertFalse(fs.exists(testDir));
+        fs.delete(testDir1, true);
+        assertFalse(fs.exists(testDir1));
     }
 
     @Test
     public void testMkdirs() throws Exception {
-        fs.mkdirs(testDir);
-        assertTrue(fs.exists(testDir));
+        fs.mkdirs(testDir1);
+        assertTrue(fs.exists(testDir1));
     }
 
     @Test
     public void testCreate5() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         fs.create(testFilePath1, true, 0, (short) 0, 1048576);
 
         FileStatus info = fs.getFileStatus(testFilePath1);
@@ -142,14 +163,14 @@ public class TachyonFileSystemTest {
 
     @Test
     public void testCreate2() throws Exception {
-        fs.create(testDir, true);
+        fs.create(testDir1, true);
 
-        assertTrue(fs.exists(testDir));
+        assertTrue(fs.exists(testDir1));
     }
 
     @Test
     public void testRename() throws Exception {
-        fs.mkdirs(testDir);
+        fs.mkdirs(testDir1);
         fs.create(testFilePath1, true);
         fs.rename(testFilePath1, testFilePath2);
 
