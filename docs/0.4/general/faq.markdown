@@ -41,7 +41,7 @@ questions:
 <section id="stratosphere_hadoop_project">
 ### Is Stratosphere a Hadoop Project?
 
-Stratosphere is an alternative analysis engine to Hadoop's MapReduce and comes with its own runtime, rather than building on top of MapReduce. As such, it can work completely independently of Hadoop, but it can also run on top of Hadoop's distributed file system (HDFS) and Hadoop's next-generation resource manager (YARN). Since most Stratosphere users are using Hadoop HDFS to store their data, we ship already the required libraries to access HDFS.
+Stratosphere is a data processing system and an alternative to Hadoop's MapReduce component. It comes with its own runtime, rather than building on top of MapReduce. As such, it can work completely independently of the Hadoop ecosystem. However, Stratosphere can also access Hadoop's distributed file system (HDFS) to read and write data and Hadoop's next-generation resource manager (YARN) to provision cluster resources. Since most Stratosphere users are using Hadoop HDFS to store their data, we ship already the required libraries to access HDFS.
 </section>
 
 <section id="stratosphere_hadoop_req">
