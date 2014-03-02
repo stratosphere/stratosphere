@@ -20,6 +20,7 @@ import java.io.IOException;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Boxed serializable and comparable long integer type, representing the primitive
@@ -27,7 +28,7 @@ import eu.stratosphere.core.memory.MemorySegment;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class LongValue implements Key, NormalizableKey, CopyableValue<LongValue> {
+public class LongValue implements Key, NormalizableKey, ResettableValue<Long>, CopyableValue<LongValue> {
 	private static final long serialVersionUID = 1L;
 
 	private long value;
@@ -57,13 +58,9 @@ public class LongValue implements Key, NormalizableKey, CopyableValue<LongValue>
 		return this.value;
 	}
 
-	/**
-	 * Sets the value of the encapsulated long to the specified value.
-	 * 
-	 * @param value
-	 *        The new value of the encapsulated long.
-	 */
-	public void setValue(final long value) {
+    @Override
+	public void setValue(final Long value) {
+        Validate.notNull(value);
 		this.value = value;
 	}
 	

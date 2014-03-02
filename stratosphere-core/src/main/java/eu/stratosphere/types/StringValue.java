@@ -36,7 +36,8 @@ import eu.stratosphere.core.memory.MemorySegment;
  * @see java.lang.String
  * @see java.lang.CharSequence
  */
-public class StringValue implements Key, NormalizableKey, CharSequence, CopyableValue<StringValue>, Appendable {
+public class StringValue implements Key, NormalizableKey, CharSequence, CopyableValue<StringValue>, 
+        ResettableValue<CharSequence>, Appendable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final char[] EMPTY_STRING = new char[0];
@@ -131,11 +132,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Copyable
 		return toString();
 	}
 
-	/**
-	 * Sets the value of the StringValue to the given string.
-	 * 
-	 * @param value The new string value.
-	 */
+    @Override
 	public void setValue(CharSequence value) {
 		if (value == null)
 			throw new NullPointerException("Value must not be null");

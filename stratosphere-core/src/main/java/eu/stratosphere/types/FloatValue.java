@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Boxed serializable and comparable single precision floating point type, representing the primitive
@@ -26,7 +27,7 @@ import eu.stratosphere.core.memory.DataOutputView;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class FloatValue implements Key, CopyableValue<FloatValue> {
+public class FloatValue implements Key, ResettableValue<Float>, CopyableValue<FloatValue> {
 	private static final long serialVersionUID = 1L;
 
 	private float value;
@@ -56,14 +57,10 @@ public class FloatValue implements Key, CopyableValue<FloatValue> {
 	public float getValue() {
 		return this.value;
 	}
-
-	/**
-	 * Sets the value of the encapsulated primitive float.
-	 * 
-	 * @param value
-	 *        the new value of the encapsulated primitive float.
-	 */
-	public void setValue(float value) {
+	
+    @Override
+	public void setValue(Float value) {
+        Validate.notNull(value);
 		this.value = value;
 	}
 
