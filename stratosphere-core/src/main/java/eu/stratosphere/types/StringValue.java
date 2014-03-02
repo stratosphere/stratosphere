@@ -21,6 +21,7 @@ import java.nio.CharBuffer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Mutable string data type that implements the Key interface.
@@ -138,6 +139,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param value The new string value.
 	 */
 	public void setValue(CharSequence value) {
+        Validate.notNull(value);
         setValue(value, 0, value.length());
 	}
 	
@@ -148,6 +150,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 */
     @Override
 	public void setValue(StringValue value) {
+        Validate.notNull(value);
 		setValue(value.value, 0, value.len);
 	}
 
@@ -159,6 +162,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(StringValue value, int offset, int len) {
+        Validate.notNull(value);
 		setValue(value.value, offset, len);
 	}
 	
@@ -170,6 +174,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(CharSequence value, int offset, int len) {
+        Validate.notNull(value);
 		if (offset < 0 || len < 0 || offset > value.length() - len)
             throw new IndexOutOfBoundsException("offset: " + offset + " len: " + len + " value.len: " + len);
 
@@ -189,6 +194,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param buffer The character buffer to read the characters from.
 	 */
 	public void setValue(CharBuffer buffer) {
+        Validate.notNull(buffer);
 		final int len = buffer.length();
 		ensureSize(len);
 		buffer.get(this.value, 0, len);
@@ -204,6 +210,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(char[] chars, int offset, int len) {
+        Validate.notNull(chars);
 		if (offset < 0 || len < 0 || offset > chars.length - len)
 			throw new IndexOutOfBoundsException();
 
