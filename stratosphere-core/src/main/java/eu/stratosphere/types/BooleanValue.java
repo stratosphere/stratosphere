@@ -16,7 +16,6 @@ package eu.stratosphere.types;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
-import org.apache.commons.lang3.Validate;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,7 +27,7 @@ import java.io.IOException;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class BooleanValue implements NormalizableKey, ResettableValue<Boolean>, CopyableValue<BooleanValue> {
+public class BooleanValue implements NormalizableKey, CopyableValue<BooleanValue> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -50,15 +49,17 @@ public class BooleanValue implements NormalizableKey, ResettableValue<Boolean>, 
 	public boolean get() {
 		return value;
 	}
+
+	public void set(boolean value) {
+		this.value = value;
+	}
 	
 	public boolean getValue() {
 		return value;
 	}
 
-    @Override
-	public void setValue(Boolean value) {
-        Validate.notNull(value);
-        this.value = value;
+	public void setValue(boolean value) {
+		this.value = value;
 	}
 	
 	// --------------------------------------------------------------------------------------------

@@ -20,7 +20,6 @@ import java.io.IOException;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
-import org.apache.commons.lang3.Validate;
 
 /**
  * Boxed serializable and comparable character type, representing the primitive
@@ -28,7 +27,7 @@ import org.apache.commons.lang3.Validate;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class CharValue implements Key, NormalizableKey, ResettableValue<Character>, CopyableValue<CharValue> {
+public class CharValue implements Key, NormalizableKey, CopyableValue<CharValue> {
 	private static final long serialVersionUID = 1L;
 	
 	private char value;
@@ -58,9 +57,13 @@ public class CharValue implements Key, NormalizableKey, ResettableValue<Characte
 		return this.value;
 	}
 
-    @Override
-	public void setValue(Character value) {
-        Validate.notNull(value);
+	/**
+	 * Sets the encapsulated char to the specified value.
+	 * 
+	 * @param value
+	 *        the new value of the encapsulated char.
+	 */
+	public void setValue(char value) {
 		this.value = value;
 	}
 

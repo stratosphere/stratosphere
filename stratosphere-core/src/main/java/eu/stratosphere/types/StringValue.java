@@ -37,8 +37,7 @@ import org.apache.commons.lang3.Validate;
  * @see java.lang.String
  * @see java.lang.CharSequence
  */
-public class StringValue implements Key, NormalizableKey, CharSequence, CopyableValue<StringValue>, 
-        ResettableValue<CharSequence>, Appendable {
+public class StringValue implements Key, NormalizableKey, CharSequence, CopyableValue<StringValue>, Appendable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final char[] EMPTY_STRING = new char[0];
@@ -133,7 +132,11 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Copyable
 		return toString();
 	}
 
-    @Override
+	/**
+	 * Sets the value of the StringValue to the given string.
+	 * 
+	 * @param value The new string value.
+	 */
 	public void setValue(CharSequence value) {
         setValue(value, 0, value.length());
 	}

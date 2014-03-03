@@ -20,7 +20,6 @@ import java.io.IOException;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
-import org.apache.commons.lang3.Validate;
 
 /**
  * Boxed serializable and comparable short integer type, representing the primitive
@@ -28,7 +27,7 @@ import org.apache.commons.lang3.Validate;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class ShortValue implements Key, NormalizableKey, ResettableValue<Short>, CopyableValue<ShortValue> {
+public class ShortValue implements Key, NormalizableKey, CopyableValue<ShortValue> {
 	private static final long serialVersionUID = 1L;
 	
 	private short value;
@@ -57,10 +56,14 @@ public class ShortValue implements Key, NormalizableKey, ResettableValue<Short>,
 	public short getValue() {
 		return this.value;
 	}
-	
-    @Override
-	public void setValue(Short value) {
-        Validate.notNull(value);
+
+	/**
+	 * Sets the encapsulated short to the specified value.
+	 * 
+	 * @param value
+	 *        the new value of the encapsulated short.
+	 */
+	public void setValue(short value) {
 		this.value = value;
 	}
 

@@ -20,7 +20,6 @@ import java.io.IOException;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
-import org.apache.commons.lang3.Validate;
 
 /**
  * Boxed serializable and comparable integer type, representing the primitive
@@ -28,7 +27,7 @@ import org.apache.commons.lang3.Validate;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class IntValue implements Key, NormalizableKey, ResettableValue<Integer>, CopyableValue<IntValue> {
+public class IntValue implements Key, NormalizableKey, CopyableValue<IntValue> {
 	private static final long serialVersionUID = 1L;
 	
 	private int value;
@@ -58,10 +57,14 @@ public class IntValue implements Key, NormalizableKey, ResettableValue<Integer>,
 		return this.value;
 	}
 
-    @Override
-	public void setValue(Integer value) {
-        Validate.notNull(value);
-        this.value = value;
+	/**
+	 * Sets the encapsulated int to the specified value.
+	 * 
+	 * @param value
+	 *        the new value of the encapsulated int.
+	 */
+	public void setValue(int value) {
+		this.value = value;
 	}
 
 	@Override

@@ -53,9 +53,9 @@ public class DanglingPageRankInputFormat extends TextInputFormat {
 			vertexID.setValue(arrayView.element());
 
 			if (arrayView.next()) {
-				isDangling.setValue(arrayView.element() == DANGLING_MARKER);
+				isDangling.set(arrayView.element() == DANGLING_MARKER);
 			} else {
-				isDangling.setValue(false);
+				isDangling.set(false);
 			}
 
 		} catch (NumberFormatException e) {
