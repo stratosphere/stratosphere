@@ -45,6 +45,10 @@ Use the <code>plotPoints.py</code> tool to review the result of the data generat
 python2.7 plotPoints.py points input
 {% endhighlight %}
 
+
+Note: You might have to install <a href="http://matplotlib.org/">matplotlib</a> (<code>python-matplotlib</code> package on Ubuntu) to use the Python script.
+
+
 The following overview presents the impact of the different standard deviations on the input data.
 <div class="row" style="padding-top:15px">
 	<div class="col-md-4">
