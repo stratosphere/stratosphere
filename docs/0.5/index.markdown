@@ -25,7 +25,7 @@ The CollectionDataSource allows you to use local Java and Scala Collections as i
 <section id="broadcast_variables">
 ### Broadcast Variables
 
-Broadcast Variables allow to broadcast data to all nodes executing an operator. The following example shows how to set a broadcast variable and how to access it within an operator.
+Broadcast Variables allow to broadcast computation results to all nodes executing an operator. The following example shows how to set a broadcast variable and how to access it within an operator.
 
 {% highlight java %}
 // in getPlan() method
@@ -60,7 +60,7 @@ public class MyMapper extends MapFunction {
     }
 }
 {% endhighlight %}
-*Note*: As the content of broadcast variables is kept in-memory on each node, it should not become too large. Currently broadcast variable do not support branching, therefore it is not possible to use <code>someBcInput</code> (in the above example) as input for another operator.
+*Note*: As the content of broadcast variables is kept in-memory on each node, it should not become too large. For simpler things like scalar values you should use `setParameter(...)`.
 
 An example of how to use Broadcast Variables in practice can be found in the <a href="https://github.com/stratosphere/stratosphere/blob/master/stratosphere-examples/stratosphere-java-examples/src/main/java/eu/stratosphere/example/java/record/kmeans/KMeans.java">K-Means example</a>.
 </section>
