@@ -41,14 +41,14 @@ questions:
 <section id="stratosphere_hadoop_project">
 ### Is Stratosphere a Hadoop Project?
 
-Stratosphere is a data processing system and an alternative to Hadoop's MapReduce component. It comes with its own runtime, rather than building on top of MapReduce. As such, it can work completely independently of the Hadoop ecosystem. However, Stratosphere can also access Hadoop's distributed file system (HDFS) to read and write data and Hadoop's next-generation resource manager (YARN) to provision cluster resources. Since most Stratosphere users are using Hadoop HDFS to store their data, we ship already the required libraries to access HDFS.
+Stratosphere is a data processing system and an alternative to Hadoop's MapReduce component. It comes with its own runtime, rather than building on top of MapReduce. As such, it can work completely independently of the Hadoop ecosystem. However, Stratosphere can also access Hadoop's distributed file system (HDFS) to read and write data, and Hadoop's next-generation resource manager (YARN) to provision cluster resources. Since most Stratosphere users are using Hadoop HDFS to store their data, we ship already the required libraries to access HDFS.
 </section>
 
 <section id="stratosphere_hadoop_req">
 
 ### Do I have to install Apache Hadoop to use Stratosphere?
 
-No. Stratosphere runs without a Hadoop installation. However, many Stratosphere users are using parts of Apache Hadoop in their cluster setups. Specifically they use the Hadoop Distributed File System (HDFS) to store and retrieve their datasets. To prevent users from recompiling Stratosphere, we already ship the required libraries with the system.
+No. Stratosphere can run without a Hadoop installation. However, a very common setup is to use Stratosphere to analyze data stored in the Hadoop Distributed File System (HDFS). To make these setups work out of the box, we bundle the Hadoop client libraries with Stratosphere by default.
 
 Additionally, we provide a special YARN Enabled download of Stratosphere for users with an existing Hadoop YARN cluster. [Apache Hadoop YARN](http://hadoop.apache.org/docs/r2.2.0/hadoop-yarn/hadoop-yarn-site/YARN.html) is Hadoop's cluster resource manager that allows to use different execution engines next to each other on a cluster.
 
