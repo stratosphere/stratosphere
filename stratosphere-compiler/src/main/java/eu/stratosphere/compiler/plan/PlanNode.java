@@ -337,7 +337,11 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 	}
 	
 	public PlanNode getCandidateAtBranchPoint(OptimizerNode branchPoint) {
-		return this.branchPlan.get(branchPoint);
+        if(branchPlan == null){
+            return null;
+        }else{
+		    return this.branchPlan.get(branchPoint);
+        }
 	}
 	
 	/**

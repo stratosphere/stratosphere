@@ -25,6 +25,8 @@ import eu.stratosphere.compiler.dag.TwoInputNode;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.util.Visitor;
 
+import java.util.Map;
+
 /**
  * 
  */
@@ -46,6 +48,8 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 		super(template, nodeName, input, DriverStrategy.NONE);
 		this.partialSolutionPlanNode = pspn;
 		this.rootOfStepFunction = rootOfStepFunction;
+
+        mergeBranchPlanMaps();
 	}
 	
 	public BulkIterationPlanNode(BulkIterationNode template, String nodeName, Channel input,
@@ -131,7 +135,9 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 			// we always have a dam in the back channel
 			return FOUND_SOURCE_AND_DAM;
 		} else {
-			return fromOutside;
+            // check the step function for dams
+            SourceAndDamReport fromStepFunction = this.rootOfStepFunction.hasDamOnPathDownTo(source);
+			return fromStepFunction;
 		}
 	}
 
@@ -144,4 +150,25 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 			this.rootOfTerminationCriterion.accept(visitor);
 		
 	}
+
+    private void mergeBranchPlanMaps() {
+        for(OptimizerNode.UnclosedBranchDescriptor desc: template.getOpenBranches()){
+            OptimizerNode brancher = desc.getBranchingNode();
+
+            if(!branchPlan.containsKey(brancher)){
+                PlanNode selectedCandidate = null;
+
+                if(rootOfStepFunction.branchPlan != null){
+                    selectedCandidate = rootOfStepFunction.branchPlan.get(brancher);
+                }
+
+                if (selectedCandidate == null) {
+                    throw new CompilerException(
+                            "Candidates for a node with open branches are missing information about the selected candidate ");
+                }
+
+                this.branchPlan.put(brancher, selectedCandidate);
+            }
+        }
+    }
 }
