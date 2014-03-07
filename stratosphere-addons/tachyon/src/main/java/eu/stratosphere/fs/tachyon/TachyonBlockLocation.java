@@ -37,6 +37,6 @@ public class TachyonBlockLocation implements BlockLocation {
      */
     @Override
     public int compareTo(BlockLocation o) {
-        return (new Long(offset)).compareTo(o.getOffset());
+        return ((Long)(offset)).compareTo(o.getOffset());
     }
 }

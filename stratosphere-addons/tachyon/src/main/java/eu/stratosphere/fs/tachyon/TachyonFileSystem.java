@@ -38,7 +38,7 @@ public class TachyonFileSystem extends FileSystem {
      */
     @Override
     public Path getWorkingDirectory() {
-        return new Path(pathToString(workingDirectory));
+        return workingDirectory;
     }
 
     /**
@@ -59,7 +59,7 @@ public class TachyonFileSystem extends FileSystem {
     @Override
     public void initialize(URI name) throws IOException {
         this.name = URI.create(name.getScheme() + "://" + name.getAuthority());
-        fileSystem = TachyonFS.get(name.getAuthority());
+        fileSystem = TachyonFS.get(name.toString());
     }
 
     /**
@@ -71,13 +71,13 @@ public class TachyonFileSystem extends FileSystem {
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
         List<ClientFileInfo> tachyInfo = fileSystem.listStatus(pathToString(path.getParent()));
-        FileStatus stratInfo = null;
+        int targetID = fileSystem.getFileId(pathToString(path));
         for (int x = 0; x < tachyInfo.size(); x++) {
-            if (tachyInfo.get(x).path.equals(pathToString(path))) {
-                stratInfo = new TachyonFileStatus(tachyInfo.get(x), name);
+            if (tachyInfo.get(x).id==targetID) {
+                return new TachyonFileStatus(tachyInfo.get(x), name);
             }
         }
-        return stratInfo;
+        return null;
     }
 
     @Override
