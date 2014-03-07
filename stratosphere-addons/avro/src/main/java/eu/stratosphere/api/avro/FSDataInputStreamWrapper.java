@@ -1,0 +1,67 @@
+<<<<<<< HEAD:stratosphere-addons/avro/src/main/java/eu/stratosphere/api/java/record/io/avro/FSDataInputStreamWrapper.java
+/***********************************************************************************************************************
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ **********************************************************************************************************************/
+
+package eu.stratosphere.api.java.record.io.avro;
+=======
+package eu.stratosphere.api.avro;
+>>>>>>> 0038c9d0773e90676b1ee2a8a94dcf764f023e22:stratosphere-addons/avro/src/main/java/eu/stratosphere/api/avro/FSDataInputStreamWrapper.java
+
+import java.io.Closeable;
+import java.io.IOException;
+
+import org.apache.avro.file.SeekableInput;
+
+import eu.stratosphere.core.fs.FSDataInputStream;
+
+
+/**
+ * Code copy pasted from org.apache.avro.mapred.FSInput (which is Apache licensed as well)
+ * 
+ * The wrapper keeps track of the position in the data stream.
+ */
+public class FSDataInputStreamWrapper implements Closeable, SeekableInput {
+	private final FSDataInputStream stream;
+	private final long len;
+	private long pos;
+
+	public FSDataInputStreamWrapper(final FSDataInputStream stream, final int len) {
+		this.stream = stream;
+		this.len = len;
+		this.pos = 0;
+	}
+
+	public long length() {
+		return len;
+	}
+
+	public int read(byte[] b, int off, int len) throws IOException {
+		int read;
+		read = stream.read(b, off, len);
+		pos += read;
+		return read;
+	}
+
+	public void seek(long p) throws IOException {
+		stream.seek(p);
+		pos = p;
+	}
+
+	public long tell() throws IOException {
+		return pos;
+	}
+
+	public void close() throws IOException {
+		stream.close();
+	}
+}
