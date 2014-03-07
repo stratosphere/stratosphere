@@ -33,7 +33,7 @@ JVM_ARGS="$JVM_ARGS -Xmx512m"
 # auxilliary function to construct the classpath for the webclient
 constructWebclientClassPath() {
 
-	for jarfile in $STRATOSPHERE_LIB_DIR/*.jar ; do
+	for jarfile in "$STRATOSPHERE_LIB_DIR"/*.jar ; do
 		if [[ $STRATOSPHERE_WEBCLIENT_CLASSPATH = "" ]]; then
 			STRATOSPHERE_WEBCLIENT_CLASSPATH=$jarfile;
 		else
@@ -41,7 +41,7 @@ constructWebclientClassPath() {
 		fi
 	done
 	
-	for jarfile in $STRATOSPHERE_LIB_CLIENTS_DIR/*.jar ; do
+	for jarfile in "$STRATOSPHERE_LIB_CLIENTS_DIR"/*.jar ; do
 		STRATOSPHERE_WEBCLIENT_CLASSPATH=$STRATOSPHERE_WEBCLIENT_CLASSPATH:$jarfile
 	done
 
