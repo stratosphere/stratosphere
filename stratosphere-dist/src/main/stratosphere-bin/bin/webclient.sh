@@ -48,7 +48,7 @@ constructWebclientClassPath() {
 	echo $STRATOSPHERE_WEBCLIENT_CLASSPATH
 }
 
-STRATOSPHERE_WEBCLIENT_CLASSPATH=`manglePathList $(constructWebclientClassPath)`
+STRATOSPHERE_WEBCLIENT_CLASSPATH=`manglePathList "$(constructWebclientClassPath)"`
 
 log=$STRATOSPHERE_LOG_DIR/stratosphere-$STRATOSPHERE_IDENT_STRING-webclient-$HOSTNAME.log
 out=$STRATOSPHERE_LOG_DIR/stratosphere-$STRATOSPHERE_IDENT_STRING-webclient-$HOSTNAME.out
@@ -66,7 +66,7 @@ case $STARTSTOP in
                         fi
                 fi
                 echo Starting Stratosphere webclient
-		$JAVA_RUN $JVM_ARGS $log_setting -classpath $STRATOSPHERE_WEBCLIENT_CLASSPATH eu.stratosphere.client.WebFrontend -configDir $STRATOSPHERE_CONF_DIR > "$out" 2>&1 < /dev/null &
+		$JAVA_RUN $JVM_ARGS "$log_setting" -classpath "$STRATOSPHERE_WEBCLIENT_CLASSPATH" eu.stratosphere.client.WebFrontend -configDir "$STRATOSPHERE_CONF_DIR" > "$out" 2>&1 < /dev/null &
 		echo $! > $pid
 	;;
 
