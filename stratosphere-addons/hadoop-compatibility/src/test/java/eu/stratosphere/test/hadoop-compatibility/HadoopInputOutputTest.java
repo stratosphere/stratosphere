@@ -1,4 +1,4 @@
-package eu.stratosphere.test.exampleRecordPrograms;
+package eu.stratosphere.test.hadoopcompatibility;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.hadoopcompatibility.example.WordCountWithHadoopOutputFormat;

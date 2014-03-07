@@ -37,13 +37,8 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 		this.hadoopOutputFormat = hadoopFormat;
 		this.hadoopOutputFormatName = hadoopFormat.getClass().getName();
 		this.converter = conv;
-		// merge hadoopConf into jobConf. This is necessary for the hdfs configuration
-		org.apache.hadoop.conf.Configuration hadoopConf = DistributedFileSystem.getHadoopConfiguration();
-		for (Map.Entry<String, String> e : hadoopConf) {
-			job.set(e.getKey(), e.getValue());
-		}
 		this.fileOutputCommitterWrapper = new FileOutputCommitterWrapper();
-
+		HadoopConfiguration.mergeHadoopConf(job);
 		this.jobConf = job;
 	}
 
