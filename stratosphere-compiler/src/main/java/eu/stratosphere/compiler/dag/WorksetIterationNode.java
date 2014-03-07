@@ -379,32 +379,32 @@ public class WorksetIterationNode extends TwoInputNode implements IterationNode 
 		}
 	}
 
-    @Override
-    public void computeUnclosedBranchStack() {
-        if (this.openBranches != null) {
-            return;
-        }
+	@Override
+	public void computeUnclosedBranchStack() {
+		if (this.openBranches != null) {
+			return;
+		}
 
-        // handle the data flow branching for the regular inputs
-        addClosedBranches(getFirstPredecessorNode().closedBranchingNodes);
-        addClosedBranches(getSecondPredecessorNode().closedBranchingNodes);
-        addClosedBranches(getSingleRootOfStepFunction().closedBranchingNodes);
+		// handle the data flow branching for the regular inputs
+		addClosedBranches(getFirstPredecessorNode().closedBranchingNodes);
+		addClosedBranches(getSecondPredecessorNode().closedBranchingNodes);
+		addClosedBranches(getSingleRootOfStepFunction().closedBranchingNodes);
 
-        List<UnclosedBranchDescriptor> result1 = getFirstPredecessorNode().getBranchesForParent(getFirstIncomingConnection());
-        List<UnclosedBranchDescriptor> result2 = getSecondPredecessorNode().getBranchesForParent(getSecondIncomingConnection());
-        List<UnclosedBranchDescriptor> result3 = getSingleRootOfStepFunction().openBranches;
+		List<UnclosedBranchDescriptor> result1 = getFirstPredecessorNode().getBranchesForParent(getFirstIncomingConnection());
+		List<UnclosedBranchDescriptor> result2 = getSecondPredecessorNode().getBranchesForParent(getSecondIncomingConnection());
+		List<UnclosedBranchDescriptor> result3 = getSingleRootOfStepFunction().openBranches;
 
-        ArrayList<UnclosedBranchDescriptor> inputsMerged1 = new ArrayList<UnclosedBranchDescriptor>();
-        ArrayList<UnclosedBranchDescriptor> inputsMerged2 = new ArrayList<UnclosedBranchDescriptor>();
+		ArrayList<UnclosedBranchDescriptor> inputsMerged1 = new ArrayList<UnclosedBranchDescriptor>();
+		ArrayList<UnclosedBranchDescriptor> inputsMerged2 = new ArrayList<UnclosedBranchDescriptor>();
 
-        mergeLists(result1, result2, inputsMerged1);
-        mergeLists(inputsMerged1, result3, inputsMerged2);
+		mergeLists(result1, result2, inputsMerged1);
+		mergeLists(inputsMerged1, result3, inputsMerged2);
 
-        // handle the data flow branching for the broadcast inputs
-        List<UnclosedBranchDescriptor> result = computeUnclosedBranchStackForBroadcastInputs(inputsMerged2);
+		// handle the data flow branching for the broadcast inputs
+		List<UnclosedBranchDescriptor> result = computeUnclosedBranchStackForBroadcastInputs(inputsMerged2);
 
-        this.openBranches = (result == null || result.isEmpty()) ? Collections.<UnclosedBranchDescriptor>emptyList() : result;
-    }
+		this.openBranches = (result == null || result.isEmpty()) ? Collections.<UnclosedBranchDescriptor>emptyList() : result;
+	}
 	
 	// --------------------------------------------------------------------------------------------
 	//                      Iteration Specific Traversals

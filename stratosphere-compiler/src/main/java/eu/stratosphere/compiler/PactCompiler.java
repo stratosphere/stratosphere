@@ -789,14 +789,14 @@ public class PactCompiler {
 		private GraphCreatingVisitor(int maxMachines, int defaultParallelism) {
 			this(null, false, maxMachines, defaultParallelism, null);
 		}
-		
+
 		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP, int maxMachines,
-                                     int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
-            if(closure == null){
-                con2node = new HashMap<Operator, OptimizerNode>();
-            }else{
-                con2node = closure;
-            }
+									 int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
+			if(closure == null){
+				con2node = new HashMap<Operator, OptimizerNode>();
+			}else{
+				con2node = closure;
+			}
 			this.sources = new ArrayList<DataSourceNode>(4);
 			this.sinks = new ArrayList<DataSinkNode>(2);
 			this.maxMachines = maxMachines;
@@ -937,8 +937,8 @@ public class PactCompiler {
 				final BulkIterationNode iterNode = (BulkIterationNode) n;
 				final BulkIteration iter = iterNode.getIterationContract();
 
-                // calculate closure of the anonymous function
-                HashMap<Operator, OptimizerNode> closure = new HashMap<Operator, OptimizerNode>(con2node);
+				// calculate closure of the anonymous function
+				HashMap<Operator, OptimizerNode> closure = new HashMap<Operator, OptimizerNode>(con2node);
 
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
@@ -988,9 +988,9 @@ public class PactCompiler {
 				final WorksetIterationNode iterNode = (WorksetIterationNode) n;
 				final DeltaIteration iter = iterNode.getIterationContract();
 
-                // calculate the closure of the anonymous function
-                HashMap<Operator, OptimizerNode> closure = new HashMap<Operator, OptimizerNode>(con2node);
-				
+				// calculate the closure of the anonymous function
+				HashMap<Operator, OptimizerNode> closure = new HashMap<Operator, OptimizerNode>(con2node);
+
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
 					this.maxMachines, iterNode.getDegreeOfParallelism(), closure);
@@ -1203,7 +1203,7 @@ public class PactCompiler {
 				((IterationNode) node).acceptForStepFunction(this);
 			}
 
-            node.computeUnclosedBranchStack();
+			node.computeUnclosedBranchStack();
 		}
 	};
 	

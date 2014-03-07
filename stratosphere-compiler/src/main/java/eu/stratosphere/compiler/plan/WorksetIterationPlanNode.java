@@ -58,13 +58,13 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 			SolutionSetPlanNode solutionSetPlanNode, WorksetPlanNode worksetPlanNode,
 			PlanNode nextWorkSetPlanNode, PlanNode solutionSetDeltaPlanNode)
 	{
-        super(template, nodeName, initialSolutionSet, initialWorkset, DriverStrategy.NONE);
+		super(template, nodeName, initialSolutionSet, initialWorkset, DriverStrategy.NONE);
 		this.solutionSetPlanNode = solutionSetPlanNode;
 		this.worksetPlanNode = worksetPlanNode;
 		this.solutionSetDeltaPlanNode = solutionSetDeltaPlanNode;
 		this.nextWorkSetPlanNode = nextWorkSetPlanNode;
 
-        mergeBranchPlanMaps();
+		mergeBranchPlanMaps();
 
 	}
 
@@ -166,7 +166,7 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 	@Override
 	public SourceAndDamReport hasDamOnPathDownTo(PlanNode source) {
 		SourceAndDamReport fromOutside = super.hasDamOnPathDownTo(source);
-		
+
 		if (fromOutside == FOUND_SOURCE_AND_DAM) {
 			return FOUND_SOURCE_AND_DAM;
 		}
@@ -174,17 +174,17 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 			// we always have a dam in the solution set index
 			return FOUND_SOURCE_AND_DAM;
 		} else {
-            SourceAndDamReport fromNextWorkset = nextWorkSetPlanNode.hasDamOnPathDownTo(source);
+			SourceAndDamReport fromNextWorkset = nextWorkSetPlanNode.hasDamOnPathDownTo(source);
 
-            if(fromNextWorkset == FOUND_SOURCE_AND_DAM){
-                return FOUND_SOURCE_AND_DAM;
-            }else if(fromNextWorkset == FOUND_SOURCE){
-                return FOUND_SOURCE_AND_DAM;
-            }else{
-                SourceAndDamReport fromSolutionSetDelta = solutionSetDeltaPlanNode.hasDamOnPathDownTo(source);
+			if(fromNextWorkset == FOUND_SOURCE_AND_DAM){
+				return FOUND_SOURCE_AND_DAM;
+			}else if(fromNextWorkset == FOUND_SOURCE){
+				return FOUND_SOURCE_AND_DAM;
+			}else{
+				SourceAndDamReport fromSolutionSetDelta = solutionSetDeltaPlanNode.hasDamOnPathDownTo(source);
 
-                return fromSolutionSetDelta;
-            }
+				return fromSolutionSetDelta;
+			}
 		}
 	}
 
@@ -194,57 +194,57 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 		this.nextWorkSetPlanNode.accept(visitor);
 	}
 
-    /**
-     * Merging can only take place after the solutionSetDelta and nextWorkset PlanNode has been set,
-     * because they can contain also some of the branching nodes.
-     */
-    @Override
-    protected void mergeBranchPlanMaps(Map<OptimizerNode, PlanNode> branchPlan1, Map<OptimizerNode,
-            PlanNode> branchPlan2){
+	/**
+	 * Merging can only take place after the solutionSetDelta and nextWorkset PlanNode has been set,
+	 * because they can contain also some of the branching nodes.
+	 */
+	@Override
+	protected void mergeBranchPlanMaps(Map<OptimizerNode, PlanNode> branchPlan1, Map<OptimizerNode,
+			PlanNode> branchPlan2){
 
-    }
+	}
 
-    protected void mergeBranchPlanMaps() {
-        Map<OptimizerNode, PlanNode> branchPlan1 = input1.getSource().branchPlan;
-        Map<OptimizerNode, PlanNode> branchPlan2 = input2.getSource().branchPlan;
+	protected void mergeBranchPlanMaps() {
+		Map<OptimizerNode, PlanNode> branchPlan1 = input1.getSource().branchPlan;
+		Map<OptimizerNode, PlanNode> branchPlan2 = input2.getSource().branchPlan;
 
-        // merge the branchPlan maps according the the template's uncloseBranchesStack
-        if (this.template.hasUnclosedBranches()) {
-            if (this.branchPlan == null) {
-                this.branchPlan = new HashMap<OptimizerNode, PlanNode>(8);
-            }
+		// merge the branchPlan maps according the the template's uncloseBranchesStack
+		if (this.template.hasUnclosedBranches()) {
+			if (this.branchPlan == null) {
+				this.branchPlan = new HashMap<OptimizerNode, PlanNode>(8);
+			}
 
-            for (OptimizerNode.UnclosedBranchDescriptor uc : this.template.getOpenBranches()) {
-                OptimizerNode brancher = uc.getBranchingNode();
-                PlanNode selectedCandidate = null;
+			for (OptimizerNode.UnclosedBranchDescriptor uc : this.template.getOpenBranches()) {
+				OptimizerNode brancher = uc.getBranchingNode();
+				PlanNode selectedCandidate = null;
 
-                if (branchPlan1 != null) {
-                    // predecessor 1 has branching children, see if it got the branch we are looking for
-                    selectedCandidate = branchPlan1.get(brancher);
-                }
+				if (branchPlan1 != null) {
+					// predecessor 1 has branching children, see if it got the branch we are looking for
+					selectedCandidate = branchPlan1.get(brancher);
+				}
 
-                if (selectedCandidate == null && branchPlan2 != null) {
-                    // predecessor 2 has branching children, see if it got the branch we are looking for
-                    selectedCandidate = branchPlan2.get(brancher);
-                }
+				if (selectedCandidate == null && branchPlan2 != null) {
+					// predecessor 2 has branching children, see if it got the branch we are looking for
+					selectedCandidate = branchPlan2.get(brancher);
+				}
 
-                if(selectedCandidate == null && getSolutionSetDeltaPlanNode() != null && getSolutionSetDeltaPlanNode()
-                        .branchPlan != null){
-                    selectedCandidate = getSolutionSetDeltaPlanNode().branchPlan.get(brancher);
-                }
+				if(selectedCandidate == null && getSolutionSetDeltaPlanNode() != null && getSolutionSetDeltaPlanNode()
+						.branchPlan != null){
+					selectedCandidate = getSolutionSetDeltaPlanNode().branchPlan.get(brancher);
+				}
 
-                if(selectedCandidate == null && getNextWorkSetPlanNode() != null && getNextWorkSetPlanNode()
-                        .branchPlan != null){
-                    selectedCandidate = getNextWorkSetPlanNode().branchPlan.get(brancher);
-                }
+				if(selectedCandidate == null && getNextWorkSetPlanNode() != null && getNextWorkSetPlanNode()
+						.branchPlan != null){
+					selectedCandidate = getNextWorkSetPlanNode().branchPlan.get(brancher);
+				}
 
-                if (selectedCandidate == null) {
-                    throw new CompilerException(
-                            "Candidates for a node with open branches are missing information about the selected candidate ");
-                }
+				if (selectedCandidate == null) {
+					throw new CompilerException(
+							"Candidates for a node with open branches are missing information about the selected candidate ");
+				}
 
-                this.branchPlan.put(brancher, selectedCandidate);
-            }
-        }
-    }
+				this.branchPlan.put(brancher, selectedCandidate);
+			}
+		}
+	}
 }

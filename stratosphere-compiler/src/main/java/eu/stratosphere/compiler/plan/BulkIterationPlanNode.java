@@ -49,7 +49,7 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 		this.partialSolutionPlanNode = pspn;
 		this.rootOfStepFunction = rootOfStepFunction;
 
-        mergeBranchPlanMaps();
+		mergeBranchPlanMaps();
 	}
 	
 	public BulkIterationPlanNode(BulkIterationNode template, String nodeName, Channel input,
@@ -127,7 +127,7 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 	@Override
 	public SourceAndDamReport hasDamOnPathDownTo(PlanNode source) {
 		SourceAndDamReport fromOutside = super.hasDamOnPathDownTo(source);
-		
+
 		if (fromOutside == FOUND_SOURCE_AND_DAM) {
 			return FOUND_SOURCE_AND_DAM;
 		}
@@ -135,8 +135,8 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 			// we always have a dam in the back channel
 			return FOUND_SOURCE_AND_DAM;
 		} else {
-            // check the step function for dams
-            SourceAndDamReport fromStepFunction = this.rootOfStepFunction.hasDamOnPathDownTo(source);
+			// check the step function for dams
+			SourceAndDamReport fromStepFunction = this.rootOfStepFunction.hasDamOnPathDownTo(source);
 			return fromStepFunction;
 		}
 	}
@@ -151,24 +151,24 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 		
 	}
 
-    private void mergeBranchPlanMaps() {
-        for(OptimizerNode.UnclosedBranchDescriptor desc: template.getOpenBranches()){
-            OptimizerNode brancher = desc.getBranchingNode();
+	private void mergeBranchPlanMaps() {
+		for(OptimizerNode.UnclosedBranchDescriptor desc: template.getOpenBranches()){
+			OptimizerNode brancher = desc.getBranchingNode();
 
-            if(!branchPlan.containsKey(brancher)){
-                PlanNode selectedCandidate = null;
+			if(!branchPlan.containsKey(brancher)){
+				PlanNode selectedCandidate = null;
 
-                if(rootOfStepFunction.branchPlan != null){
-                    selectedCandidate = rootOfStepFunction.branchPlan.get(brancher);
-                }
+				if(rootOfStepFunction.branchPlan != null){
+					selectedCandidate = rootOfStepFunction.branchPlan.get(brancher);
+				}
 
-                if (selectedCandidate == null) {
-                    throw new CompilerException(
-                            "Candidates for a node with open branches are missing information about the selected candidate ");
-                }
+				if (selectedCandidate == null) {
+					throw new CompilerException(
+							"Candidates for a node with open branches are missing information about the selected candidate ");
+				}
 
-                this.branchPlan.put(brancher, selectedCandidate);
-            }
-        }
-    }
+				this.branchPlan.put(brancher, selectedCandidate);
+			}
+		}
+	}
 }

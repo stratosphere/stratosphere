@@ -238,27 +238,27 @@ public class BulkIterationNode extends SingleInputNode implements IterationNode 
 		this.inConn.setInterestingProperties(inProps);
 	}
 
-    @Override
-    public void computeUnclosedBranchStack() {
-        if (this.openBranches != null) {
-            return;
-        }
+	@Override
+	public void computeUnclosedBranchStack() {
+		if (this.openBranches != null) {
+			return;
+		}
 
-        // handle the data flow branching for the regular inputs
-        addClosedBranches(getPredecessorNode().closedBranchingNodes);
-        addClosedBranches(getNextPartialSolution().closedBranchingNodes);
+		// handle the data flow branching for the regular inputs
+		addClosedBranches(getPredecessorNode().closedBranchingNodes);
+		addClosedBranches(getNextPartialSolution().closedBranchingNodes);
 
-        List<UnclosedBranchDescriptor> result1 = getPredecessorNode().getBranchesForParent(this.inConn);
-        List<UnclosedBranchDescriptor> result2 = getSingleRootOfStepFunction().openBranches;
+		List<UnclosedBranchDescriptor> result1 = getPredecessorNode().getBranchesForParent(this.inConn);
+		List<UnclosedBranchDescriptor> result2 = getSingleRootOfStepFunction().openBranches;
 
-        ArrayList<UnclosedBranchDescriptor> inputsMerged = new ArrayList<UnclosedBranchDescriptor>();
-        mergeLists(result1, result2, inputsMerged);
+		ArrayList<UnclosedBranchDescriptor> inputsMerged = new ArrayList<UnclosedBranchDescriptor>();
+		mergeLists(result1, result2, inputsMerged);
 
-        // handle the data flow branching for the broadcast inputs
-        List<UnclosedBranchDescriptor> result = computeUnclosedBranchStackForBroadcastInputs(inputsMerged);
+		// handle the data flow branching for the broadcast inputs
+		List<UnclosedBranchDescriptor> result = computeUnclosedBranchStackForBroadcastInputs(inputsMerged);
 
-        this.openBranches = (result == null || result.isEmpty()) ? Collections.<UnclosedBranchDescriptor>emptyList() : result;
-    }
+		this.openBranches = (result == null || result.isEmpty()) ? Collections.<UnclosedBranchDescriptor>emptyList() : result;
+	}
 
 
     @Override
