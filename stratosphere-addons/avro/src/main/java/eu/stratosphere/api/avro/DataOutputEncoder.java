@@ -12,6 +12,7 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
+
 package eu.stratosphere.api.avro;
 
 import java.io.DataOutput;
