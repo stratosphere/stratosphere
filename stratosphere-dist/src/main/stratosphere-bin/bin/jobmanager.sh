@@ -34,7 +34,7 @@ fi
 
 # auxilliary function to construct a the classpath for the jobmanager
 constructJobManagerClassPath() {
-    for jarfile in $STRATOSPHERE_LIB_DIR/*.jar ; do
+    for jarfile in "$STRATOSPHERE_LIB_DIR"/*.jar ; do
         if [[ $STRATOSPHERE_JM_CLASSPATH = "" ]]; then
             STRATOSPHERE_JM_CLASSPATH=$jarfile;
         else

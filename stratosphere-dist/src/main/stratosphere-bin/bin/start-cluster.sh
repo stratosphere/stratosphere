@@ -41,4 +41,4 @@ do
         HOST=$( extractHostName $line)
         ssh -n $STRATOSPHERE_SSH_OPTS $HOST -- "nohup /bin/bash $STRATOSPHERE_BIN_DIR/taskmanager.sh start &"
     fi
-done < $HOSTLIST
+done < "$HOSTLIST"
