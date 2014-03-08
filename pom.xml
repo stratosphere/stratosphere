@@ -67,8 +67,16 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
-		<dependency>
+
+        <dependency>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <version>0.10</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
@@ -297,6 +305,39 @@
 
 	<build>
 		<plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.10</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludeSubProjects>false</excludeSubProjects>
+                    <numUnapprovedLicenses>0</numUnapprovedLicenses>
+                    <excludes>
+                        <!-- Additional files like .gitignore etc.-->
+                        <exclude>**/.*</exclude>
+                        <!-- Resource files which have values. -->
+                        <exclude>**/resources/**</exclude>
+                        <!-- Administrative files in the main trunk. -->
+                        <exclude>README.md</exclude>
+                        <exclude>CHANGELOG</exclude>
+                        <exclude>CONTRIBUTORS</exclude>
+                        <!-- Build fiels -->
+                        <exclude>**/pom.xml</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>stratosphere-dist/src/main/stratosphere-bin/conf/slaves</exclude>
+                        <!-- Generated content -->
+                        <exclude>**/target/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
 			<plugin>
 				<!-- just define the Java version to be used for compiling and plugins -->
 				<groupId>org.apache.maven.plugins</groupId>
