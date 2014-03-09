@@ -173,7 +173,7 @@ public abstract class TestBase2 {
 		return f.toURI().toString();
 	}
 	
-	private File createAndRegisterTempFile(String fileName) throws IOException {
+	protected File createAndRegisterTempFile(String fileName) throws IOException {
 		File baseDir = new File(System.getProperty("java.io.tmpdir"));
 		File f = new File(baseDir, fileName);
 		
@@ -260,10 +260,10 @@ public abstract class TestBase2 {
 		
 		String[] result = (String[]) list.toArray(new String[list.size()]);
 		Arrays.sort(result);
-		
+
 		String[] expected = expectedResultStr.split("\n");
 		Arrays.sort(expected);
-		
+
 		Assert.assertEquals("Different number of lines in expected and obtained result.", expected.length, result.length);
 		Assert.assertArrayEquals(expected, result);
 	}
