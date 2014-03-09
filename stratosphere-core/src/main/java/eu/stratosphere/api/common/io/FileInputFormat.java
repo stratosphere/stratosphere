@@ -82,11 +82,16 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 	/**
 	 * The timeout (in milliseconds) to wait for a filesystem stream to respond.
 	 */
-	static final long DEFAULT_OPENING_TIMEOUT;
+	private static long DEFAULT_OPENING_TIMEOUT;
 	
 	static {
+		initDefaultsFromConfiguration();
+	}
+	
+	private static final void initDefaultsFromConfiguration() {
+		
 		final long to = GlobalConfiguration.getLong(ConfigConstants.FS_STREAM_OPENING_TIMEOUT_KEY,
-				ConfigConstants.DEFAULT_FS_STREAM_OPENING_TIMEOUT);
+			ConfigConstants.DEFAULT_FS_STREAM_OPENING_TIMEOUT);
 		if (to < 0) {
 			LOG.error("Invalid timeout value for filesystem stream opening: " + to + ". Using default value of " +
 				ConfigConstants.DEFAULT_FS_STREAM_OPENING_TIMEOUT);
@@ -96,6 +101,10 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		} else {
 			DEFAULT_OPENING_TIMEOUT = to;
 		}
+	}
+	
+	static final long getDefaultOpeningTimeout() {
+		return DEFAULT_OPENING_TIMEOUT;
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -143,6 +152,17 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 	 */
 	protected long openTimeout = DEFAULT_OPENING_TIMEOUT;
 
+	
+	// --------------------------------------------------------------------------------------------
+	//  Constructors
+	// --------------------------------------------------------------------------------------------	
+
+	public FileInputFormat() {}
+	
+	protected FileInputFormat(Path filePath) {
+		this.filePath = filePath;
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	//  Getters/setters for the configurable parameters
 	// --------------------------------------------------------------------------------------------
@@ -206,6 +226,10 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		this.openTimeout = openTimeout;
 	}
 	
+	// --------------------------------------------------------------------------------------------
+	// Getting information about the split that is currently open
+	// --------------------------------------------------------------------------------------------
+	
 	/**
 	 * Gets the start of the current split.
 	 *
@@ -247,43 +271,6 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		}
 		else if (this.filePath == null) {
 			throw new IllegalArgumentException("File path was not specified in input format, or configuration."); 
-		}
-		
-		// get the number of splits
-		int desiredSplits = parameters.getInteger(DESIRED_NUMBER_OF_SPLITS_PARAMETER_KEY, -1);
-		if (desiredSplits != -1) {
-			if (desiredSplits == 0 || desiredSplits < -1) {
-				this.numSplits = -1;
-				if (LOG.isWarnEnabled())
-					LOG.warn("Ignoring invalid parameter for number of splits: " + desiredSplits);
-			}
-			else {
-				this.numSplits = desiredSplits;
-			}
-		}
-		// get the minimal split size
-		long minSplitSize = parameters.getLong(MINIMAL_SPLIT_SIZE_PARAMETER_KEY, -1);
-		if (minSplitSize != -1) {
-			if (minSplitSize < 0) {
-				this.minSplitSize = 0;
-				if (LOG.isWarnEnabled())
-					LOG.warn("Ignoring invalid parameter for minimal split size (requires a positive value): " + minSplitSize);
-			} else {
-				this.minSplitSize = minSplitSize;
-			}
-		}
-		
-		long openTimeout = parameters.getLong(INPUT_STREAM_OPEN_TIMEOUT_KEY, -1);
-		if (openTimeout != -1) {
-			if (openTimeout < 0) {
-				this.openTimeout = DEFAULT_OPENING_TIMEOUT;
-				if (LOG.isWarnEnabled())
-					LOG.warn("Ignoring invalid parameter for stream opening timeout (requires a positive value or zero=infinite): " + openTimeout);
-			} else if (openTimeout == 0) {
-				this.openTimeout = Long.MAX_VALUE;
-			} else {
-				this.openTimeout = openTimeout;
-			}
 		}
 	}
 	
@@ -777,22 +764,8 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 	/**
 	 * The config parameter which defines the input file path.
 	 */
-	private static final String FILE_PARAMETER_KEY = "pact.input.file.path";
+	private static final String FILE_PARAMETER_KEY = "input.file.path";
 	
-	/**
-	 * The config parameter which defines the number of desired splits.
-	 */
-	private static final String DESIRED_NUMBER_OF_SPLITS_PARAMETER_KEY = "pact.input.file.numsplits";
-	
-	/**
-	 * The config parameter for the minimal split size.
-	 */
-	private static final String MINIMAL_SPLIT_SIZE_PARAMETER_KEY = "pact.input.file.minsplitsize";
-
-	/**
-	 * The config parameter for the opening timeout in milliseconds.
-	 */
-	private static final String INPUT_STREAM_OPEN_TIMEOUT_KEY = "pact.input.file.timeout";
 	
 	// ----------------------------------- Config Builder -----------------------------------------
 	
@@ -827,48 +800,6 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		}
 		
 		// --------------------------------------------------------------------
-		
-		/**
-		 * Sets the desired number of splits for this input format. This value is only a hint. The format
-		 * may create more splits, if there are for example more distributed file blocks (one split is at most
-		 * one block) or less splits, if the minimal split size allows only for fewer splits.
-		 * 
-		 * @param numDesiredSplits The desired number of input splits.
-		 * @return The builder itself.
-		 */
-		public T desiredSplits(int numDesiredSplits) {
-			this.config.setInteger(DESIRED_NUMBER_OF_SPLITS_PARAMETER_KEY, numDesiredSplits);
-			@SuppressWarnings("unchecked")
-			T ret = (T) this;
-			return ret;
-		}
-		
-		/**
-		 * Sets the minimal size for the splits generated by this input format.
-		 * 
-		 * @param minSplitSize The minimal split size, in bytes.
-		 * @return The builder itself.
-		 */
-		public T minimumSplitSize(int minSplitSize) {
-			this.config.setInteger(MINIMAL_SPLIT_SIZE_PARAMETER_KEY,  minSplitSize);
-			@SuppressWarnings("unchecked")
-			T ret = (T) this;
-			return ret;
-		}
-		
-		/**
-		 * Sets the timeout after which the input format will abort the opening of the input stream,
-		 * if the stream has not responded until then.
-		 * 
-		 * @param timeoutInMillies The timeout, in milliseconds, or <code>0</code> for infinite.
-		 * @return The builder itself.
-		 */
-		public T openingTimeout(int timeoutInMillies) {
-			this.config.setLong(INPUT_STREAM_OPEN_TIMEOUT_KEY, timeoutInMillies);
-			@SuppressWarnings("unchecked")
-			T ret = (T) this;
-			return ret;
-		}
 		
 		/**
 		 * Sets the path to the file or directory to be read by this file input format.

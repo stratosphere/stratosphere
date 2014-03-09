@@ -25,6 +25,7 @@ import eu.stratosphere.core.fs.BlockLocation;
 import eu.stratosphere.core.fs.FileInputSplit;
 import eu.stratosphere.core.fs.FileStatus;
 import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.FileSystem.WriteMode;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.core.io.InputSplit;
 import eu.stratosphere.util.ReflectionUtil;
@@ -145,13 +146,16 @@ public class FormatUtil {
 	 *         if an I/O error occurred while accessing the file or initializing the OutputFormat.
 	 */
 	public static <T, F extends FileOutputFormat<? extends T>> F openOutput(
-			Class<F> outputFormatClass, String path, Configuration configuration) throws IOException {
+			Class<F> outputFormatClass, String path, Configuration configuration) 
+		throws IOException
+	{
 		final F outputFormat = ReflectionUtil.newInstance(outputFormatClass);
-
+		outputFormat.setOutputFilePath(new Path(path));
+		outputFormat.setOpenTimeout(0);
+		outputFormat.setWriteMode(WriteMode.OVERWRITE);
+	
 		configuration = configuration == null ? new Configuration() : configuration;
-
-		configuration.setString(FileOutputFormat.FILE_PARAMETER_KEY, path);
-		configuration.setLong(FileOutputFormat.OUTPUT_STREAM_OPEN_TIMEOUT_KEY, 0);
+		
 		outputFormat.configure(configuration);
 		outputFormat.open(0, 1);
 		return outputFormat;

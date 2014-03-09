@@ -13,13 +13,10 @@
 
 package eu.stratosphere.api.common.operators;
 
-import java.lang.annotation.Annotation;
-
-import eu.stratosphere.api.common.operators.util.AnnotationConfigurable;
+import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
-import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.util.Visitor;
 
 /**
@@ -27,7 +24,7 @@ import eu.stratosphere.util.Visitor;
  * 
  * @param T The type of input format invoked by instances of this data source.
  */
-public class GenericDataSource<T extends InputFormat<?, ?>> extends Operator implements AnnotationConfigurable {
+public class GenericDataSource<T extends InputFormat<?, ?>> extends Operator {
 	
 	private static final String DEFAULT_NAME = "<Unnamed Generic Data Source>";
 	
@@ -44,8 +41,9 @@ public class GenericDataSource<T extends InputFormat<?, ?>> extends Operator imp
 	public GenericDataSource(T format, String name) {
 		super(name);
 		
-		if (format == null)
+		if (format == null) {
 			throw new IllegalArgumentException("Input format may not be null.");
+		}
 		
 		this.formatWrapper = new UserCodeObjectWrapper<T>(format);
 	}
@@ -94,18 +92,6 @@ public class GenericDataSource<T extends InputFormat<?, ?>> extends Operator imp
 	}
 
 	// --------------------------------------------------------------------------------------------
-	
-	@Override
-	public void addStubAnnotation(Class<? extends Annotation> oc) {
-		this.ocs.add(oc);
-	}
-
-	@Override
-	public Class<? extends Annotation>[] getStubAnnotation() {
-		@SuppressWarnings("unchecked")
-		Class<? extends Annotation>[] targetArray = new Class[this.ocs.size()];
-		return (Class<? extends Annotation>[]) this.ocs.toArray(targetArray);
-	}
 	
 	/**
 	 * Gets the class describing the input format.

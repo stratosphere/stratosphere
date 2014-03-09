@@ -22,7 +22,6 @@ import org.junit.Test;
 import eu.stratosphere.client.LocalExecutor;
 import eu.stratosphere.example.java.record.wordcount.WordCount;
 import eu.stratosphere.test.testdata.WordCountData;
-import eu.stratosphere.util.LogUtils;
 
 
 public class LocalExecutorTest {
@@ -42,12 +41,13 @@ public class LocalExecutorTest {
 			
 			// run WordCount
 			WordCount wc = new WordCount();
+			wc.getPlan("4", inFile.toURI().toString(), outFile.toURI().toString());
 			
 			LocalExecutor executor = new LocalExecutor();
-			
-			LogUtils.initializeDefaultConsoleLogger(Level.ERROR);
-			
+			LocalExecutor.setLoggingLevel(Level.ERROR);
+			executor.setDefaultOverwriteFiles(true);
 			executor.start();
+			
 			executor.executePlan(wc.getPlan("4", inFile.toURI().toString(), outFile.toURI().toString()));
 			executor.stop();
 		} catch (Exception e) {

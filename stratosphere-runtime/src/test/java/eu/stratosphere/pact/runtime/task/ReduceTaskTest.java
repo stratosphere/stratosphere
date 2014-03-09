@@ -24,9 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 
-import eu.stratosphere.api.common.functions.GenericReducer;
-import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
+import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
+import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializer;
 import eu.stratosphere.pact.runtime.sort.CombiningUnilateralSortMerger;
@@ -34,14 +34,14 @@ import eu.stratosphere.pact.runtime.test.util.DelayingInfinitiveInputIterator;
 import eu.stratosphere.pact.runtime.test.util.DriverTestBase;
 import eu.stratosphere.pact.runtime.test.util.ExpectedTestException;
 import eu.stratosphere.pact.runtime.test.util.NirvanaOutputList;
-import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
 import eu.stratosphere.pact.runtime.test.util.TaskCancelThread;
-import eu.stratosphere.types.Key;
+import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
-public class ReduceTaskTest extends DriverTestBase<GenericReducer<Record, Record>>
+public class ReduceTaskTest extends DriverTestBase<GenericGroupReduce<Record, Record>>
 {
 	private static final Log LOG = LogFactory.getLog(ReduceTaskTest.class);
 	
@@ -265,7 +265,8 @@ public class ReduceTaskTest extends DriverTestBase<GenericReducer<Record, Record
 	}
 	
 	public static class MockReduceStub extends ReduceFunction {
-
+		private static final long serialVersionUID = 1L;
+		
 		private final IntValue key = new IntValue();
 		private final IntValue value = new IntValue();
 
@@ -287,7 +288,8 @@ public class ReduceTaskTest extends DriverTestBase<GenericReducer<Record, Record
 	
 	@Combinable
 	public static class MockCombiningReduceStub extends ReduceFunction {
-
+		private static final long serialVersionUID = 1L;
+		
 		private final IntValue key = new IntValue();
 		private final IntValue value = new IntValue();
 		private final IntValue combineValue = new IntValue();
@@ -329,7 +331,8 @@ public class ReduceTaskTest extends DriverTestBase<GenericReducer<Record, Record
 	}
 	
 	public static class MockFailingReduceStub extends ReduceFunction {
-
+		private static final long serialVersionUID = 1L;
+		
 		private int cnt = 0;
 		
 		private final IntValue key = new IntValue();
@@ -357,7 +360,8 @@ public class ReduceTaskTest extends DriverTestBase<GenericReducer<Record, Record
 	}
 	
 	public static class MockDelayingReduceStub extends ReduceFunction {
-
+		private static final long serialVersionUID = 1L;
+		
 		@Override
 		public void reduce(Iterator<Record> records, Collector<Record> out) {
 			while(records.hasNext()) {

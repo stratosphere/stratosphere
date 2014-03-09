@@ -16,7 +16,6 @@ package eu.stratosphere.api.java.record.io;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,17 +27,17 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import eu.stratosphere.api.java.record.io.CsvOutputFormat;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.core.fs.FileSystem.WriteMode;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.StringValue;
 
 public class CsvOutputFormatTest {
 
-	@Mock
 	protected Configuration config;
 	
 	protected File tempFile;
@@ -49,8 +48,9 @@ public class CsvOutputFormatTest {
 	
 	@Before
 	public void setup() throws IOException {
-		initMocks(this);
 		this.tempFile = File.createTempFile("test_output", "tmp");
+		this.format.setOutputFilePath(new Path(tempFile.toURI()));
+		this.format.setWriteMode(WriteMode.OVERWRITE);
 	}
 	
 	@After
@@ -68,7 +68,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			
 			// check missing number of fields
 			boolean validConfig = true;
@@ -166,7 +165,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);
@@ -214,7 +212,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);
@@ -261,7 +258,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);
@@ -310,7 +306,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);
@@ -362,7 +357,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);
@@ -414,7 +408,6 @@ public class CsvOutputFormatTest {
 	{
 		try {
 			Configuration config = new Configuration();
-			config.setString(CsvOutputFormat.FILE_PARAMETER_KEY, this.tempFile.toURI().toString());
 			config.setString(CsvOutputFormat.FIELD_DELIMITER_PARAMETER, "|");
 			config.setInteger(CsvOutputFormat.NUM_FIELDS_PARAMETER, 2);
 			config.setClass(CsvOutputFormat.FIELD_TYPE_PARAMETER_PREFIX + 0, StringValue.class);

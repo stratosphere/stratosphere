@@ -21,9 +21,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.stratosphere.api.common.functions.GenericReducer;
-import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
+import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
+import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
 import eu.stratosphere.pact.runtime.test.util.DelayingInfinitiveInputIterator;
 import eu.stratosphere.pact.runtime.test.util.DiscardingOutputCollector;
@@ -31,12 +31,12 @@ import eu.stratosphere.pact.runtime.test.util.DriverTestBase;
 import eu.stratosphere.pact.runtime.test.util.ExpectedTestException;
 import eu.stratosphere.pact.runtime.test.util.TaskCancelThread;
 import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
-import eu.stratosphere.types.Key;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
-public class CombineTaskTest extends DriverTestBase<GenericReducer<Record, ?>>
+public class CombineTaskTest extends DriverTestBase<GenericGroupReduce<Record, ?>>
 {
 	private static final long COMBINE_MEM = 3 * 1024 * 1024;
 	
@@ -154,8 +154,9 @@ public class CombineTaskTest extends DriverTestBase<GenericReducer<Record, ?>>
 	}
 	
 	@Combinable
-	public static class MockCombiningReduceStub extends ReduceFunction
-	{
+	public static class MockCombiningReduceStub extends ReduceFunction {
+		private static final long serialVersionUID = 1L;
+		
 		private final IntValue theInteger = new IntValue();
 
 		@Override
@@ -182,7 +183,8 @@ public class CombineTaskTest extends DriverTestBase<GenericReducer<Record, ?>>
 	
 	@Combinable
 	public static final class MockFailingCombiningReduceStub extends ReduceFunction {
-
+		private static final long serialVersionUID = 1L;
+		
 		private int cnt = 0;
 		
 		private final IntValue key = new IntValue();

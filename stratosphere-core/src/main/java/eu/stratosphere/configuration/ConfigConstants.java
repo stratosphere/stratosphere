@@ -142,7 +142,19 @@ public final class ConfigConstants {
 	 * Path to Hadoop configuration
 	 */
 	public static final String PATH_HADOOP_CONFIG = "fs.hdfs.hadoopconf";
+	
+	
+	// ------------------------ File System Bahavior ------------------------
 
+	/**
+	 * Key to specify whether the file systems should simply overwrite existing files.
+	 */
+	public static final String FILESYSTEM_DEFAULT_OVERWRITE_KEY = "fs.overwrite-files";
+
+	/**
+	 * Key to specify whether the file systems should always create a directory for the output, even with a parallelism of one.
+	 */
+	public static final String FILESYSTEM_OUTPUT_ALWAYS_CREATE_DIRECTORY_KEY = "fs.output.always-create-directory";
 
 	// ---------------------------- Compiler -------------------------------
 
@@ -186,6 +198,9 @@ public final class ConfigConstants {
 	 */
 	public static final String JOB_MANAGER_WEB_ARCHIVE_COUNT = "jobmanager.web.history";
 	
+	public static final String JOB_MANAGER_WEB_LOG_PATH_KEY = "jobmanager.web.logpath";
+	
+	
 	// ------------------------------ Web Client ------------------------------
 	
 	/**
@@ -224,6 +239,10 @@ public final class ConfigConstants {
 	 * The key for Stratosphere's base directory path
 	 */
 	public static final String STRATOSPHERE_BASE_DIR_PATH_KEY = "stratosphere.base.dir.path";
+	
+	public static final String STRATOSPHERE_JVM_OPTIONS = "env.java.opts";
+	
+	
 
 	
 	
@@ -312,6 +331,19 @@ public final class ConfigConstants {
 	public static final boolean DEFAULT_USE_MULTICAST_FOR_BROADCAST = false;
 	
 	
+	// ------------------------ File System Bahavior ------------------------
+
+	/**
+	 * The default behavior with respect to overwriting existing files (= not overwrite)
+	 */
+	public static final boolean DEFAULT_FILESYSTEM_OVERWRITE = false;
+
+	/**
+	 * The default behavior for output directory creating (create only directory when parallelism > 1).
+	 */
+	public static final boolean DEFAULT_FILESYSTEM_ALWAYS_CREATE_DIRECTORY = false;
+	
+	
 	// ---------------------------- Compiler -------------------------------
 
 	/**
@@ -379,6 +411,7 @@ public final class ConfigConstants {
 	 * The default directory to store uploaded jobs in.
 	 */
 	public static final String DEFAULT_WEB_JOB_STORAGE_DIR = DEFAULT_WEB_TMP_DIR + "/webclient-jobs/";
+	
 
 	/**
 	 * The default path to the file containing the list of access privileged users and passwords.
@@ -391,12 +424,13 @@ public final class ConfigConstants {
 	/**
 	 * The default definition for an instance type, if no other configuration is provided.
 	 */
-	public static final String DEFAULT_INSTANCE_TYPE = "default,2,1,1024,10,10";
+	public static final String DEFAULT_INSTANCE_TYPE = "default,1,1,1,1,0"; // minimalistic instance type until "cloud" model is fully removed.
 
 	/**
 	 * The default index for the default instance type.
 	 */
 	public static final int DEFAULT_DEFAULT_INSTANCE_TYPE_INDEX = 1;
+
 	
 	// ------------------------------------------------------------------------
 	

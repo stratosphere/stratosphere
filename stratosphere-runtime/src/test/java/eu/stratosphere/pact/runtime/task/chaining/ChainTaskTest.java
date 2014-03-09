@@ -17,10 +17,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 
-import eu.stratosphere.api.common.functions.GenericMapper;
+import eu.stratosphere.api.common.functions.GenericCollectorMap;
 import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
 import eu.stratosphere.configuration.Configuration;
@@ -28,7 +29,7 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparatorFactory;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializerFactory;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
-import eu.stratosphere.pact.runtime.task.MapDriver;
+import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.MapTaskTest.MockMapStub;
 import eu.stratosphere.pact.runtime.task.ReduceTaskTest.MockReduceStub;
 import eu.stratosphere.pact.runtime.task.RegularPactTask;
@@ -38,6 +39,7 @@ import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
+import eu.stratosphere.util.LogUtils;
 
 
 public class ChainTaskTest extends TaskTestBase {
@@ -47,6 +49,15 @@ public class ChainTaskTest extends TaskTestBase {
 	@SuppressWarnings("unchecked")
 	private final RecordComparatorFactory compFact = new RecordComparatorFactory(new int[]{0}, new Class[]{IntValue.class}, new boolean[] {true});
 	private final RecordSerializerFactory serFact = RecordSerializerFactory.get();
+	
+	
+	
+	public ChainTaskTest() {
+		// suppress log output, as this class produces errors on purpose to test exception handling
+		LogUtils.initializeDefaultConsoleLogger(Level.OFF);
+	}
+	
+	
 	
 	@Test
 	public void testMapTask() {
@@ -85,9 +96,9 @@ public class ChainTaskTest extends TaskTestBase {
 			
 			// chained map+combine
 			{
-				RegularPactTask<GenericMapper<Record, Record>, Record> testTask = 
-											new RegularPactTask<GenericMapper<Record, Record>, Record>();
-				registerTask(testTask, MapDriver.class, MockMapStub.class);
+				RegularPactTask<GenericCollectorMap<Record, Record>, Record> testTask = 
+											new RegularPactTask<GenericCollectorMap<Record, Record>, Record>();
+				registerTask(testTask, CollectorMapDriver.class, MockMapStub.class);
 				
 				try {
 					testTask.invoke();
@@ -141,10 +152,10 @@ public class ChainTaskTest extends TaskTestBase {
 			
 			// chained map+combine
 			{
-				final RegularPactTask<GenericMapper<Record, Record>, Record> testTask = 
-											new RegularPactTask<GenericMapper<Record, Record>, Record>();
+				final RegularPactTask<GenericCollectorMap<Record, Record>, Record> testTask = 
+											new RegularPactTask<GenericCollectorMap<Record, Record>, Record>();
 				
-				super.registerTask(testTask, MapDriver.class, MockMapStub.class);
+				super.registerTask(testTask, CollectorMapDriver.class, MockMapStub.class);
 	
 				boolean stubFailed = false;
 				
@@ -164,6 +175,7 @@ public class ChainTaskTest extends TaskTestBase {
 	}
 	
 	public static final class MockFailingCombineStub extends ReduceFunction {
+		private static final long serialVersionUID = 1L;
 		
 		private int cnt = 0;
 

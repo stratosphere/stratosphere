@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.api.java.record.io.DelimitedInputFormat;
 import eu.stratosphere.api.java.record.io.FileOutputFormat;
+import eu.stratosphere.core.fs.FileSystem.WriteMode;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.StringValue;
@@ -35,7 +36,7 @@ public class ContractITCaseIOFormats {
 		private final StringValue valueString = new StringValue();
 		
 		@Override
-		public boolean readRecord(Record target, byte[] bytes, int offset, int numBytes) {
+		public Record readRecord(Record target, byte[] bytes, int offset, int numBytes) {
 			this.keyString.setValueAscii(bytes, offset, 1);
 			this.valueString.setValueAscii(bytes, offset + 2, 1);
 			target.setField(0, keyString);
@@ -44,7 +45,7 @@ public class ContractITCaseIOFormats {
 			if (LOG.isDebugEnabled())
 				LOG.debug("Read in: [" + keyString.getValue() + "," + valueString.getValue() + "]");
 			
-			return true;
+			return target;
 		}
 	}
 
@@ -54,6 +55,11 @@ public class ContractITCaseIOFormats {
 		private final StringBuilder buffer = new StringBuilder();
 		private final StringValue keyString = new StringValue();
 		private final IntValue valueInteger = new IntValue();
+		
+		
+		public ContractITCaseOutputFormat() {
+			setWriteMode(WriteMode.OVERWRITE);
+		}
 		
 		@Override
 		public void writeRecord(Record record) throws IOException {

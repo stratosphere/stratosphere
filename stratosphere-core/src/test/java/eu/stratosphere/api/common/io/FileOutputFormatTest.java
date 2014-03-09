@@ -1,3 +1,16 @@
+/***********************************************************************************************************************
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ **********************************************************************************************************************/
+
 package eu.stratosphere.api.common.io;
 
 import java.io.File;
@@ -5,20 +18,21 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Level;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import eu.stratosphere.api.common.io.FileOutputFormat.OutputDirectoryMode;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FileSystem.WriteMode;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.util.LogUtils;
-import eu.stratosphere.util.OperatingSystem;
 
 public class FileOutputFormatTest {
 
 	@BeforeClass
 	public static void initialize() {
-		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
+		LogUtils.initializeDefaultTestConsoleLogger();
 	}
 	
 	@Test
@@ -34,15 +48,14 @@ public class FileOutputFormatTest {
 		}
 		
 		String tmpFilePath = tmpOutPath.toURI().toString();
-		
-		Configuration config = new Configuration();
-		config.setString(FileOutputFormat.FILE_PARAMETER_KEY, tmpFilePath);
-		config.setString(FileOutputFormat.WRITEMODE_PARAMETER_KEY, FileOutputFormat.WRITEMODE_CREATE);
-		config.setString(FileOutputFormat.OUT_DIRECTORY_PARAMETER_KEY, FileOutputFormat.OUT_DIRECTORY_PARONLY);
 
 		// check fail if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		boolean exception = false;
 		try {
@@ -58,7 +71,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -73,7 +90,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -87,11 +108,13 @@ public class FileOutputFormatTest {
 		
 		// ----------- test again with always directory mode
 		
-		config.setString(FileOutputFormat.OUT_DIRECTORY_PARAMETER_KEY, FileOutputFormat.OUT_DIRECTORY_ALWAYS);
-		
 		// check fail if file exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -107,7 +130,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -122,7 +149,11 @@ public class FileOutputFormatTest {
 		
 		// check fail if file in directory exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -139,7 +170,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -171,14 +206,14 @@ public class FileOutputFormatTest {
 		}
 		
 		String tmpFilePath = tmpOutPath.toURI().toString();
-		
-		Configuration config = new Configuration();
-		config.setString(FileOutputFormat.FILE_PARAMETER_KEY, tmpFilePath);
-		config.setString(FileOutputFormat.WRITEMODE_PARAMETER_KEY, FileOutputFormat.WRITEMODE_CREATE);
 
 		// check fail if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		boolean exception = false;
 		try {
@@ -194,7 +229,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -209,7 +248,11 @@ public class FileOutputFormatTest {
 		
 		// check fail if file in directory exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -226,7 +269,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -257,15 +304,14 @@ public class FileOutputFormatTest {
 		}
 		
 		String tmpFilePath = tmpOutPath.toURI().toString();
-		
-		Configuration config = new Configuration();
-		config.setString(FileOutputFormat.FILE_PARAMETER_KEY, tmpFilePath);
-		config.setString(FileOutputFormat.WRITEMODE_PARAMETER_KEY, FileOutputFormat.WRITEMODE_OVERWRITE);
-		config.setString(FileOutputFormat.OUT_DIRECTORY_PARAMETER_KEY, FileOutputFormat.OUT_DIRECTORY_PARONLY);
 
 		// check success if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		boolean exception = false;
 		try {
@@ -282,7 +328,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -298,7 +348,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -312,11 +366,13 @@ public class FileOutputFormatTest {
 		
 		// ----------- test again with always directory mode
 		
-		config.setString(FileOutputFormat.OUT_DIRECTORY_PARAMETER_KEY, FileOutputFormat.OUT_DIRECTORY_ALWAYS);
-		
 		// check success if file exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -335,7 +391,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -350,7 +410,11 @@ public class FileOutputFormatTest {
 		
 		// check success if file in directory exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -369,7 +433,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -401,14 +469,14 @@ public class FileOutputFormatTest {
 		}
 		
 		String tmpFilePath = tmpOutPath.toURI().toString();
-		
-		Configuration config = new Configuration();
-		config.setString(FileOutputFormat.FILE_PARAMETER_KEY, tmpFilePath);
-		config.setString(FileOutputFormat.WRITEMODE_PARAMETER_KEY, FileOutputFormat.WRITEMODE_OVERWRITE);
 
 		// check success if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		boolean exception = false;
 		try {
@@ -427,7 +495,11 @@ public class FileOutputFormatTest {
 		Assert.assertTrue("Directory could not be created.", tmpOutPath.mkdir());
 
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -442,7 +514,11 @@ public class FileOutputFormatTest {
 		
 		// check success if file in directory exists
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -461,7 +537,11 @@ public class FileOutputFormatTest {
 		tmpOutPath.delete();
 		
 		dfof = new DummyFileOutputFormat();
-		dfof.configure(config);
+		dfof.setOutputFilePath(new Path(tmpFilePath));
+		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
+
+		dfof.configure(new Configuration());
 		
 		exception = false;
 		try {
@@ -489,7 +569,6 @@ public class FileOutputFormatTest {
 		public void writeRecord(IntValue record) throws IOException {
 			// DO NOTHING
 		}
-
 	}
 	
 }

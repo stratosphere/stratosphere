@@ -30,37 +30,44 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.operators.BulkIteration;
+import eu.stratosphere.api.common.operators.BulkIteration.PartialSolutionPlaceHolder;
+import eu.stratosphere.api.common.operators.DeltaIteration;
+import eu.stratosphere.api.common.operators.DeltaIteration.SolutionSetPlaceHolder;
+import eu.stratosphere.api.common.operators.DeltaIteration.WorksetPlaceHolder;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.Operator;
-import eu.stratosphere.api.common.operators.DeltaIteration;
-import eu.stratosphere.api.common.operators.BulkIteration.PartialSolutionPlaceHolder;
-import eu.stratosphere.api.common.operators.DeltaIteration.SolutionSetPlaceHolder;
-import eu.stratosphere.api.common.operators.DeltaIteration.WorksetPlaceHolder;
 import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
 import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
+import eu.stratosphere.api.common.operators.base.FlatMapOperatorBase;
 import eu.stratosphere.api.common.operators.base.JoinOperatorBase;
 import eu.stratosphere.api.common.operators.base.MapOperatorBase;
+import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
+import eu.stratosphere.api.common.operators.base.PlainMapOperatorBase;
 import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.compiler.costs.CostEstimator;
 import eu.stratosphere.compiler.costs.DefaultCostEstimator;
 import eu.stratosphere.compiler.dag.BulkIterationNode;
 import eu.stratosphere.compiler.dag.BulkPartialSolutionNode;
 import eu.stratosphere.compiler.dag.CoGroupNode;
+import eu.stratosphere.compiler.dag.CollectorMapNode;
 import eu.stratosphere.compiler.dag.CrossNode;
 import eu.stratosphere.compiler.dag.DataSinkNode;
 import eu.stratosphere.compiler.dag.DataSourceNode;
+import eu.stratosphere.compiler.dag.FlatMapNode;
 import eu.stratosphere.compiler.dag.IterationNode;
 import eu.stratosphere.compiler.dag.MapNode;
 import eu.stratosphere.compiler.dag.MatchNode;
 import eu.stratosphere.compiler.dag.OptimizerNode;
 import eu.stratosphere.compiler.dag.PactConnection;
+import eu.stratosphere.compiler.dag.GroupReduceNode;
 import eu.stratosphere.compiler.dag.ReduceNode;
 import eu.stratosphere.compiler.dag.SinkJoiner;
 import eu.stratosphere.compiler.dag.SolutionSetNode;
 import eu.stratosphere.compiler.dag.TempMode;
 import eu.stratosphere.compiler.dag.WorksetIterationNode;
 import eu.stratosphere.compiler.dag.WorksetNode;
+import eu.stratosphere.compiler.deadlockdetect.DeadlockPreventer;
 import eu.stratosphere.compiler.plan.BinaryUnionPlanNode;
 import eu.stratosphere.compiler.plan.BulkIterationPlanNode;
 import eu.stratosphere.compiler.plan.BulkPartialSolutionPlanNode;
@@ -719,6 +726,9 @@ public class PactCompiler {
 		} else if (bestPlanRoot instanceof SinkJoinerPlanNode) {
 			((SinkJoinerPlanNode) bestPlanRoot).getDataSinks(bestPlanSinks);
 		}
+		
+		DeadlockPreventer dp = new DeadlockPreventer();
+		dp.resolveDeadlocks(bestPlanSinks);
 
 		// finalize the plan
 		OptimizedPlan plan = new PlanFinalizer().createFinalPlan(bestPlanSinks, program.getJobName(), program, memoryPerInstance);
@@ -817,10 +827,19 @@ public class PactCompiler {
 				n = dsn;
 			}
 			else if (c instanceof MapOperatorBase) {
-				n = new MapNode((MapOperatorBase<?>) c);
+				n = new CollectorMapNode((MapOperatorBase<?>) c);
+			}
+			else if (c instanceof PlainMapOperatorBase) {
+				n = new MapNode((PlainMapOperatorBase<?>) c);
+			}
+			else if (c instanceof FlatMapOperatorBase) {
+				n = new FlatMapNode((FlatMapOperatorBase<?>) c);
 			}
 			else if (c instanceof ReduceOperatorBase) {
 				n = new ReduceNode((ReduceOperatorBase<?>) c);
+			}
+			else if (c instanceof GroupReduceOperatorBase) {
+				n = new GroupReduceNode((GroupReduceOperatorBase<?>) c);
 			}
 			else if (c instanceof JoinOperatorBase) {
 				n = new MatchNode((JoinOperatorBase<?>) c);
@@ -931,17 +950,39 @@ public class PactCompiler {
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
 					this.maxMachines, iterNode.getDegreeOfParallelism());
+				
+				BulkPartialSolutionNode partialSolution = null;
+				
 				iter.getNextPartialSolution().accept(recursiveCreator);
 				
+				partialSolution =  (BulkPartialSolutionNode) recursiveCreator.con2node.get(iter.getPartialSolution());
 				OptimizerNode rootOfStepFunction = recursiveCreator.con2node.get(iter.getNextPartialSolution());
-				BulkPartialSolutionNode partialSolution = 
-						(BulkPartialSolutionNode) recursiveCreator.con2node.get(iter.getPartialSolution());
 				if (partialSolution == null) {
-					throw new CompilerException("Invalid Bulk iteration: The result of the iterative step functions result does not depend on the partial solution.");
+					throw new CompilerException("Error: The step functions result does not depend on the partial solution.");
 				}
 				
-				// add an outgoing connection to the root of the step function				
-				iterNode.setNextPartialSolution(rootOfStepFunction);
+				
+				OptimizerNode terminationCriterion = null;
+				
+				if (iter.getTerminationCriterion() != null) {
+					terminationCriterion = recursiveCreator.con2node.get(iter.getTerminationCriterion());
+					
+					// no intermediate node yet, traverse from the termination criterion to build the missing parts
+					if (terminationCriterion == null) {
+						iter.getTerminationCriterion().accept(recursiveCreator);
+						terminationCriterion = recursiveCreator.con2node.get(iter.getTerminationCriterion());
+						
+						// this does unfortunately not work, as the partial solution node is known to exist at
+						// this point (otherwise the check for the next partial solution would have failed already)
+//						partialSolution = (BulkPartialSolutionNode) recursiveCreator.con2node.get(iter.getPartialSolution());
+//						
+//						if (partialSolution == null) {
+//							throw new CompilerException("Error: The termination criterion result does not depend on the partial solution.");
+//						}
+					}
+				}
+				
+				iterNode.setNextPartialSolution(rootOfStepFunction, terminationCriterion);
 				iterNode.setPartialSolution(partialSolution);
 				
 				// account for the nested memory consumers

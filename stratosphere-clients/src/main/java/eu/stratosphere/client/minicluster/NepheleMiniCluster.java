@@ -13,8 +13,14 @@
 
 package eu.stratosphere.client.minicluster;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import eu.stratosphere.api.common.io.FileInputFormat;
+import eu.stratosphere.api.common.io.FileOutputFormat;
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
@@ -27,6 +33,8 @@ import eu.stratosphere.nephele.jobmanager.JobManager.ExecutionMode;
 
 
 public class NepheleMiniCluster {
+	
+	private static final Log LOG = LogFactory.getLog(NepheleMiniCluster.class);
 	
 	private static final int DEFAULT_JM_RPC_PORT = 6498;
 	
@@ -51,6 +59,10 @@ public class NepheleMiniCluster {
 	private String hdfsConfigFile;
 
 	private boolean visualizerEnabled = DEFAULT_VISUALIZER_ENABLED;
+	
+	private boolean defaultOverwriteFiles = false;
+	
+	private boolean defaultAlwaysCreateDirectory = false;
 
 	
 	private Thread runner;
@@ -109,6 +121,22 @@ public class NepheleMiniCluster {
 		this.visualizerEnabled = visualizerEnabled;
 	}
 	
+	public boolean isDefaultOverwriteFiles() {
+		return defaultOverwriteFiles;
+	}
+	
+	public void setDefaultOverwriteFiles(boolean defaultOverwriteFiles) {
+		this.defaultOverwriteFiles = defaultOverwriteFiles;
+	}
+	
+	public boolean isDefaultAlwaysCreateDirectory() {
+		return defaultAlwaysCreateDirectory;
+	}
+	
+	public void setDefaultAlwaysCreateDirectory(boolean defaultAlwaysCreateDirectory) {
+		this.defaultAlwaysCreateDirectory = defaultAlwaysCreateDirectory;
+	}
+
 	
 	// ------------------------------------------------------------------------
 	// Life cycle and Job Submission
@@ -128,9 +156,13 @@ public class NepheleMiniCluster {
 				GlobalConfiguration.loadConfiguration(configDir);
 			} else {
 				Configuration conf = getMiniclusterDefaultConfig(jobManagerRpcPort, taskManagerRpcPort,
-					taskManagerDataPort, hdfsConfigFile, visualizerEnabled);
+					taskManagerDataPort, hdfsConfigFile, visualizerEnabled, defaultOverwriteFiles, defaultAlwaysCreateDirectory);
 				GlobalConfiguration.includeConfiguration(conf);
 			}
+			
+			// force the input/output format classes to load the default values from the configuration.
+			// we need to do this here, because the format classes may have been initialized before the mini cluster was started
+			initializeIOFormatClasses();
 			
 			// before we start the jobmanager, we need to make sure that there are no lingering IPC threads from before
 			// check that all threads are done before we return
@@ -187,8 +219,24 @@ public class NepheleMiniCluster {
 		}
 	}
 	
+	private static void initializeIOFormatClasses() {
+		try {
+			Method im = FileInputFormat.class.getDeclaredMethod("initDefaultsFromConfiguration");
+			im.setAccessible(true);
+			im.invoke(null);
+			
+			Method om = FileOutputFormat.class.getDeclaredMethod("initDefaultsFromConfiguration");
+			om.setAccessible(true);
+			om.invoke(null);
+		}
+		catch (Exception e) {
+			LOG.error("Cannot (re) initialize the globally loaded defaults. Some classes might mot follow the specified default behavior.");
+		}
+	}
+	
 	public static Configuration getMiniclusterDefaultConfig(int jobManagerRpcPort, int taskManagerRpcPort,
-			int taskManagerDataPort, String hdfsConfigFile, boolean visualization)
+			int taskManagerDataPort, String hdfsConfigFile, boolean visualization,
+			boolean defaultOverwriteFiles, boolean defaultAlwaysCreateDirectory)
 	{
 		final Configuration config = new Configuration();
 		
@@ -209,8 +257,13 @@ public class NepheleMiniCluster {
 		
 		// hdfs
 		if (hdfsConfigFile != null) {
-			config.setString("fs.hdfs.hdfsdefault", hdfsConfigFile);
+			config.setString(ConfigConstants.HDFS_DEFAULT_CONFIG, hdfsConfigFile);
 		}
+		
+		// file system behavior
+		config.setBoolean(ConfigConstants.FILESYSTEM_DEFAULT_OVERWRITE_KEY, defaultOverwriteFiles);
+		config.setBoolean(ConfigConstants.FILESYSTEM_OUTPUT_ALWAYS_CREATE_DIRECTORY_KEY, defaultAlwaysCreateDirectory);
+
 		return config;
 	}
 }
