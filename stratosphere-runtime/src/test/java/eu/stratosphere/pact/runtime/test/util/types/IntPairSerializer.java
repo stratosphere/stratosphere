@@ -21,7 +21,7 @@ import eu.stratosphere.core.memory.DataOutputView;
 
 
 public class IntPairSerializer extends TypeSerializer<IntPair>
-{	
+{
 
 	@Override
 	public IntPair createInstance()
@@ -29,21 +29,12 @@ public class IntPairSerializer extends TypeSerializer<IntPair>
 		return new IntPair();
 	}
 
-
 	@Override
-	public IntPair createCopy(IntPair from)
+	public IntPair copy(IntPair from, IntPair reuse)
 	{
-		return new IntPair(from.getKey(), from.getValue());
-	}
-
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#copyTo(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public void copyTo(IntPair from, IntPair to)
-	{
-		to.setKey(from.getKey());
-		to.setValue(from.getValue());
+		reuse.setKey(from.getKey());
+		reuse.setValue(from.getValue());
+		return reuse;
 	}
 	
 
@@ -53,9 +44,6 @@ public class IntPairSerializer extends TypeSerializer<IntPair>
 		return 8;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#serialize(java.lang.Object, eu.stratosphere.nephele.services.memorymanager.DataOutputView)
-	 */
 	@Override
 	public void serialize(IntPair record, DataOutputView target) throws IOException
 	{
@@ -63,18 +51,13 @@ public class IntPairSerializer extends TypeSerializer<IntPair>
 		target.writeInt(record.getValue());
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#deserialize(java.lang.Object, eu.stratosphere.nephele.services.memorymanager.DataInputView)
-	 */
 	@Override
-	public void deserialize(IntPair target, DataInputView source) throws IOException {
-		target.setKey(source.readInt());
-		target.setValue(source.readInt());
+	public IntPair deserialize(IntPair reuse, DataInputView source) throws IOException {
+		reuse.setKey(source.readInt());
+		reuse.setValue(source.readInt());
+		return reuse;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#copy(eu.stratosphere.nephele.services.memorymanager.DataInputView, eu.stratosphere.nephele.services.memorymanager.DataOutputView)
-	 */
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException
 	{

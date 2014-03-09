@@ -16,6 +16,7 @@ package eu.stratosphere.pact.runtime.task;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import eu.stratosphere.pact.runtime.task.chaining.ExceptionInChainedStubException;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -99,7 +100,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 	}
 	
 	@Test
-	public void testMultiLevelMergeCombineTask() {
+	public void testMultiLevelMergeCombineTask() throws Exception {
 		final int keyCnt = 100000;
 		final int valCnt = 8;
 		
@@ -112,7 +113,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 		getTaskConfig().setFilehandlesDriver(2);
 		
 		final CombineDriver<Record> testTask = new CombineDriver<Record>();
-		
+
 		try {
 			testDriver(testTask, MockCombiningReduceStub.class);
 		} catch (Exception e) {

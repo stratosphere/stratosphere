@@ -14,6 +14,7 @@
 package eu.stratosphere.api.common.typeutils;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
@@ -28,7 +29,7 @@ import eu.stratosphere.core.memory.DataOutputView;
  * 
  * @param T The data type that the serializer serializes.
  */
-public abstract class TypeSerializer<T>
+public abstract class TypeSerializer<T> implements Serializable
 {
 	/**
 	 * Creates a new instance of the data type.
@@ -36,22 +37,14 @@ public abstract class TypeSerializer<T>
 	 * @return A new instance of the data type.
 	 */
 	public abstract T createInstance();
-	
+
 	/**
-	 * Creates a copy from the given element.
+	 * Creates a copy from the given element, storing the copied result in the given reuse element if type is mutable.
 	 * 
-	 * @param from The element to copy.
-	 * @return A copy of the given element.
+	 * @param from The element reuse be copied.
+	 * @param reuse The element to be reused.
 	 */
-	public abstract T createCopy(T from);
-	
-	/**
-	 * Creates a copy from the given element, storing the copied result in the given target element.
-	 * 
-	 * @param from The element to be copied.
-	 * @param to The target element.
-	 */
-	public abstract void copyTo(T from, T to);
+	public abstract T copy(T from, T reuse);
 	
 	// --------------------------------------------------------------------------------------------
 	
@@ -76,15 +69,15 @@ public abstract class TypeSerializer<T>
 	public abstract void serialize(T record, DataOutputView target) throws IOException;
 
 	/**
-	 * De-serializes a record from the given source input view into the given target record instance.
+	 * De-serializes a record from the given source input view into the given reuse record instance if mutable.
 	 * 
-	 * @param record The record instance into which to de-serialize the data.
+	 * @param reuse The record instance into which to de-serialize the data.
 	 * @param source The input view from which to read the data.
 	 * 
 	 * @throws IOException Thrown, if the de-serialization encountered an I/O related error. Typically raised by the
 	 *                     input view, which may have an underlying I/O channel from which it reads.
 	 */
-	public abstract void deserialize(T record, DataInputView source) throws IOException;
+	public abstract T deserialize(T reuse, DataInputView source) throws IOException;
 	
 	/**
 	 * Copies exactly one record from the source input view to the target output view. Whether this operation

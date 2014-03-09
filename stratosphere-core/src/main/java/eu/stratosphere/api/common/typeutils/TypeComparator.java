@@ -14,6 +14,7 @@
 package eu.stratosphere.api.common.typeutils;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
@@ -42,7 +43,7 @@ import eu.stratosphere.types.NormalizableKey;
  * 
  * @param T The data type that the comparator works on.
  */
-public abstract class TypeComparator<T> {
+public abstract class TypeComparator<T> implements Serializable {
 	
 	/**
 	 * Computes a hash value for the given record. The hash value should include all fields in the record
@@ -230,14 +231,14 @@ public abstract class TypeComparator<T> {
 	 * for all the key fields the full normalized key is used, which is hinted by the
 	 * {@code #supportsSerializationWithKeyNormalization()} method.
 	 *
-	 * @param record The record object into which to read the record data.
+	 * @param reuse The reuse object into which to read the record data.
 	 * @param source The stream from which to read the data,
 	 *
 	 * @see #supportsSerializationWithKeyNormalization()
 	 * @see #writeWithKeyNormalization(Object, DataOutputView)
 	 * @see NormalizableKey#copyNormalizedKey(MemorySegment, int, int)
 	 */
-	public abstract void readWithKeyDenormalization(T record, DataInputView source) throws IOException;
+	public abstract T readWithKeyDenormalization(T reuse, DataInputView source) throws IOException;
 
 	/**
 	 * Flag whether normalized key comparisons should be inverted key should be interpreted
