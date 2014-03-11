@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import eu.stratosphere.api.common.operators.*;
+import eu.stratosphere.pact.compiler.util.*;
 import eu.stratosphere.types.LongValue;
 import junit.framework.Assert;
 
@@ -34,13 +35,6 @@ import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.plan.OptimizedPlan;
 import eu.stratosphere.compiler.plan.SinkPlanNode;
 import eu.stratosphere.compiler.plantranslate.NepheleJobGraphGenerator;
-import eu.stratosphere.pact.compiler.util.DummyCoGroupStub;
-import eu.stratosphere.pact.compiler.util.DummyCrossStub;
-import eu.stratosphere.pact.compiler.util.DummyInputFormat;
-import eu.stratosphere.pact.compiler.util.DummyMatchStub;
-import eu.stratosphere.pact.compiler.util.DummyOutputFormat;
-import eu.stratosphere.pact.compiler.util.IdentityMap;
-import eu.stratosphere.pact.compiler.util.IdentityReduce;
 import eu.stratosphere.types.IntValue;
 import sun.net.www.content.text.Generic;
 
@@ -768,13 +762,79 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 
 	/**
 	 * <prev>
-	 *                      +----Iteration------+
-	 *						|                   |
-	 *			   /--map--< >----\             |
-	 *			  /         |      \         /-< >---sink
-	 *	   src-map          |     join------/   |
-	 *		 	  \   		|      /            |
-	 *             \ 		+-----/-------------+
+	 *                           +----Iteration-------+
+	 *                           |                    |
+	 *				  /---------< >---------join-----< >---sink
+	 *				 / (Solution)|           /        |
+	 *				/		     |          /         |
+	 *			   /--map-------< >----\   /       /--|
+	 *			  /     (Workset)|      \ /       /   |
+	 *	   src-map               |     join------/    |
+	 *		 	  \   		     |      /             |
+	 *             \ 		     +-----/--------------+
+	 *				\                 /
+	 *				 \--reduce-------/
+	 *
+	 * </prev>
+	 */
+	@Test
+	public void testDeltaIterationWithStaticInput() {
+		FileDataSource source = new FileDataSource(DummyInputFormat.class, IN_FILE, "source");
+
+		MapOperator mappedSource = MapOperator.builder(IdentityMap.class).
+				input(source).
+				name("Identity mapped source").
+				build();
+
+		ReduceOperator reducedSource = ReduceOperator.builder(IdentityReduce.class).
+				input(source).
+				name("Identity reduce source").
+				build();
+
+		DeltaIteration iteration = new DeltaIteration(0,"Loop");
+		iteration.setMaximumNumberOfIterations(10);
+		iteration.setInitialSolutionSet(source);
+		iteration.setInitialWorkset(mappedSource);
+
+		JoinOperator nextWorkset = JoinOperator.builder(DummyNonPreservingMatchStub.class, IntValue.class, 0,0).
+				input1(iteration.getWorkset()).
+				input2(reducedSource).
+				name("Next work set").
+				build();
+
+		JoinOperator solutionSetDelta = JoinOperator.builder(DummyNonPreservingMatchStub.class, IntValue.class, 0,
+				0).
+				input1(iteration.getSolutionSet()).
+				input2(nextWorkset).
+				name("Solution set delta").
+				build();
+
+		iteration.setNextWorkset(nextWorkset);
+		iteration.setSolutionSetDelta(solutionSetDelta);
+
+		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * <prev>
+	 *                      +----Delta Iteration------+
+	 *						|                         |
+	 *			   /--map--< >----\                   |
+	 *			  /         |      \         /-------< >---sink
+	 *	   src-map          |     join------/         |
+	 *		 	  \   		|      /                  |
+	 *             \ 		+-----/-------------------+
 	 *				\            /
 	 *				 \--reduce--/
 	 *
