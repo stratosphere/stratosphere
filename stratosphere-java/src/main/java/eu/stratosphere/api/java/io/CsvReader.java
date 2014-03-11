@@ -25,6 +25,7 @@ import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.api.java.tuple.Tuple4;
 import eu.stratosphere.api.java.tuple.Tuple5;
 import eu.stratosphere.api.java.tuple.Tuple6;
+import eu.stratosphere.api.java.tuple.Tuple7;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.core.fs.Path;
 
@@ -191,5 +192,12 @@ public class CsvReader {
 		CsvInputFormat<Tuple6<T1, T2, T3, T4, T5, T6>> inputFormat = new CsvInputFormat<Tuple6<T1, T2, T3, T4, T5, T6>>(path);
 		configureInputFormat(inputFormat, type1, type2, type3, type4, type5, type6);
 		return new DataSource<Tuple6<T1, T2, T3, T4, T5, T6>>(executionContext, inputFormat, types);
+	}
+	
+	public <T1, T2, T3, T4, T5, T6, T7> DataSource<Tuple7<T1, T2, T3, T4, T5, T6, T7>> types(Class<T1> type1, Class<T2> type2, Class<T3> type3, Class<T4> type4, Class<T5> type5, Class<T6> type6, Class<T7> type7) {
+		TupleTypeInfo<Tuple7<T1, T2, T3, T4, T5, T6, T7>> types = TupleTypeInfo.getBasicTupleTypeInfo(type1, type2, type3, type4, type5, type6, type7);
+		CsvInputFormat<Tuple7<T1, T2, T3, T4, T5, T6, T7>> inputFormat = new CsvInputFormat<Tuple7<T1, T2, T3, T4, T5, T6, T7>>(path);
+		configureInputFormat(inputFormat, type1, type2, type3, type4, type5, type6, type7);
+		return new DataSource<Tuple7<T1, T2, T3, T4, T5, T6, T7>>(executionContext, inputFormat, types);
 	}
 }
