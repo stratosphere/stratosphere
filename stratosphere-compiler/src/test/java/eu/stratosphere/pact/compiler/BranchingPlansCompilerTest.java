@@ -42,6 +42,7 @@ import eu.stratosphere.pact.compiler.util.DummyOutputFormat;
 import eu.stratosphere.pact.compiler.util.IdentityMap;
 import eu.stratosphere.pact.compiler.util.IdentityReduce;
 import eu.stratosphere.types.IntValue;
+import sun.net.www.content.text.Generic;
 
 /**
  */
@@ -754,6 +755,60 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		sinks.add(sink1);
 		sinks.add(sink2);
 		sinks.add(sink3);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * <prev>
+	 *                      +----Iteration------+
+	 *						|                   |
+	 *			   /--map--< >----\             |
+	 *			  /         |      \         /-< >---sink
+	 *	   src-map          |     join------/   |
+	 *		 	  \   		|      /            |
+	 *             \ 		+-----/-------------+
+	 *				\            /
+	 *				 \--reduce--/
+	 *
+	 * </prev>
+	 */
+	@Test
+	public void testIterationWithStaticInput() {
+		FileDataSource source = new FileDataSource(DummyInputFormat.class, IN_FILE, "source");
+
+		MapOperator mappedSource = MapOperator.builder(IdentityMap.class).
+				input(source).
+				name("Identity mapped source").
+				build();
+
+		ReduceOperator reducedSource = ReduceOperator.builder(IdentityReduce.class).
+				input(source).
+				name("Identity reduce source").
+				build();
+
+		BulkIteration iteration = new BulkIteration("Loop");
+		iteration.setInput(mappedSource);
+		iteration.setMaximumNumberOfIterations(10);
+
+		JoinOperator nextPartialSolution = JoinOperator.builder(DummyMatchStub.class, IntValue.class, 0,0).
+				input1(iteration.getPartialSolution()).
+				input2(reducedSource).
+				name("Next partial solution").
+				build();
+
+		iteration.setNextPartialSolution(nextPartialSolution);
+
+		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink);
 
 		Plan plan = new Plan(sinks);
 
