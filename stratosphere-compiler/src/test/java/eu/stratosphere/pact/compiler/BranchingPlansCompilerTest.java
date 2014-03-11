@@ -762,19 +762,19 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 
 	/**
 	 * <prev>
-	 *                           +----Iteration-------+
-	 *                           |                    |
-	 *				  /---------< >---------join-----< >---sink
-	 *				 / (Solution)|           /        |
-	 *				/		     |          /         |
-	 *			   /--map-------< >----\   /       /--|
-	 *			  /     (Workset)|      \ /       /   |
-	 *	   src-map               |     join------/    |
-	 *		 	  \   		     |      /             |
-	 *             \ 		     +-----/--------------+
-	 *				\                 /
-	 *				 \--reduce-------/
-	 *
+	 *                  +----Iteration-------+
+	 *                  |                    |
+	 *       /---------< >---------join-----< >---sink
+	 *      / (Solution)|           /        |
+	 *     /            |          /         |
+	 *    /--map-------< >----\   /       /--|
+	 *   /     (Workset)|      \ /       /   |
+	 * src-map          |     join------/    |
+	 *   \   		    |      /             |
+	 *    \             +-----/--------------+
+	 *     \                 /
+	 *      \--reduce-------/
+	 * <p/>
 	 * </prev>
 	 */
 	@Test
@@ -828,16 +828,16 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 
 	/**
 	 * <prev>
-	 *                      +----Delta Iteration------+
-	 *						|                         |
-	 *			   /--map--< >----\                   |
-	 *			  /         |      \         /-------< >---sink
-	 *	   src-map          |     join------/         |
-	 *		 	  \   		|      /                  |
-	 *             \ 		+-----/-------------------+
-	 *				\            /
-	 *				 \--reduce--/
-	 *
+	 *             +----Delta Iteration------+
+	 *             |                         |
+	 *    /--map--< >----\                   |
+	 *   /         |      \         /-------< >---sink
+	 * src-map     |     join------/         |
+	 *   \         |      /                  |
+	 *    \        +-----/-------------------+
+	 *     \            /
+	 *      \--reduce--/
+	 * <p/>
 	 * </prev>
 	 */
 	@Test
