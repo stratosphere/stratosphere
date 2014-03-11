@@ -21,19 +21,13 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.Map.Entry;
 
+import eu.stratosphere.api.common.cache.DistributedCache;
+import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.pact.runtime.cache.FileCache;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -106,6 +100,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final Server taskManagerServer;
 
+	private final FileCache fileCache = new FileCache();
 	/**
 	 * This map contains all the tasks whose threads are in a state other than TERMINATED. If any task
 	 * is stored inside this map and its thread status is TERMINATED, this indicates a virtual machine error.
@@ -559,9 +554,17 @@ public class TaskManager implements TaskOperationProtocol {
 			final JobID jobID = tdd.getJobID();
 			final ExecutionVertexID vertexID = tdd.getVertexID();
 			RuntimeEnvironment re;
+
+			// retrieve the registered cache files from job configuration and create the local tmp file.
+			Map<String, FutureTask<Path>> cpTasks = new HashMap<String, FutureTask<Path>>();
+			for (Entry<String, String> e: DistributedCache.getCachedFile(tdd.getJobConfiguration())) {
+				FutureTask<Path> cp = this.fileCache.createTmpFile(e.getKey(), e.getValue(), jobID);
+				cpTasks.put(e.getKey(), cp);
+			}
+
 			try {
 				re = new RuntimeEnvironment(tdd, this.memoryManager, this.ioManager, new TaskInputSplitProvider(jobID,
-					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy);
+					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy, cpTasks);
 			} catch (Throwable t) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);
@@ -696,6 +699,10 @@ public class TaskManager implements TaskOperationProtocol {
 				return;
 			}
 
+			// remove the local tmp file for unregistered tasks.
+			for (Entry<String, String> e: DistributedCache.getCachedFile(task.getEnvironment().getJobConfiguration())) {
+				this.fileCache.deleteTmpFile(e.getKey(), task.getJobID());
+			}
 			// Unregister task from the byte buffered channel manager
 			this.byteBufferedChannelManager.unregister(id, task);
 
@@ -807,6 +814,8 @@ public class TaskManager implements TaskOperationProtocol {
 		if (this.memoryManager != null) {
 			this.memoryManager.shutdown();
 		}
+
+		this.fileCache.shutdown();
 
 		// Shut down the executor service
 		if (this.executorService != null) {
