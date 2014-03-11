@@ -36,7 +36,6 @@ import eu.stratosphere.compiler.plan.OptimizedPlan;
 import eu.stratosphere.compiler.plan.SinkPlanNode;
 import eu.stratosphere.compiler.plantranslate.NepheleJobGraphGenerator;
 import eu.stratosphere.types.IntValue;
-import sun.net.www.content.text.Generic;
 
 /**
  */
