@@ -99,8 +99,9 @@ public class TextInputFormat extends DelimitedInputFormat {
 		StringValue str = this.theString;
 		
 		//Check if \n is used as delimiter and the end of this line is a \r, then remove \r from the line
-		if (this.getDelimiter().length == 1 && this.getDelimiter()[0] == NEW_LINE && 
-				offset+numBytes >= 1 && bytes[offset+numBytes-1] == CARRIAGE_RETURN){
+		if (this.getDelimiter() != null && this.getDelimiter().length == 1 
+				&& this.getDelimiter()[0] == NEW_LINE && offset+numBytes >= 1 
+				&& bytes[offset+numBytes-1] == CARRIAGE_RETURN){
 			numBytes -= 1;
 		}
 
