@@ -37,8 +37,8 @@ public class MapNode extends SingleInputNode {
 	}
 
 	@Override
-	public MapOperatorBase<?> getPactContract() {
-		return (MapOperatorBase<?>) super.getPactContract();
+	public PlainMapOperatorBase<?> getPactContract() {
+		return (PlainMapOperatorBase<?>) super.getPactContract();
 	}
 
 	@Override
