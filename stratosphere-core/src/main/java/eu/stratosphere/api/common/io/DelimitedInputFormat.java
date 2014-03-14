@@ -77,6 +77,17 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 	 */
 	private static int MAX_SAMPLE_LEN;
 	
+	/**
+	 * Code of \r, used to remove \r from a line when the line ends with \r\n
+	 */
+	private static final byte CARRIAGE_RETURN = 13;
+
+	/**
+	 * Code of \n, used to identify if \n is used as delimiter
+	 */
+	private static final byte NEW_LINE = 10;
+
+	
 	static { loadGloablConfigParams(); }
 	
 	protected static final void loadGloablConfigParams() {
@@ -515,6 +526,12 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 				// line end
 				count = this.readPos - startPos - this.delimiter.length;
 
+				//Check if \n is used as delimiter and the end of this line is a \r, then remove \r from the line
+				if (this.delimiter.length == 1 && this.delimiter[0] == NEW_LINE && 
+						this.readPos >= 2 && this.readBuffer[this.readPos-2] == CARRIAGE_RETURN){
+					count -= 1;
+				}
+				
 				// copy to byte array
 				if (countInWrapBuffer > 0) {
 					// check wrap buffer size
