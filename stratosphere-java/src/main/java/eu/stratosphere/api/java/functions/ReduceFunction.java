@@ -18,30 +18,54 @@ import java.util.Iterator;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.util.Collector;
 
 
 public abstract class ReduceFunction<T> extends AbstractFunction implements GenericGroupReduce<T, T> {
 	
 	private static final long serialVersionUID = 1L;
-
-
-	public abstract T reduce(T value1, T value2) throws Exception;
 	
+	private TypeSerializer<T> serializer;
+	private T curr; 
+
+	/**
+	 * Combines two values into one.
+	 * 
+	 * Important: It is fine to return the first value (value1) as result from this function. 
+	 * You may NOT return the second value from this function.
+	 * 
+	 * @param value1 The first value to combine. This object may be returned as result.  
+	 * @param value2 The second value to combine. This object may NOT be returned as result.
+	 * @return The combined value of both input values.
+	 * 
+	 * @throws Exception
+	 */
+	public abstract T reduce(T value1, T value2) throws Exception;
 	
 	@Override
 	public final void reduce(Iterator<T> values, Collector<T> out) throws Exception {
-		T curr = values.next();
 		
-		while (values.hasNext()) {
-			curr = reduce(curr, values.next());
+		if(this.serializer == null) {
+			throw new RuntimeException("TypeSerializer was not initialized.");
 		}
 		
-		out.collect(curr);
+		this.serializer.copy(values.next(), this.curr);
+		
+		while (values.hasNext()) {
+			this.curr = reduce(this.curr, values.next());
+		}
+		
+		out.collect(this.curr);
 	}
 	
 	@Override
 	public final void combine(Iterator<T> values, Collector<T> out) throws Exception {
 		reduce(values, out);
+	}
+	
+	public final void setTypeSerializer(TypeSerializer<T> serializer) {
+		this.serializer = serializer;
+		this.curr = serializer.createInstance();
 	}
 }

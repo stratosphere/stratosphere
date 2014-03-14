@@ -31,6 +31,7 @@ public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupR
 	
 	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type) {
 		super(udf, logicalGroupingFields, name);
+		udf.setTypeSerializer(type.createSerializer());
 		this.type = type;
 	}
 	
