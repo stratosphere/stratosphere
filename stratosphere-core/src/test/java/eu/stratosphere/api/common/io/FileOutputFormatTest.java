@@ -52,7 +52,7 @@ public class FileOutputFormatTest {
 		// check fail if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -72,7 +72,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -91,7 +91,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -111,7 +111,7 @@ public class FileOutputFormatTest {
 		// check fail if file exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -131,7 +131,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -150,7 +150,7 @@ public class FileOutputFormatTest {
 		// check fail if file in directory exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -171,7 +171,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -210,7 +210,7 @@ public class FileOutputFormatTest {
 		// check fail if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -230,7 +230,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -249,7 +249,7 @@ public class FileOutputFormatTest {
 		// check fail if file in directory exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -270,7 +270,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.CREATE);
+		dfof.setWriteMode(WriteMode.NO_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -308,7 +308,7 @@ public class FileOutputFormatTest {
 		// check success if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -329,7 +329,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -349,7 +349,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -369,7 +369,7 @@ public class FileOutputFormatTest {
 		// check success if file exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -392,7 +392,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -411,7 +411,7 @@ public class FileOutputFormatTest {
 		// check success if file in directory exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -434,7 +434,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.ALWAYS);
 
 		dfof.configure(new Configuration());
@@ -473,7 +473,7 @@ public class FileOutputFormatTest {
 		// check success if file exists
 		DummyFileOutputFormat dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -496,7 +496,7 @@ public class FileOutputFormatTest {
 
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -515,7 +515,7 @@ public class FileOutputFormatTest {
 		// check success if file in directory exists
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());
@@ -538,7 +538,7 @@ public class FileOutputFormatTest {
 		
 		dfof = new DummyFileOutputFormat();
 		dfof.setOutputFilePath(new Path(tmpFilePath));
-		dfof.setWriteMode(WriteMode.OVERWRITE);
+		dfof.setWriteMode(WriteMode.FORCE_OVERWRITE);
 		dfof.setOutputDirectoryMode(OutputDirectoryMode.PARONLY);
 
 		dfof.configure(new Configuration());

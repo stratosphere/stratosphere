@@ -54,10 +54,10 @@ public abstract class FileSystem {
 	public static enum WriteMode {
 		
 		/** Creates write path if it does not exist. Does not overwrite existing files and directories. */
-		CREATE,
+		NO_OVERWRITE,
 		
 		/** creates write path if it does not exist. Overwrites existing files and directories. */
-		OVERWRITE 
+		FORCE_OVERWRITE 
 	}
 	
 	/**
@@ -448,14 +448,16 @@ public abstract class FileSystem {
 		if(this.exists(outPath)) {
 			// path exists, check write mode
 			switch(writeMode) {
-			case CREATE:
+			case NO_OVERWRITE:
 				if(this.getFileStatus(outPath).isDir()) {
 					return true;
 				} else {
 					// file may not be overwritten
-					throw new IOException("Existing file or directory on output path may not be overwritten in CREATE write mode.");
+					throw new IOException("File or directory already exists. Existing files and directories are not overwritten in " + 
+							WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.FORCE_OVERWRITE.name() + 
+							" mode to overwrite existing files and directories.");
 				}
-			case OVERWRITE:
+			case FORCE_OVERWRITE:
 				if(this.getFileStatus(outPath).isDir()) {
 					if(createDirectory) {
 						// directory exists and does not need to be created
@@ -538,10 +540,12 @@ public abstract class FileSystem {
 		if(this.exists(outPath)) {
 			// path exists, check write mode
 			switch(writeMode) {
-			case CREATE:
+			case NO_OVERWRITE:
 				// file or directory may not be overwritten
-				throw new IOException("Existing file or directory on output path may not be overwritten in CREATE write mode.");
-			case OVERWRITE:
+				throw new IOException("File or directory already exists. Existing files and directories are not overwritten in " + 
+						WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.FORCE_OVERWRITE.name() + 
+							" mode to overwrite existing files and directories.");
+			case FORCE_OVERWRITE:
 				// output path exists. We delete it and all contained files in case of a directory.
 				try {
 					this.delete(outPath, true);

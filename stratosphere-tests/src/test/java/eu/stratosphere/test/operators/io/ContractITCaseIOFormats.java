@@ -58,7 +58,7 @@ public class ContractITCaseIOFormats {
 		
 		
 		public ContractITCaseOutputFormat() {
-			setWriteMode(WriteMode.OVERWRITE);
+			setWriteMode(WriteMode.FORCE_OVERWRITE);
 		}
 		
 		@Override
