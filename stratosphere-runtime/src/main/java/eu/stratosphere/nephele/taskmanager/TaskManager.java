@@ -13,6 +13,38 @@
 
 package eu.stratosphere.nephele.taskmanager;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
@@ -35,7 +67,11 @@ import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.profiling.ProfilingUtils;
 import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
-import eu.stratosphere.nephele.protocols.*;
+import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
+import eu.stratosphere.nephele.protocols.ChannelLookupProtocol;
+import eu.stratosphere.nephele.protocols.InputSplitProviderProtocol;
+import eu.stratosphere.nephele.protocols.JobManagerProtocol;
+import eu.stratosphere.nephele.protocols.TaskOperationProtocol;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
@@ -45,18 +81,6 @@ import eu.stratosphere.nephele.taskmanager.runtime.ExecutorThreadFactory;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 import eu.stratosphere.nephele.util.SerializableArrayList;
 import eu.stratosphere.util.StringUtils;
-import org.apache.commons.cli.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A task manager receives tasks from the job manager and executes them. After having executed them
@@ -150,7 +174,7 @@ public class TaskManager implements TaskOperationProtocol {
 		try {
 			jobManager = RPC.getProxy(JobManagerProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize connection to JobManager: " + e.getMessage(), e);
 		}
 		
@@ -179,7 +203,7 @@ public class TaskManager implements TaskOperationProtocol {
 			globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress, 
 				NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize connection to global input split provider: " + e.getMessage(), e);
 		}
 		this.globalInputSplitProvider = globalInputSplitProvider;
@@ -189,7 +213,7 @@ public class TaskManager implements TaskOperationProtocol {
 		try {
 			lookupService = RPC.getProxy(ChannelLookupProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize channel lookup protocol. " + e.getMessage(), e);
 		}
 		this.lookupService = lookupService;
@@ -200,7 +224,7 @@ public class TaskManager implements TaskOperationProtocol {
 			accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress,
 					NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
 		}
 		this.accumulatorProtocolProxy = accumulatorProtocolStub;
@@ -212,7 +236,7 @@ public class TaskManager implements TaskOperationProtocol {
 			taskManagerServer = RPC.getServer(this, taskManagerAddress.getHostName(), ipcPort, handlerCount);
 			taskManagerServer.start();
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to taskmanager server. " + e.getMessage(), e);
 		}
 		this.taskManagerServer = taskManagerServer;
@@ -245,7 +269,7 @@ public class TaskManager implements TaskOperationProtocol {
 			byteBufferedChannelManager = new ByteBufferedChannelManager(this.lookupService,
 				this.localInstanceConnectionInfo);
 		} catch (IOException ioe) {
-			LOG.error(StringUtils.stringifyException(ioe));
+			LOG.error(ioe);
 			throw new Exception("Failed to instantiate Byte-buffered channel manager. " + ioe.getMessage(), ioe);
 		}
 		this.byteBufferedChannelManager = byteBufferedChannelManager;
@@ -295,7 +319,7 @@ public class TaskManager implements TaskOperationProtocol {
 				break;
 			}
 			} catch (IOException e) {
-				LOG.error("Unable to allocate port " + e.getMessage(), e);
+				LOG.error("Unable to close the server socket " + e.getMessage(), e);
 			}
 		}
         if (serverSocket != null && !serverSocket.isClosed()) {
@@ -342,7 +366,7 @@ public class TaskManager implements TaskOperationProtocol {
 		try {
 			taskManager = new TaskManager(1);
 		} catch (Exception e) {
-			LOG.fatal("Taskmanager startup failed:" + StringUtils.stringifyException(e));
+			LOG.fatal("Taskmanager startup failed", e);
 			System.exit(FAILURERETURNCODE);
 		}
 		// Run the main I/O loop
@@ -762,7 +786,7 @@ public class TaskManager implements TaskOperationProtocol {
 				this.jobManager.updateTaskExecutionState(new TaskExecutionState(jobID, id, newExecutionState,
 					optionalDescription));
 			} catch (IOException e) {
-				LOG.error(StringUtils.stringifyException(e), e);
+				LOG.error(e);
 			}
 		}
 	}
@@ -817,7 +841,7 @@ public class TaskManager implements TaskOperationProtocol {
 				this.executorService.awaitTermination(5000L, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.error(StringUtils.stringifyException(e));
+                LOG.error(e);
             }
         }
 

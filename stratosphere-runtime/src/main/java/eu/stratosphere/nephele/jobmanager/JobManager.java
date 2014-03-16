@@ -190,8 +190,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				ipcAddress = InetAddress.getByName(ipcAddressString);
 			} catch (UnknownHostException e) {
-				LOG.error("Cannot convert " + ipcAddressString + " to an IP address: "
-					+ StringUtils.stringifyException(e), e);
+				LOG.error("Cannot convert " + ipcAddressString + " to an IP address: ", e);
 				System.exit(FAILURERETURNCODE);
 			}
 		}
@@ -237,7 +236,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				handlerCount);
 			this.jobManagerServer.start();
 		} catch (IOException ioe) {
-			LOG.error("Cannot start RPC server: " + StringUtils.stringifyException(ioe), ioe);
+		    LOG.error("Cannot start RPC server", ioe);
 			System.exit(FAILURERETURNCODE);
 		}
 
@@ -249,7 +248,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				this.instanceManager = new LocalInstanceManager();
 			} catch (RuntimeException rte) {
-				LOG.fatal("Cannot instantiate local instance manager: " + StringUtils.stringifyException(rte), rte);
+				LOG.fatal("Cannot instantiate local instance manager", rte);
 				System.exit(FAILURERETURNCODE);
 			}
 		} else {
@@ -344,7 +343,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				this.executorService.awaitTermination(5000L, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-			    LOG.error(StringUtils.stringifyException(e), e);
+			    LOG.error(e);
 			}
 		}
 
@@ -635,7 +634,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			LibraryCacheManager.unregister(executionGraph.getJobID());
 		} catch (IOException ioe) {
 			if (LOG.isWarnEnabled()) {
-				LOG.warn(StringUtils.stringifyException(ioe));
+				LOG.warn(ioe);
 			}
 		}
 	}
@@ -1005,7 +1004,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				try {
 					instance.killTaskManager();
 				} catch (IOException ioe) {
-					LOG.error(StringUtils.stringifyException(ioe));
+					LOG.error(ioe);
 				}
 			}
 		};
@@ -1098,7 +1097,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 						it2.next().logBufferUtilization();
 					}
 				} catch (IOException ioe) {
-					LOG.error(StringUtils.stringifyException(ioe));
+					LOG.error(ioe);
 				}
 
 			}
@@ -1142,7 +1141,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
                 try {
                     instance.checkLibraryAvailability(jobID);
                 } catch (IOException ioe) {
-                    LOG.error("Cannot check library availability: " + StringUtils.stringifyException(ioe));
+                    LOG.error("Cannot check library availability", ioe);
                 }
 
                 final List<TaskDeploymentDescriptor> submissionList = new SerializableArrayList<TaskDeploymentDescriptor>();
@@ -1240,7 +1239,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		} catch (FileNotFoundException e) {
 			LOG.error(e.getMessage(), e);
 		} catch (Exception e) {
-			LOG.error("Cannot instantiate info server: " + StringUtils.stringifyException(e), e);
+			LOG.error("Cannot instantiate info server", e);
 		}
 	}
 	
