@@ -77,6 +77,7 @@ public class HadoopInputFormatWrapper<K, V> implements InputFormat<Record, Hadoo
 		HadoopInputSplitWrapper[] hiSplit = new HadoopInputSplitWrapper[splitArray.length];
 		for(int i=0;i<splitArray.length;i++){
 			hiSplit[i] = new HadoopInputSplitWrapper(splitArray[i], jobConf);
+
 		}
 		return hiSplit;
 	}
@@ -88,7 +89,7 @@ public class HadoopInputFormatWrapper<K, V> implements InputFormat<Record, Hadoo
 
 	@Override
 	public void open(HadoopInputSplitWrapper split) throws IOException {
-		this.recordReader = this.hadoopInputFormat.getRecordReader(split.getHadoopInputSplit(), jobConf, new DummyHadoopReporter());
+   		this.recordReader = this.hadoopInputFormat.getRecordReader(split.getHadoopInputSplit(), jobConf, new DummyHadoopReporter());
 		key = this.recordReader.createKey();
 		value = this.recordReader.createValue();
 		this.fetched = false;

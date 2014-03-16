@@ -43,7 +43,7 @@ public class HadoopInputSplitWrapper implements InputSplit {
 	
 	public HadoopInputSplitWrapper(org.apache.hadoop.mapred.InputSplit hInputSplit, JobConf jobconf) {
 		this.hadoopInputSplit = hInputSplit;
-		this.hadoopInputSplitTypeName = hInputSplit.getClass().getCanonicalName();
+		this.hadoopInputSplitTypeName = hInputSplit.getClass().getName();
 		this.jobConf=jobconf;
 	}
 	
@@ -62,10 +62,11 @@ public class HadoopInputSplitWrapper implements InputSplit {
 			try {
 				Class inputSplit = Class.forName(hadoopInputSplitTypeName );
 				this.hadoopInputSplit = (org.apache.hadoop.mapred.InputSplit) WritableFactories.newInstance( inputSplit );
-			} catch (Exception e) {
-				throw new RuntimeException("Unable to create InputSplit", e);
 			}
-		}
+            catch (Exception e) {
+                throw new RuntimeException("Unable to create InputSplit", e);
+            }
+        }
 		this.hadoopInputSplit.readFields(in);
 	}
 
