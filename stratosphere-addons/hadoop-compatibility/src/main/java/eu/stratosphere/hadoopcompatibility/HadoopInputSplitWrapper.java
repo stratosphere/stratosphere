@@ -62,12 +62,39 @@ public class HadoopInputSplitWrapper implements InputSplit {
 			try {
 				Class inputSplit = Class.forName(hadoopInputSplitTypeName );
 				this.hadoopInputSplit = (org.apache.hadoop.mapred.InputSplit) WritableFactories.newInstance( inputSplit );
-			} catch (Exception e) {
-				throw new RuntimeException("Unable to create InputSplit", e);
 			}
-		}
+            // Handling the case when the InputSplit class is nested in its respective InputFormat class.
+            catch (ClassNotFoundException c) {
+                try {
+                    String nestedHadoopInputSplitTypeName = buildNestedInputSplitTypeName(hadoopInputSplitTypeName);
+                    Class inputSplit = Class.forName(nestedHadoopInputSplitTypeName);
+                    hadoopInputSplit = (org.apache.hadoop.mapred.InputSplit) WritableFactories.newInstance( inputSplit);
+                }
+                catch(Exception e){
+                    throw new RuntimeException("Unable to create InputSplit", e);
+                }
+            }
+        }
 		this.hadoopInputSplit.readFields(in);
 	}
+
+
+    /**
+     * This method builds an appropriate InputSplit type name
+     * in the special case (e.g. in Parquet) when it is a nested class in its respective InputFormat as in:
+     *     public class InputFormatClass {
+     *         private class InputSplitType {
+     *         }
+     *     }
+     *
+     *     The method returns the String: InputFormatClass$InputFormatClass
+     */
+    private String buildNestedInputSplitTypeName(String regularInputSplitTypeName) {
+        String inputFormatClassName = regularInputSplitTypeName.substring(0,regularInputSplitTypeName.lastIndexOf("."));
+        String inputSplitClassBareName = regularInputSplitTypeName.substring(regularInputSplitTypeName.lastIndexOf(".")+1);
+        return inputFormatClassName + "$" + inputSplitClassBareName;
+
+    }
 
 	@Override
 	public int getSplitNumber() {

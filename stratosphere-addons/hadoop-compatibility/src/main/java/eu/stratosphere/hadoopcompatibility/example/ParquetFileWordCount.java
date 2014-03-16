@@ -13,20 +13,37 @@ package eu.stratosphere.hadoopcompatibility.example;
  **********************************************************************************************************************/
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.client.LocalExecutor;
-import org.apache.hadoop.fs.Path;
 import eu.stratosphere.api.common.operators.FileDataSink;
 import eu.stratosphere.api.java.record.io.CsvOutputFormat;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator;
+import eu.stratosphere.client.LocalExecutor;
 import eu.stratosphere.hadoopcompatibility.HadoopDataSource;
+import eu.stratosphere.hadoopcompatibility.datatypes.parquet.DefaultParquetTypeConverter;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.StringValue;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import parquet.hadoop.ParquetInputFormat;
 
-public class SequenceFileWordCount extends WordCount {
+import parquet.hadoop.example.GroupReadSupport;
+import parquet.hadoop.mapred.DeprecatedParquetInputFormat;
 
+public class ParquetFileWordCount extends WordCount {
+
+    // A necessity for parquet in terms of schema.
+    public static class ExampleGroupDeprecatedParquetInputFormat extends DeprecatedParquetInputFormat {
+
+        public ExampleGroupDeprecatedParquetInputFormat(JobConf conf) {
+            ParquetInputFormat.setReadSupportClass(conf, GroupReadSupport.class);
+        }
+
+        //This empty constructor is being used by Hadoop.
+        public ExampleGroupDeprecatedParquetInputFormat() {
+
+        }
+    }
 
     @Override
     public Plan getPlan(String... args) {
@@ -35,8 +52,9 @@ public class SequenceFileWordCount extends WordCount {
         String dataInput = (args.length > 1 ? args[1] : "");
         String output = (args.length > 2 ? args[2] : "");
 
-        HadoopDataSource source = new HadoopDataSource(new SequenceFileInputFormat(), new JobConf(), "Input Lines");
-        SequenceFileInputFormat.addInputPath(source.getJobConf(), new Path(dataInput));
+        Configuration configuration =new JobConf();
+        HadoopDataSource source = new HadoopDataSource(new ExampleGroupDeprecatedParquetInputFormat((JobConf) configuration), (JobConf) configuration, "Input Lines", new DefaultParquetTypeConverter());
+        ExampleGroupDeprecatedParquetInputFormat.addInputPath(source.getJobConf(), new Path(dataInput));
 
         MapOperator mapper = MapOperator.builder(new TokenizeLine())
                 .input(source)
@@ -53,7 +71,7 @@ public class SequenceFileWordCount extends WordCount {
                 .field(StringValue.class, 0)
                 .field(IntValue.class, 1);
 
-        Plan plan = new Plan(out, "WordCount Example with a Sequence File as Input");
+        Plan plan = new Plan(out, "WordCount Example with a Parquet File as Input");
         plan.setDefaultParallelism(numSubTasks);
         return plan;
     }
@@ -70,5 +88,4 @@ public class SequenceFileWordCount extends WordCount {
         Plan plan = wc.getPlan(args);
         LocalExecutor.execute(plan);
     }
-
 }

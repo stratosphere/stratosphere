@@ -23,13 +23,11 @@
 			<artifactId>stratosphere-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>stratosphere-clients</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
         <dependency>
             <groupId>eu.stratosphere</groupId>
             <artifactId>stratosphere-tests</artifactId>
@@ -43,7 +41,13 @@
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
-
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <!-- TODO The latest version cannot be supported at the moment,
+                 as work is needed on Hadoop Counters in Stratosphere.-->
+            <version>1.0.1</version>
+        </dependency>
 	</dependencies>
 
 	<profiles>
