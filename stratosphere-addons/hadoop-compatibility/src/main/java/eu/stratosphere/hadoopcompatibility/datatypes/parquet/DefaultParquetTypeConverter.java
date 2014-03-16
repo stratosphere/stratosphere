@@ -38,12 +38,12 @@ public class DefaultParquetTypeConverter<K,V>  implements HadoopTypeConverter<K,
         stratosphereRecord.setField(1, convert(hadoopValue));
     }
 
-    private Value convert(Object parquetType) {
+    private Value convert(V parquetType) {
 
         //The container is a wrapper for types, used when working with its deprecated mapred InputFormat.
        if (parquetType instanceof Container) {
             Object value = ((Container)parquetType).get();
-            return convert(value); //Converting the content of the wrapper, which is what we need.
+            return convert((V) value); //Converting the content of the wrapper, which is what we need.
        }
 
        if (parquetType instanceof SimpleGroup) { //An example schema which may be found in parquet-column.

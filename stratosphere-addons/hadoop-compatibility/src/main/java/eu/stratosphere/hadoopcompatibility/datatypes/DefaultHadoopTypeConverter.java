@@ -13,9 +13,25 @@
 
 package eu.stratosphere.hadoopcompatibility.datatypes;
 
-import eu.stratosphere.types.*;
-import org.apache.hadoop.io.*;
 
+import eu.stratosphere.types.Record;
+import eu.stratosphere.types.Value;
+import eu.stratosphere.types.StringValue;
+import eu.stratosphere.types.LongValue;
+import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.FloatValue;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.BooleanValue;
+import eu.stratosphere.types.ByteValue;
+import eu.stratosphere.types.NullValue;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.io.NullWritable;
 
 /**
  * Converter for the default hadoop writables.
