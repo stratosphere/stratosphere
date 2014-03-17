@@ -18,15 +18,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import eu.stratosphere.api.common.operators.*;
+import eu.stratosphere.pact.compiler.util.*;
+import eu.stratosphere.types.LongValue;
 import junit.framework.Assert;
 
 import org.junit.Test;
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.api.common.operators.BulkIteration;
-import eu.stratosphere.api.common.operators.FileDataSink;
-import eu.stratosphere.api.common.operators.FileDataSource;
-import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.java.record.operators.CoGroupOperator;
 import eu.stratosphere.api.java.record.operators.CrossOperator;
 import eu.stratosphere.api.java.record.operators.JoinOperator;
@@ -36,13 +35,6 @@ import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.plan.OptimizedPlan;
 import eu.stratosphere.compiler.plan.SinkPlanNode;
 import eu.stratosphere.compiler.plantranslate.NepheleJobGraphGenerator;
-import eu.stratosphere.pact.compiler.util.DummyCoGroupStub;
-import eu.stratosphere.pact.compiler.util.DummyCrossStub;
-import eu.stratosphere.pact.compiler.util.DummyInputFormat;
-import eu.stratosphere.pact.compiler.util.DummyMatchStub;
-import eu.stratosphere.pact.compiler.util.DummyOutputFormat;
-import eu.stratosphere.pact.compiler.util.IdentityMap;
-import eu.stratosphere.pact.compiler.util.IdentityReduce;
 import eu.stratosphere.types.IntValue;
 
 /**
@@ -658,6 +650,230 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 			compileNoStats(plan);
 		}
 		catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * Test to ensure that sourceA is inside as well as outside of the iteration the same
+	 * node.
+	 *
+	 * <pre>
+	 *       (SRC A)               (SRC B)
+	 *      /       \             /       \
+	 *  (SINK 1)   (ITERATION)    |     (SINK 2)
+	 *             /        \     /
+	 *         (SINK 3)     (CROSS => NEXT PARTIAL SOLUTION)
+	 * </pre>
+	 */
+	@Test
+	public void testClosure() {
+		FileDataSource sourceA = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source 1");
+		FileDataSource sourceB = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source 2");
+
+		FileDataSink sink1 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, sourceA, "Sink 1");
+		FileDataSink sink2 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, sourceB, "Sink 2");
+
+		BulkIteration iteration = new BulkIteration("Loop");
+		iteration.setInput(sourceA);
+		iteration.setMaximumNumberOfIterations(10);
+
+		CrossOperator stepFunction = CrossOperator.builder(DummyCrossStub.class).name("StepFunction").
+				input1(iteration.getPartialSolution()).
+				input2(sourceB).
+				build();
+
+		iteration.setNextPartialSolution(stepFunction);
+
+		FileDataSink sink3 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Sink 3");
+
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink1);
+		sinks.add(sink2);
+		sinks.add(sink3);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * <pre>
+	 *       (SRC A)         (SRC B)          (SRC C)
+	 *      /       \       /                /       \
+	 *  (SINK 1) (DELTA ITERATION)          |     (SINK 2)
+	 *             /    |   \               /
+	 *         (SINK 3) |   (CROSS => NEXT WORKSET)
+	 *                  |             |
+	 *                (JOIN => SOLUTION SET DELTA)
+	 * </pre>
+	 */
+	@Test
+	public void testClosureDeltaIteration() {
+		FileDataSource sourceA = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source 1");
+		FileDataSource sourceB = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source 2");
+		FileDataSource sourceC = new FileDataSource(DummyInputFormat.class, IN_FILE, "Source 3");
+
+		FileDataSink sink1 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, sourceA, "Sink 1");
+		FileDataSink sink2 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, sourceC, "Sink 2");
+
+		DeltaIteration iteration = new DeltaIteration(0, "Loop");
+		iteration.setInitialSolutionSet(sourceA);
+		iteration.setInitialWorkset(sourceB);
+		iteration.setMaximumNumberOfIterations(10);
+
+		CrossOperator nextWorkset = CrossOperator.builder(DummyCrossStub.class).name("Next workset").
+				input1(iteration.getWorkset()).
+				input2(sourceC).
+				build();
+
+		JoinOperator solutionSetDelta = JoinOperator.builder(DummyMatchStub.class, LongValue.class,0,0).
+				name("Next solution set.").
+				input1(nextWorkset).
+				input2(iteration.getSolutionSet()).
+				build();
+
+		iteration.setNextWorkset(nextWorkset);
+		iteration.setSolutionSetDelta(solutionSetDelta);
+
+		FileDataSink sink3 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Sink 3");
+
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink1);
+		sinks.add(sink2);
+		sinks.add(sink3);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * <prev>
+	 *                  +----Iteration-------+
+	 *                  |                    |
+	 *       /---------< >---------join-----< >---sink
+	 *      / (Solution)|           /        |
+	 *     /            |          /         |
+	 *    /--map-------< >----\   /       /--|
+	 *   /     (Workset)|      \ /       /   |
+	 * src-map          |     join------/    |
+	 *   \   		    |      /             |
+	 *    \             +-----/--------------+
+	 *     \                 /
+	 *      \--reduce-------/
+	 * <p/>
+	 * </prev>
+	 */
+	@Test
+	public void testDeltaIterationWithStaticInput() {
+		FileDataSource source = new FileDataSource(DummyInputFormat.class, IN_FILE, "source");
+
+		MapOperator mappedSource = MapOperator.builder(IdentityMap.class).
+				input(source).
+				name("Identity mapped source").
+				build();
+
+		ReduceOperator reducedSource = ReduceOperator.builder(IdentityReduce.class).
+				input(source).
+				name("Identity reduce source").
+				build();
+
+		DeltaIteration iteration = new DeltaIteration(0,"Loop");
+		iteration.setMaximumNumberOfIterations(10);
+		iteration.setInitialSolutionSet(source);
+		iteration.setInitialWorkset(mappedSource);
+
+		JoinOperator nextWorkset = JoinOperator.builder(DummyNonPreservingMatchStub.class, IntValue.class, 0,0).
+				input1(iteration.getWorkset()).
+				input2(reducedSource).
+				name("Next work set").
+				build();
+
+		JoinOperator solutionSetDelta = JoinOperator.builder(DummyNonPreservingMatchStub.class, IntValue.class, 0,
+				0).
+				input1(iteration.getSolutionSet()).
+				input2(nextWorkset).
+				name("Solution set delta").
+				build();
+
+		iteration.setNextWorkset(nextWorkset);
+		iteration.setSolutionSetDelta(solutionSetDelta);
+
+		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * <prev>
+	 *             +----Delta Iteration------+
+	 *             |                         |
+	 *    /--map--< >----\                   |
+	 *   /         |      \         /-------< >---sink
+	 * src-map     |     join------/         |
+	 *   \         |      /                  |
+	 *    \        +-----/-------------------+
+	 *     \            /
+	 *      \--reduce--/
+	 * <p/>
+	 * </prev>
+	 */
+	@Test
+	public void testIterationWithStaticInput() {
+		FileDataSource source = new FileDataSource(DummyInputFormat.class, IN_FILE, "source");
+
+		MapOperator mappedSource = MapOperator.builder(IdentityMap.class).
+				input(source).
+				name("Identity mapped source").
+				build();
+
+		ReduceOperator reducedSource = ReduceOperator.builder(IdentityReduce.class).
+				input(source).
+				name("Identity reduce source").
+				build();
+
+		BulkIteration iteration = new BulkIteration("Loop");
+		iteration.setInput(mappedSource);
+		iteration.setMaximumNumberOfIterations(10);
+
+		JoinOperator nextPartialSolution = JoinOperator.builder(DummyMatchStub.class, IntValue.class, 0,0).
+				input1(iteration.getPartialSolution()).
+				input2(reducedSource).
+				name("Next partial solution").
+				build();
+
+		iteration.setNextPartialSolution(nextPartialSolution);
+
+		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
+		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		sinks.add(sink);
+
+		Plan plan = new Plan(sinks);
+
+		try{
+			compileNoStats(plan);
+		}catch(Exception e){
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
