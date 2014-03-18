@@ -42,6 +42,8 @@ public abstract class FileSystem {
 	private static final String DISTRIBUTED_FILESYSTEM_CLASS = "eu.stratosphere.runtime.fs.hdfs.DistributedFileSystem";
 
 	private static final String S3_FILESYSTEM_CLASS = "eu.stratosphere.runtime.fs.s3.S3FileSystem";
+    
+        private static final String TACHYON_FILESYSTEM_CLASS = "eu.stratosphere.fs.tachyon.TachyonFileSystem";
 
 	
 	/** Object used to protect calls to specific methods.*/
@@ -153,6 +155,7 @@ public abstract class FileSystem {
 		FSDIRECTORY.put("hdfs", DISTRIBUTED_FILESYSTEM_CLASS);
 		FSDIRECTORY.put("file", LOCAL_FILESYSTEM_CLASS);
 		FSDIRECTORY.put("s3", S3_FILESYSTEM_CLASS);
+                FSDIRECTORY.put("tachyon", TACHYON_FILESYSTEM_CLASS);
 	}
 
 	/**

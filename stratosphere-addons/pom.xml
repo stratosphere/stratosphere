@@ -22,6 +22,7 @@
 		<module>spargel</module>
 		<module>swt-visualization</module>
 		<module>hadoop-compatibility</module>
+                <module>tachyon</module>
 	</modules>
 	
 	<!-- See main pom.xml for explanation of profiles -->

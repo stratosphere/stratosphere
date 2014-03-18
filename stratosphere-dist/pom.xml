@@ -76,6 +76,12 @@
 			<artifactId>swt-visualization</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+                
+                <dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>tachyon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<!-- See main pom.xml for explanation of profiles -->
