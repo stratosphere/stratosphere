@@ -6,6 +6,7 @@ import eu.stratosphere.core.fs.FSDataOutputStream;
 import eu.stratosphere.core.fs.FileStatus;
 import eu.stratosphere.core.fs.FileSystem;
 import eu.stratosphere.core.fs.Path;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import tachyon.client.TachyonFS;
 import tachyon.client.WriteType;
 import tachyon.thrift.ClientBlockInfo;
 import tachyon.thrift.ClientFileInfo;
+import tachyon.thrift.FileDoesNotExistException;
 import tachyon.thrift.NetAddress;
 
 /**
@@ -70,14 +72,18 @@ public class TachyonFileSystem extends FileSystem {
      */
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
-        List<ClientFileInfo> tachyInfo = fileSystem.listStatus(pathToString(path.getParent()));
-        int targetID = fileSystem.getFileId(pathToString(path));
-        for (int x = 0; x < tachyInfo.size(); x++) {
-            if (tachyInfo.get(x).id==targetID) {
-                return new TachyonFileStatus(tachyInfo.get(x), name);
+        try {
+            List<ClientFileInfo> tachyInfo = fileSystem.listStatus(pathToString(path.getParent()));
+            int targetID = fileSystem.getFileId(pathToString(path));
+            for (int x = 0; x < tachyInfo.size(); x++) {
+                if (tachyInfo.get(x).id == targetID) {
+                    return new TachyonFileStatus(tachyInfo.get(x), name);
+                }
             }
+            return null;
+        } catch (IOException ioe) {
+            throw new FileNotFoundException();
         }
-        return null;
     }
 
     @Override
@@ -181,7 +187,7 @@ public class TachyonFileSystem extends FileSystem {
      * @throws IOException 
      */
     @Override
-    public FSDataOutputStream create(Path path, boolean overwrite, int bufferSize, short replication, long blockSize) 
+    public FSDataOutputStream create(Path path, boolean overwrite, int bufferSize, short replication, long blockSize)
             throws IOException {
         String filePath = pathToString(path);
         int fileID;
