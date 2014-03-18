@@ -75,4 +75,38 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 	public IntValue getLastResult() {
 		return this.result;
 	}
+	
+	public static final int parseField(byte[] bytes, int startPos, int length, char delim) {
+		long val = 0;
+		boolean neg = false;
+		
+		
+		if (bytes[startPos] == '-') {
+			neg = true;
+			startPos++;
+			length--;
+			// check for empty field with only the sign
+			if (length == 0 || bytes[startPos] == delim) {
+				throw new NumberFormatException("Orphaned minus sign.");
+			}
+		}
+		
+		for (; length > 0; startPos++, length--) {
+			if (bytes[startPos] == delim) {
+				return neg ? -(int)val : (int)val;
+			}
+			if (bytes[startPos] < 48 || bytes[startPos] > 57) {
+				throw new NumberFormatException();
+			}
+			val *= 10;
+			val += bytes[startPos] - 48;
+			
+			if (val > OVERFLOW_BOUND && (!neg || val > UNDERFLOW_BOUND)) {
+				throw new NumberFormatException("Number format Overlfow/Underflow");
+			}
+		}
+		return neg ? -(int)val : (int)val;
+	}
+
+	
 }
