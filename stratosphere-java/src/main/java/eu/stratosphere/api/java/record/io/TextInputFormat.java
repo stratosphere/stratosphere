@@ -59,12 +59,12 @@ public class TextInputFormat extends DelimitedInputFormat {
 	/**
 	 * Code of \r, used to remove \r from a line when the line ends with \r\n
 	 */
-	private static final byte CARRIAGE_RETURN = 13;
+	private static final byte CARRIAGE_RETURN = (byte) '\r';
 
 	/**
 	 * Code of \n, used to identify if \n is used as delimiter
 	 */
-	private static final byte NEW_LINE = 10;
+	private static final byte NEW_LINE = (byte) '\n';
 
 	
 	// --------------------------------------------------------------------------------------------
