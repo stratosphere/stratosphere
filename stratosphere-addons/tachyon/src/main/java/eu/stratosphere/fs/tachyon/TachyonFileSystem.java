@@ -82,7 +82,11 @@ public class TachyonFileSystem extends FileSystem {
             }
             return null;
         } catch (IOException ioe) {
-            throw new FileNotFoundException();
+            if (ioe.getCause() instanceof FileDoesNotExistException) {
+                throw new FileNotFoundException(ioe.getCause().getMessage());
+            } else {
+                throw ioe;
+            }
         }
     }
 
