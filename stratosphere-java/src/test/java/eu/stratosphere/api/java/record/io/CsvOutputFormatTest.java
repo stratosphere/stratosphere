@@ -50,7 +50,7 @@ public class CsvOutputFormatTest {
 	public void setup() throws IOException {
 		this.tempFile = File.createTempFile("test_output", "tmp");
 		this.format.setOutputFilePath(new Path(tempFile.toURI()));
-		this.format.setWriteMode(WriteMode.OVERWRITE);
+		this.format.setWriteMode(WriteMode.FORCE_OVERWRITE);
 	}
 	
 	@After
