@@ -93,7 +93,7 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 		
 		for (; length > 0; startPos++, length--) {
 			if (bytes[startPos] == delim) {
-				return neg ? -(int)val : (int)val;
+				return (int) (neg ? -val : val);
 			}
 			if (bytes[startPos] < 48 || bytes[startPos] > 57) {
 				throw new NumberFormatException();
@@ -105,7 +105,7 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 				throw new NumberFormatException("Number format Overlfow/Underflow");
 			}
 		}
-		return neg ? -(int)val : (int)val;
+		return (int) (neg ? -val : val);
 	}
 
 	
