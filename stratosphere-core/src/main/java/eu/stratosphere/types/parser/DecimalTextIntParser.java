@@ -102,7 +102,7 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 			val += bytes[startPos] - 48;
 			
 			if (val > OVERFLOW_BOUND && (!neg || val > UNDERFLOW_BOUND)) {
-				throw new NumberFormatException("Number format Overlfow/Underflow");
+				throw new NumberFormatException("Number format Overflow/Underflow");
 			}
 		}
 		return (int) (neg ? -val : val);
