@@ -25,6 +25,7 @@ import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.functions.KeySelector;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.functions.ReduceFunction;
+import eu.stratosphere.api.java.io.CollectionOutputFormat;
 import eu.stratosphere.api.java.io.CsvOutputFormat;
 import eu.stratosphere.api.java.io.PrintingOutputFormat;
 import eu.stratosphere.api.java.io.TextOutputFormat;
@@ -35,6 +36,9 @@ import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.core.fs.Path;
+
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  *
@@ -194,7 +198,10 @@ public abstract class DataSet<T> {
 	public void writeAsText(String filePath) {
 		output(new TextOutputFormat<T>(new Path(filePath)));
 	}
-	
+
+	public <X extends Serializable> void writeAsCollection(Collection<X> out) {
+		output((OutputFormat<T>) (new CollectionOutputFormat<X>(out)));
+	}
 	
 	public void writeAsCsv(String filePath) {
 		writeAsCsv(filePath, CsvOutputFormat.DEFAULT_LINE_DELIMITER, CsvOutputFormat.DEFAULT_FIELD_DELIMITER);
