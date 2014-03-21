@@ -28,19 +28,40 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 	
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delimiter, IntValue reusable) {
+		try {
+			int end = parseIntField(bytes, startPos, limit, delimiter, reusable);
+			this.result = reusable;
+			return end;
+		} 
+		catch (NumberFormatException e) {
+			if (e.getMessage() == null) {
+				setErrorState(ParseErrorState.NUMERIC_VALUE_ILLEGAL_CHARACTER);
+				return -1;
+			}
+			else if (e.getMessage().equals("Orphaned minus sign.")) {
+				setErrorState(ParseErrorState.NUMERIC_VALUE_ORPHAN_SIGN);
+				return -1;
+			}
+			else if (e.getMessage().equals("Number format Overflow/Underflow")) {
+				setErrorState(ParseErrorState.NUMERIC_VALUE_OVERFLOW_UNDERFLOW);
+				return -1;
+			}
+			return -1;
+		}
+		
+	}
+	
+	private static int parseIntField(byte[] bytes, int startPos, int limit, char delimiter, IntValue reusable) {
 		long val = 0;
 		boolean neg = false;
-		
-		this.result = reusable;
-		
+				
 		if (bytes[startPos] == '-') {
 			neg = true;
 			startPos++;
 			
 			// check for empty field with only the sign
 			if (startPos == limit || bytes[startPos] == delimiter) {
-				setErrorState(ParseErrorState.NUMERIC_VALUE_ORPHAN_SIGN);
-				return -1;
+				throw new NumberFormatException("Orphaned minus sign.");
 			}
 		}
 		
@@ -50,15 +71,13 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 				return i+1;
 			}
 			if (bytes[i] < 48 || bytes[i] > 57) {
-				setErrorState(ParseErrorState.NUMERIC_VALUE_ILLEGAL_CHARACTER);
-				return -1;
+				throw new NumberFormatException();
 			}
 			val *= 10;
 			val += bytes[i] - 48;
 			
 			if (val > OVERFLOW_BOUND && (!neg || val > UNDERFLOW_BOUND)) {
-				setErrorState(ParseErrorState.NUMERIC_VALUE_OVERFLOW_UNDERFLOW);
-				return -1;
+				throw new NumberFormatException("Number format Overflow/Underflow");
 			}
 		}
 		
@@ -77,35 +96,11 @@ public class DecimalTextIntParser extends FieldParser<IntValue> {
 	}
 	
 	public static final int parseField(byte[] bytes, int startPos, int length, char delim) {
-		long val = 0;
-		boolean neg = false;
+		IntValue iv = new IntValue();
 		
+		parseIntField(bytes, startPos, startPos+length, delim, iv);
 		
-		if (bytes[startPos] == '-') {
-			neg = true;
-			startPos++;
-			length--;
-			// check for empty field with only the sign
-			if (length == 0 || bytes[startPos] == delim) {
-				throw new NumberFormatException("Orphaned minus sign.");
-			}
-		}
-		
-		for (; length > 0; startPos++, length--) {
-			if (bytes[startPos] == delim) {
-				return (int) (neg ? -val : val);
-			}
-			if (bytes[startPos] < 48 || bytes[startPos] > 57) {
-				throw new NumberFormatException();
-			}
-			val *= 10;
-			val += bytes[startPos] - 48;
-			
-			if (val > OVERFLOW_BOUND && (!neg || val > UNDERFLOW_BOUND)) {
-				throw new NumberFormatException("Number format Overflow/Underflow");
-			}
-		}
-		return (int) (neg ? -val : val);
+		return iv.getValue();
 	}
 
 	
