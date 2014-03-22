@@ -42,11 +42,18 @@
             <type>test-jar</type>
         </dependency>
         <dependency>
+            <groupId>eu.stratosphere</groupId>
+            <artifactId>stratosphere-artifacts</artifactId>
+            <version>0.5-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>parquet-hadoop</artifactId>
             <!-- TODO The latest version cannot be supported at the moment,
                  as work is needed on Hadoop Counters in Stratosphere.-->
             <version>1.0.1</version>
+            <scope>test</scope>
         </dependency>
 	</dependencies>
 

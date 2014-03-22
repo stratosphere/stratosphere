@@ -13,7 +13,7 @@ package eu.stratosphere.test.hadoopcompatibility;
  **********************************************************************************************************************/
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.hadoopcompatibility.example.ParquetFileWordCount;
+import eu.stratosphere.addons.parquet.ParquetFileWordCount;
 import eu.stratosphere.test.testdata.WordCountData;
 import eu.stratosphere.test.util.TestBase2;
 
