@@ -16,6 +16,7 @@ package eu.stratosphere.api.java.io;
 
 
 import eu.stratosphere.api.common.io.OutputFormat;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.configuration.Configuration;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -26,7 +27,7 @@ import java.util.Collection;
 /**
  *  An output format that writes record into collection
  */
-public class CollectionOutputFormat<T extends Serializable> implements OutputFormat<T> {
+public class CollectionOutputFormat<T> implements OutputFormat<T> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -34,8 +35,11 @@ public class CollectionOutputFormat<T extends Serializable> implements OutputFor
 
 	private transient Collection<T> taskResult;
 
-	public CollectionOutputFormat(Collection<T> out) {
+	public TypeSerializer<T> typeSerializer;
+
+	public CollectionOutputFormat(Collection<T> out, TypeSerializer<T> serializer) {
 		this.resultWrapper = out;
+		this.typeSerializer = serializer;
 	}
 
 
@@ -47,24 +51,26 @@ public class CollectionOutputFormat<T extends Serializable> implements OutputFor
 	@Override
 	public void open(int taskNumber, int numTasks) throws IOException {
 		try {
-			this.taskResult = (Collection<T>) resultWrapper.getClass().newInstance();
+			this.taskResult = (Collection<T>) this.resultWrapper.getClass().newInstance();
 		} catch (InstantiationException e) {
-			e.printStackTrace();
+			throw new IOException(e.getMessage());
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			throw new IOException(e.getMessage());
 		}
 	}
 
 	@Override
 	public void writeRecord(T record) throws IOException {
-		taskResult.add(SerializationUtils.clone(record));
+		T recordCopy = this.typeSerializer.createInstance();
+		this.typeSerializer.copy(record, recordCopy);
+		this.taskResult.add(recordCopy);
 	}
 
 
 	@Override
 	public void close() throws IOException {
 		Collection<T> result = (Collection<T>) this.resultWrapper;
-		result.addAll(taskResult);
+		result.addAll(this.taskResult);
 	}
 
 

@@ -199,8 +199,8 @@ public abstract class DataSet<T> {
 		output(new TextOutputFormat<T>(new Path(filePath)));
 	}
 
-	public <X extends Serializable> void writeAsCollection(Collection<X> out) {
-		output((OutputFormat<T>) (new CollectionOutputFormat<X>(out)));
+	public void writeAsCollection(Collection<T> out) {
+		output(new CollectionOutputFormat<T>(out, this.type.createSerializer()));
 	}
 	
 	public void writeAsCsv(String filePath) {
