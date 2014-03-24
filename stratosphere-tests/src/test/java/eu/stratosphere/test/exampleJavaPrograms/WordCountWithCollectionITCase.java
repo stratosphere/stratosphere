@@ -17,6 +17,7 @@ package eu.stratosphere.test.exampleJavaPrograms;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.aggregation.Aggregations;
+import eu.stratosphere.api.java.io.CollectionOutputFormat;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.example.java.wordcount.WordCount;
 import eu.stratosphere.test.testdata.WordCountData;
@@ -57,7 +58,7 @@ public class WordCountWithCollectionITCase extends JavaProgramTestBase {
 		DataSet<Tuple2<String, Integer>> words = text.flatMap(new WordCount.Tokenizer());
 		DataSet<Tuple2<String, Integer>> result = words.groupBy(0).aggregate(Aggregations.SUM, 1);
 
-		result.writeAsCollection(resultsCollected);
+		result.output(new CollectionOutputFormat(resultsCollected));
 		env.execute("Word Count Collection");
 
 	}

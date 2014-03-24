@@ -17,31 +17,45 @@ package eu.stratosphere.api.java.io;
 
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
+import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.configuration.Configuration;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *  An output format that writes record into collection
  */
-public class CollectionOutputFormat<T> implements OutputFormat<T> {
+public class CollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConfigurable {
 
 	private static final long serialVersionUID = 1L;
 
-	private static Object resultWrapper;   //since generic collection is not allowed to be static
+	private static Map<Integer,Collection<?>> resultWrapper = new HashMap<Integer, Collection<?>>();   //since generic collection is not allowed to be static
 
-	private transient Collection<T> taskResult;
+	private transient ArrayList<T> taskResult;
 
-	public TypeSerializer<T> typeSerializer;
+	private TypeSerializer<T> typeSerializer;
 
-	public CollectionOutputFormat(Collection<T> out, TypeSerializer<T> serializer) {
-		this.resultWrapper = out;
-		this.typeSerializer = serializer;
+	private int id;
+
+	public CollectionOutputFormat(Collection<T> out) {
+		this.id = generateRandomId();
+		this.resultWrapper.put(this.id, out);
 	}
 
+	private int generateRandomId() {
+		int num = (int) (Math.random() * Integer.MAX_VALUE);
+		while (this.resultWrapper.containsKey(num)) {
+			num = (int) (Math.random() * Integer.MAX_VALUE);
+		}
+		return num;
+	}
 
 	@Override
 	public void configure(Configuration parameters) {
@@ -50,13 +64,7 @@ public class CollectionOutputFormat<T> implements OutputFormat<T> {
 
 	@Override
 	public void open(int taskNumber, int numTasks) throws IOException {
-		try {
-			this.taskResult = (Collection<T>) this.resultWrapper.getClass().newInstance();
-		} catch (InstantiationException e) {
-			throw new IOException(e.getMessage());
-		} catch (IllegalAccessException e) {
-			throw new IOException(e.getMessage());
-		}
+		this.taskResult = new ArrayList<T>();
 	}
 
 	@Override
@@ -69,9 +77,15 @@ public class CollectionOutputFormat<T> implements OutputFormat<T> {
 
 	@Override
 	public void close() throws IOException {
-		Collection<T> result = (Collection<T>) this.resultWrapper;
-		result.addAll(this.taskResult);
+		synchronized (this.resultWrapper) {
+			Collection<T> result = (Collection<T>) this.resultWrapper.get(this.id);
+			result.addAll(this.taskResult);
+		}
 	}
 
+	@Override
+	public void setInputType(TypeInformation<?> type) {
+		this.typeSerializer = (TypeSerializer<T>)type.createSerializer();
+	}
 
 }
