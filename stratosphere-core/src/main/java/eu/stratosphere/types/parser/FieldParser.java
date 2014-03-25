@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import eu.stratosphere.types.ByteValue;
+import eu.stratosphere.types.DecimalValue;
 import eu.stratosphere.types.DoubleValue;
 import eu.stratosphere.types.FloatValue;
 import eu.stratosphere.types.IntValue;
@@ -114,5 +115,6 @@ public abstract class FieldParser<T> {
 		PARSERS.put(StringValue.class, VarLengthStringParser.class);
 		PARSERS.put(FloatValue.class, DecimalTextFloatParser.class);
 		PARSERS.put(DoubleValue.class, DecimalTextDoubleParser.class);
+		PARSERS.put(DecimalValue.class, DecimalTextBigDecimalParser.class);
 	}
 }
