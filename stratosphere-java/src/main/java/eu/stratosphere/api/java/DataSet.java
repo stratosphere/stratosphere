@@ -34,6 +34,7 @@ import eu.stratosphere.api.java.operators.JoinOperator.JoinOperatorSets;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
+import eu.stratosphere.core.fs.FileSystem.WriteMode;
 import eu.stratosphere.core.fs.Path;
 
 /**
@@ -219,17 +220,20 @@ public abstract class DataSet<T> {
 		output(new PrintingOutputFormat<T>(true));
 	}
 	
-	
 	public void write(FileOutputFormat<T> outputFormat, String filePath) {
 		Validate.notNull(filePath, "File path must not be null.");
-		write(outputFormat, new Path(filePath));
+		Validate.notNull(outputFormat, "Output format must not be null.");
+
+		write(outputFormat, filePath, WriteMode.NO_OVERWRITE);
 	}
 	
-	public void write(FileOutputFormat<T> outputFormat, Path filePath) {
+	public void write(FileOutputFormat<T> outputFormat, String filePath, WriteMode writeMode) {
 		Validate.notNull(filePath, "File path must not be null.");
-		Validate.notNull(outputFormat, "The output format must not be null.");
-		
-		outputFormat.setOutputFilePath(filePath);
+		Validate.notNull(writeMode, "Write mode must not be null.");
+		Validate.notNull(outputFormat, "Output format must not be null.");
+
+		outputFormat.setOutputFilePath(new Path(filePath));
+		outputFormat.setWriteMode(writeMode);
 		output(outputFormat);
 	}
 	
