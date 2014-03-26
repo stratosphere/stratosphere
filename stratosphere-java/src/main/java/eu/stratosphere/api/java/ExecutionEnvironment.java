@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.Validate;
+
+import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.JobExecutionResult;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.java.io.CollectionInputFormat;
@@ -38,6 +41,7 @@ import eu.stratosphere.api.java.operators.translation.JavaPlan;
 import eu.stratosphere.api.java.typeutils.BasicTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
+import eu.stratosphere.api.java.typeutils.ResultTypeQueryable;
 import eu.stratosphere.api.java.typeutils.ValueTypeInfo;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.types.StringValue;
@@ -94,15 +98,13 @@ public abstract class ExecutionEnvironment {
 	// ---------------------------------- Text Input Format ---------------------------------------
 	
 	public DataSet<String> readTextFile(String filePath) {
-		if (filePath == null)
-			throw new IllegalArgumentException("The file path may not be null.");
+		Validate.notNull(filePath, "The file path may not be null.");
 		
 		return new DataSource<String>(this, new TextInputFormat(new Path(filePath)), BasicTypeInfo.STRING_TYPE_INFO );
 	}
 	
 	public DataSet<String> readTextFile(String filePath, String charsetName) {
-		if (filePath == null)
-			throw new IllegalArgumentException("The file path may not be null.");
+		Validate.notNull(filePath, "The file path may not be null.");
 
 		TextInputFormat format = new TextInputFormat(new Path(filePath));
 		format.setCharsetName(charsetName);
@@ -112,15 +114,13 @@ public abstract class ExecutionEnvironment {
 	// -------------------------- Text Input Format With String Value------------------------------
 	
 	public DataSet<StringValue> readTextFileWithValue(String filePath) {
-		if (filePath == null)
-			throw new IllegalArgumentException("The file path may not be null.");
+		Validate.notNull(filePath, "The file path may not be null.");
 		
 		return new DataSource<StringValue>(this, new TextValueInputFormat(new Path(filePath)), new ValueTypeInfo<StringValue>(StringValue.class) );
 	}
 	
 	public DataSet<StringValue> readTextFileWithValue(String filePath, String charsetName, boolean skipInvalidLines) {
-		if (filePath == null)
-			throw new IllegalArgumentException("The file path may not be null.");
+		Validate.notNull(filePath, "The file path may not be null.");
 		
 		TextValueInputFormat format = new TextValueInputFormat(new Path(filePath));
 		format.setCharsetName(charsetName);
@@ -141,10 +141,22 @@ public abstract class ExecutionEnvironment {
 	// ----------------------------------- Generic Input Format ---------------------------------------
 	
 	public <X> DataSet<X> createInput(InputFormat<X, ?> inputFormat) {
-		if (inputFormat == null)
+		if (inputFormat == null) {
 			throw new IllegalArgumentException("InputFormat must not be null.");
+		}
 		
-		return createInput(inputFormat, TypeExtractor.extractInputFormatTypes(inputFormat));
+		try {
+			@SuppressWarnings("unchecked")
+			TypeInformation<X> producedType = (inputFormat instanceof ResultTypeQueryable) ?
+					((ResultTypeQueryable<X>) inputFormat).getProducedType() :
+					TypeExtractor.extractInputFormatTypes(inputFormat);
+			
+			return createInput(inputFormat, producedType);
+		}
+		catch (Exception e) {
+			throw new InvalidProgramException("The type returned by the input format could not be automatically determined. " +
+					"Please specify the TypeInformation of the produced type explicitly.");
+		}
 	}
 	
 	public <X> DataSet<X> createInput(InputFormat<X, ?> inputFormat, TypeInformation<X> producedType) {
@@ -166,10 +178,9 @@ public abstract class ExecutionEnvironment {
 		if (data.size() == 0)
 			throw new IllegalArgumentException("The size of the collection must not be empty.");
 		
-		@SuppressWarnings("unchecked")
-		Class<X> clazz = (Class<X>) data.iterator().next().getClass();
+		X firstValue = data.iterator().next();
 		
-		return fromCollection(data, TypeInformation.getForClass(clazz));
+		return fromCollection(data, TypeInformation.getForObject(firstValue));
 	}
 	
 	
@@ -202,10 +213,11 @@ public abstract class ExecutionEnvironment {
 		if (data == null) {
 			throw new IllegalArgumentException("The data must not be null.");
 		}
+		if (data.length == 0) {
+			throw new IllegalArgumentException("The number of elements must not be zero.");
+		}
 		
-		@SuppressWarnings("unchecked")
-		Class<X> componentClass = (Class<X>) data.getClass().getComponentType();
-		return fromCollection(Arrays.asList(data), TypeInformation.getForClass(componentClass));
+		return fromCollection(Arrays.asList(data), TypeInformation.getForObject(data[0]));
 	}
 	
 	
