@@ -20,10 +20,8 @@ import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.configuration.Configuration;
-import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +30,7 @@ import java.util.Map;
 /**
  *  An output format that writes record into collection
  */
-public class CollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConfigurable {
+public class LocalCollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConfigurable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -44,7 +42,7 @@ public class CollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConf
 
 	private int id;
 
-	public CollectionOutputFormat(Collection<T> out) {
+	public LocalCollectionOutputFormat(Collection<T> out) {
 		this.id = generateRandomId();
 		this.resultWrapper.put(this.id, out);
 	}
@@ -70,7 +68,7 @@ public class CollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConf
 	@Override
 	public void writeRecord(T record) throws IOException {
 		T recordCopy = this.typeSerializer.createInstance();
-		this.typeSerializer.copy(record, recordCopy);
+		recordCopy = this.typeSerializer.copy(record, recordCopy);
 		this.taskResult.add(recordCopy);
 	}
 
@@ -78,12 +76,14 @@ public class CollectionOutputFormat<T> implements OutputFormat<T>, InputTypeConf
 	@Override
 	public void close() throws IOException {
 		synchronized (this.resultWrapper) {
+			@SuppressWarnings("unchecked")
 			Collection<T> result = (Collection<T>) this.resultWrapper.get(this.id);
 			result.addAll(this.taskResult);
 		}
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void setInputType(TypeInformation<?> type) {
 		this.typeSerializer = (TypeSerializer<T>)type.createSerializer();
 	}
