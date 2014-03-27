@@ -332,9 +332,9 @@ public abstract class DataSet<T> {
 		return new Grouping<T>(this, new Keys.SelectorFunctionKeys<T, K>(keyExtractor, getType()));
 	}
 	
-//	public Grouping<T> groupBy(String fieldExpression) {
-//		return new Grouping<T>(this, new Keys.ExpressionKeys<T>(fieldExpression, getType()));
-//	}
+	public Grouping<T> groupBy(String... fieldExpression) {
+		return new Grouping<T>(this, new Keys.ExpressionKeys<T>(fieldExpression, getType()));
+	}
 	
 	/**
 	 * Groups a {@link Tuple} {@link DataSet} using field position keys.<br/> 
