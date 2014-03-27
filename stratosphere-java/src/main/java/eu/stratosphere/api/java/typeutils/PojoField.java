@@ -14,33 +14,19 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.typeutils;
 
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.TypeInfo;
 
-import eu.stratosphere.api.java.tuple.Tuple;
-import eu.stratosphere.api.common.InvalidProgramException;
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
-import eu.stratosphere.types.Value;
+import java.lang.reflect.Field;
 
+/**
+*
+*/
+class PojoField {
+	public Field field;
+	public TypeInformation<?> type;
 
-public abstract class TypeInformation<T> {
-	
-	public abstract boolean isBasicType();
-
-	public abstract boolean isTupleType();
-	
-	public abstract int getArity();
-	
-	public abstract Class<T> getTypeClass();
-	
-	public abstract boolean isKeyType();
-	
-	public abstract TypeSerializer<T> createSerializer();
-	
-	protected static final Log LOG = LogFactory.getLog(TypeInformation.class);
-
-	public boolean isPrimitiveProduct() {
-		return false;
+	public PojoField(Field field, TypeInformation<?> type) {
+		this.field = field;
+		this.type = type;
 	}
 }

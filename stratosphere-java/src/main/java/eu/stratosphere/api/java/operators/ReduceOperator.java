@@ -85,7 +85,8 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 			
 			return translateSelectorFunctionReducer(selectorKeys, function, getInputType(), name);
 		}
-		else if (grouper.getKeys() instanceof Keys.FieldPositionKeys) {
+		else if (grouper.getKeys() instanceof Keys.FieldPositionKeys ||
+				grouper.getKeys() instanceof Keys.ExpressionKeys) {
 			int[] logicalKeyPositions = grouper.getKeys().computeLogicalKeyPositions();
 			PlanReduceOperator<IN> reduceOp = new PlanReduceOperator<IN>(function, logicalKeyPositions, name, getInputType());
 			

@@ -301,6 +301,28 @@
 						</configuration>
 					</execution>
 
+					<!-- WordCount -->
+					<execution>
+						<id>WordCountCustomType</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>WordCountCustomType</classifier>
+
+							<archive>
+								<manifestEntries>
+									<program-class>eu.stratosphere.example.java.wordcount.WordCountCustomType</program-class>
+								</manifestEntries>
+							</archive>
+
+							<includes>
+								<include>**/wordcount/*.class</include>
+							</includes>
+						</configuration>
+					</execution>
+
 					<!-- TeraSort -->
 					<execution>
 						<id>TeraSort</id>

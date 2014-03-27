@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.java.functions.KeySelector;
+import eu.stratosphere.api.java.typeutils.PojoTypeInfo;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -151,22 +152,60 @@ public abstract class Keys<T> {
 	
 	public static class ExpressionKeys<T> extends Keys<T> {
 
-		public ExpressionKeys(String expression, TypeInformation<T> type) {
+		private int[] logicalPositions;
+
+		private final TypeInformation<?>[] types;
+
+		private PojoTypeInfo<?> type;
+
+		public ExpressionKeys(String[] expressions, TypeInformation<T> type) {
+			if (!(type instanceof PojoTypeInfo<?>)) {
+				throw new UnsupportedOperationException("Key expressions can only be used on POJOs." + " " +
+						"These may not have a writeObject or a readObject method.");
+			}
+			PojoTypeInfo<?> pojoType = (PojoTypeInfo<?>) type;
+			this.type = pojoType;
+			logicalPositions = pojoType.getLogicalPositions(expressions);
+			types = pojoType.getTypes(expressions);
+
+			for (int i = 0; i < logicalPositions.length; i++) {
+				if (logicalPositions[i] < 0) {
+					throw new UnsupportedOperationException("Logical position of expression '"
+							+ expressions[i] + "' could not be determined.");
+				}
+			}
+
 		}
 
 		@Override
 		public int getNumberOfKeyFields() {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+			return logicalPositions.length;
 		}
 
 		@Override
 		public boolean areCompatibale(Keys<?> other) {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+
+			if (other instanceof ExpressionKeys) {
+				ExpressionKeys<?> oKey = (ExpressionKeys<?>) other;
+
+				if(oKey.types.length != this.types.length) {
+					return false;
+				}
+				for(int i=0; i<this.types.length; i++) {
+					if(!this.types[i].equals(oKey.types[i])) {
+						return false;
+					}
+				}
+				return true;
+
+			} else {
+				return false;
+			}
 		}
 
 		@Override
 		public int[] computeLogicalKeyPositions() {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+			return logicalPositions;
 		}
 	}
 	
