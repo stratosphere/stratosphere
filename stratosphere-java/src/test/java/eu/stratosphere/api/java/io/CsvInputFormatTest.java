@@ -22,6 +22,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.apache.log4j.Level;
 import org.junit.BeforeClass;
@@ -33,6 +35,8 @@ import eu.stratosphere.api.java.tuple.Tuple5;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.fs.FileInputSplit;
 import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.types.DecimalValue;
+import eu.stratosphere.types.parser.DecimalTextBigDecimalParser;
 import eu.stratosphere.util.LogUtils;
 
 public class CsvInputFormatTest {
@@ -167,6 +171,48 @@ public class CsvInputFormatTest {
 			assertTrue(format.reachedEnd());
 		}
 		catch (Exception ex) {
+			fail("Test failed due to a " + ex.getClass().getName() + ": " + ex.getMessage());
+		}
+	}
+	
+	@Test
+	public void testDecimalParser() throws IOException {
+		try {
+			final String fileContent = "1.0|2.5|-15.3\n1.000001|3|1234.5E-4\n";
+			final FileInputSplit split = createTempFile(fileContent);	
+		
+			final CsvInputFormat<Tuple3<DecimalValue, DecimalValue, DecimalValue>> format = new CsvInputFormat<Tuple3<DecimalValue, DecimalValue, DecimalValue>>(PATH);
+			
+			format.setFieldDelimiter('|');
+			format.setFieldTypes(DecimalValue.class, DecimalValue.class, DecimalValue.class);
+			
+			format.configure(new Configuration());
+			format.open(split);
+			DecimalTextBigDecimalParser zeroParser = (DecimalTextBigDecimalParser) format.getFieldParser(0);
+			zeroParser.enforceScale(1, RoundingMode.HALF_DOWN);
+			DecimalTextBigDecimalParser oneParser = (DecimalTextBigDecimalParser) format.getFieldParser(1);
+			oneParser.enforceScale(0, RoundingMode.UP);
+			
+			Tuple3<DecimalValue, DecimalValue, DecimalValue> result = new Tuple3<DecimalValue, DecimalValue, DecimalValue>();
+			
+			result = format.nextRecord(result);
+			assertNotNull(result);
+			assertTrue("f0="+result.f0.getValue(), new BigDecimal("1.0").equals(result.f0.getValue()));
+			assertTrue("f1="+result.f1.getValue(), new BigDecimal("3").equals(result.f1.getValue()));
+			assertTrue("f2="+result.f2.getValue(), new BigDecimal("-15.3").equals(result.f2.getValue()));
+			
+			result = format.nextRecord(result);
+			assertNotNull(result);
+			assertTrue("f0="+result.f0.getValue(), new BigDecimal("1.0").equals(result.f0.getValue()));
+			assertTrue("f1="+result.f1.getValue(), new BigDecimal("3").equals(result.f1.getValue()));
+			assertTrue("f2="+result.f2.getValue(), new BigDecimal("1234.5E-4").equals(result.f2.getValue()));
+			
+			result = format.nextRecord(result);
+			assertNull(result);
+			assertTrue(format.reachedEnd());
+		}
+		catch (Exception ex) { 
+			ex.printStackTrace();
 			fail("Test failed due to a " + ex.getClass().getName() + ": " + ex.getMessage());
 		}
 	}

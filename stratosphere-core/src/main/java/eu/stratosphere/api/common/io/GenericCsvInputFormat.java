@@ -108,6 +108,10 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 		this.skipFirstLineAsHeader = skipFirstLine;
 	}
 	
+	public FieldParser<?> getFieldParser(int i) {
+		return this.fieldParsers[i];
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	
 	protected FieldParser<?>[] getFieldParsers() {
@@ -225,6 +229,7 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 		this.fieldTypes = denseTypeArray;
 		this.fieldIncluded = includedMask;
 	}
+	
 
 	// --------------------------------------------------------------------------------------------
 	//  Runtime methods
