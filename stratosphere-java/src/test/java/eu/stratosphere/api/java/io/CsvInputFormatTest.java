@@ -13,27 +13,24 @@
 
 package eu.stratosphere.api.java.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import org.apache.log4j.Level;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.api.java.tuple.Tuple5;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.fs.FileInputSplit;
 import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.types.DateValue;
+import eu.stratosphere.types.parser.DateParser;
 import eu.stratosphere.util.LogUtils;
+import org.apache.log4j.Level;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 public class CsvInputFormatTest {
 	
@@ -321,7 +318,49 @@ public class CsvInputFormatTest {
 			fail("Test failed due to a " + ex.getClass().getName() + ": " + ex.getMessage());
 		}
 	}
-	
+
+	@Test
+	public void testDateParser() throws IOException {
+		try {
+			final String fileContent = "03-21-2012|2012-13-02|2012-03-02\n04-21-1963|1970-13-08|2012-03-22\n";
+			final FileInputSplit split = createTempFile(fileContent);
+
+			final CsvInputFormat<Tuple3<DateValue, DateValue, DateValue>> format = new CsvInputFormat<Tuple3<DateValue, DateValue, DateValue>>(PATH);
+
+			format.setFieldDelimiter('|');
+			format.setFieldTypes(DateValue.class, DateValue.class, DateValue.class);
+
+			format.configure(new Configuration());
+			format.open(split);
+			DateParser zeroParser = (DateParser) format.getFieldParser(0);
+			zeroParser.setFormat("MM-dd-yyyy");
+			DateParser oneParser = (DateParser) format.getFieldParser(1);
+			oneParser.setFormat("yyyy-dd-MM");
+
+			Tuple3<DateValue, DateValue, DateValue> result = new Tuple3<DateValue, DateValue, DateValue>();
+
+			result = format.nextRecord(result);
+			assertNotNull(result);
+			assertTrue("f0="+result.f0.toString(), new DateValue("03-21-2012", "MM-dd-yyyy").asLong() == (result.f0.asLong()));
+			assertTrue("f1=" + result.f1.toString(), new DateValue("2012-13-02", "yyyy-dd-MM").asLong() == (result.f1.asLong()));
+			assertTrue("f2="+result.f2.toString(), new DateValue("2012-03-02").asLong() == (result.f2.asLong()));
+
+			result = format.nextRecord(result);
+			assertNotNull(result);
+			assertTrue("f0="+result.f0.toString(), new DateValue("04-21-1963", "MM-dd-yyyy").asLong() == (result.f0.asLong()));
+			assertTrue("f1="+result.f1.toString(), new DateValue("1970-13-08", "yyyy-dd-MM").asLong() == (result.f1.asLong()));
+			assertTrue("f2="+result.f2.toString(), new DateValue("2012-03-22").asLong() == (result.f2.asLong()));
+
+			result = format.nextRecord(result);
+			assertNull(result);
+			assertTrue(format.reachedEnd());
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+			fail("Test failed due to a " + ex.getClass().getName() + ": " + ex.getMessage());
+		}
+	}
+
 	@Test
 	public void testReadSparseWithShuffledPositions() throws IOException {
 		try {
