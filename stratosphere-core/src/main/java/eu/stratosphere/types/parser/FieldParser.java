@@ -13,17 +13,10 @@
 
 package eu.stratosphere.types.parser;
 
+import eu.stratosphere.types.*;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import eu.stratosphere.types.ByteValue;
-import eu.stratosphere.types.DoubleValue;
-import eu.stratosphere.types.FloatValue;
-import eu.stratosphere.types.IntValue;
-import eu.stratosphere.types.LongValue;
-import eu.stratosphere.types.ShortValue;
-import eu.stratosphere.types.StringValue;
-import eu.stratosphere.types.Value;
 
 /**
  * A FieldParser is used parse a field and fill a {@link Value} from a sequence of bytes.
@@ -114,5 +107,6 @@ public abstract class FieldParser<T> {
 		PARSERS.put(StringValue.class, VarLengthStringParser.class);
 		PARSERS.put(FloatValue.class, DecimalTextFloatParser.class);
 		PARSERS.put(DoubleValue.class, DecimalTextDoubleParser.class);
+		PARSERS.put(DateValue.class, DateParser.class);
 	}
 }
