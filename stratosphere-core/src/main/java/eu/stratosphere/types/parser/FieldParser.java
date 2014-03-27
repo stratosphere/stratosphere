@@ -13,7 +13,14 @@
 
 package eu.stratosphere.types.parser;
 
-import eu.stratosphere.types.*;
+import eu.stratosphere.types.ByteValue;
+import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.LongValue;
+import eu.stratosphere.types.ShortValue;
+import eu.stratosphere.types.StringValue;
+import eu.stratosphere.types.FloatValue;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.DateValue;
 
 import java.util.HashMap;
 import java.util.Map;
