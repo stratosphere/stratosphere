@@ -25,8 +25,9 @@ public class DateValue implements Value {
 
 	private Date date;
 
-	public void setDate(String str) {
-		DateFormat df = new SimpleDateFormat("yyyy-mm-dd"); //use ISO standard in case the format is not given.
+	public DateValue() {}
+	public DateValue(String str) {
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd"); //use ISO standard in case the format is not given.
 		try {
 			this.date = df.parse(str);
 		} catch (java.text.ParseException e) {
@@ -34,7 +35,7 @@ public class DateValue implements Value {
 		}
 	}
 
-	public void setDate(String str, String format) {
+	public DateValue(String str, String format) {
 		DateFormat df = new SimpleDateFormat(format);
 		try {
 			this.date = df.parse(str);
@@ -43,7 +44,7 @@ public class DateValue implements Value {
 		}
 	}
 
-	public void setDate(String str, DateFormat df) {
+	public DateValue(String str, DateFormat df) {
 		try {
 			this.date = df.parse(str);
 		} catch (java.text.ParseException e) {
@@ -59,8 +60,13 @@ public class DateValue implements Value {
 		return this.date;
 	}
 
-	public Long asLong() {
+	public long asLong() {
 		return date.getTime();
+	}
+
+	@Override
+	public String toString() {
+		return this.date.toString();
 	}
 
 	@Override

@@ -17,6 +17,7 @@ import eu.stratosphere.types.DateValue;
 public class DateParser extends FieldParser<DateValue> {
 
 	private DateValue result;
+	private String format = null;
 
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delim, DateValue reusable) {
@@ -30,8 +31,8 @@ public class DateParser extends FieldParser<DateValue> {
 
 		String str = new String(bytes, startPos, i-startPos);
 		try {
-			this.result = new DateValue();
-			this.result.setDate(str);
+			if (format!=null) this.result = new DateValue(str,format); //specified format;
+			else this.result = new DateValue(str); //ISO 8061
 			return (i == limit) ? limit : i+1;
 		}
 		catch (NumberFormatException e) {
@@ -39,6 +40,9 @@ public class DateParser extends FieldParser<DateValue> {
 		}
 	}
 
+	public void setFormat(String format) {
+		this.format = format;
+	}
 	@Override
 	public DateValue createValue() {
 		return new DateValue();
