@@ -178,7 +178,17 @@ public abstract class DataSet<T> {
 	public IterativeDataSet<T> iterate(int maxIterations) {
 		return new IterativeDataSet<T>(getExecutionEnvironment(), getType(), this, maxIterations);
 	}
-
+	
+	// --------------------------------------------------------------------------------------------
+	//  Custom Operators
+	// -------------------------------------------------------------------------------------------
+	
+	public <X> DataSet<X> runOperation(CustomUnaryOperation<T, X> operation) {
+		Validate.notNull(operation, "The custom operator must not be null.");
+		operation.setInput(this);
+		return operation.createOperator();
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	//  Union
 	// --------------------------------------------------------------------------------------------
@@ -194,7 +204,6 @@ public abstract class DataSet<T> {
 	public void writeAsText(String filePath) {
 		output(new TextOutputFormat<T>(new Path(filePath)));
 	}
-	
 	
 	public void writeAsCsv(String filePath) {
 		writeAsCsv(filePath, CsvOutputFormat.DEFAULT_LINE_DELIMITER, CsvOutputFormat.DEFAULT_FIELD_DELIMITER);
