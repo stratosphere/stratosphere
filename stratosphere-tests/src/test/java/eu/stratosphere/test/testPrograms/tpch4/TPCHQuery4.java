@@ -187,8 +187,8 @@ public class TPCHQuery4 implements Program, ProgramDescription {
 			Record rec = null;
 			
 			while(records.hasNext()) {
-			 	rec = records.next();
-			 	count++;
+				rec = records.next();
+				count++;
 			}
 			
 			if(rec != null)

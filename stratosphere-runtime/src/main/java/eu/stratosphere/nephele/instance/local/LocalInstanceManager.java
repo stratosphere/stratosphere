@@ -50,7 +50,7 @@ import eu.stratosphere.nephele.util.SerializableHashMap;
  * desired this default instance type can also be overwritten.
  * <p>
  * This class is thread-safe.
- * 
+ *
  */
 public class LocalInstanceManager implements InstanceManager {
 
@@ -110,7 +110,7 @@ public class LocalInstanceManager implements InstanceManager {
 
 	/**
 	 * Constructs a new local instance manager.
-	 * 
+	 *
 	 * @param configDir
 	 *        the path to the configuration directory
 	 */
@@ -274,16 +274,16 @@ public class LocalInstanceManager implements InstanceManager {
 	 * Creates a default instance type based on the hardware characteristics of the machine that calls this method. The
 	 * default instance type contains the machine's number of CPU cores and size of physical memory. The disc capacity
 	 * is calculated from the free space in the directory for temporary files.
-	 * 
+	 *
 	 * @return the default instance type used for the local machine
 	 */
 	public static final InstanceType createDefaultInstanceType() {
 		final HardwareDescription hardwareDescription = HardwareDescriptionFactory.extractFromSystem();
 
 		int diskCapacityInGB = 0;
-		final String tempDirs[] = GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY,
+		final String[] tempDirs = GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY,
 			ConfigConstants.DEFAULT_TASK_MANAGER_TMP_PATH).split(File.pathSeparator);
-		
+
 		for (final String tempDir : tempDirs) {
 			if (tempDir != null) {
 				File f = new File(tempDir);

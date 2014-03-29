@@ -27,13 +27,13 @@ import scala.language.implicitConversions
  * @param selection The selected fields
  */
 class FieldSelector(udt: UDT[_], selection: List[Int]) extends Serializable {
-  
-  val inputFields = FieldSet.newInputSet(udt.numFields)
-  val selectionIndices = udt.getSelectionIndices(selection)
-  val selectedFields = inputFields.select(selectionIndices)
+	
+	val inputFields = FieldSet.newInputSet(udt.numFields)
+	val selectionIndices = udt.getSelectionIndices(selection)
+	val selectedFields = inputFields.select(selectionIndices)
 
-  for (field <- inputFields.diff(selectedFields))
-    field.isUsed = false
-  
-  def copy() = new FieldSelector(udt, selection)
+	for (field <- inputFields.diff(selectedFields))
+		field.isUsed = false
+	
+	def copy() = new FieldSelector(udt, selection)
 }

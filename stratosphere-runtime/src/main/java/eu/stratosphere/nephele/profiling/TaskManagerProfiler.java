@@ -14,20 +14,19 @@
 package eu.stratosphere.nephele.profiling;
 
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.nephele.execution.ExecutionListener;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 
 /**
  * This interface must be implemented by profiling components
  * for the task manager manager.
- * 
+ *
  */
 public interface TaskManagerProfiler {
 
 	/**
 	 * Registers an {@link ExecutionListener} object for profiling.
-	 * 
+	 *
 	 * @param task
 	 *        task to be register a profiling listener for
 	 * @param jobConfiguration
@@ -39,7 +38,7 @@ public interface TaskManagerProfiler {
 	/**
 	 * Unregisters all previously register {@link ExecutionListener} objects for
 	 * the vertex identified by the given ID.
-	 * 
+	 *
 	 * @param id
 	 *        the ID of the vertex to unregister the {@link ExecutionListener} objects for
 	 */

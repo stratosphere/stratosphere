@@ -23,12 +23,11 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.nephele.event.task.AbstractEvent;
-import eu.stratosphere.nephele.execution.Environment;
 import eu.stratosphere.nephele.io.channels.AbstractOutputChannel;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkOutputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.InMemoryOutputChannel;
+import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkOutputChannel;
 import eu.stratosphere.nephele.jobgraph.JobID;
 
 /**
@@ -37,7 +36,7 @@ import eu.stratosphere.nephele.jobgraph.JobID;
  * parameterized to a specific type of record which they can transport.
  * <p>
  * This class is in general not thread-safe.
- * 
+ *
  * @param <T>
  *        the type of record that can be transported through this gate
  */
@@ -70,7 +69,7 @@ public class RuntimeOutputGate<T extends IOReadableWritable> extends AbstractGat
 
 	/**
 	 * Constructs a new runtime output gate.
-	 * 
+	 *
 	 * @param jobID
 	 *        the ID of the job this input gate belongs to
 	 * @param gateID
@@ -113,7 +112,7 @@ public class RuntimeOutputGate<T extends IOReadableWritable> extends AbstractGat
 
 	/**
 	 * Adds a new output channel to the output gate.
-	 * 
+	 *
 	 * @param outputChannel
 	 *        the output channel to be added.
 	 */
@@ -126,7 +125,7 @@ public class RuntimeOutputGate<T extends IOReadableWritable> extends AbstractGat
 	/**
 	 * Removes the output channel with the given ID from the output gate if it
 	 * exists.
-	 * 
+	 *
 	 * @param outputChannelID
 	 *        the ID of the channel to be removed
 	 */
@@ -169,7 +168,7 @@ public class RuntimeOutputGate<T extends IOReadableWritable> extends AbstractGat
 	/**
 	 * Returns the output channel from position <code>pos</code> of the gate's
 	 * internal channel list.
-	 * 
+	 *
 	 * @param pos
 	 *        the position to retrieve the channel from
 	 * @return the channel from the given position or <code>null</code> if such
@@ -177,10 +176,11 @@ public class RuntimeOutputGate<T extends IOReadableWritable> extends AbstractGat
 	 */
 	public AbstractOutputChannel<T> getOutputChannel(int pos) {
 
-		if (pos < this.outputChannels.size())
+		if (pos < this.outputChannels.size()) {
 			return this.outputChannels.get(pos);
-		else
+		} else {
 			return null;
+		}
 	}
 
 

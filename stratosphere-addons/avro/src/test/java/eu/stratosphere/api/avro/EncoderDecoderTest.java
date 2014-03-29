@@ -14,6 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.avro;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -30,8 +34,6 @@ import org.junit.Test;
 
 import eu.stratosphere.api.java.record.io.avro.generated.Colors;
 import eu.stratosphere.api.java.record.io.avro.generated.User;
-
-import static org.junit.Assert.*;
 
 
 /**

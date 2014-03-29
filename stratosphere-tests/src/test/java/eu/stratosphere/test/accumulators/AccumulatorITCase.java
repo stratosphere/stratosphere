@@ -161,10 +161,10 @@ public class AccumulatorITCase extends TestBase2 {
 		// This counter will be added without convenience functions
 		DoubleCounter openCloseCounter = new DoubleCounter();
 		private SetAccumulator<StringRecord> distinctWords = null;
-    
+	
 		@Override
 		public void open(Configuration parameters) throws Exception {
-		  
+		
 			// Add counters using convenience functions
 			this.cntNumLines = getRuntimeContext().getIntCounter("num-lines");
 			this.wordsPerLineDistribution = getRuntimeContext().getHistogram("words-per-line");
@@ -215,7 +215,7 @@ public class AccumulatorITCase extends TestBase2 {
 			{
 				// Use custom counter
 				distinctWords.add(new StringRecord(this.word.getValue()));
-  
+
 				this.outputRecord.setField(0, this.word);
 				this.outputRecord.setField(1, this.one);
 				collector.collect(this.outputRecord);

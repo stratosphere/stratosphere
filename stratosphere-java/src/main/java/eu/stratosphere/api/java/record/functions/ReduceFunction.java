@@ -17,7 +17,6 @@ import java.util.Iterator;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
-import eu.stratosphere.api.java.record.operators.ReduceOperator;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
@@ -26,17 +25,17 @@ import eu.stratosphere.util.Collector;
  * {@link ReduceOperator}.
  */
 public abstract class ReduceFunction extends AbstractFunction implements GenericGroupReduce<Record, Record> {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * The central function to be implemented for a reducer. The function receives per call one
 	 * key and all the values that belong to that key. Each key is guaranteed to be processed by exactly
 	 * one function call across all involved instances across all computing nodes.
-	 * 
+	 *
 	 * @param records All records that belong to the given input key.
 	 * @param out The collector to hand results to.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the reduce task and lets the fail-over logic
 	 *                   decide whether to retry the reduce execution.
@@ -54,13 +53,13 @@ public abstract class ReduceFunction extends AbstractFunction implements Generic
 	 * is not guaranteed to see all values with the same key in one call to the combine function. Since it is called
 	 * prior to the <code>reduce()</code> method, input and output types of the combine method are the input types of
 	 * the <code>reduce()</code> method.
-	 * 
+	 *
 	 * @see eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable
 	 * @param records
 	 *        The records to be combined. Unlike in the reduce method, these are not necessarily all records
 	 *        belonging to the given key.
 	 * @param out The collector to write the result to.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the combine task and lets the fail-over logic
 	 *                   decide whether to retry the combiner execution.

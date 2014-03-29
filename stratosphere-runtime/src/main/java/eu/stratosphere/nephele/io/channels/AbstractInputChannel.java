@@ -13,13 +13,12 @@
 
 package eu.stratosphere.nephele.io.channels;
 
-import java.io.EOFException;
 import java.io.IOException;
 
 import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
-import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.io.InputChannelResult;
+import eu.stratosphere.nephele.io.InputGate;
 import eu.stratosphere.nephele.jobgraph.JobID;
 
 /**
@@ -35,7 +34,7 @@ public abstract class AbstractInputChannel<T extends IOReadableWritable> extends
 
 	/**
 	 * Constructs an input channel with a given input gate associated.
-	 * 
+	 *
 	 * @param inputGate
 	 *        the input gate this channel is connected to
 	 * @param channelIndex
@@ -55,7 +54,7 @@ public abstract class AbstractInputChannel<T extends IOReadableWritable> extends
 
 	/**
 	 * Returns the input gate associated with the input channel.
-	 * 
+	 *
 	 * @return the input gate associated with the input channel.
 	 */
 	public InputGate<T> getInputGate() {
@@ -66,7 +65,7 @@ public abstract class AbstractInputChannel<T extends IOReadableWritable> extends
 	 * Reads a record from the input channel. If currently no record is available the method
 	 * returns <code>null</code>. If the channel is closed (i.e. no more records will be received), the method
 	 * throws an {@link EOFException}.
-	 * 
+	 *
 	 * @return a record that has been transported through the channel or <code>null</code> if currently no record is
 	 *         available
 	 * @throws IOException
@@ -78,7 +77,7 @@ public abstract class AbstractInputChannel<T extends IOReadableWritable> extends
 	 * Immediately closes the input channel. The corresponding output channels are
 	 * notified if necessary. Any remaining records in any buffers or queue is considered
 	 * irrelevant and is discarded.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *         thrown if the thread is interrupted while waiting for the channel to close
 	 * @throws IOException
@@ -98,6 +97,6 @@ public abstract class AbstractInputChannel<T extends IOReadableWritable> extends
 	public JobID getJobID() {
 		return this.inputGate.getJobID();
 	}
-	
+
 	public abstract AbstractTaskEvent getCurrentEvent();
 }

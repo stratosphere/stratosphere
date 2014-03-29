@@ -28,24 +28,24 @@ import eu.stratosphere.test.util.TestBase2;
 public class LineRankITCase extends TestBase2 {
 	
 	private static final String SOURCE_INCIDENCE = "1,1,1\n" +
-	                                               "2,1,1\n" +
-	                                               "3,1,1\n" +
-	                                               "4,2,1\n" +
-	                                               "5,3,1\n" +
-	                                               "6,3,1\n" +
-	                                               "7,4,1\n" +
-	                                               "8,4,1\n" +
-	                                               "9,5,1\n";
+												   "2,1,1\n" +
+												   "3,1,1\n" +
+												   "4,2,1\n" +
+												   "5,3,1\n" +
+												   "6,3,1\n" +
+												   "7,4,1\n" +
+												   "8,4,1\n" +
+												   "9,5,1\n";
 	
 	private static final String TARGET_INCIDENCE = "1,2,1\n" +
-	                                               "2,3,1\n" +
-	                                               "3,4,1\n" +
-	                                               "4,3,1\n" +
-	                                               "5,2,1\n" +
-	                                               "6,5,1\n" +
-	                                               "7,1,1\n" +
-	                                               "8,3,1\n" +
-	                                               "9,4,1\n";
+												   "2,3,1\n" +
+												   "3,4,1\n" +
+												   "4,3,1\n" +
+												   "5,2,1\n" +
+												   "6,5,1\n" +
+												   "7,1,1\n" +
+												   "8,3,1\n" +
+												   "9,4,1\n";
 
 	protected String sourcesPath;
 	protected String targetsPath;

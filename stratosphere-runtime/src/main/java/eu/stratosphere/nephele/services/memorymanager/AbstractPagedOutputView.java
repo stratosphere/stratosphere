@@ -13,7 +13,6 @@
 
 package eu.stratosphere.nephele.services.memorymanager;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 
@@ -30,27 +29,27 @@ import eu.stratosphere.core.memory.MemorySegment;
  * The paging assumes that all memory segments are of the same size.
  */
 public abstract class AbstractPagedOutputView implements DataOutputView {
-	
+
 	private MemorySegment currentSegment;			// the current memory segment to write to
-	
+
 	protected final int segmentSize;				// the size of the memory segments
-	
+
 	protected final int headerLength;				// the number of bytes to skip at the beginning of each segment
-	
+
 	private int positionInSegment;					// the offset in the current segment
-	
+
 	private byte[] utfBuffer;						// the reusable array for UTF encodings
-	
-	
+
+
 	// --------------------------------------------------------------------------------------------
 	//                                    Constructors
 	// --------------------------------------------------------------------------------------------
-	
+
 	/**
 	 * Creates a new output view that writes initially to the given initial segment. All segments in the
 	 * view have to be of the given {@code segmentSize}. A header of length {@code headerLength} is left
 	 * at the beginning of each segment.
-	 * 
+	 *
 	 * @param initialSegment The segment that the view starts writing to.
 	 * @param segmentSize The size of the memory segments.
 	 * @param headerLength The number of bytes to skip at the beginning of each segment for the header.
@@ -64,7 +63,7 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 		this.currentSegment = initialSegment;
 		this.positionInSegment = headerLength;
 	}
-	
+
 	/**
 	 * @param segmentSize The size of the memory segments.
 	 * @param headerLength The number of bytes to skip at the beginning of each segment for the header.
@@ -74,71 +73,71 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 		this.segmentSize = segmentSize;
 		this.headerLength = headerLength;
 	}
-	
+
 
 	// --------------------------------------------------------------------------------------------
 	//                                  Page Management
 	// --------------------------------------------------------------------------------------------
-	
+
 	/**
-	 * 
+	 *
 	 * This method must return a segment. If no more segments are available, it must throw an
 	 * {@link EOFException}.
-	 * 
+	 *
 	 * @param current The current memory segment
 	 * @param positionInCurrent The position in the segment, one after the last valid byte.
-	 * @return The next memory segment. 
-	 * 
+	 * @return The next memory segment.
+	 *
 	 * @throws IOException
 	 */
 	protected abstract MemorySegment nextSegment(MemorySegment current, int positionInCurrent) throws IOException;
-	
-	
+
+
 	/**
 	 * Gets the segment that the view currently writes to.
-	 * 
+	 *
 	 * @return The segment the view currently writes to.
 	 */
 	public MemorySegment getCurrentSegment() {
 		return this.currentSegment;
 	}
-	
+
 	/**
 	 * Gets the current write position (the position where the next bytes will be written)
 	 * in the current memory segment.
-	 * 
+	 *
 	 * @return The current write offset in the current memory segment.
 	 */
 	public int getCurrentPositionInSegment() {
 		return this.positionInSegment;
 	}
-	
+
 	/**
 	 * Gets the size of the segments used by this view.
-	 * 
+	 *
 	 * @return The memory segment size.
 	 */
 	public int getSegmentSize() {
 		return this.segmentSize;
 	}
-	
+
 	/**
 	 * Moves the output view to the next page. This method invokes internally the
-	 * {@link #nextSegment(MemorySegment, int)} method to give the current memory segment to the concrete subclass' 
+	 * {@link #nextSegment(MemorySegment, int)} method to give the current memory segment to the concrete subclass'
 	 * implementation and obtain the next segment to write to. Writing will continue inside the new segment
 	 * after the header.
-	 * 
+	 *
 	 * @throws IOException Thrown, if the current segment could not be processed or a new segment could not
-	 *                     be obtained. 
+	 *                     be obtained.
 	 */
 	protected void advance() throws IOException {
 		this.currentSegment = nextSegment(this.currentSegment, this.positionInSegment);
 		this.positionInSegment = this.headerLength;
 	}
-	
+
 	/**
-	 * Sets the internal state to the given memory segment and the given position within the segment. 
-	 * 
+	 * Sets the internal state to the given memory segment and the given position within the segment.
+	 *
 	 * @param seg The memory segment to write the next bytes to.
 	 * @param position The position to start writing the next bytes to.
 	 */
@@ -146,11 +145,11 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 		this.currentSegment = seg;
 		this.positionInSegment = position;
 	}
-	
+
 	/**
 	 * Clears the internal state. Any successive write calls will fail until either {@link #advance()} or
-	 * {@link #seekOutput(MemorySegment, int)} is called. 
-	 * 
+	 * {@link #seekOutput(MemorySegment, int)} is called.
+	 *
 	 * @see #advance()
 	 * @see #seekOutput(MemorySegment, int)
 	 */
@@ -158,11 +157,11 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 		this.currentSegment = null;
 		this.positionInSegment = this.headerLength;
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
 	//                               Data Output Specific methods
 	// --------------------------------------------------------------------------------------------
-	
+
 	@Override
 	public void write(int b) throws IOException {
 		writeByte(b);
@@ -190,11 +189,11 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 				this.currentSegment.put(this.positionInSegment, b, off, toPut);
 				off += toPut;
 				len -= toPut;
-				
+
 				if (len > 0) {
 					this.positionInSegment = this.segmentSize;
 					advance();
-					remaining = this.segmentSize - this.positionInSegment;	
+					remaining = this.segmentSize - this.positionInSegment;
 				}
 				else {
 					this.positionInSegment += toPut;
@@ -334,8 +333,9 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 			}
 		}
 
-		if (utflen > 65535)
+		if (utflen > 65535) {
 			throw new UTFDataFormatException("encoded string too long: " + utflen + " memory");
+		}
 
 		if (this.utfBuffer == null || this.utfBuffer.length < utflen + 2) {
 			this.utfBuffer = new byte[utflen + 2];
@@ -348,8 +348,9 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 		int i = 0;
 		for (i = 0; i < strlen; i++) {
 			c = str.charAt(i);
-			if (!((c >= 0x0001) && (c <= 0x007F)))
+			if (!((c >= 0x0001) && (c <= 0x007F))) {
 				break;
+			}
 			bytearr[count++] = (byte) c;
 		}
 
@@ -395,13 +396,13 @@ public abstract class AbstractPagedOutputView implements DataOutputView {
 				this.positionInSegment += numBytes;
 				return;
 			}
-			
+
 			if (remaining > 0) {
 				this.currentSegment.put(source, this.positionInSegment, remaining);
 				this.positionInSegment = this.segmentSize;
 				numBytes -= remaining;
 			}
-			
+
 			advance();
 		}
 		return;

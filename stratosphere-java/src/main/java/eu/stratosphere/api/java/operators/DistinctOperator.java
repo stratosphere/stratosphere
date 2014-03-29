@@ -27,8 +27,9 @@ public class DistinctOperator<IN> extends SingleInputOperator<IN, IN, DistinctOp
 	public DistinctOperator(DataSet<IN> input, Keys<IN> keys) {
 		super(input, input.getType());
 		
-		if (keys == null)
+		if (keys == null) {
 			throw new NullPointerException();
+		}
 		
 		this.keys = keys;
 	}

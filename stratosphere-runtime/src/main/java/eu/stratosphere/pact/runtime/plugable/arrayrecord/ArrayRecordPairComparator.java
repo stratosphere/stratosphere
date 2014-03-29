@@ -69,10 +69,11 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 	public boolean equalToReference(Value[] candidate) {
 		for (int i = 0; i < this.keyFields2.length; i++) {
 			final Value k = candidate[this.keyFields2[i]];
-			if (k == null)
+			if (k == null) {
 				throw new NullKeyFieldException(this.keyFields2[i]);
-			else if (!k.equals(this.keyHolders1[i]))
+			} else if (!k.equals(this.keyHolders1[i])) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -82,9 +83,9 @@ public class ArrayRecordPairComparator extends TypePairComparator<Value[], Value
 	public int compareToReference(Value[] candidate) {
 		for (int i = 0; i < this.keyFields2.length; i++) {
 			final Key k = (Key) candidate[this.keyFields2[i]];
-			if (k == null)
+			if (k == null) {
 				throw new NullKeyFieldException(this.keyFields2[i]);
-			else {
+			} else {
 				final int comp = k.compareTo(this.keyHolders1[i]);
 				if (comp != 0) {
 					return comp;

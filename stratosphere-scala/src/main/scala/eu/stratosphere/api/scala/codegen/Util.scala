@@ -18,25 +18,25 @@ import scala.reflect.macros.Context
 import eu.stratosphere.api.scala.analysis.UDT
 
 object Util {
-  
-  implicit def createUDT[T]: UDT[T] = macro createUDTImpl[T]
+	
+	implicit def createUDT[T]: UDT[T] = macro createUDTImpl[T]
 
-  def createUDTImpl[T: c.WeakTypeTag](c: Context): c.Expr[UDT[T]] = {
-    import c.universe._
+	def createUDTImpl[T: c.WeakTypeTag](c: Context): c.Expr[UDT[T]] = {
+		import c.universe._
 
-    val slave = MacroContextHolder.newMacroHelper(c)
+		val slave = MacroContextHolder.newMacroHelper(c)
 
-    val (udt, createUdt) = slave.mkUdtClass[T]
+		val (udt, createUdt) = slave.mkUdtClass[T]
 
-    val udtResult = reify {
-      c.Expr[UDT[T]](createUdt).splice
-    }
-    
-    c.Expr[UDT[T]](Block(List(udt), udtResult.tree))
-  }
+		val udtResult = reify {
+			c.Expr[UDT[T]](createUdt).splice
+		}
+		
+		c.Expr[UDT[T]](Block(List(udt), udtResult.tree))
+	}
 
-  // filter out forwards that dont forward from one field position to the same field position
-  def filterNonForwards(from: Array[Int], to: Array[Int]): Array[Int] = {
-    from.zip(to).filter( z => z._1 == z._2).map { _._1}
-  }
+	// filter out forwards that dont forward from one field position to the same field position
+	def filterNonForwards(from: Array[Int], to: Array[Int]): Array[Int] = {
+		from.zip(to).filter( z => z._1 == z._2).map { _._1}
+	}
 }

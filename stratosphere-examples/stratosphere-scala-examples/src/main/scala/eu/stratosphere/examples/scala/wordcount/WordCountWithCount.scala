@@ -26,18 +26,18 @@ import eu.stratosphere.api.scala.operators._
  */
 class WordCountWithCount extends WordCount {
 
-  override def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
-    val input = TextFile(textInput)
+	override def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
+		val input = TextFile(textInput)
 
-    val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } }
-    val counts = words groupBy { x => x } count()
+		val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } }
+		val counts = words groupBy { x => x } count()
 
-    val output = counts.write(wordsOutput, CsvOutputFormat("\n", " "))
-  
-    val plan = new ScalaPlan(Seq(output), "Word Count")
-    plan.setDefaultParallelism(numSubTasks)
-    plan
-  }
+		val output = counts.write(wordsOutput, CsvOutputFormat("\n", " "))
+	
+		val plan = new ScalaPlan(Seq(output), "Word Count")
+		plan.setDefaultParallelism(numSubTasks)
+		plan
+	}
 }
 
 
@@ -45,13 +45,13 @@ class WordCountWithCount extends WordCount {
  * Entry point to make the example standalone runnable with the local executor.
  */
 object RunWordCountWithCount {
-  def main(args: Array[String]) {
-    val wc = new WordCountWithCount
-    if (args.size < 3) {
-      println(wc.getDescription)
-      return
-    }
-    val plan = wc.getScalaPlan(args(0).toInt, args(1), args(2))
-    LocalExecutor.execute(plan)
-  }
+	def main(args: Array[String]) {
+		val wc = new WordCountWithCount
+		if (args.size < 3) {
+			println(wc.getDescription)
+			return
+		}
+		val plan = wc.getScalaPlan(args(0).toInt, args(1), args(2))
+		LocalExecutor.execute(plan)
+	}
 }

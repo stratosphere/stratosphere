@@ -23,19 +23,19 @@ import eu.stratosphere.types.Record;
 import java.io.IOException;
 
 public class PageWithRankOutFormat extends FileOutputFormat {
-  private static final long serialVersionUID = 1L;
+private static final long serialVersionUID = 1L;
 
-  private final StringBuilder buffer = new StringBuilder();
+private final StringBuilder buffer = new StringBuilder();
 
-  @Override
-  public void writeRecord(Record record) throws IOException {
-    buffer.setLength(0);
-    buffer.append(record.getField(0, LongValue.class).toString());
-    buffer.append('\t');
-    buffer.append(record.getField(1, DoubleValue.class).toString());
-    buffer.append('\n');
+@Override
+public void writeRecord(Record record) throws IOException {
+	buffer.setLength(0);
+	buffer.append(record.getField(0, LongValue.class).toString());
+	buffer.append('\t');
+	buffer.append(record.getField(1, DoubleValue.class).toString());
+	buffer.append('\n');
 
-    byte[] bytes = buffer.toString().getBytes(Charsets.UTF_8);
-    stream.write(bytes);
-  }
+	byte[] bytes = buffer.toString().getBytes(Charsets.UTF_8);
+	stream.write(bytes);
+}
 }

@@ -34,8 +34,9 @@ public class Grouping<T> {
 	private Order[] groupSortOrders = null;
 
 	public Grouping(DataSet<T> set, Keys<T> keys) {
-		if (set == null || keys == null)
+		if (set == null || keys == null) {
 			throw new NullPointerException();
+		}
 		
 		if (keys.isEmpty()) {
 			throw new InvalidProgramException("The grouping keys must not be empty.");

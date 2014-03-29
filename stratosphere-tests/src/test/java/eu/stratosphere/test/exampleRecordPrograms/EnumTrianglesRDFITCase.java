@@ -41,15 +41,15 @@ public class EnumTrianglesRDFITCase extends TestBase {
 	String resultPath = null; 
 
 	private String edges = "<a> <http://xmlns.com/foaf/0.1/knows> <b>\n" + "<a> <http://xmlns.com/foaf/0.1/knows> <c>\n" + 
-						   "<a> <http://xmlns.com/foaf/0.1/knows> <d>\n" + "<b> <http://xmlns.com/foaf/0.1/knows> <c>\n" + 
-						   "<b> <http://xmlns.com/foaf/0.1/knows> <e>\n" + "<b> <http://xmlns.com/foaf/0.1/knows> <f>\n" + 
-						   "<c> <http://xmlns.com/foaf/0.1/knows> <d>\n" + "<d> <http://xmlns.com/foaf/0.1/knows> <b>\n" + 
-						   "<f> <http://xmlns.com/foaf/0.1/knows> <g>\n" + "<f> <http://xmlns.com/foaf/0.1/knows> <h>\n" + 
-						   "<f> <http://xmlns.com/foaf/0.1/knows> <i>\n" + "<g> <http://xmlns.com/foaf/0.1/knows> <i>\n" +
-						   "<g> <http://willNotWork> <h>\n";
+						"<a> <http://xmlns.com/foaf/0.1/knows> <d>\n" + "<b> <http://xmlns.com/foaf/0.1/knows> <c>\n" + 
+						"<b> <http://xmlns.com/foaf/0.1/knows> <e>\n" + "<b> <http://xmlns.com/foaf/0.1/knows> <f>\n" + 
+						"<c> <http://xmlns.com/foaf/0.1/knows> <d>\n" + "<d> <http://xmlns.com/foaf/0.1/knows> <b>\n" + 
+						"<f> <http://xmlns.com/foaf/0.1/knows> <g>\n" + "<f> <http://xmlns.com/foaf/0.1/knows> <h>\n" + 
+						"<f> <http://xmlns.com/foaf/0.1/knows> <i>\n" + "<g> <http://xmlns.com/foaf/0.1/knows> <i>\n" +
+						"<g> <http://willNotWork> <h>\n";
 
 	private String expected = "<a> <b> <c>\n" + "<a> <b> <d>\n" + "<a> <c> <d>\n" + 
-	                          "<b> <c> <d>\n" + "<f> <g> <i>\n";
+							  "<b> <c> <d>\n" + "<f> <g> <i>\n";
 	
 	public EnumTrianglesRDFITCase(Configuration config) {
 		super(config);

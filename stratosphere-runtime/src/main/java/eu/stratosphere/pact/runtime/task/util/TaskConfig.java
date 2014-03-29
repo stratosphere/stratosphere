@@ -211,9 +211,9 @@ public class TaskConfig {
 	
 	private static final String ITERATION_SOLUTION_SET_UPDATE_SKIP_REPROBE = "iterative.ss-update-fast";
 
-    private static final String ITERATION_SOLUTION_SET_UPDATE_WAIT = "iterative.ss-wait";
+	private static final String ITERATION_SOLUTION_SET_UPDATE_WAIT = "iterative.ss-wait";
 
-    private static final String ITERATION_WORKSET_UPDATE = "iterative.ws-update";
+	private static final String ITERATION_WORKSET_UPDATE = "iterative.ws-update";
 
 	// ---------------------------------- Miscellaneous -------------------------------------------
 	
@@ -676,8 +676,9 @@ public class TaskConfig {
 
 	public Class<? extends ChainedDriver<?, ?>> getChainedTask(int chainPos) {
 		final String className = this.config.getString(CHAINING_TASK_PREFIX + chainPos, null);
-		if (className == null)
+		if (className == null) {
 			throw new IllegalStateException("Chained Task Class missing");
+		}
 		
 		@SuppressWarnings("unchecked")
 		final Class<ChainedDriver<?, ?>> clazz = (Class<ChainedDriver<?, ?>>) (Class<?>) ChainedDriver.class;
@@ -1001,21 +1002,21 @@ public class TaskConfig {
 		return this.config.getBoolean(ITERATION_SOLUTION_SET_UPDATE_SKIP_REPROBE, false);
 	}
 
-    public void setWaitForSolutionSetUpdate() {
-        this.config.setBoolean(ITERATION_SOLUTION_SET_UPDATE_WAIT, true);
-    }
+	public void setWaitForSolutionSetUpdate() {
+		this.config.setBoolean(ITERATION_SOLUTION_SET_UPDATE_WAIT, true);
+	}
 
-    public boolean getWaitForSolutionSetUpdate() {
-        return this.config.getBoolean(ITERATION_SOLUTION_SET_UPDATE_WAIT, false);
-    }
+	public boolean getWaitForSolutionSetUpdate() {
+		return this.config.getBoolean(ITERATION_SOLUTION_SET_UPDATE_WAIT, false);
+	}
 
-    public void setIsWorksetUpdate() {
-        this.config.setBoolean(ITERATION_WORKSET_UPDATE, true);
-    }
+	public void setIsWorksetUpdate() {
+		this.config.setBoolean(ITERATION_WORKSET_UPDATE, true);
+	}
 
-    public boolean getIsWorksetUpdate() {
-        return this.config.getBoolean(ITERATION_WORKSET_UPDATE, false);
-    }
+	public boolean getIsWorksetUpdate() {
+		return this.config.getBoolean(ITERATION_WORKSET_UPDATE, false);
+	}
 
 	// --------------------------------------------------------------------------------------------
 	//                                    Miscellaneous
@@ -1281,8 +1282,9 @@ public class TaskConfig {
 			if (obj instanceof DelegatingConfiguration) {
 				DelegatingConfiguration other = (DelegatingConfiguration) obj;
 				return this.prefix.equals(other.prefix) && this.backingConfig.equals(other.backingConfig);
+			} else {
+				return false;
 			}
-			else return false;
 		}
 	}
 }

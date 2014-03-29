@@ -28,15 +28,15 @@ import eu.stratosphere.test.util.TestBase2;
 public class DanglingPageRankNepheleITCase extends TestBase2 {
 	
 	public static final String TEST_VERTICES = "1\n" +
-	                                           "2\n" +
-	                                           "5\n" +
-	                                           "3 1\n" +
-	                                           "4";
+											   "2\n" +
+											   "5\n" +
+											   "3 1\n" +
+											   "4";
 
 	public static final String TEST_EDGES = "2 1\n" +
-	                                        "5 2 4\n" +
-	                                        "4 3 2\n" +
-	                                        "1 4 2 3";
+											"5 2 4\n" +
+											"4 3 2\n" +
+											"1 4 2 3";
 	
 	protected String pagesWithRankPath;
 	protected String edgesPath;

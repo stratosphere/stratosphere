@@ -41,44 +41,44 @@ import eu.stratosphere.api.scala.operators._
  */
 class RelationalQuery extends Program with ProgramDescription with Serializable {
 
-  case class Order(orderId: Int, status: Char, year: Int, orderPriority: String, shipPriority: Int)
-  case class LineItem(orderId: Int, extendedPrice: Double)
-  case class PrioritizedOrder(orderId: Int, shipPriority: Int, revenue: Double)
-  
-  
-  def getScalaPlan(numSubTasks: Int, ordersInput: String, lineItemsInput: String, ordersOutput: String, status: Char = 'F', minYear: Int = 1993, priority: String = "5") = {
-    
-    // ORDER intput: parse as CSV and select relevant fields
-    val orders = DataSource(ordersInput, CsvInputFormat[(Int, String, String, String, String, String, String, Int)]("\n", '|'))
-                         .map { t => Order(t._1, t._3.charAt(0), t._5.substring(0,4).toInt, t._6, t._8) }
-      
-    // ORDER intput: parse as CSV and select relevant fields
-    val lineItems = DataSource(lineItemsInput, CsvInputFormat[(Int, String, String, String, String, Double)]("\n", '|'))
-                         .map { t => LineItem(t._1, t._6) }
-    
-    // filter the orders input
-    val filteredOrders = orders filter { o => o.status == status && o.year > minYear && o.orderPriority.startsWith(priority) }
-    
-    // join the filteres result with the lineitem input
-    val prioritizedItems = filteredOrders join lineItems where { _.orderId } isEqualTo { _.orderId } map { (o, li) => PrioritizedOrder(o.orderId, o.shipPriority, li.extendedPrice) }
-    
-    // group by and sum the joined data
-    val prioritizedOrders = prioritizedItems groupBy { pi => (pi.orderId, pi.shipPriority) } reduce { (po1, po2) => po1.copy(revenue = po1.revenue + po2.revenue) }
+	case class Order(orderId: Int, status: Char, year: Int, orderPriority: String, shipPriority: Int)
+	case class LineItem(orderId: Int, extendedPrice: Double)
+	case class PrioritizedOrder(orderId: Int, shipPriority: Int, revenue: Double)
+	
+	
+	def getScalaPlan(numSubTasks: Int, ordersInput: String, lineItemsInput: String, ordersOutput: String, status: Char = 'F', minYear: Int = 1993, priority: String = "5") = {
+		
+		// ORDER intput: parse as CSV and select relevant fields
+		val orders = DataSource(ordersInput, CsvInputFormat[(Int, String, String, String, String, String, String, Int)]("\n", '|'))
+												.map { t => Order(t._1, t._3.charAt(0), t._5.substring(0,4).toInt, t._6, t._8) }
+			
+		// ORDER intput: parse as CSV and select relevant fields
+		val lineItems = DataSource(lineItemsInput, CsvInputFormat[(Int, String, String, String, String, Double)]("\n", '|'))
+												.map { t => LineItem(t._1, t._6) }
+		
+		// filter the orders input
+		val filteredOrders = orders filter { o => o.status == status && o.year > minYear && o.orderPriority.startsWith(priority) }
+		
+		// join the filteres result with the lineitem input
+		val prioritizedItems = filteredOrders join lineItems where { _.orderId } isEqualTo { _.orderId } map { (o, li) => PrioritizedOrder(o.orderId, o.shipPriority, li.extendedPrice) }
+		
+		// group by and sum the joined data
+		val prioritizedOrders = prioritizedItems groupBy { pi => (pi.orderId, pi.shipPriority) } reduce { (po1, po2) => po1.copy(revenue = po1.revenue + po2.revenue) }
 
-    // write the result as csv
-    val output = prioritizedOrders.write(ordersOutput, CsvOutputFormat("\n", "|"))
+		// write the result as csv
+		val output = prioritizedOrders.write(ordersOutput, CsvOutputFormat("\n", "|"))
 
-    val plan = new ScalaPlan(Seq(output), "Relational Query")
-    plan.setDefaultParallelism(numSubTasks)
-    plan
-  }
+		val plan = new ScalaPlan(Seq(output), "Relational Query")
+		plan.setDefaultParallelism(numSubTasks)
+		plan
+	}
 
-  override def getDescription() = {
-    "Parameters: <numSubStasks>, <orders>, <lineitem>, <output>"
-  }
-  override def getPlan(args: String*) = {
-    getScalaPlan(args(0).toInt, args(1), args(2), args(3))
-  }
+	override def getDescription() = {
+		"Parameters: <numSubStasks>, <orders>, <lineitem>, <output>"
+	}
+	override def getPlan(args: String*) = {
+		getScalaPlan(args(0).toInt, args(1), args(2), args(3))
+	}
 }
 
 
@@ -86,16 +86,16 @@ class RelationalQuery extends Program with ProgramDescription with Serializable 
  * Entry point to make the example standalone runnable with the local executor
  */
 object RunRelationalQuery {
-  
-  def main(args: Array[String]) {
-    val query = new RelationalQuery
-    
-    if (args.size < 4) {
-      println(query.getDescription)
-      return
-    }
-    val plan = query.getScalaPlan(args(0).toInt, args(1), args(2), args(3))
-    LocalExecutor.execute(plan)
-  }
+	
+	def main(args: Array[String]) {
+		val query = new RelationalQuery
+		
+		if (args.size < 4) {
+			println(query.getDescription)
+			return
+		}
+		val plan = query.getScalaPlan(args(0).toInt, args(1), args(2), args(3))
+		LocalExecutor.execute(plan)
+	}
 }
 

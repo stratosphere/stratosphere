@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.Random;
 
 import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
-import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.java.record.functions.MapFunction;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
 import eu.stratosphere.api.java.record.io.GenericInputFormat;

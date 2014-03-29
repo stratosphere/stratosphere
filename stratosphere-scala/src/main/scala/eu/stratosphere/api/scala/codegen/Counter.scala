@@ -14,13 +14,13 @@
 package eu.stratosphere.api.scala.codegen
 
 class Counter {
-  private var value: Int = 0
+	private var value: Int = 0
 
-  def next: Int = {
-    this.synchronized {
-      val current = value
-      value += 1
-      current
-    }
-  }
+	def next: Int = {
+		this.synchronized {
+			val current = value
+			value += 1
+			current
+		}
+	}
 }

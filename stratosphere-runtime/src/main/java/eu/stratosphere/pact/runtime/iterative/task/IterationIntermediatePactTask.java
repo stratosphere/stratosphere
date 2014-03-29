@@ -13,20 +13,15 @@
 
 package eu.stratosphere.pact.runtime.iterative.task;
 
-import eu.stratosphere.api.common.functions.Function;
-import eu.stratosphere.nephele.io.AbstractRecordWriter;
-import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannel;
-import eu.stratosphere.nephele.io.channels.bytebuffered.EndOfSuperstepEvent;
-import eu.stratosphere.pact.runtime.iterative.event.TerminationEvent;
-import eu.stratosphere.pact.runtime.iterative.io.WorksetUpdateOutputCollector;
-import eu.stratosphere.pact.runtime.hash.MutableHashTable;
-import eu.stratosphere.pact.runtime.task.PactDriver;
-import eu.stratosphere.util.Collector;
+import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.nephele.io.AbstractRecordWriter;
+import eu.stratosphere.pact.runtime.iterative.io.WorksetUpdateOutputCollector;
+import eu.stratosphere.util.Collector;
 
 /**
  * An intermediate iteration task, which runs a {@link PactDriver} inside.
@@ -60,7 +55,7 @@ public class IterationIntermediatePactTask<S extends Function, OT> extends Abstr
 			if (isSolutionSetUpdate) {
 				throw new IllegalStateException("Plan bug: Intermediate task performs workset and solutions set update.");
 			}
-			
+
 			Collector<OT> outputCollector = createWorksetUpdateOutputCollector(delegate);
 
 			// we need the WorksetUpdateOutputCollector separately to count the collected elements

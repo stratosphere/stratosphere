@@ -225,9 +225,9 @@ public class FilterITCase extends JavaProgramTestBase {
 				
 				// return expected result
 				return "Hi\n" +
-					   "Hello\n" + 
-					   "Hello world\n" +
-					   "Hello world, how are you?\n";
+					"Hello\n" + 
+					"Hello world\n" +
+					"Hello world, how are you?\n";
 			}
 			case 6: {
 				/*

@@ -14,13 +14,12 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.io;
 
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,9 +32,9 @@ import java.nio.ByteBuffer;
  * This saves memory over creating a new DataOutputStream and ByteArrayOutputStream each time data is written.
  * <p>
  * Typical usage is something like the following:
- * 
+ *
  * <pre>
- * 
+ *
  * DataOutputBuffer buffer = new DataOutputBuffer();
  * while (... loop condition ...) {
  *   buffer.reset();

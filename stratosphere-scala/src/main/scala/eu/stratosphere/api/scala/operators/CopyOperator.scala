@@ -27,49 +27,49 @@ import eu.stratosphere.configuration.Configuration
 import eu.stratosphere.api.scala.DataSet
 
 object CopyOperator {
-  def apply(source: Operator with ScalaOperator[_]): DataSet[_] = {
-    val generatedStub = new MapFunction with Serializable {
-      val udf: UDF1[_, _] = new UDF1(source.getUDF.outputUDT, source.getUDF.outputUDT)
+	def apply(source: Operator with ScalaOperator[_]): DataSet[_] = {
+		val generatedStub = new MapFunction with Serializable {
+			val udf: UDF1[_, _] = new UDF1(source.getUDF.outputUDT, source.getUDF.outputUDT)
 
-      private var from: Array[Int] = _
-      private var to: Array[Int] = _
-      private var discard: Array[Int] = _
-      private var outputLength: Int = _
+			private var from: Array[Int] = _
+			private var to: Array[Int] = _
+			private var discard: Array[Int] = _
+			private var outputLength: Int = _
 
-      override def open(config: Configuration) = {
-        super.open(config)
-        this.from = udf.inputFields.toSerializerIndexArray
-        this.to = udf.outputFields.toSerializerIndexArray
-        this.discard = udf.getDiscardIndexArray.filter(_ < udf.getOutputLength)
-        this.outputLength = udf.getOutputLength
-      }
+			override def open(config: Configuration) = {
+				super.open(config)
+				this.from = udf.inputFields.toSerializerIndexArray
+				this.to = udf.outputFields.toSerializerIndexArray
+				this.discard = udf.getDiscardIndexArray.filter(_ < udf.getOutputLength)
+				this.outputLength = udf.getOutputLength
+			}
 
-      override def map(record: Record, out: Collector[Record]) = {
+			override def map(record: Record, out: Collector[Record]) = {
 
-        record.setNumFields(outputLength)
+				record.setNumFields(outputLength)
 
-        record.copyFrom(record, from, to)
+				record.copyFrom(record, from, to)
 
-        for (field <- discard)
-          record.setNull(field)
+				for (field <- discard)
+					record.setNull(field)
 
-        out.collect(record)
-      }
-    }
+				out.collect(record)
+			}
+		}
 
-    val builder = MapOperator.builder(generatedStub).input(source)
+		val builder = MapOperator.builder(generatedStub).input(source)
 
-    val ret = new MapOperator(builder) with OneInputScalaOperator[Nothing, Nothing] {
-      override def getUDF = generatedStub.udf.asInstanceOf[UDF1[Nothing, Nothing]]
-      override def annotations = Seq(Annotations.getConstantFields(
-        generatedStub.udf.getForwardIndexArrayFrom.zip(generatedStub.udf.getForwardIndexArrayTo)
-          .filter( z => z._1 == z._2).map { _._1}))
-      persistHints = { () =>
-        this.setName("Copy " + source.getName())
-        if (source.getCompilerHints().getAvgOutputRecordSize() >= 0)
-          this.getCompilerHints().setAvgOutputRecordSize(source.getCompilerHints().getAvgOutputRecordSize())
-      }
-    }
-    new DataSet[Nothing](ret)
-  }
+		val ret = new MapOperator(builder) with OneInputScalaOperator[Nothing, Nothing] {
+			override def getUDF = generatedStub.udf.asInstanceOf[UDF1[Nothing, Nothing]]
+			override def annotations = Seq(Annotations.getConstantFields(
+				generatedStub.udf.getForwardIndexArrayFrom.zip(generatedStub.udf.getForwardIndexArrayTo)
+					.filter( z => z._1 == z._2).map { _._1}))
+			persistHints = { () =>
+				this.setName("Copy " + source.getName())
+				if (source.getCompilerHints().getAvgOutputRecordSize() >= 0)
+					this.getCompilerHints().setAvgOutputRecordSize(source.getCompilerHints().getAvgOutputRecordSize())
+			}
+		}
+		new DataSet[Nothing](ret)
+	}
 }

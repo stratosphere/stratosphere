@@ -65,7 +65,6 @@ import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.profiling.ProfilingUtils;
 import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
@@ -89,7 +88,7 @@ import eu.stratosphere.util.StringUtils;
  * (or in case of an execution error) it reports the execution result back to the job manager.
  * Task managers are able to automatically discover the job manager and receive its configuration from it
  * as long as the job manager is running on the same local network
- * 
+ *
  */
 public class TaskManager implements TaskOperationProtocol {
 
@@ -142,10 +141,10 @@ public class TaskManager implements TaskOperationProtocol {
 	 * Stores whether the task manager has already been shut down.
 	 */
 	private boolean isShutDown = false;
-	
+
 	/**
 	 * Constructs a new task manager, starts its IPC service and attempts to discover the job manager to
-	 * receive an initial configuration. All parameters are obtained from the 
+	 * receive an initial configuration. All parameters are obtained from the
 	 * {@link GlobalConfiguration}, which must be loaded prior to instantiating the task manager.
 	 */
 	public TaskManager(final int taskManagersPerJVM) throws Exception {
@@ -155,7 +154,7 @@ public class TaskManager implements TaskOperationProtocol {
 		final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
 		InetSocketAddress jobManagerAddress = null;
 		if (address == null) {
-            throw new Exception("Job manager address not configured");
+			throw new Exception("Job manager address not configured");
 		}
 		LOG.info("Reading location of job manager from configuration");
 
@@ -181,9 +180,9 @@ public class TaskManager implements TaskOperationProtocol {
 			LOG.error(StringUtils.stringifyException(e));
 			throw new Exception("Failed to initialize connection to JobManager: " + e.getMessage(), e);
 		}
-		
+
 		this.jobManager = jobManager;
-		
+
 		try {
 			taskManagerAddress = getTaskManagerAddress(jobManagerAddress);
 		} catch(IOException ioe) {
@@ -200,11 +199,11 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		this.localInstanceConnectionInfo = new InstanceConnectionInfo(taskManagerAddress, ipcPort, dataPort);
 		LOG.info("Announcing connection information " + this.localInstanceConnectionInfo + " to job manager");
-		
+
 		// Try to create local stub of the global input split provider
 		InputSplitProviderProtocol globalInputSplitProvider = null;
 		try {
-			globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress, 
+			globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress,
 				NetUtils.getSocketFactory());
 		} catch (IOException e) {
 			LOG.error(StringUtils.stringifyException(e));
@@ -233,7 +232,7 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		this.accumulatorProtocolProxy = accumulatorProtocolStub;
 
-		
+
 		// Start local RPC server
 		Server taskManagerServer = null;
 		try {
@@ -334,10 +333,10 @@ public class TaskManager implements TaskOperationProtocol {
 
 	/**
 	 * Entry point for the program.
-	 * 
+	 *
 	 * @param args
 	 *        arguments from the command line
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException {
@@ -357,12 +356,12 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 
 		String configDir = line.getOptionValue(configDirOpt.getOpt(), null);
-		
+
 		// First, try to load global configuration
 		GlobalConfiguration.loadConfiguration(configDir);
 
 		LOG.info("Current user "+UserGroupInformation.getCurrentUser().getShortUserName());
-		
+
 		// Create a new task manager object
 		TaskManager taskManager = null;
 		try {
@@ -373,10 +372,10 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		// Run the main I/O loop
 		taskManager.runIOLoop();
-		
+
 		// Shut down
 		taskManager.shutdown();
-				
+
 	}
 
 	// This method is called by the TaskManagers main thread
@@ -411,7 +410,7 @@ public class TaskManager implements TaskOperationProtocol {
 		shutdown();
 	}
 
-	
+
 	/**
 	 * The states of address detection mechanism.
 	 * There is only a state transition if the current
@@ -422,8 +421,8 @@ public class TaskManager implements TaskOperationProtocol {
 		FAST_CONNECT(50),	//try to connect to the JobManager on all Interfaces and all their addresses.
 							//this state uses a low timeout (say 50 ms) for fast detection.
 		SLOW_CONNECT(1000);	//same as FAST_CONNECT, but with a timeout of 1000 ms (1s).
-		
-		
+
+
 		private int timeout;
 		AddressDetectionState(int timeout) {
 			this.timeout = timeout;
@@ -432,59 +431,59 @@ public class TaskManager implements TaskOperationProtocol {
 			return timeout;
 		}
 	}
-	
+
 	/**
 	 * Find out the TaskManager's own IP address.
 	 */
 	private InetAddress getTaskManagerAddress(InetSocketAddress jobManagerAddress) throws IOException {
 		AddressDetectionState strategy = AddressDetectionState.ADDRESS;
-		
+
 		while(true) {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
-		    while (e.hasMoreElements())  {
-		        NetworkInterface n = e.nextElement();
-	        	Enumeration<InetAddress> ee = n.getInetAddresses();
-		        while (ee.hasMoreElements()) {
-		            InetAddress i = ee.nextElement();
-		            switch(strategy) {
-		            	case ADDRESS:
-		            		if(hasCommonPrefix(jobManagerAddress.getAddress().getAddress(),i.getAddress())) {
-		            			if(tryToConnect(i, jobManagerAddress, strategy.getTimeout())) {
-		            				LOG.info("Determined "+i+" as the TaskTracker's own IP address");
-		            				return i;
-		            			}
-		            		}
-		            		break;
-		            	case FAST_CONNECT:
-		            	case SLOW_CONNECT:
-				            boolean correct = tryToConnect(i, jobManagerAddress, strategy.getTimeout());
-				            if(correct) {
-				            	LOG.info("Determined "+i+" as the TaskTracker's own IP address");
-				            	return i;
-				            }
-				            break;
-				        default:
-				        	throw new RuntimeException("Unkown address detection strategy: "+strategy);
-		            }
-		        }
-		    }
-		    // state control
-		    switch(strategy) {
-			    case ADDRESS:
-			    	strategy = AddressDetectionState.FAST_CONNECT;
-			    	break;
-			    case FAST_CONNECT:
-			    	strategy = AddressDetectionState.SLOW_CONNECT;
-			    	break;
-			    case SLOW_CONNECT:
-			    	throw new RuntimeException("The TaskManager failed to detect its own IP address");
-		    }
+			while (e.hasMoreElements())  {
+				NetworkInterface n = e.nextElement();
+				Enumeration<InetAddress> ee = n.getInetAddresses();
+				while (ee.hasMoreElements()) {
+					InetAddress i = ee.nextElement();
+					switch(strategy) {
+						case ADDRESS:
+							if(hasCommonPrefix(jobManagerAddress.getAddress().getAddress(),i.getAddress())) {
+								if(tryToConnect(i, jobManagerAddress, strategy.getTimeout())) {
+									LOG.info("Determined "+i+" as the TaskTracker's own IP address");
+									return i;
+								}
+							}
+							break;
+						case FAST_CONNECT:
+						case SLOW_CONNECT:
+							boolean correct = tryToConnect(i, jobManagerAddress, strategy.getTimeout());
+							if(correct) {
+								LOG.info("Determined "+i+" as the TaskTracker's own IP address");
+								return i;
+							}
+							break;
+						default:
+							throw new RuntimeException("Unkown address detection strategy: "+strategy);
+					}
+				}
+			}
+			// state control
+			switch(strategy) {
+				case ADDRESS:
+					strategy = AddressDetectionState.FAST_CONNECT;
+					break;
+				case FAST_CONNECT:
+					strategy = AddressDetectionState.SLOW_CONNECT;
+					break;
+				case SLOW_CONNECT:
+					throw new RuntimeException("The TaskManager failed to detect its own IP address");
+			}
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("Defaulting to detection strategy "+strategy);
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks if two addresses have a common prefix (first 2 bytes).
 	 * Example: 192.168.???.???
@@ -499,25 +498,25 @@ public class TaskManager implements TaskOperationProtocol {
 			LOG.debug("Trying to connect to JobManager ("+toSocket+") from local address "+fromAddress+" with timeout "+timeout);
 		}
 		boolean connectable = true;
-        Socket socket = null;
-        try {
-        	socket = new Socket(); 
-        	SocketAddress bindP = new InetSocketAddress(fromAddress, 0); // 0 = let the OS choose the port on this machine
+		Socket socket = null;
+		try {
+			socket = new Socket();
+			SocketAddress bindP = new InetSocketAddress(fromAddress, 0); // 0 = let the OS choose the port on this machine
 			socket.bind(bindP);
-        	socket.connect(toSocket,timeout);
-        } catch(Exception ex) {
-        	if(LOG.isDebugEnabled()) {
-        		LOG.debug("Failed on this address: "+ex.getMessage());
-        	}
-        	connectable = false;
-        } finally {
-        	if(socket != null) {
-        		socket.close();
-        	}
-        }
-        return connectable;
+			socket.connect(toSocket,timeout);
+		} catch(Exception ex) {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Failed on this address: "+ex.getMessage());
+			}
+			connectable = false;
+		} finally {
+			if(socket != null) {
+				socket.close();
+			}
+		}
+		return connectable;
 	}
-	
+
 
 	@Override
 	public TaskCancelResult cancelTask(final ExecutionVertexID id) throws IOException {
@@ -641,7 +640,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	/**
 	 * Registers an newly incoming runtime task with the task manager.
-	 * 
+	 *
 	 * @param id
 	 *        the ID of the task to register
 	 * @param jobConfiguration
@@ -711,7 +710,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	/**
 	 * Unregisters a finished or aborted task.
-	 * 
+	 *
 	 * @param id
 	 *        the ID of the task to be unregistered
 	 */
@@ -754,10 +753,11 @@ public class TaskManager implements TaskOperationProtocol {
 		String[] requiredLibraries = request.getRequiredLibraries();
 
 		for (int i = 0; i < requiredLibraries.length; i++) {
-			if (LibraryCacheManager.contains(requiredLibraries[i]) == null)
+			if (LibraryCacheManager.contains(requiredLibraries[i]) == null) {
 				response.setCached(i, false);
-			else
+			} else {
 				response.setCached(i, true);
+			}
 		}
 
 		return response;
@@ -855,7 +855,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	/**
 	 * Checks whether the task manager has already been shut down.
-	 * 
+	 *
 	 * @return <code>true</code> if the task manager has already been shut down, <code>false</code> otherwise
 	 */
 	public synchronized boolean isShutDown() {
@@ -916,7 +916,7 @@ public class TaskManager implements TaskOperationProtocol {
 	/**
 	 * Checks, whether the given strings describe existing directories that are writable. If that is not
 	 * the case, an exception is raised.
-	 * 
+	 *
 	 * @param tempDirs
 	 *        An array of strings which are checked to be paths to writable directories.
 	 * @throws Exception
@@ -946,5 +946,5 @@ public class TaskManager implements TaskOperationProtocol {
 			}
 		}
 	}
-  
+
 }

@@ -14,25 +14,23 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.ipc;
 
-import java.net.Socket;
-import java.net.InetSocketAddress;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.net.ConnectException;
-
-import java.io.IOException;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -41,7 +39,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.net.SocketFactory;
 
-import org.apache.commons.logging.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.core.io.StringRecord;
@@ -54,7 +53,7 @@ import eu.stratosphere.util.ClassUtils;
  * A client for an IPC service. IPC calls take a single {@link Writable} as a
  * parameter, and return a {@link Writable} as their value. A service runs on
  * a port and is defined by a parameter class and a value class.
- * 
+ *
  * @see Server
  */
 public class Client {
@@ -100,7 +99,7 @@ public class Client {
 
 	/**
 	 * Return if this client has no reference
-	 * 
+	 *
 	 * @return true if this client has no reference; false otherwise
 	 */
 	synchronized boolean isZeroReference() {
@@ -138,7 +137,7 @@ public class Client {
 		/**
 		 * Set the exception when there is an error.
 		 * Notify the caller the call is done.
-		 * 
+		 *
 		 * @param error
 		 *        exception thrown by the call; either local or remote
 		 */
@@ -150,7 +149,7 @@ public class Client {
 		/**
 		 * Set the return value when there is no error.
 		 * Notify the caller the call is done.
-		 * 
+		 *
 		 * @param value
 		 *        return value of the call.
 		 */
@@ -212,14 +211,15 @@ public class Client {
 		 * Add a call to this connection's call queue and notify
 		 * a listener; synchronized.
 		 * Returns false if called during shutdown.
-		 * 
+		 *
 		 * @param call
 		 *        to add
 		 * @return true if the call was added.
 		 */
 		private synchronized boolean addCall(Call call) {
-			if (shouldCloseConnection.get())
+			if (shouldCloseConnection.get()) {
 				return false;
+			}
 			calls.put(call.id, call);
 			notify();
 			return true;
@@ -253,7 +253,7 @@ public class Client {
 			 * Read a byte from the stream.
 			 * Send a ping if timeout on read. Retries if no failure is detected
 			 * until a byte is read.
-			 * 
+			 *
 			 * @throws IOException
 			 *         for any IO problem other than socket timeout
 			 */
@@ -271,7 +271,7 @@ public class Client {
 			 * Read bytes into a buffer starting from offset <code>off</code> Send a ping if timeout on read. Retries if
 			 * no failure is detected
 			 * until a byte is read.
-			 * 
+			 *
 			 * @return the total number of bytes read; -1 if the connection is closed.
 			 */
 			public int read(byte[] buf, int off, int len) throws IOException {
@@ -605,7 +605,7 @@ public class Client {
 
 	/** Result collector for parallel calls. */
 	private static class ParallelResults {
-		
+
 		private IOReadableWritable[] values;
 
 		private int size;
@@ -616,8 +616,10 @@ public class Client {
 		public synchronized void callComplete(ParallelCall call) {
 			this.values[call.index] = call.value; // store the value
 			this.count++; // count it
-			if (this.count == this.size) // if all values are in
+			if (this.count == this.size)
+			{
 				notify(); // then notify waiting caller
+			}
 		}
 	}
 
@@ -634,7 +636,7 @@ public class Client {
 
 	/**
 	 * Construct an IPC client with the default SocketFactory
-	 * 
+	 *
 	 * @param valueClass
 	 * @param conf
 	 */
@@ -644,7 +646,7 @@ public class Client {
 
 	/**
 	 * Return the socket factory of this client
-	 * 
+	 *
 	 * @return this client's socket factory
 	 */
 	SocketFactory getSocketFactory() {
@@ -656,7 +658,7 @@ public class Client {
 	 * using this client.
 	 */
 	public void stop() {
-		
+
 		if (!this.running.compareAndSet(true, false)) {
 			return;
 		}
@@ -717,7 +719,7 @@ public class Client {
 	 * the exception is thrown and some extra diagnostics information.
 	 * If the exception is ConnectException or SocketTimeoutException,
 	 * return a new one of the same type; Otherwise return an IOException.
-	 * 
+	 *
 	 * @param addr
 	 *        target address
 	 * @param exception

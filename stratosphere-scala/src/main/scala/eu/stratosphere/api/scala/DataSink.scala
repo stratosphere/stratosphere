@@ -23,37 +23,37 @@ import eu.stratosphere.api.common.io.FileOutputFormat
 import eu.stratosphere.api.common.operators.GenericDataSink
 
 object DataSinkOperator {
-  val DEFAULT_DATASINKOPERATOR_NAME = "<Unnamed Scala Data Sink>"
+	val DEFAULT_DATASINKOPERATOR_NAME = "<Unnamed Scala Data Sink>"
 
-  def write[In](input: DataSet[In], url: String, format: ScalaOutputFormat[In],
-                name: String = DEFAULT_DATASINKOPERATOR_NAME): ScalaSink[In]
-  = {
-    val uri = getUri(url)
+	def write[In](input: DataSet[In], url: String, format: ScalaOutputFormat[In],
+								name: String = DEFAULT_DATASINKOPERATOR_NAME): ScalaSink[In]
+	= {
+		val uri = getUri(url)
 
-    val ret = uri.getScheme match {
-      case "file" | "hdfs" => new FileDataSink(format.asInstanceOf[FileOutputFormat[_]], uri.toString,
-        input.contract, name) with OneInputScalaOperator[In, Nothing] {
+		val ret = uri.getScheme match {
+			case "file" | "hdfs" => new FileDataSink(format.asInstanceOf[FileOutputFormat[_]], uri.toString,
+				input.contract, name) with OneInputScalaOperator[In, Nothing] {
 
-        def getUDF = format.getUDF
-        override def persistConfiguration() = format.persistConfiguration(this.getParameters())
-      }
-    }
-    new ScalaSink(ret)
-  }
+				def getUDF = format.getUDF
+				override def persistConfiguration() = format.persistConfiguration(this.getParameters())
+			}
+		}
+		new ScalaSink(ret)
+	}
 
-  private def getUri(url: String) = {
-    val uri = new URI(url)
-    if (uri.getScheme == null)
-      new URI("file://" + url)
-    else
-      uri
-  }
+	private def getUri(url: String) = {
+		val uri = new URI(url)
+		if (uri.getScheme == null)
+			new URI("file://" + url)
+		else
+			uri
+	}
 }
 
 class ScalaSink[In] private[scala] (private[scala] val sink: GenericDataSink)
 
 trait ScalaOutputFormat[In] { this: OutputFormat[_] =>
-  def getUDF: UDF1[In, Nothing]
-  def persistConfiguration(config: Configuration) = {}
-  def configure(config: Configuration)
+	def getUDF: UDF1[In, Nothing]
+	def persistConfiguration(config: Configuration) = {}
+	def configure(config: Configuration)
 }

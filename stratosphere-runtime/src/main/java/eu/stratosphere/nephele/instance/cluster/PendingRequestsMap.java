@@ -24,7 +24,7 @@ import eu.stratosphere.nephele.instance.InstanceType;
  * objects which could not be fulfilled yet.
  * <p>
  * This class is not thread-safe.
- * 
+ *
  */
 public final class PendingRequestsMap {
 
@@ -35,7 +35,7 @@ public final class PendingRequestsMap {
 
 	/**
 	 * Checks if the job this object belongs to has pending instance requests.
-	 * 
+	 *
 	 * @return <code>true</code> if the job this object belongs to has pending instance requests, <code>false</code>
 	 *         otherwise
 	 */
@@ -46,7 +46,7 @@ public final class PendingRequestsMap {
 
 	/**
 	 * Adds the a pending request for the given number of instances of the given type to this map.
-	 * 
+	 *
 	 * @param instanceType
 	 *        the requested instance type
 	 * @param numberOfInstances
@@ -66,7 +66,7 @@ public final class PendingRequestsMap {
 
 	/**
 	 * Returns an iterator for the pending requests encapsulated in this map.
-	 * 
+	 *
 	 * @return an iterator for the pending requests encapsulated in this map
 	 */
 	Iterator<Map.Entry<InstanceType, Integer>> iterator() {
@@ -76,7 +76,7 @@ public final class PendingRequestsMap {
 
 	/**
 	 * Decreases the number of remaining instances to request of the given type.
-	 * 
+	 *
 	 * @param instanceType
 	 *        the instance type for which the number of remaining instances shall be decreased
 	 */

@@ -15,19 +15,17 @@
 
 package eu.stratosphere.core.memory;
 
-import java.io.IOException;
-
-/**
+  /**
  * Interface marking a {@link DataOutputView} as seekable. Seekable views can set the position where they
  * write to.
  */
 public interface SeekableDataOutputView extends DataOutputView {
-	
+
 	/**
 	 * Sets the write pointer to the given position.
-	 * 
+	 *
 	 * @param position The new write position.
-	 * 
+	 *
 	 * @throws IOException Thrown, if any I/O related problem occurred such that the output could not
 	 *                     be sought to the desired position.
 	 */

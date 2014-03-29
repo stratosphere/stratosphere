@@ -251,10 +251,11 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 		this.cumulativeCosts = nodeCosts.clone();
 		for (Iterator<PlanNode> preds = getPredecessors(); preds.hasNext();) {
 			Costs parentCosts = preds.next().cumulativeCosts;
-			if (parentCosts != null)
+			if (parentCosts != null) {
 				this.cumulativeCosts.addCosts(parentCosts);
-			else
+			} else {
 				throw new CompilerException();
+			}
 		}
 	}
 	

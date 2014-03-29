@@ -18,14 +18,14 @@ import scala.reflect.macros.Context
 class MacroContextHolder[C <: Context](val c: C)
 
 object MacroContextHolder {
-  def newMacroHelper[C <: Context](c: C) = new MacroContextHolder[c.type](c)
-    	with Loggers[c.type]
-    	with UDTDescriptors[c.type]
-    	with UDTAnalyzer[c.type]
-    	with TreeGen[c.type]
-    	with SerializerGen[c.type]
-    	with SerializeMethodGen[c.type]
-    	with DeserializeMethodGen[c.type]
-    	with UDTGen[c.type]
-    	with SelectionExtractor[c.type]
+	def newMacroHelper[C <: Context](c: C) = new MacroContextHolder[c.type](c)
+			with Loggers[c.type]
+			with UDTDescriptors[c.type]
+			with UDTAnalyzer[c.type]
+			with TreeGen[c.type]
+			with SerializerGen[c.type]
+			with SerializeMethodGen[c.type]
+			with DeserializeMethodGen[c.type]
+			with UDTGen[c.type]
+			with SelectionExtractor[c.type]
 }

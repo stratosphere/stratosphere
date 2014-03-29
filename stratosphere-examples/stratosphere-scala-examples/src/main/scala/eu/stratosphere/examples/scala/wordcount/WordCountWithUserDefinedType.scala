@@ -30,24 +30,24 @@ import eu.stratosphere.api.scala.operators._
  */
 class WordCountWithUserDefinedType extends Program with Serializable {
 
-  def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
-    val input = TextFile(textInput)
+	def getScalaPlan(numSubTasks: Int, textInput: String, wordsOutput: String) = {
+		val input = TextFile(textInput)
 
-    val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } map { w => (new StringValue(w), new IntValue(1)) } }
-    
-    val counts = words
-      .groupBy { case (word, _) => word }
-      .reduce { (w1, w2) => (w1._1, new IntValue(w1._2.getValue + w2._2.getValue)) }
+		val words = input flatMap { _.toLowerCase().split("""\W+""") filter { _ != "" } map { w => (new StringValue(w), new IntValue(1)) } }
+		
+		val counts = words
+			.groupBy { case (word, _) => word }
+			.reduce { (w1, w2) => (w1._1, new IntValue(w1._2.getValue + w2._2.getValue)) }
 
-    val output = counts.write(wordsOutput, CsvOutputFormat("\n", " "))
-  
-    val plan = new ScalaPlan(Seq(output), "Word Count (immutable)")
-    plan.setDefaultParallelism(numSubTasks)
-    plan
-  }
-  
+		val output = counts.write(wordsOutput, CsvOutputFormat("\n", " "))
+	
+		val plan = new ScalaPlan(Seq(output), "Word Count (immutable)")
+		plan.setDefaultParallelism(numSubTasks)
+		plan
+	}
+	
 
-  override def getPlan(args: String*) = {
-    getScalaPlan(args(0).toInt, args(1), args(2))
-  }
+	override def getPlan(args: String*) = {
+		getScalaPlan(args(0).toInt, args(1), args(2))
+	}
 }

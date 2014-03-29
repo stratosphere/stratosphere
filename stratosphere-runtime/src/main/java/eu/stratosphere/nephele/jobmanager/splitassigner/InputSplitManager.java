@@ -30,7 +30,6 @@ import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertexIterator;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 import eu.stratosphere.nephele.jobmanager.splitassigner.file.FileInputSplitAssigner;
 import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
@@ -83,7 +82,7 @@ public final class InputSplitManager {
 
 	/**
 	 * Registers a new job represented by its {@link ExecutionGraph} with the input split manager.
-	 * 
+	 *
 	 * @param executionGraph
 	 *        the job to be registered
 	 */
@@ -127,7 +126,7 @@ public final class InputSplitManager {
 
 	/**
 	 * Unregisters the given job represented by its {@link ExecutionGraph} with the input split manager.
-	 * 
+	 *
 	 * @param executionGraph
 	 *        the job to be unregistered
 	 */
@@ -164,7 +163,7 @@ public final class InputSplitManager {
 	/**
 	 * Returns the next input split the input split manager (or the responsible {@link InputSplitAssigner} to be more
 	 * precise) has chosen for the given vertex to consume.
-	 * 
+	 *
 	 * @param vertex
 	 *        the vertex for which the next input split is to be determined
 	 * @param sequenceNumber
@@ -198,7 +197,7 @@ public final class InputSplitManager {
 
 	/**
 	 * Returns the {@link InputSplitAssigner} which is defined for the given type of input split.
-	 * 
+	 *
 	 * @param inputSplitType
 	 *        the type of input split to find the corresponding {@link InputSplitAssigner} for
 	 * @param allowLoading
@@ -233,7 +232,7 @@ public final class InputSplitManager {
 	/**
 	 * Attempts to find the responsible type of {@link InputSplitAssigner} for the given type of input split from the
 	 * configuration and instantiate an object for it.
-	 * 
+	 *
 	 * @param inputSplitType
 	 *        the type of input split to load the {@link InputSplitAssigner} for
 	 * @return the newly loaded {@link InputSplitAssigner} object or <code>null</code> if no such object could be
@@ -242,7 +241,7 @@ public final class InputSplitManager {
 	private InputSplitAssigner loadInputSplitAssigner(final Class<? extends InputSplit> inputSplitType) {
 
 		final String className = inputSplitType.getName();
-		
+
 		final String assignerKey = INPUT_SPLIT_CONFIG_KEY_PREFIX + className;
 		LOG.info("Trying to load input split assigner for type " + className);
 

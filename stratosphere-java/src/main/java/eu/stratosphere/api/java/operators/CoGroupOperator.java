@@ -39,16 +39,17 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 
 
 	protected CoGroupOperator(DataSet<I1> input1, DataSet<I2> input2,
-							  Keys<I1> keys1, Keys<I2> keys2,
-							  CoGroupFunction<I1, I2, OUT> function,
-							  TypeInformation<OUT> returnType)
+							Keys<I1> keys1, Keys<I2> keys2,
+							CoGroupFunction<I1, I2, OUT> function,
+							TypeInformation<OUT> returnType)
 	{
 		super(input1, input2, returnType);
 
 		this.function = function;
 
-		if (keys1 == null || keys2 == null)
+		if (keys1 == null || keys2 == null) {
 			throw new NullPointerException();
+		}
 		
 		this.keys1 = keys1;
 		this.keys2 = keys2;
@@ -132,8 +133,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		private final DataSet<I2> input2;
 		
 		public CoGroupOperatorSets(DataSet<I1> input1, DataSet<I2> input2) {
-			if (input1 == null || input2 == null)
+			if (input1 == null || input2 == null) {
 				throw new NullPointerException();
+			}
 			
 			this.input1 = input1;
 			this.input2 = input2;
@@ -158,8 +160,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			private final Keys<I1> keys1;
 			
 			private CoGroupOperatorSetsPredicate(Keys<I1> keys1) {
-				if (keys1 == null)
+				if (keys1 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys1.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -184,8 +187,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			
 			
 			private CoGroupOperatorWithoutFunction createCoGroupOperator(Keys<I2> keys2) {
-				if (keys2 == null)
+				if (keys2 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys2.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -202,8 +206,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 				private final Keys<I2> keys2;
 
 				private CoGroupOperatorWithoutFunction(Keys<I2> keys2) {
-					if (keys2 == null)
+					if (keys2 == null) {
 						throw new NullPointerException();
+					}
 
 					if (keys2.isEmpty()) {
 						throw new InvalidProgramException("The join keys must not be empty.");

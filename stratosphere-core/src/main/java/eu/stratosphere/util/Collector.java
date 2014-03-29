@@ -13,21 +13,19 @@
 
 package eu.stratosphere.util;
 
-import eu.stratosphere.api.common.functions.Function;
-
 /**
  * Collects the output of PACT first-order user function implemented as {@link Function}.
  * The collected data is forwards to the next contract.
  */
 public interface Collector<T> {
-	
+
 	/**
 	 * Emits a record from the invoking PACT first-order user function implemented as {@link Function}.
-	 * 
+	 *
 	 * @param record The record to collect.
 	 */
 	void collect(T record);
-	
+
 	/**
 	 * Closes the collector, flushing any buffered data.
 	 */

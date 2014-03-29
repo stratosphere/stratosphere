@@ -14,7 +14,6 @@
 package eu.stratosphere.yarn;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -43,7 +41,6 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -52,20 +49,18 @@ import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.hadoop.util.Shell;
 
-import com.google.common.base.Preconditions;
-
-import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.GlobalConfiguration;
 
 public class Utils {
-	
+
 	private static final Log LOG = LogFactory.getLog(Utils.class);
-	
+
 
 	public static void copyJarContents(String prefix, String pathToJar) throws IOException {
 		LOG.info("Copying jar (location: "+pathToJar+") to prefix "+prefix);
-		
+
 		JarFile jar = null;
 		jar = new JarFile(pathToJar);
 		Enumeration<JarEntry> enumr = jar.entries();
@@ -88,21 +83,21 @@ public class Utils {
 				while ((read = inStream.read(bytes)) != -1) {
 					outputStream.write(bytes, 0, read);
 				}
-				inStream.close(); outputStream.close(); 
+				inStream.close(); outputStream.close();
 			}
 		}
 		jar.close();
 	}
-	
+
 	public static void getStratosphereConfiguration(String confDir) {
 		GlobalConfiguration.loadConfiguration(confDir);
 	}
-	
+
 	private static void addPathToConfig(Configuration conf, File path) {
 		// chain-in a new classloader
 		URL fileUrl = null;
 		try {
-			 fileUrl = path.toURL();
+			fileUrl = path.toURL();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -120,7 +115,7 @@ public class Utils {
 	}
 	public static Configuration initializeYarnConfiguration() {
 		Configuration conf = new YarnConfiguration();
-		String envs[] = { "YARN_CONF_DIR", "HADOOP_CONF_DIR", "HADOOP_CONF_PATH" };
+		String[] envs = { "YARN_CONF_DIR", "HADOOP_CONF_DIR", "HADOOP_CONF_PATH" };
 		for(int i = 0; i < envs.length; ++i) {
 			String confPath = System.getenv(envs[i]);
 			if (confPath != null) {
@@ -151,17 +146,17 @@ public class Utils {
 		setDefaultConfValues(conf);
 		return conf;
 	}
-	
+
 	public static void setupEnv(Configuration conf, Map<String, String> appMasterEnv) {
 		for (String c : conf.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH,YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
 			Apps.addToEnvironment(appMasterEnv, Environment.CLASSPATH.name(), c.trim());
 		}
 		Apps.addToEnvironment(appMasterEnv, Environment.CLASSPATH.name(), Environment.PWD.$() + File.separator + "*");
 	}
-	
-	 
+
+
 	/**
-	 * 
+	 *
 	 * @return Path to remote file (usually hdfs)
 	 * @throws IOException
 	 */
@@ -169,15 +164,15 @@ public class Utils {
 			throws IOException {
 		// copy to HDFS
 		String suffix = ".stratosphere/" + appId + "/" + localRsrcPath.getName();
-		
-	    Path dst = new Path(homedir, suffix);
-	    
-	    LOG.info("Copying from "+localRsrcPath+" to "+dst );
-	    fs.copyFromLocalFile(localRsrcPath, dst);
-	    registerLocalResource(fs, dst, appMasterJar);
-	    return dst;
+
+		Path dst = new Path(homedir, suffix);
+
+		LOG.info("Copying from "+localRsrcPath+" to "+dst );
+		fs.copyFromLocalFile(localRsrcPath, dst);
+		registerLocalResource(fs, dst, appMasterJar);
+		return dst;
 	}
-	
+
 	public static void registerLocalResource(FileSystem fs, Path remoteRsrcPath, LocalResource localResource) throws IOException {
 		FileStatus jarStat = fs.getFileStatus(remoteRsrcPath);
 		localResource.setResource(ConverterUtils.getYarnUrlFromURI(remoteRsrcPath.toUri()));
@@ -190,27 +185,27 @@ public class Utils {
 	public static void setTokensFor(ContainerLaunchContext amContainer, Path[] paths, Configuration conf) throws IOException {
 		Credentials credentials = new Credentials();
 		// for HDFS
-        TokenCache.obtainTokensForNamenodes(credentials, paths, conf);
-        // for user
-        UserGroupInformation currUsr = UserGroupInformation.getCurrentUser();
-        
-        Collection<Token<? extends TokenIdentifier>> usrTok = currUsr.getTokens();
-        for(Token<? extends TokenIdentifier> token : usrTok) {
-        	final Text id = new Text(token.getIdentifier());
-        	LOG.info("Adding user token "+id+" with "+token);
-        	credentials.addToken(id, token);
-        }
-        DataOutputBuffer dob = new DataOutputBuffer();
-        credentials.writeTokenStorageToStream(dob);
-        LOG.debug("Wrote tokens. Credentials buffer length: "+dob.getLength());
-        
-        ByteBuffer securityTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
-        amContainer.setTokens(securityTokens);
+		TokenCache.obtainTokensForNamenodes(credentials, paths, conf);
+		// for user
+		UserGroupInformation currUsr = UserGroupInformation.getCurrentUser();
+
+		Collection<Token<? extends TokenIdentifier>> usrTok = currUsr.getTokens();
+		for(Token<? extends TokenIdentifier> token : usrTok) {
+			final Text id = new Text(token.getIdentifier());
+			LOG.info("Adding user token "+id+" with "+token);
+			credentials.addToken(id, token);
+		}
+		DataOutputBuffer dob = new DataOutputBuffer();
+		credentials.writeTokenStorageToStream(dob);
+		LOG.debug("Wrote tokens. Credentials buffer length: "+dob.getLength());
+
+		ByteBuffer securityTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
+		amContainer.setTokens(securityTokens);
 	}
-	
+
 	public static void logFilesInCurrentDirectory(final Log logger) {
 		new File(".").list(new FilenameFilter() {
-			
+
 			@Override
 			public boolean accept(File dir, String name) {
 				logger.info(dir.getAbsolutePath()+"/"+name);

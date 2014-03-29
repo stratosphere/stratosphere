@@ -90,22 +90,22 @@ public class AvroRecordInputFormatTest {
 		user1.setTypeArrayBoolean(booleanArray);
 		user1.setTypeEnum(TEST_ENUM_COLOR);
 		user1.setTypeMap(longMap);
-	     
+		
 		// Construct via builder
 		User user2 = User.newBuilder()
-		             .setName("Charlie")
-		             .setFavoriteColor("blue")
-		             .setFavoriteNumber(null)
-		             .setTypeBoolTest(false)
-		             .setTypeDoubleTest(1.337d)
-		             .setTypeNullTest(null)
-		             .setTypeLongTest(1337L)
-		             .setTypeArrayString(new ArrayList<CharSequence>())
-		             .setTypeArrayBoolean(new ArrayList<Boolean>())
-		             .setTypeNullableArray(null)
-		             .setTypeEnum(Colors.RED)
-		             .setTypeMap(new HashMap<CharSequence, Long>())
-		             .build();
+					.setName("Charlie")
+					.setFavoriteColor("blue")
+					.setFavoriteNumber(null)
+					.setTypeBoolTest(false)
+					.setTypeDoubleTest(1.337d)
+					.setTypeNullTest(null)
+					.setTypeLongTest(1337L)
+					.setTypeArrayString(new ArrayList<CharSequence>())
+					.setTypeArrayBoolean(new ArrayList<Boolean>())
+					.setTypeNullableArray(null)
+					.setTypeEnum(Colors.RED)
+					.setTypeMap(new HashMap<CharSequence, Long>())
+					.build();
 		DatumWriter<User> userDatumWriter = new SpecificDatumWriter<User>(User.class);
 		DataFileWriter<User> dataFileWriter = new DataFileWriter<User>(userDatumWriter);
 		dataFileWriter.create(user1.getSchema(), testFile);

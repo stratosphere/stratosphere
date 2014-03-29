@@ -19,7 +19,7 @@ import eu.stratosphere.nephele.execution.Environment;
 
 /**
  * Abstract base class for every task class in Nephele.
- * 
+ *
  */
 public abstract class AbstractInvokable {
 
@@ -36,7 +36,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * Must be overwritten by the concrete task. This method is called by the task manager
 	 * when the actual execution of the task starts.
-	 * 
+	 *
 	 * @throws Execution
 	 *         thrown if any exception occurs during the execution of the tasks
 	 */
@@ -44,7 +44,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Sets the environment of this task.
-	 * 
+	 *
 	 * @param environment
 	 *        the environment of this task
 	 */
@@ -54,7 +54,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Returns the environment of this task.
-	 * 
+	 *
 	 * @return the environment of this task or <code>null</code> if the environment has not yet been set
 	 */
 	// TODO: This method should be final
@@ -65,7 +65,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * Overwrite this method to implement task specific checks if the
 	 * respective task has been configured properly.
-	 * 
+	 *
 	 * @throws IllegalConfigurationException
 	 *         thrown if the respective tasks is not configured properly
 	 */
@@ -76,7 +76,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * Overwrite this method to provide the minimum number of subtasks the respective task
 	 * must be split into at runtime.
-	 * 
+	 *
 	 * @return the minimum number of subtasks the respective task must be split into at runtime
 	 */
 	public int getMinimumNumberOfSubtasks() {
@@ -87,7 +87,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * Overwrite this method to provide the maximum number of subtasks the respective task
 	 * can be split into at runtime.
-	 * 
+	 *
 	 * @return the maximum number of subtasks the respective task can be split into at runtime, <code>-1</code> for
 	 *         infinity
 	 */
@@ -98,7 +98,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Returns the current number of subtasks the respective task is split into.
-	 * 
+	 *
 	 * @return the current number of subtasks the respective task is split into
 	 */
 	public final int getCurrentNumberOfSubtasks() {
@@ -108,7 +108,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Returns the index of this subtask in the subtask group.
-	 * 
+	 *
 	 * @return the index of this subtask in the subtask group
 	 */
 	public final int getIndexInSubtaskGroup() {
@@ -118,7 +118,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Returns the task configuration object which was attached to the original {@link JobVertex}.
-	 * 
+	 *
 	 * @return the task configuration object which was attached to the original {@link JobVertex}
 	 */
 	public final Configuration getTaskConfiguration() {
@@ -128,7 +128,7 @@ public abstract class AbstractInvokable {
 
 	/**
 	 * Returns the job configuration object which was attached to the original {@link JobGraph}.
-	 * 
+	 *
 	 * @return the job configuration object which was attached to the original {@link JobGraph}
 	 */
 	public final Configuration getJobConfiguration() {
@@ -139,7 +139,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * This method should be called by the user code if a custom
 	 * user thread has been started.
-	 * 
+	 *
 	 * @param userThread
 	 *        the user thread which has been started
 	 */
@@ -154,7 +154,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * This method should be called by the user code if a custom
 	 * user thread has finished.
-	 * 
+	 *
 	 * @param userThread
 	 *        the user thread which has finished
 	 */
@@ -168,7 +168,7 @@ public abstract class AbstractInvokable {
 	/**
 	 * This method is called when a task is canceled either as a result of a user abort or an execution failure. It can
 	 * be overwritten to respond to shut down the user code properly.
-	 * 
+	 *
 	 * @throws Exception
 	 *         thrown if any exception occurs during the execution of the user code
 	 */

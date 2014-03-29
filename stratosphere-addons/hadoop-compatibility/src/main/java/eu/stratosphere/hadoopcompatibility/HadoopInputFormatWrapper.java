@@ -56,7 +56,7 @@ public class HadoopInputFormatWrapper<K, V> implements InputFormat<Record, Hadoo
 		org.apache.hadoop.conf.Configuration hadoopConf = DistributedFileSystem.getHadoopConfiguration();
 		for (Entry<String, String> e : hadoopConf) {
 			job.set(e.getKey(), e.getValue());
-	    }
+		}
 		this.jobConf = job;
 	}
 
@@ -133,22 +133,22 @@ public class HadoopInputFormatWrapper<K, V> implements InputFormat<Record, Hadoo
 		out.writeUTF(hadoopInputFormatName);
 		jobConf.write(out);
 		out.writeObject(converter);
-    }
+	}
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    	hadoopInputFormatName = in.readUTF();
-    	if(jobConf == null) {
-    		jobConf = new JobConf();
-    	}
-    	jobConf.readFields(in);
-        try {
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		hadoopInputFormatName = in.readUTF();
+		if(jobConf == null) {
+			jobConf = new JobConf();
+		}
+		jobConf.readFields(in);
+		try {
 			this.hadoopInputFormat = (org.apache.hadoop.mapred.InputFormat<K,V>) Class.forName(this.hadoopInputFormatName).newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to instantiate the hadoop input format", e);
 		}
-        ReflectionUtils.setConf(hadoopInputFormat, jobConf);
-        converter = (HadoopTypeConverter<K,V>) in.readObject();
-    }
+		ReflectionUtils.setConf(hadoopInputFormat, jobConf);
+		converter = (HadoopTypeConverter<K,V>) in.readObject();
+	}
 	
 	public void setJobConf(JobConf job) {
 		this.jobConf = job;

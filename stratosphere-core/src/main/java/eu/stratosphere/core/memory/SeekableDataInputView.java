@@ -13,20 +13,18 @@
 
 package eu.stratosphere.core.memory;
 
-import java.io.IOException;
-
 
 /**
  * Interface marking a {@link DataInputView} as seekable. Seekable views can set the position where they
  * read from.
  */
 public interface SeekableDataInputView extends DataInputView {
-	
+
 	/**
 	 * Sets the read pointer to the given position.
-	 * 
+	 *
 	 * @param position The new read position.
-	 * 
+	 *
 	 * @throws IOException Thrown, if any I/O related problem occurred such that the input could not
 	 *                     be sought to the desired position.
 	 */

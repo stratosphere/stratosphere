@@ -22,9 +22,9 @@ import eu.stratosphere.api.scala.ScalaOperator
 
 trait GlobalSchemaOptimizer {
 
-  import Extractors._
+	import Extractors._
 
-  def optimizeSchema(plan: OptimizedPlan, compactSchema: Boolean): Unit = {
+	def optimizeSchema(plan: OptimizedPlan, compactSchema: Boolean): Unit = {
 
 //    val (outputSets, outputPositions) = OutputSets.computeOutputSets(plan)
 //    val edgeSchemas = EdgeDependencySets.computeEdgeDependencySets(plan, outputSets)
@@ -35,30 +35,30 @@ trait GlobalSchemaOptimizer {
 //      GlobalSchemaCompactor.compactSchema(plan)
 //    }
 
-    GlobalSchemaPrinter.printSchema(plan)
-    
-    plan.getDataSinks.map(_.getSinkNode).foldLeft(Set[OptimizerNode]())(persistConfiguration)
-  }
+		GlobalSchemaPrinter.printSchema(plan)
+		
+		plan.getDataSinks.map(_.getSinkNode).foldLeft(Set[OptimizerNode]())(persistConfiguration)
+	}
 
-  private def persistConfiguration(visited: Set[OptimizerNode], node: OptimizerNode): Set[OptimizerNode] = {
+	private def persistConfiguration(visited: Set[OptimizerNode], node: OptimizerNode): Set[OptimizerNode] = {
 
-    visited.contains(node) match {
+		visited.contains(node) match {
 
-      case true => visited
+			case true => visited
 
-      case false => {
+			case false => {
 
-        val children = node.getIncomingConnections.map(_.getSource).toSet
-        val newVisited = children.foldLeft(visited + node)(persistConfiguration)
+				val children = node.getIncomingConnections.map(_.getSource).toSet
+				val newVisited = children.foldLeft(visited + node)(persistConfiguration)
 
-        node.getPactContract match {
+				node.getPactContract match {
 
-          case c: ScalaOperator[_] => c.persistConfiguration(Some(node))
-          case _                    =>
-        }
+					case c: ScalaOperator[_] => c.persistConfiguration(Some(node))
+					case _                    =>
+				}
 
-        newVisited
-      }
-    }
-  }
+				newVisited
+			}
+		}
+	}
 }

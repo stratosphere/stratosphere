@@ -23,66 +23,66 @@ import eu.stratosphere.types.StringValue
 import eu.stratosphere.api.scala.codegen.Util
 
 abstract class UDT[T] extends Serializable {
-  protected def createSerializer(indexMap: Array[Int]): UDTSerializer[T]
-  val fieldTypes: Array[Class[_ <: eu.stratosphere.types.Value]]
-  val udtIdMap: Map[Int, Int]
-  
-  def numFields = fieldTypes.length
+	protected def createSerializer(indexMap: Array[Int]): UDTSerializer[T]
+	val fieldTypes: Array[Class[_ <: eu.stratosphere.types.Value]]
+	val udtIdMap: Map[Int, Int]
+	
+	def numFields = fieldTypes.length
 
-  def getSelectionIndices(selection: List[Int]) = { 
-    selection map { udtIdMap.getOrElse(_, -1) }
-  }
+	def getSelectionIndices(selection: List[Int]) = { 
+		selection map { udtIdMap.getOrElse(_, -1) }
+	}
 
-  def getKeySet(fields: Seq[Int]): Array[Class[_ <: PactKey]] = {
-    fields map { fieldNum => fieldTypes(fieldNum).asInstanceOf[Class[_ <: PactKey]] } toArray
-  }
+	def getKeySet(fields: Seq[Int]): Array[Class[_ <: PactKey]] = {
+		fields map { fieldNum => fieldTypes(fieldNum).asInstanceOf[Class[_ <: PactKey]] } toArray
+	}
 
-  def getSerializer(indexMap: Array[Int]): UDTSerializer[T] = {
-    val ser = createSerializer(indexMap)
-    ser
-  }
+	def getSerializer(indexMap: Array[Int]): UDTSerializer[T] = {
+		val ser = createSerializer(indexMap)
+		ser
+	}
 
-  @transient private var defaultSerializer: UDTSerializer[T] = null
+	@transient private var defaultSerializer: UDTSerializer[T] = null
 
-  def getSerializerWithDefaultLayout: UDTSerializer[T] = {
-    // This method will be reentrant if T is a recursive type
-    if (defaultSerializer == null) {
-      defaultSerializer = createSerializer((0 until numFields) toArray)
-    }
-    defaultSerializer
-  }
+	def getSerializerWithDefaultLayout: UDTSerializer[T] = {
+		// This method will be reentrant if T is a recursive type
+		if (defaultSerializer == null) {
+			defaultSerializer = createSerializer((0 until numFields) toArray)
+		}
+		defaultSerializer
+	}
 }
 
 abstract class UDTSerializer[T](val indexMap: Array[Int]) {
-  def serialize(item: T, record: Record)
-  def deserializeRecyclingOff(record: Record): T
-  def deserializeRecyclingOn(record: Record): T
+	def serialize(item: T, record: Record)
+	def deserializeRecyclingOff(record: Record): T
+	def deserializeRecyclingOn(record: Record): T
 }
 
 trait UDTLowPriorityImplicits {
-  implicit def createUDT[T]: UDT[T] = macro Util.createUDTImpl[T]
+	implicit def createUDT[T]: UDT[T] = macro Util.createUDTImpl[T]
 }
 
 object UDT extends UDTLowPriorityImplicits {
 
-  // UDTs needed by library code
+	// UDTs needed by library code
 
-  object NothingUDT extends UDT[Nothing] {
-    override val fieldTypes = Array[Class[_ <: PactValue]]()
-    override val udtIdMap: Map[Int, Int] = Map()
-    override def createSerializer(indexMap: Array[Int]) = throw new UnsupportedOperationException("Cannot create UDTSerializer for type Nothing")
-  }
+	object NothingUDT extends UDT[Nothing] {
+		override val fieldTypes = Array[Class[_ <: PactValue]]()
+		override val udtIdMap: Map[Int, Int] = Map()
+		override def createSerializer(indexMap: Array[Int]) = throw new UnsupportedOperationException("Cannot create UDTSerializer for type Nothing")
+	}
 
-  object StringUDT extends UDT[String] {
+	object StringUDT extends UDT[String] {
 
-    override val fieldTypes = Array[Class[_ <: PactValue]](classOf[StringValue])
-    override val udtIdMap: Map[Int, Int] = Map()
+		override val fieldTypes = Array[Class[_ <: PactValue]](classOf[StringValue])
+		override val udtIdMap: Map[Int, Int] = Map()
 
-    override def createSerializer(indexMap: Array[Int]) = new UDTSerializer[String](indexMap) {
+		override def createSerializer(indexMap: Array[Int]) = new UDTSerializer[String](indexMap) {
 
-      private val index = indexMap(0)
+			private val index = indexMap(0)
 
-      @transient private var pactField = new StringValue()
+			@transient private var pactField = new StringValue()
 
 //      override def getFieldIndex(selection: Seq[String]): List[Int] = selection match {
 //        case Seq() => List(index)
@@ -90,36 +90,36 @@ object UDT extends UDTLowPriorityImplicits {
 //        case _     => throw new RuntimeException("Invalid selection: " + selection)
 //      }
 
-      override def serialize(item: String, record: Record) = {
-        if (index >= 0) {
-          pactField.setValue(item)
-          record.setField(index, pactField)
-        }
-      }
+			override def serialize(item: String, record: Record) = {
+				if (index >= 0) {
+					pactField.setValue(item)
+					record.setField(index, pactField)
+				}
+			}
 
-      override def deserializeRecyclingOff(record: Record): String = {
-        if (index >= 0) {
-          record.getFieldInto(index, pactField)
-          pactField.getValue()
-        } else {
-          null
-        }
-      }
+			override def deserializeRecyclingOff(record: Record): String = {
+				if (index >= 0) {
+					record.getFieldInto(index, pactField)
+					pactField.getValue()
+				} else {
+					null
+				}
+			}
 
-      override def deserializeRecyclingOn(record: Record): String = {
-        if (index >= 0) {
-          record.getFieldInto(index, pactField)
-          pactField.getValue()
-        } else {
-          null
-        }
-      }
+			override def deserializeRecyclingOn(record: Record): String = {
+				if (index >= 0) {
+					record.getFieldInto(index, pactField)
+					pactField.getValue()
+				} else {
+					null
+				}
+			}
 
-      private def readObject(in: java.io.ObjectInputStream) = {
-        in.defaultReadObject()
-        pactField = new StringValue()
-      }
-    }
-  }
+			private def readObject(in: java.io.ObjectInputStream) = {
+				in.defaultReadObject()
+				pactField = new StringValue()
+			}
+		}
+	}
 }
 

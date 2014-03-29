@@ -17,15 +17,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.api.common.functions.Function;
-import eu.stratosphere.pact.runtime.hash.MutableHashTable;
-import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannel;
 import eu.stratosphere.pact.runtime.iterative.concurrent.SolutionSetUpdateBarrier;
 import eu.stratosphere.pact.runtime.iterative.concurrent.SolutionSetUpdateBarrierBroker;
 import eu.stratosphere.pact.runtime.iterative.io.WorksetUpdateOutputCollector;
-import eu.stratosphere.pact.runtime.shipping.RecordOutputCollector;
-import eu.stratosphere.pact.runtime.task.PactDriver;
 import eu.stratosphere.pact.runtime.task.PactTaskContext;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
 /**
@@ -46,7 +41,7 @@ public class IterationTailPactTask<S extends Function, OT> extends AbstractItera
 	private SolutionSetUpdateBarrier solutionSetUpdateBarrier;
 
 	private WorksetUpdateOutputCollector<OT> worksetUpdateOutputCollector;
-	
+
 
 	@Override
 	protected void initialize() throws Exception {

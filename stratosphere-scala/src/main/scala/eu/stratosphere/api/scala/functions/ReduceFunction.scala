@@ -23,70 +23,70 @@ import scala.Iterator
 
 
 abstract class ReduceFunctionBase[In: UDT, Out: UDT] extends JReduceFunction with Serializable {
-  val inputUDT: UDT[In] = implicitly[UDT[In]]
-  val outputUDT: UDT[Out] = implicitly[UDT[Out]]
-  val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
+	val inputUDT: UDT[In] = implicitly[UDT[In]]
+	val outputUDT: UDT[Out] = implicitly[UDT[Out]]
+	val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
 
-  protected val reduceRecord = new Record()
+	protected val reduceRecord = new Record()
 
-  protected lazy val reduceIterator: DeserializingIterator[In] = new DeserializingIterator(udf.getInputDeserializer)
-  protected lazy val reduceSerializer: UDTSerializer[Out] = udf.getOutputSerializer
-  protected lazy val reduceForwardFrom: Array[Int] = udf.getForwardIndexArrayFrom
-  protected lazy val reduceForwardTo: Array[Int] = udf.getForwardIndexArrayTo
+	protected lazy val reduceIterator: DeserializingIterator[In] = new DeserializingIterator(udf.getInputDeserializer)
+	protected lazy val reduceSerializer: UDTSerializer[Out] = udf.getOutputSerializer
+	protected lazy val reduceForwardFrom: Array[Int] = udf.getForwardIndexArrayFrom
+	protected lazy val reduceForwardTo: Array[Int] = udf.getForwardIndexArrayTo
 }
 
 abstract class ReduceFunction[In: UDT] extends ReduceFunctionBase[In, In] with Function2[In, In, In] {
 
-  override def combine(records: JIterator[Record], out: Collector[Record]) = {
-    reduce(records, out)
-  }
+	override def combine(records: JIterator[Record], out: Collector[Record]) = {
+		reduce(records, out)
+	}
 
-  override def reduce(records: JIterator[Record], out: Collector[Record]) = {
-    val firstRecord = reduceIterator.initialize(records)
-    reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
+	override def reduce(records: JIterator[Record], out: Collector[Record]) = {
+		val firstRecord = reduceIterator.initialize(records)
+		reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
 
-    val output = reduceIterator.reduce(apply)
+		val output = reduceIterator.reduce(apply)
 
-    reduceSerializer.serialize(output, reduceRecord)
-    out.collect(reduceRecord)
-  }
+		reduceSerializer.serialize(output, reduceRecord)
+		out.collect(reduceRecord)
+	}
 }
 
 abstract class GroupReduceFunction[In: UDT, Out: UDT] extends ReduceFunctionBase[In, Out] with Function1[Iterator[In], Out] {
-  override def reduce(records: JIterator[Record], out: Collector[Record]) = {
-    val firstRecord = reduceIterator.initialize(records)
-    reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
+	override def reduce(records: JIterator[Record], out: Collector[Record]) = {
+		val firstRecord = reduceIterator.initialize(records)
+		reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
 
-    val output = apply(reduceIterator)
+		val output = apply(reduceIterator)
 
-    reduceSerializer.serialize(output, reduceRecord)
-    out.collect(reduceRecord)
-  }
+		reduceSerializer.serialize(output, reduceRecord)
+		out.collect(reduceRecord)
+	}
 }
 
 abstract class CombinableGroupReduceFunction[In: UDT, Out: UDT] extends ReduceFunctionBase[In, Out] with Function1[Iterator[In], Out] {
-  override def combine(records: JIterator[Record], out: Collector[Record]) = {
-    val firstRecord = reduceIterator.initialize(records)
-    reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
+	override def combine(records: JIterator[Record], out: Collector[Record]) = {
+		val firstRecord = reduceIterator.initialize(records)
+		reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
 
-    val output = combine(reduceIterator)
+		val output = combine(reduceIterator)
 
-    reduceSerializer.serialize(output, reduceRecord)
-    out.collect(reduceRecord)
-  }
+		reduceSerializer.serialize(output, reduceRecord)
+		out.collect(reduceRecord)
+	}
 
-  override def reduce(records: JIterator[Record], out: Collector[Record]) = {
-    val firstRecord = reduceIterator.initialize(records)
-    reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
+	override def reduce(records: JIterator[Record], out: Collector[Record]) = {
+		val firstRecord = reduceIterator.initialize(records)
+		reduceRecord.copyFrom(firstRecord, reduceForwardFrom, reduceForwardTo)
 
-    val output = reduce(reduceIterator)
+		val output = reduce(reduceIterator)
 
-    reduceSerializer.serialize(output, reduceRecord)
-    out.collect(reduceRecord)
-  }
+		reduceSerializer.serialize(output, reduceRecord)
+		out.collect(reduceRecord)
+	}
 
-  def reduce(records: Iterator[In]): Out
-  def combine(records: Iterator[In]): Out
+	def reduce(records: Iterator[In]): Out
+	def combine(records: Iterator[In]): Out
 
-  def apply(record: Iterator[In]): Out = throw new RuntimeException("This should never be called.")
+	def apply(record: Iterator[In]): Out = throw new RuntimeException("This should never be called.")
 }

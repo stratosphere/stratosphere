@@ -30,8 +30,9 @@ public class NumberSequenceIterator implements SplittableIterator<Long> {
 	
 	
 	public NumberSequenceIterator(long from, long to) {
-		if (from > to)
+		if (from > to) {
 			throw new IllegalArgumentException("The 'to' value must not be smaller than the 'from' value.");
+		}
 		
 		this.current = from;
 		this.to = to;
@@ -147,8 +148,9 @@ public class NumberSequenceIterator implements SplittableIterator<Long> {
 	
 	@Override
 	public Iterator<Long> getSplit(int num, int numPartitions) {
-		if (numPartitions < 1 || num < 0 || num >= numPartitions)
+		if (numPartitions < 1 || num < 0 || num >= numPartitions) {
 			throw new IllegalArgumentException();
+		}
 		
 		return split(numPartitions)[num];
 	}

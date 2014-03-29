@@ -14,7 +14,7 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.net;
@@ -23,7 +23,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SelectableChannel;
@@ -60,7 +59,7 @@ public class SocketOutputStream extends OutputStream implements WritableByteChan
 	 * Create a new ouput stream with the given timeout. If the timeout
 	 * is zero, it will be treated as infinite timeout. The socket's
 	 * channel will be configured to be non-blocking.
-	 * 
+	 *
 	 * @param channel
 	 *        Channel for writing, should also be a {@link SelectableChannel}.
 	 *        The channel will be configured to be non-blocking.
@@ -80,7 +79,7 @@ public class SocketOutputStream extends OutputStream implements WritableByteChan
 	 * Create a new ouput stream with the given timeout. If the timeout
 	 * is zero, it will be treated as infinite timeout. The socket's
 	 * channel will be configured to be non-blocking.
-	 * 
+	 *
 	 * @see SocketOutputStream#SocketOutputStream(WritableByteChannel, long)
 	 * @param socket
 	 *        should have a channel associated with it.
@@ -153,7 +152,7 @@ public class SocketOutputStream extends OutputStream implements WritableByteChan
 	/**
 	 * waits for the underlying channel to be ready for writing.
 	 * The timeout specified for this stream applies to this wait.
-	 * 
+	 *
 	 * @throws SocketTimeoutException
 	 *         if select on the channel times out.
 	 * @throws IOException
@@ -167,7 +166,7 @@ public class SocketOutputStream extends OutputStream implements WritableByteChan
 	 * Transfers data from FileChannel using {@link FileChannel#transferTo(long, long, WritableByteChannel)}.
 	 * Similar to readFully(), this waits till requested amount of
 	 * data is transfered.
-	 * 
+	 *
 	 * @param fileCh
 	 *        FileChannel to transfer data from.
 	 * @param position

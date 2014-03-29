@@ -31,7 +31,7 @@ import eu.stratosphere.core.memory.MemorySegment;
 public class HeaderlessChannelReaderInputView extends ChannelReaderInputView
 {
 	private int numBlocksRemaining;		// the number of blocks not yet consumed
-	
+
 	private final int lastBlockBytes;	// the number of valid bytes in the last block
 
 	/**
@@ -42,7 +42,7 @@ public class HeaderlessChannelReaderInputView extends ChannelReaderInputView
 	 * WARNING: If the number of blocks given here is higher than the number of blocks in the
 	 * channel, then the last blocks will not be filled by the reader and will contain
 	 * undefined data.
-	 * 
+	 *
 	 * @param reader The reader that reads the data from disk back into memory.
 	 * @param memory A list of memory segments that the reader uses for reading the data in. If the
 	 *               list contains more than one segment, the reader will asynchronously pre-fetch
@@ -51,7 +51,7 @@ public class HeaderlessChannelReaderInputView extends ChannelReaderInputView
 	 * @param numBytesInLastBlock The number of valid bytes in the last block.
 	 * @param waitForFirstBlock A flag indicating weather this constructor call should block
 	 *                          until the first block has returned from the asynchronous I/O reader.
-	 * 
+	 *
 	 * @throws IOException Thrown, if the read requests for the first blocks fail to be
 	 *                     served by the reader.
 	 */
@@ -60,11 +60,11 @@ public class HeaderlessChannelReaderInputView extends ChannelReaderInputView
 	throws IOException
 	{
 		super(reader, memory, numBlocks, 0, waitForFirstBlock);
-		
+
 		this.numBlocksRemaining = numBlocks;
 		this.lastBlockBytes = numBytesInLastBlock;
 	}
-	
+
 
 	@Override
 	protected MemorySegment nextSegment(MemorySegment current) throws IOException
@@ -74,18 +74,18 @@ public class HeaderlessChannelReaderInputView extends ChannelReaderInputView
 			this.reader.close();
 			throw new EOFException();
 		}
-		
+
 		// send a request first. if we have only a single segment, this same segment will be the one obtained in
 		// the next lines
 		if (current != null) {
 			sendReadRequest(current);
 		}
-		
+
 		// get the next segment
 		this.numBlocksRemaining--;
 		return this.reader.getNextReturnedSegment();
 	}
-	
+
 
 	@Override
 	protected int getLimitForSegment(MemorySegment segment)

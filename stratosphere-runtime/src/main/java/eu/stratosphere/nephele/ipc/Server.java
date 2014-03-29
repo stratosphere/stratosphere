@@ -14,7 +14,7 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.ipc;
@@ -64,7 +64,7 @@ import eu.stratosphere.util.ClassUtils;
  * An abstract IPC service. IPC calls take a single {@link Writable} as a
  * parameter, and return a {@link Writable} as their value. A service runs on
  * a port and is defined by a parameter class and a value class.
- * 
+ *
  * @see Client
  */
 public abstract class Server {
@@ -88,7 +88,7 @@ public abstract class Server {
 
 		Class<? extends VersionedProtocol> protocol = PROTOCOL_CACHE.get(protocolName);
 		if (protocol == null) {
-			protocol = (Class<? extends VersionedProtocol>) ClassUtils.getProtocolByName(protocolName);
+			protocol = ClassUtils.getProtocolByName(protocolName);
 			PROTOCOL_CACHE.put(protocolName, protocol);
 		}
 		return protocol;
@@ -177,7 +177,7 @@ public abstract class Server {
 	/**
 	 * A convenience method to bind to a given address and report
 	 * better exceptions if the address is not a valid host.
-	 * 
+	 *
 	 * @param socket
 	 *        the socket to bind
 	 * @param address
@@ -317,15 +317,17 @@ public abstract class Server {
 						}
 					}
 					if (c.timedOut(currentTime)) {
-						
+
 						closeConnection(c);
 						numNuked++;
 						end--;
 						c = null;
-						if (!force && numNuked == maxConnectionsToNuke)
+						if (!force && numNuked == maxConnectionsToNuke) {
 							break;
-					} else
+						}
+					} else {
 						i++;
+					}
 				}
 				lastCleanupRunTime = System.currentTimeMillis();
 			}
@@ -345,10 +347,11 @@ public abstract class Server {
 						iter.remove();
 						try {
 							if (key.isValid()) {
-								if (key.isAcceptable())
+								if (key.isAcceptable()) {
 									doAccept(key);
-								else if (key.isReadable())
+								} else if (key.isReadable()) {
 									doRead(key);
+								}
 							}
 						} catch (IOException e) {
 						}
@@ -419,8 +422,9 @@ public abstract class Server {
 			// accept up to 10 connections
 			for (int i = 0; i < 10; i++) {
 				SocketChannel channel = server.accept();
-				if (channel == null)
+				if (channel == null) {
 					return;
+				}
 
 				channel.configureBlocking(false);
 				channel.socket().setTcpNoDelay(tcpNoDelay);
@@ -636,7 +640,7 @@ public abstract class Server {
 					//
 					call = responseQueue.removeFirst();
 					SocketChannel channel = call.connection.channel;
-					
+
 					//
 					// Send as much data as we can in the non-blocking fashion
 					//
@@ -801,8 +805,9 @@ public abstract class Server {
 		}
 
 		private boolean timedOut(long currentTime) {
-			if (isIdle() && currentTime - lastContact > maxIdleTime)
+			if (isIdle() && currentTime - lastContact > maxIdleTime) {
 				return true;
+			}
 			return false;
 		}
 
@@ -815,8 +820,9 @@ public abstract class Server {
 				int count = -1;
 				if (dataLengthBuffer.remaining() > 0) {
 					count = channelRead(channel, dataLengthBuffer);
-					if (count < 0 || dataLengthBuffer.remaining() > 0)
+					if (count < 0 || dataLengthBuffer.remaining() > 0) {
 						return count;
+					}
 				}
 
 				if (!headerRead) {
@@ -897,8 +903,9 @@ public abstract class Server {
 		private synchronized void close() throws IOException {
 			data = null;
 			dataLengthBuffer = null;
-			if (!channel.isOpen())
+			if (!channel.isOpen()) {
 				return;
+			}
 			try {
 				socket.shutdownOutput();
 			} catch (Exception e) {
@@ -1001,8 +1008,9 @@ public abstract class Server {
 
 	private void closeConnection(Connection connection) {
 		synchronized (connectionList) {
-			if (connectionList.remove(connection))
+			if (connectionList.remove(connection)) {
 				numConnections--;
+			}
 		}
 		try {
 			connection.close();
@@ -1012,7 +1020,7 @@ public abstract class Server {
 
 	/**
 	 * Setup response for the IPC Call.
-	 * 
+	 *
 	 * @param response
 	 *        buffer to serialize the response into
 	 * @param call
@@ -1142,7 +1150,7 @@ public abstract class Server {
 
 	/**
 	 * Return the socket (ip+port) on which the RPC server is listening to.
-	 * 
+	 *
 	 * @return the socket (ip+port) on which the RPC server is listening to.
 	 */
 	public synchronized InetSocketAddress getListenerAddress() {
@@ -1155,7 +1163,7 @@ public abstract class Server {
 
 	/**
 	 * The number of open RPC conections
-	 * 
+	 *
 	 * @return the number of open rpc connections
 	 */
 	public int getNumOpenConnections() {
@@ -1164,7 +1172,7 @@ public abstract class Server {
 
 	/**
 	 * The number of rpc calls in the queue.
-	 * 
+	 *
 	 * @return The number of rpc calls in the queue.
 	 */
 	public int getCallQueueLen() {
@@ -1185,7 +1193,7 @@ public abstract class Server {
 	 * buffer increases. This also minimizes extra copies in NIO layer
 	 * as a result of multiple write operations required to write a large
 	 * buffer.
-	 * 
+	 *
 	 * @see WritableByteChannel#write(ByteBuffer)
 	 */
 	private static int channelWrite(WritableByteChannel channel, ByteBuffer buffer) throws IOException {
@@ -1198,7 +1206,7 @@ public abstract class Server {
 	 * If the amount of data is large, it writes to channel in smaller chunks.
 	 * This is to avoid jdk from creating many direct buffers as the size of
 	 * ByteBuffer increases. There should not be any performance degredation.
-	 * 
+	 *
 	 * @see ReadableByteChannel#read(ByteBuffer)
 	 */
 	private static int channelRead(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
@@ -1210,7 +1218,7 @@ public abstract class Server {
 	 * Helper for {@link #channelRead(ReadableByteChannel, ByteBuffer)} and
 	 * {@link #channelWrite(WritableByteChannel, ByteBuffer)}. Only
 	 * one of readCh or writeCh should be non-null.
-	 * 
+	 *
 	 * @see #channelRead(ReadableByteChannel, ByteBuffer)
 	 * @see #channelWrite(WritableByteChannel, ByteBuffer)
 	 */

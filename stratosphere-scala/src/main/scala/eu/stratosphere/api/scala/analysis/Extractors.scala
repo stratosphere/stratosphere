@@ -41,75 +41,75 @@ import eu.stratosphere.api.scala.UnionScalaOperator
 
 object Extractors {
 
-  object DataSinkNode {
-    def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
-      case contract: GenericDataSink with ScalaOperator[_] => {
-        Some((contract.getUDF.asInstanceOf[UDF1[_, _]], node.asInstanceOf[GenericDataSink].getInputs().toList))
-      }
-      case _                               => None
-    }
-  }
+	object DataSinkNode {
+		def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
+			case contract: GenericDataSink with ScalaOperator[_] => {
+				Some((contract.getUDF.asInstanceOf[UDF1[_, _]], node.asInstanceOf[GenericDataSink].getInputs().toList))
+			}
+			case _                               => None
+		}
+	}
 
-  object DataSourceNode {
-    def unapply(node: Operator): Option[(UDF0[_])] = node match {
-      case contract: GenericDataSource[_] with ScalaOperator[_] => Some(contract.getUDF.asInstanceOf[UDF0[_]])
-      case _                                 => None
-    }
-  }
+	object DataSourceNode {
+		def unapply(node: Operator): Option[(UDF0[_])] = node match {
+			case contract: GenericDataSource[_] with ScalaOperator[_] => Some(contract.getUDF.asInstanceOf[UDF0[_]])
+			case _                                 => None
+		}
+	}
 
-  object CoGroupNode {
-    def unapply(node: Operator): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, List[Operator], List[Operator])] = node match {
-      case contract: CoGroupOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
-      case _                                       => None
-    }
-  }
+	object CoGroupNode {
+		def unapply(node: Operator): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, List[Operator], List[Operator])] = node match {
+			case contract: CoGroupOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
+			case _                                       => None
+		}
+	}
 
-  object CrossNode {
-    def unapply(node: Operator): Option[(UDF2[_, _, _], List[Operator], List[Operator])] = node match {
-      case contract: CrossOperator with TwoInputScalaOperator[_, _, _] => Some((contract.getUDF, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
-      case _                                  => None
-    }
-  }
+	object CrossNode {
+		def unapply(node: Operator): Option[(UDF2[_, _, _], List[Operator], List[Operator])] = node match {
+			case contract: CrossOperator with TwoInputScalaOperator[_, _, _] => Some((contract.getUDF, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
+			case _                                  => None
+		}
+	}
 
-  object JoinNode {
-    def unapply(node: Operator): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, List[Operator], List[Operator])] = node match {
-      case contract: JoinOperator with TwoInputKeyedScalaOperator[ _, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
-      case _                                    => None
-    }
-  }
+	object JoinNode {
+		def unapply(node: Operator): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, List[Operator], List[Operator])] = node match {
+			case contract: JoinOperator with TwoInputKeyedScalaOperator[ _, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
+			case _                                    => None
+		}
+	}
 
-  object MapNode {
-    def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
-      case contract: MapOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
-      case _                             => None
-    }
-  }
-  
-  object UnionNode {
-    def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
-      case contract: MapOperator with UnionScalaOperator[_] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
-      case _                             => None
-    }
-  }
+	object MapNode {
+		def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
+			case contract: MapOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
+			case _                             => None
+		}
+	}
+	
+	object UnionNode {
+		def unapply(node: Operator): Option[(UDF1[_, _], List[Operator])] = node match {
+			case contract: MapOperator with UnionScalaOperator[_] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
+			case _                             => None
+		}
+	}
 
-  object ReduceNode {
-    def unapply(node: Operator): Option[(UDF1[_, _], FieldSelector, List[Operator])] = node match {
-      case contract: ReduceOperator with OneInputKeyedScalaOperator[_, _] => Some((contract.getUDF, contract.key, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
-      case contract: ReduceOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, new FieldSelector(contract.getUDF.inputUDT, Nil), contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
-      case _                                   => None
-    }
-  }
- object DeltaIterationNode {
-    def unapply(node: Operator): Option[(UDF0[_], FieldSelector, List[Operator], List[Operator])] = node match {
-        case contract: DeltaIteration with DeltaIterationScalaOperator[_] => Some((contract.getUDF, contract.key, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
-        case _                                  => None
-      }
-  }
-  
-  object BulkIterationNode {
-    def unapply(node: Operator): Option[(UDF0[_], List[Operator])] = node match {
-      case contract: BulkIteration with BulkIterationScalaOperator[_] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
-      case _ => None
-    }
-  } 
+	object ReduceNode {
+		def unapply(node: Operator): Option[(UDF1[_, _], FieldSelector, List[Operator])] = node match {
+			case contract: ReduceOperator with OneInputKeyedScalaOperator[_, _] => Some((contract.getUDF, contract.key, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
+			case contract: ReduceOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, new FieldSelector(contract.getUDF.inputUDT, Nil), contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
+			case _                                   => None
+		}
+	}
+object DeltaIterationNode {
+		def unapply(node: Operator): Option[(UDF0[_], FieldSelector, List[Operator], List[Operator])] = node match {
+				case contract: DeltaIteration with DeltaIterationScalaOperator[_] => Some((contract.getUDF, contract.key, contract.asInstanceOf[DualInputOperator[_]].getFirstInputs().toList, contract.asInstanceOf[DualInputOperator[_]].getSecondInputs().toList))
+				case _                                  => None
+			}
+	}
+	
+	object BulkIterationNode {
+		def unapply(node: Operator): Option[(UDF0[_], List[Operator])] = node match {
+			case contract: BulkIteration with BulkIterationScalaOperator[_] => Some((contract.getUDF, contract.asInstanceOf[SingleInputOperator[_]].getInputs().toList))
+			case _ => None
+		}
+	} 
 }

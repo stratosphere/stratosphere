@@ -13,25 +13,23 @@
 
 package eu.stratosphere.types.parser;
 
-import eu.stratosphere.types.FloatValue;
-
 /**
  * Parses a text field into a {@link FloatValue}
  */
 public class FloatParser extends FieldParser<Float> {
-	
+
 	private float result;
-	
+
 	@Override
 	public int parseField(byte[] bytes, int startPos, int limit, char delim, Float reusable) {
-		
+
 		int i = startPos;
 		final byte delByte = (byte) delim;
-		
+
 		while (i < limit && bytes[i] != delByte) {
 			i++;
 		}
-		
+
 		String str = new String(bytes, startPos, i-startPos);
 		try {
 			this.result = Float.parseFloat(str);
@@ -41,7 +39,7 @@ public class FloatParser extends FieldParser<Float> {
 			return -1;
 		}
 	}
-	
+
 	@Override
 	public Float createValue() {
 		return Float.MIN_VALUE;

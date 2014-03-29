@@ -14,9 +14,6 @@ package eu.stratosphere.pact.runtime.iterative.task;
 
 import java.util.Map;
 
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
-
 import com.google.common.base.Preconditions;
 
 import eu.stratosphere.api.common.aggregators.Aggregator;
@@ -24,7 +21,8 @@ import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
 import eu.stratosphere.nephele.event.task.EventListener;
 import eu.stratosphere.pact.runtime.iterative.event.WorkerDoneEvent;
 import eu.stratosphere.types.Value;
-import eu.stratosphere.util.MutableObjectIterator;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 
 /**
 * a delegating {@link MutableObjectIterator} that interrupts the current thread when a given number of events occured.
@@ -33,17 +31,17 @@ import eu.stratosphere.util.MutableObjectIterator;
 * on interruption, see {@link eu.stratosphere.pact.runtime.task.util.ReaderInterruptionBehaviors}
 */
 public class SyncEventHandler implements EventListener {
-	
+
 //	private static final Log log = LogFactory.getLog(SyncEventHandler.class);
-	
+
 	private final ClassLoader userCodeClassLoader;
-	
+
 	private final Map<String, Aggregator<?>> aggregators;
 
 	private final int numberOfEventsUntilEndOfSuperstep;
 
 	private int workerDoneEventCounter;
-	
+
 	private boolean endOfSuperstep;
 
 
@@ -67,20 +65,20 @@ public class SyncEventHandler implements EventListener {
 		if (this.endOfSuperstep) {
 			throw new RuntimeException("Encountered WorderDoneEvent when still in End-of-Superstep status.");
 		}
-		
+
 		workerDoneEventCounter++;
-		
+
 //		if (log.isInfoEnabled()) {
 //			log.info("Sync event handler received WorkerDoneEvent event (" + workerDoneEventCounter + ")");
 //		}
-		
+
 		String[] aggNames = workerDoneEvent.getAggregatorNames();
 		Value[] aggregates = workerDoneEvent.getAggregates(userCodeClassLoader);
 
 		if (aggNames.length != aggregates.length) {
 			throw new RuntimeException("Inconsistent WorkerDoneEvent received!");
 		}
-		
+
 		for (int i = 0; i < aggNames.length; i++) {
 			@SuppressWarnings("unchecked")
 			Aggregator<Value> aggregator = (Aggregator<Value>) this.aggregators.get(aggNames[i]);
@@ -92,11 +90,11 @@ public class SyncEventHandler implements EventListener {
 			Thread.currentThread().interrupt();
 		}
 	}
-	
+
 	public boolean isEndOfSuperstep() {
 		return this.endOfSuperstep;
 	}
-	
+
 	public void resetEndOfSuperstep() {
 		this.endOfSuperstep = false;
 	}

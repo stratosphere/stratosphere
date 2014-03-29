@@ -34,112 +34,112 @@ import org.apache.commons.logging.{LogFactory, Log}
 
 object GlobalSchemaPrinter {
 
-  import Extractors._
+	import Extractors._
 
-  private final val LOG: Log = LogFactory.getLog(classOf[GlobalSchemaGenerator])
+	private final val LOG: Log = LogFactory.getLog(classOf[GlobalSchemaGenerator])
 
-  def printSchema(plan: Plan): Unit = {
+	def printSchema(plan: Plan): Unit = {
 
-    LOG.debug("### " + plan.getJobName + " ###")
-    plan.getDataSinks.foldLeft(Set[Operator]())(printSchema)
-    LOG.debug("####" + ("#" * plan.getJobName.length) + "####")
-  }
+		LOG.debug("### " + plan.getJobName + " ###")
+		plan.getDataSinks.foldLeft(Set[Operator]())(printSchema)
+		LOG.debug("####" + ("#" * plan.getJobName.length) + "####")
+	}
 
-  private def printSchema(visited: Set[Operator], node: Operator): Set[Operator] = {
+	private def printSchema(visited: Set[Operator], node: Operator): Set[Operator] = {
 
-    visited.contains(node) match {
+		visited.contains(node) match {
 
-      case true => visited
+			case true => visited
 
-      case false => {
+			case false => {
 
-        val children = node match {
-          case bi: BulkIteration => bi.getInputs().toList :+ bi.getNextPartialSolution()
-          case wi: DeltaIteration => wi.getInitialSolutionSet().toList ++ wi.getInitialWorkset().toList :+ wi.getSolutionSetDelta() :+ wi.getNextWorkset()
-          case si : SingleInputOperator[_] => si.getInputs().toList
-          case di : DualInputOperator[_] => di.getFirstInputs().toList ++ di.getSecondInputs().toList
-          case gds : GenericDataSink => gds.getInputs().toList
-          case _ => List()
-        }
-        val newVisited = children.foldLeft(visited + node)(printSchema)
+				val children = node match {
+					case bi: BulkIteration => bi.getInputs().toList :+ bi.getNextPartialSolution()
+					case wi: DeltaIteration => wi.getInitialSolutionSet().toList ++ wi.getInitialWorkset().toList :+ wi.getSolutionSetDelta() :+ wi.getNextWorkset()
+					case si : SingleInputOperator[_] => si.getInputs().toList
+					case di : DualInputOperator[_] => di.getFirstInputs().toList ++ di.getSecondInputs().toList
+					case gds : GenericDataSink => gds.getInputs().toList
+					case _ => List()
+				}
+				val newVisited = children.foldLeft(visited + node)(printSchema)
 
-        node match {
-          
-          case _ : BulkIteration.PartialSolutionPlaceHolder =>
-          case _ : DeltaIteration.SolutionSetPlaceHolder => 
-          case _ : DeltaIteration.WorksetPlaceHolder =>
+				node match {
+					
+					case _ : BulkIteration.PartialSolutionPlaceHolder =>
+					case _ : DeltaIteration.SolutionSetPlaceHolder => 
+					case _ : DeltaIteration.WorksetPlaceHolder =>
 
-          case DataSinkNode(udf, input) => {
-            printInfo(node, "Sink",
-              Seq(),
-              Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArrayFrom)),
-              Seq(("", udf.getDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
+					case DataSinkNode(udf, input) => {
+						printInfo(node, "Sink",
+							Seq(),
+							Seq(("", udf.inputFields)),
+							Seq(("", udf.getForwardIndexArrayFrom)),
+							Seq(("", udf.getDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
 
-          case DataSourceNode(udf) => {
-            printInfo(node, "Source",
-              Seq(),
-              Seq(),
-              Seq(),
-              Seq(),
-              udf.outputFields
-            )
-          }
+					case DataSourceNode(udf) => {
+						printInfo(node, "Source",
+							Seq(),
+							Seq(),
+							Seq(),
+							Seq(),
+							udf.outputFields
+						)
+					}
 
-          case CoGroupNode(udf, leftKey, rightKey, leftInput, rightInput) => {
-            printInfo(node, "CoGroup",
-              Seq(("L", leftKey), ("R", rightKey)),
-              Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
-              Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
+					case CoGroupNode(udf, leftKey, rightKey, leftInput, rightInput) => {
+						printInfo(node, "CoGroup",
+							Seq(("L", leftKey), ("R", rightKey)),
+							Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
+							Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
+							Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
 
-          case CrossNode(udf, leftInput, rightInput) => {
-            printInfo(node, "Cross",
-              Seq(),
-              Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
-              Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
+					case CrossNode(udf, leftInput, rightInput) => {
+						printInfo(node, "Cross",
+							Seq(),
+							Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
+							Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
+							Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
 
-          case JoinNode(udf, leftKey, rightKey, leftInput, rightInput) => {
-            printInfo(node, "Join",
-              Seq(("L", leftKey), ("R", rightKey)),
-              Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
-              Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
-              Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
+					case JoinNode(udf, leftKey, rightKey, leftInput, rightInput) => {
+						printInfo(node, "Join",
+							Seq(("L", leftKey), ("R", rightKey)),
+							Seq(("L", udf.leftInputFields), ("R", udf.rightInputFields)),
+							Seq(("L", udf.getLeftForwardIndexArrayFrom), ("R", udf.getRightForwardIndexArrayFrom)),
+							Seq(("L", udf.getLeftDiscardIndexArray), ("R", udf.getRightDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
 
-          case MapNode(udf, input) => {
-            printInfo(node, "Map",
-              Seq(),
-              Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArrayFrom)),
-              Seq(("", udf.getDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
-          
-          case UnionNode(udf, input) => {
-            printInfo(node, "Union",
-              Seq(),
-              Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArrayFrom)),
-              Seq(("", udf.getDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
+					case MapNode(udf, input) => {
+						printInfo(node, "Map",
+							Seq(),
+							Seq(("", udf.inputFields)),
+							Seq(("", udf.getForwardIndexArrayFrom)),
+							Seq(("", udf.getDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
+					
+					case UnionNode(udf, input) => {
+						printInfo(node, "Union",
+							Seq(),
+							Seq(("", udf.inputFields)),
+							Seq(("", udf.getForwardIndexArrayFrom)),
+							Seq(("", udf.getDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
 
-          case ReduceNode(udf, key, input) => {
+					case ReduceNode(udf, key, input) => {
 
 //            val contract = node.asInstanceOf[Reduce4sContract[_, _, _]] 
 //            contract.userCombineCode map { _ =>
@@ -152,57 +152,57 @@ object GlobalSchemaPrinter {
 //              )
 //            }
 
-            printInfo(node, "Reduce",
-              Seq(("", key)),
-              Seq(("", udf.inputFields)),
-              Seq(("", udf.getForwardIndexArrayFrom)),
-              Seq(("", udf.getDiscardIndexArray)),
-              udf.outputFields
-            )
-          }
-          case DeltaIterationNode(udf, key, input1, input2) => {
+						printInfo(node, "Reduce",
+							Seq(("", key)),
+							Seq(("", udf.inputFields)),
+							Seq(("", udf.getForwardIndexArrayFrom)),
+							Seq(("", udf.getDiscardIndexArray)),
+							udf.outputFields
+						)
+					}
+					case DeltaIterationNode(udf, key, input1, input2) => {
 
-            printInfo(node, "WorksetIterate",
-              Seq(("", key)),
-              Seq(),
-              Seq(),
-              Seq(),
-              udf.outputFields)
-          }
+						printInfo(node, "WorksetIterate",
+							Seq(("", key)),
+							Seq(),
+							Seq(),
+							Seq(),
+							udf.outputFields)
+					}
 
-          case BulkIterationNode(udf, input1) => {
+					case BulkIterationNode(udf, input1) => {
 
-            printInfo(node, "BulkIterate",
-              Seq(),
-              Seq(),
-              Seq(),
-              Seq(),
-              udf.outputFields)
-          }
-        }
+						printInfo(node, "BulkIterate",
+							Seq(),
+							Seq(),
+							Seq(),
+							Seq(),
+							udf.outputFields)
+					}
+				}
 
-        newVisited
-      }
-    }
-  }
+				newVisited
+			}
+		}
+	}
 
-  private def printInfo(node: Operator, kind: String, keys: Seq[(String, FieldSelector)], reads: Seq[(String, FieldSet[_])], forwards: Seq[(String, Array[Int])], discards: Seq[(String, Array[Int])], writes: FieldSet[_]): Unit = {
+	private def printInfo(node: Operator, kind: String, keys: Seq[(String, FieldSelector)], reads: Seq[(String, FieldSet[_])], forwards: Seq[(String, Array[Int])], discards: Seq[(String, Array[Int])], writes: FieldSet[_]): Unit = {
 
-    def indexesToStrings(pre: String, indexes: Array[Int]) = indexes map {
-      case -1 => "_"
-      case i  => pre + i
-    }
+		def indexesToStrings(pre: String, indexes: Array[Int]) = indexes map {
+			case -1 => "_"
+			case i  => pre + i
+		}
 
-    val formatString = "%s (%s): K{%s}: R[%s] => F[%s] - D[%s] + W[%s]"
+		val formatString = "%s (%s): K{%s}: R[%s] => F[%s] - D[%s] + W[%s]"
 
-    val name = node.getName
+		val name = node.getName
 
-    val sKeys = keys flatMap { case (pre, value) => value.selectedFields.toSerializerIndexArray.map(pre + _) } mkString ", "
-    val sReads = reads flatMap { case (pre, value) => indexesToStrings(pre, value.toSerializerIndexArray) } mkString ", "
-    val sForwards = forwards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
-    val sDiscards = discards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
-    val sWrites = indexesToStrings("", writes.toSerializerIndexArray) mkString ", "
+		val sKeys = keys flatMap { case (pre, value) => value.selectedFields.toSerializerIndexArray.map(pre + _) } mkString ", "
+		val sReads = reads flatMap { case (pre, value) => indexesToStrings(pre, value.toSerializerIndexArray) } mkString ", "
+		val sForwards = forwards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
+		val sDiscards = discards flatMap { case (pre, value) => value.sorted.map(pre + _) } mkString ", "
+		val sWrites = indexesToStrings("", writes.toSerializerIndexArray) mkString ", "
 
-    LOG.debug(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
-  }
+		LOG.debug(formatString.format(name, kind, sKeys, sReads, sForwards, sDiscards, sWrites))
+	}
 }

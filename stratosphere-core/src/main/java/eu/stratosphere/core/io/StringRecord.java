@@ -14,14 +14,14 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.core.io;
 
-import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -107,7 +107,7 @@ public class StringRecord implements IOReadableWritable {
 	 * Returns the Unicode Scalar Value (32-bit integer value) for the character
 	 * at <code>position</code>. Note that this method avoids using the
 	 * converter or doing String instantiation
-	 * 
+	 *
 	 * @return the Unicode scalar value at position or -1 if the position is
 	 *         invalid or points to a trailing byte
 	 */
@@ -132,7 +132,7 @@ public class StringRecord implements IOReadableWritable {
 	 * as position <code>start</code>. The starting position is measured in
 	 * bytes and the return value is in terms of byte position in the buffer.
 	 * The backing buffer is not converted to a string for this operation.
-	 * 
+	 *
 	 * @return byte position of the first occurence of the search string in the
 	 *         UTF-8 buffer or -1 if not found
 	 */
@@ -209,7 +209,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * Set the Text to range of bytes
-	 * 
+	 *
 	 * @param utf8
 	 *        the data to copy from
 	 * @param start
@@ -226,7 +226,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * Append a range of bytes to the end of the given text
-	 * 
+	 *
 	 * @param utf8
 	 *        the data to copy from
 	 * @param start
@@ -270,7 +270,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * Convert text back to string
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
@@ -313,7 +313,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * serialize write this object to out length uses zero-compressed encoding
-	 * 
+	 *
 	 * @see Writable#writeTo(DataOutput)
 	 */
 	public void write(final DataOutput out) throws IOException {
@@ -357,7 +357,7 @@ public class StringRecord implements IOReadableWritable {
 		int h = this.hash;
 		if (h == 0 && this.length > 0) {
 			int off = 0;
-			byte val[] = this.bytes;
+			byte[] val = this.bytes;
 			int len = this.length;
 
 			for (int i = 0; i < len; i++) {
@@ -411,7 +411,7 @@ public class StringRecord implements IOReadableWritable {
 	/**
 	 * Converts the provided String to bytes using the UTF-8 encoding. If the
 	 * input is malformed, invalid chars are replaced by a default value.
-	 * 
+	 *
 	 * @return ByteBuffer: bytes stores at ByteBuffer.array() and length is
 	 *         ByteBuffer.limit()
 	 */
@@ -425,7 +425,7 @@ public class StringRecord implements IOReadableWritable {
 	 * input is replaced with the
 	 * substitution character, which is U+FFFD. Otherwise the method throws a
 	 * MalformedInputException.
-	 * 
+	 *
 	 * @return ByteBuffer: bytes stores at ByteBuffer.array() and length is
 	 *         ByteBuffer.limit()
 	 */
@@ -492,7 +492,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * Check if a byte array contains valid utf-8
-	 * 
+	 *
 	 * @param utf8
 	 *        byte array
 	 * @throws MalformedInputException
@@ -504,7 +504,7 @@ public class StringRecord implements IOReadableWritable {
 
 	/**
 	 * Check to see if a byte array is valid utf-8
-	 * 
+	 *
 	 * @param utf8
 	 *        the array of bytes
 	 * @param start
@@ -520,7 +520,7 @@ public class StringRecord implements IOReadableWritable {
 		int length = 0;
 		int state = LEAD_BYTE;
 		while (count < start + len) {
-			final int aByte = ((int) utf8[count] & 0xFF);
+			final int aByte = (utf8[count] & 0xFF);
 
 			switch (state) {
 			case LEAD_BYTE:
@@ -651,12 +651,12 @@ public class StringRecord implements IOReadableWritable {
 		return ch;
 	}
 
-	static final int offsetsFromUTF8[] = { 0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080 };
+	static final int[] offsetsFromUTF8 = { 0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080 };
 
 	/**
 	 * For the given string, returns the number of UTF-8 bytes required to
 	 * encode the string.
-	 * 
+	 *
 	 * @param string
 	 *        text to encode
 	 * @return number of UTF-8 bytes required to encode

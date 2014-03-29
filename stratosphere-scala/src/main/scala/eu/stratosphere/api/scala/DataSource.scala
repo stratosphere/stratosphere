@@ -29,88 +29,88 @@ import collection.JavaConversions._
 
 object DataSource {
 
-  def apply[Out](url: String, format: ScalaInputFormat[Out]): DataSet[Out] with OutputHintable[Out] = {
-    val uri = getUri(url)
-    
-    val ret = uri.getScheme match {
+	def apply[Out](url: String, format: ScalaInputFormat[Out]): DataSet[Out] with OutputHintable[Out] = {
+		val uri = getUri(url)
+		
+		val ret = uri.getScheme match {
 
-      case "file" | "hdfs" => new FileDataSource(format.asInstanceOf[FileInputFormat[_]], uri.toString)
-          with ScalaOperator[Out] {
+			case "file" | "hdfs" => new FileDataSource(format.asInstanceOf[FileInputFormat[_]], uri.toString)
+					with ScalaOperator[Out] {
 
-        override def getUDF = format.getUDF
+				override def getUDF = format.getUDF
 
-        override def persistConfiguration() = format.persistConfiguration(this.getParameters())
-      }
+				override def persistConfiguration() = format.persistConfiguration(this.getParameters())
+			}
 
-      case "ext" => new GenericDataSource[GenericInputFormat[_]](format.asInstanceOf[GenericInputFormat[_]], uri.toString)
-          with ScalaOperator[Out] {
+			case "ext" => new GenericDataSource[GenericInputFormat[_]](format.asInstanceOf[GenericInputFormat[_]], uri.toString)
+					with ScalaOperator[Out] {
 
-        override def getUDF = format.getUDF
-        override def persistConfiguration() = format.persistConfiguration(this.getParameters())
-      }
-    }
-    
-    new DataSet[Out](ret) with OutputHintable[Out] {}
-  }
+				override def getUDF = format.getUDF
+				override def persistConfiguration() = format.persistConfiguration(this.getParameters())
+			}
+		}
+		
+		new DataSet[Out](ret) with OutputHintable[Out] {}
+	}
 
-  private def getUri(url: String) = {
-    val uri = new URI(url)
-    if (uri.getScheme == null)
-      new URI("file://" + url)
-    else
-      uri
-  }
+	private def getUri(url: String) = {
+		val uri = new URI(url)
+		if (uri.getScheme == null)
+			new URI("file://" + url)
+		else
+			uri
+	}
 }
 
 object CollectionDataSource {
-  /*
-  constructor for collection input
-   */
-  def apply[Out: UDT](data: Iterable[Out]):DataSet[Out] with OutputHintable[Out] = {
-    /*
-    reuse the java implementation of collection data by adding scala operator
-    */
-    val js:java.util.Collection[Out] = data
-    val ret = new JavaCollectionDataSource(js)
-    	with ScalaOperator[Out]{
-       
-       val udf = new UDF0(implicitly[UDT[Out]])
-       override def getUDF = udf
+	/*
+	constructor for collection input
+	 */
+	def apply[Out: UDT](data: Iterable[Out]):DataSet[Out] with OutputHintable[Out] = {
+		/*
+		reuse the java implementation of collection data by adding scala operator
+		*/
+		val js:java.util.Collection[Out] = data
+		val ret = new JavaCollectionDataSource(js)
+			with ScalaOperator[Out]{
+			 
+			 val udf = new UDF0(implicitly[UDT[Out]])
+			 override def getUDF = udf
 
-    }
-    
-    new DataSet[Out](ret) with OutputHintable[Out] {}
-  }
-  
-  /*
-  constructor for serializable iterator input
-   */
-  def apply[Out: UDT](data: Iterator[Out] with Serializable) = {
+		}
+		
+		new DataSet[Out](ret) with OutputHintable[Out] {}
+	}
+	
+	/*
+	constructor for serializable iterator input
+	 */
+	def apply[Out: UDT](data: Iterator[Out] with Serializable) = {
 
-    /*
-    reuse the java implementation of collection data by adding scala operator
-     */
-    val ret = new JavaCollectionDataSource(data)
-    	with ScalaOperator[Out]{
-       
-       val udf = new UDF0(implicitly[UDT[Out]])
-       override def getUDF = udf
+		/*
+		reuse the java implementation of collection data by adding scala operator
+		 */
+		val ret = new JavaCollectionDataSource(data)
+			with ScalaOperator[Out]{
+			 
+			 val udf = new UDF0(implicitly[UDT[Out]])
+			 override def getUDF = udf
 
-    }
-    
-    new DataSet[Out](ret) with OutputHintable[Out] {}
-  }
+		}
+		
+		new DataSet[Out](ret) with OutputHintable[Out] {}
+	}
 }
 
 
 
 trait ScalaInputFormat[Out] { this: InputFormat[_, _] =>
-  def getUDF: UDF0[Out]
-  def persistConfiguration(config: Configuration) = {}
-  def configure(config: Configuration)
+	def getUDF: UDF0[Out]
+	def persistConfiguration(config: Configuration) = {}
+	def configure(config: Configuration)
 }
 
 
 object TextFile {
-  def apply(url: String): DataSet[String] with OutputHintable[String] = DataSource(url, TextInputFormat())
+	def apply(url: String): DataSet[String] with OutputHintable[String] = DataSource(url, TextInputFormat())
 }

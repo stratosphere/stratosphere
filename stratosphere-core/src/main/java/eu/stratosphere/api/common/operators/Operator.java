@@ -23,21 +23,21 @@ import eu.stratosphere.util.Visitable;
 * into independent sets which are processed by user functions.
 */
 public abstract class Operator implements Visitable<Operator> {
-	
+
 	protected final Configuration parameters;			// the parameters to parameterize the UDF
-	
+
 	protected CompilerHints compilerHints;				// hints to the compiler
-	
+
 	protected String name;								// the name of the contract instance. optional.
-		
+
 	private int degreeOfParallelism = -1;				// the number of parallel instances to use. -1, if unknown
 
-	// --------------------------------------------------------------------------------------------	
+	// --------------------------------------------------------------------------------------------
 
 	/**
 	 * Creates a new contract with the given name. The parameters are empty by default and
 	 * the compiler hints are not set.
-	 * 
+	 *
 	 * @param name The name that is used to describe the contract.
 	 */
 	protected Operator(String name) {
@@ -49,28 +49,28 @@ public abstract class Operator implements Visitable<Operator> {
 	/**
 	 * Gets the name of the contract instance. The name is only used to describe the contract instance
 	 * in logging output and graphical representations.
-	 * 
+	 *
 	 * @return The contract instance's name.
 	 */
 	public String getName() {
 		return this.name;
 	}
-	
+
 	/**
 	 * Sets the name of the contract instance. The name is only used to describe the contract instance
 	 * in logging output and graphical representations.
-	 * 
+	 *
 	 * @param name The operator's name.
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}	
+	}
 
 	/**
 	 * Gets the compiler hints for this contract instance. In the compiler hints, different fields may
 	 * be set (for example the selectivity) that will be evaluated by the pact compiler when generating
 	 * plan alternatives.
-	 * 
+	 *
 	 * @return The compiler hints object.
 	 */
 	public CompilerHints getCompilerHints() {
@@ -82,7 +82,7 @@ public abstract class Operator implements Visitable<Operator> {
 	 * string or integer values. The map is accessible by the user code at runtime. Parameters that the
 	 * user code needs to access at runtime to configure its behavior are typically stored in that configuration
 	 * object.
-	 * 
+	 *
 	 * @return The configuration containing the stub parameters.
 	 */
 	public Configuration getParameters() {
@@ -93,9 +93,9 @@ public abstract class Operator implements Visitable<Operator> {
 	 * Sets a stub parameters in the configuration of this contract. The stub parameters are accessible by the user
 	 * code at runtime. Parameters that the user code needs to access at runtime to configure its behavior are
 	 * typically stored as stub parameters.
-	 * 
+	 *
 	 * @see #getParameters()
-	 * 
+	 *
 	 * @param key
 	 *        The parameter key.
 	 * @param value
@@ -109,9 +109,9 @@ public abstract class Operator implements Visitable<Operator> {
 	 * Sets a stub parameters in the configuration of this contract. The stub parameters are accessible by the user
 	 * code at runtime. Parameters that the user code needs to access at runtime to configure its behavior are
 	 * typically stored as stub parameters.
-	 * 
+	 *
 	 * @see #getParameters()
-	 * 
+	 *
 	 * @param key
 	 *        The parameter key.
 	 * @param value
@@ -125,7 +125,7 @@ public abstract class Operator implements Visitable<Operator> {
 	 * Sets a stub parameters in the configuration of this contract. The stub parameters are accessible by the user
 	 * code at runtime. Parameters that the user code needs to access at runtime to configure its behavior are
 	 * typically stored as stub parameters.
-	 * 
+	 *
 	 * @see #getParameters()
 	 * @param key
 	 *        The parameter key.
@@ -140,7 +140,7 @@ public abstract class Operator implements Visitable<Operator> {
 	 * Gets the degree of parallelism for this contract instance. The degree of parallelism denotes
 	 * how many parallel instances of the user function will be spawned during the execution. If this
 	 * value is <code>-1</code>, then the system will decide the number of parallel instances by itself.
-	 * 
+	 *
 	 * @return The degree of parallelism.
 	 */
 	public int getDegreeOfParallelism() {
@@ -151,27 +151,27 @@ public abstract class Operator implements Visitable<Operator> {
 	 * Sets the degree of parallelism for this contract instance. The degree of parallelism denotes
 	 * how many parallel instances of the user function will be spawned during the execution. Set this
 	 * value to <code>-1</code> to let the system decide on its own.
-	 * 
+	 *
 	 * @param degree The number of parallel instances to spawn. -1, if unspecified.
 	 */
 	public void setDegreeOfParallelism(int degree) {
 		this.degreeOfParallelism = degree;
 	}
-	
-	
+
+
 	/**
 	 * Gets the user code wrapper. In the case of a pact, that object will be the stub with the user function,
-	 * in the case of an input or output format, it will be the format object.  
-	 * 
+	 * in the case of an input or output format, it will be the format object.
+	 *
 	 * @return The class with the user code.
 	 */
 	public UserCodeWrapper<?> getUserCodeWrapper() {
 		return null;
 	}
-	
-	
+
+
 	// --------------------------------------------------------------------------------------------
-	
+
 
 	@Override
 	public String toString() {

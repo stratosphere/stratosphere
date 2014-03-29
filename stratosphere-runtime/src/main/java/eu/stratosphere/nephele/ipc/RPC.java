@@ -14,7 +14,7 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.ipc;
@@ -22,27 +22,26 @@ package eu.stratosphere.nephele.ipc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.SocketFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.core.io.StringRecord;
 import eu.stratosphere.core.protocols.VersionedProtocol;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.util.ClassUtils;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A simple RPC mechanism.
@@ -161,8 +160,9 @@ public class RPC {
 			buffer.append(methodName);
 			buffer.append("(");
 			for (int i = 0; i < parameters.length; i++) {
-				if (i != 0)
+				if (i != 0) {
 					buffer.append(", ");
+				}
 				buffer.append(parameters[i]);
 			}
 			buffer.append(")");
@@ -178,7 +178,7 @@ public class RPC {
 		/**
 		 * Construct & cache an IPC client with the user-provided SocketFactory
 		 * if no cached client exists.
-		 * 
+		 *
 		 * @param conf
 		 *        Configuration
 		 * @return an IPC client
@@ -239,11 +239,12 @@ public class RPC {
 
 				// Check if args are instances of ReadableWritable
 				for (int i = 0; i < args.length; i++) {
-					if ((args[i] != null) && !(args[i] instanceof IOReadableWritable))
+					if ((args[i] != null) && !(args[i] instanceof IOReadableWritable)) {
 						throw new IOException("Argument " + i + " of method " + method.getName()
 							+ " is not of type IOReadableWriteable");
-					else
+					} else {
 						castArgs[i] = (IOReadableWritable) args[i];
+					}
 				}
 			}
 			final IOReadableWritable value = this.client.call(new Invocation(method, castArgs), this.address, method
@@ -268,7 +269,7 @@ public class RPC {
 
 	/**
 	 * Get a proxy connection to a remote server
-	 * 
+	 *
 	 * @param protocol
 	 *        protocol class
 	 * @param addr
@@ -322,7 +323,7 @@ public class RPC {
 
 	/**
 	 * Construct a client-side proxy object with the default SocketFactory
-	 * 
+	 *
 	 * @param protocol
 	 * @param addr
 	 * @return
@@ -336,7 +337,7 @@ public class RPC {
 
 	/**
 	 * Stop this proxy and release its invoker's resource
-	 * 
+	 *
 	 * @param proxy
 	 *        the proxy to be stopped
 	 */
@@ -361,7 +362,7 @@ public class RPC {
 
 		/**
 		 * Construct an RPC server.
-		 * 
+		 *
 		 * @param instance
 		 *        the instance whose methods will be called
 		 * @param conf
@@ -386,7 +387,7 @@ public class RPC {
 
 		/**
 		 * Construct an RPC server.
-		 * 
+		 *
 		 * @param instance
 		 *        the instance whose methods will be called
 		 * @param conf
@@ -405,20 +406,20 @@ public class RPC {
 
 		public IOReadableWritable call(Class<?> protocol, IOReadableWritable param, long receivedTime)
 				throws IOException {
-			
+
 			try {
-				
+
 				final Invocation call = (Invocation) param;
-				
+
 				final Method method = protocol.getMethod(call.getMethodName(), call.getParameterClasses());
 				method.setAccessible(true);
 
-				final Object value = method.invoke((Object) instance, (Object[]) call.getParameters());
+				final Object value = method.invoke(instance, (Object[]) call.getParameters());
 
 				return (IOReadableWritable) value;
 
 			} catch (InvocationTargetException e) {
-				
+
 				final Throwable target = e.getTargetException();
 				if (target instanceof IOException) {
 					throw (IOException) target;

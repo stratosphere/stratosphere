@@ -26,7 +26,6 @@ import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.scheduler.local.LocalScheduler;
 
 public abstract class AbstractExecutionListener implements ExecutionListener {
 
@@ -42,7 +41,7 @@ public abstract class AbstractExecutionListener implements ExecutionListener {
 
 	/**
 	 * Constructs a new wrapper object for the given {@link ExecutionVertex}.
-	 * 
+	 *
 	 * @param AbstractScheduler
 	 *        the instance of the {@link AbstractScheduler}
 	 * @param executionVertex

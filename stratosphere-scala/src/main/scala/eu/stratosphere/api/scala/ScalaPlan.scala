@@ -25,38 +25,38 @@ import eu.stratosphere.api.common.Program
 import eu.stratosphere.api.common.ProgramDescription
 
 class ScalaPlan(scalaSinks: Seq[ScalaSink[_]], scalaJobName: String = "PACT SCALA Job at " + Calendar.getInstance().getTime()) extends Plan(asJavaCollection(scalaSinks map { _.sink }), scalaJobName) {
-  val pactSinks = scalaSinks map { _.sink.asInstanceOf[Operator with ScalaOperator[_]] }
-  new GlobalSchemaGenerator().initGlobalSchema(pactSinks)
-  override def getPostPassClassName() = "eu.stratosphere.api.scala.ScalaPostPass";
+	val pactSinks = scalaSinks map { _.sink.asInstanceOf[Operator with ScalaOperator[_]] }
+	new GlobalSchemaGenerator().initGlobalSchema(pactSinks)
+	override def getPostPassClassName() = "eu.stratosphere.api.scala.ScalaPostPass";
 }
 
 case class Args(argsMap: Map[String, String], defaultParallelism: Int, schemaHints: Boolean, schemaCompaction: Boolean) {
-  def apply(key: String): String = argsMap.getOrElse(key, key)
-  def apply(key: String, default: => String) = argsMap.getOrElse(key, default)
+	def apply(key: String): String = argsMap.getOrElse(key, key)
+	def apply(key: String, default: => String) = argsMap.getOrElse(key, default)
 }
 
 object Args {
 
-  def parse(args: Seq[String]): Args = {
+	def parse(args: Seq[String]): Args = {
 
-    var argsMap = Map[String, String]()
-    var defaultParallelism = 1
-    var schemaHints = true
-    var schemaCompaction = true
+		var argsMap = Map[String, String]()
+		var defaultParallelism = 1
+		var schemaHints = true
+		var schemaCompaction = true
 
-    val ParamName = "-(.+)".r
+		val ParamName = "-(.+)".r
 
-    def parse(args: Seq[String]): Unit = args match {
-      case Seq("-subtasks", value, rest @ _*)     => { defaultParallelism = value.toInt; parse(rest) }
-      case Seq("-nohints", rest @ _*)             => { schemaHints = false; parse(rest) }
-      case Seq("-nocompact", rest @ _*)           => { schemaCompaction = false; parse(rest) }
-      case Seq(ParamName(name), value, rest @ _*) => { argsMap = argsMap.updated(name, value); parse(rest) }
-      case Seq()                                  =>
-    }
+		def parse(args: Seq[String]): Unit = args match {
+			case Seq("-subtasks", value, rest @ _*)     => { defaultParallelism = value.toInt; parse(rest) }
+			case Seq("-nohints", rest @ _*)             => { schemaHints = false; parse(rest) }
+			case Seq("-nocompact", rest @ _*)           => { schemaCompaction = false; parse(rest) }
+			case Seq(ParamName(name), value, rest @ _*) => { argsMap = argsMap.updated(name, value); parse(rest) }
+			case Seq()                                  =>
+		}
 
-    parse(args)
-    Args(argsMap, defaultParallelism, schemaHints, schemaCompaction)
-  }
+		parse(args)
+		Args(argsMap, defaultParallelism, schemaHints, schemaCompaction)
+	}
 }
 
 //abstract class ScalaProgram extends Program {
@@ -71,8 +71,8 @@ object Args {
 
 
 class ScalaPostPass extends RecordModelPostPass with GlobalSchemaOptimizer {
-  override def postPass(plan: OptimizedPlan): Unit = {
-    optimizeSchema(plan, false)
-    super.postPass(plan)
-  }
+	override def postPass(plan: OptimizedPlan): Unit = {
+		optimizeSchema(plan, false)
+		super.postPass(plan)
+	}
 }

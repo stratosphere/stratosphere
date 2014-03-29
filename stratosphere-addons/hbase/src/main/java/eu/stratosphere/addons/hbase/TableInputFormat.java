@@ -25,7 +25,6 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableRecordReader;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Pair;
@@ -34,9 +33,9 @@ import org.apache.hadoop.util.StringUtils;
 import eu.stratosphere.addons.hbase.common.HBaseKey;
 import eu.stratosphere.addons.hbase.common.HBaseResult;
 import eu.stratosphere.addons.hbase.common.HBaseUtil;
-import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.api.common.io.statistics.BaseStatistics;
 import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.api.common.io.statistics.BaseStatistics;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.OperatingSystem;
 
@@ -114,7 +113,7 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 
 	/**
 	 * Read the configuration and creates a {@link Scan} object.
-	 * 
+	 *
 	 * @param parameters
 	 * @return
 	 */
@@ -168,7 +167,7 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 
 	/**
 	 * Create an {@link HTable} instance and set it into this format.
-	 * 
+	 *
 	 * @param parameters
 	 *        a {@link Configuration} that holds at least the table name.
 	 */
@@ -178,10 +177,11 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 		if (configLocation != null)
 		{
 			org.apache.hadoop.conf.Configuration dummyConf = new org.apache.hadoop.conf.Configuration();
-			if(OperatingSystem.isWindows())
+			if(OperatingSystem.isWindows()) {
 				dummyConf.addResource(new Path("file:/" + configLocation));
-			else
+			} else {
 				dummyConf.addResource(new Path("file://" + configLocation));
+			}
 			hConf = HBaseConfiguration.create(dummyConf);
 			;
 			// hConf.set("hbase.master", "im1a5.internetmemory.org");
@@ -249,7 +249,7 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 	/**
 	 * Maps the current HBase Result into a Record.
 	 * This implementation simply stores the HBaseKey at position 0, and the HBase Result object at position 1.
-	 * 
+	 *
 	 * @param record
 	 * @param key
 	 * @param result
@@ -297,7 +297,7 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 		this.hbaseKey = new HBaseKey();
 		this.hbaseResult = new HBaseResult();
 
-        endReached = false;
+		endReached = false;
 	}
 
 
@@ -342,8 +342,9 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 				final TableInputSplit split = new TableInputSplit(splits.size(), new String[] { regionLocation },
 					this.table.getTableName(), splitStart, splitStop);
 				splits.add(split);
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("getSplits: split -> " + (count++) + " -> " + split);
+				}
 			}
 		}
 
@@ -363,7 +364,7 @@ public class TableInputFormat implements InputFormat<Record, TableInputSplit> {
 	 * Note: It is possible that <code>endKey.length() == 0 </code> , for the last (recent) region. <br>
 	 * Override this method, if you want to bulk exclude regions altogether from M-R. By default, no region is excluded(
 	 * i.e. all regions are included).
-	 * 
+	 *
 	 * @param startKey
 	 *        Start key of the region
 	 * @param endKey

@@ -51,115 +51,115 @@ import eu.stratosphere.api.scala.UnionScalaOperator
 
 object Extractors {
 
-  implicit def nodeToGetUDF(node: OptimizerNode) = new {
-    def getUDF: Option[UDF[_]] = node match {
-      case _: SinkJoiner | _: BinaryUnionNode => None
-      case _ => {
-        Some(node.getPactContract.asInstanceOf[ScalaOperator[_]].getUDF)
-      }
-    }
-  }
+	implicit def nodeToGetUDF(node: OptimizerNode) = new {
+		def getUDF: Option[UDF[_]] = node match {
+			case _: SinkJoiner | _: BinaryUnionNode => None
+			case _ => {
+				Some(node.getPactContract.asInstanceOf[ScalaOperator[_]].getUDF)
+			}
+		}
+	}
 
-  object DataSinkNode {
-    def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
-      case node: DataSinkNode => node.getPactContract match {
-        case contract: GenericDataSink with OneInputScalaOperator[_, _] => {
-          Some((contract.getUDF, node.getInputConnection))
-        }
-        case _  => None
-      }
-      case _ => None
-    }
-  }
+	object DataSinkNode {
+		def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
+			case node: DataSinkNode => node.getPactContract match {
+				case contract: GenericDataSink with OneInputScalaOperator[_, _] => {
+					Some((contract.getUDF, node.getInputConnection))
+				}
+				case _  => None
+			}
+			case _ => None
+		}
+	}
 
-  object DataSourceNode {
-    def unapply(node: OptimizerNode): Option[(UDF0[_])] = node match {
-      case node: DataSourceNode => node.getPactContract() match {
-        case contract: GenericDataSource[_] with ScalaOperator[_] => Some(contract.getUDF.asInstanceOf[UDF0[_]])
-        case _ => None
-      }
-      case _ => None
-    }
-  }
+	object DataSourceNode {
+		def unapply(node: OptimizerNode): Option[(UDF0[_])] = node match {
+			case node: DataSourceNode => node.getPactContract() match {
+				case contract: GenericDataSource[_] with ScalaOperator[_] => Some(contract.getUDF.asInstanceOf[UDF0[_]])
+				case _ => None
+			}
+			case _ => None
+		}
+	}
 
-  object CoGroupNode {
-    def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, PactConnection, PactConnection)] = node match {
-      case node: CoGroupNode => node.getPactContract() match {
-        case contract: CoGroupOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
+	object CoGroupNode {
+		def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, PactConnection, PactConnection)] = node match {
+			case node: CoGroupNode => node.getPactContract() match {
+				case contract: CoGroupOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
 
-  object CrossNode {
-    def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], PactConnection, PactConnection)] = node match {
-      case node: CrossNode => node.getPactContract match {
-        case contract: CrossOperator with TwoInputScalaOperator[_, _, _] => Some((contract.getUDF, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
+	object CrossNode {
+		def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], PactConnection, PactConnection)] = node match {
+			case node: CrossNode => node.getPactContract match {
+				case contract: CrossOperator with TwoInputScalaOperator[_, _, _] => Some((contract.getUDF, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
 
-  object JoinNode {
-    def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, PactConnection, PactConnection)] = node match {
-      case node: MatchNode => node.getPactContract match {
-        case contract: JoinOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
+	object JoinNode {
+		def unapply(node: OptimizerNode): Option[(UDF2[_, _, _], FieldSelector, FieldSelector, PactConnection, PactConnection)] = node match {
+			case node: MatchNode => node.getPactContract match {
+				case contract: JoinOperator with TwoInputKeyedScalaOperator[_, _, _] => Some((contract.getUDF, contract.leftKey, contract.rightKey, node.getFirstIncomingConnection, node.getSecondIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
 
-  object MapNode {
-    def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
-      case node: CollectorMapNode => node.getPactContract match {
-        case contract: MapOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, node.getIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-  
-  object UnionNode {
-    def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
-      case node: CollectorMapNode => node.getPactContract match {
-        case contract: MapOperator with UnionScalaOperator[_] => Some((contract.getUDF, node.getIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
+	object MapNode {
+		def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
+			case node: CollectorMapNode => node.getPactContract match {
+				case contract: MapOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, node.getIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
+	
+	object UnionNode {
+		def unapply(node: OptimizerNode): Option[(UDF1[_, _], PactConnection)] = node match {
+			case node: CollectorMapNode => node.getPactContract match {
+				case contract: MapOperator with UnionScalaOperator[_] => Some((contract.getUDF, node.getIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
 
-  object ReduceNode {
-    def unapply(node: OptimizerNode): Option[(UDF1[_, _], FieldSelector, PactConnection)] = node match {
-      case node: GroupReduceNode => node.getPactContract match {
-        case contract: ReduceOperator with OneInputKeyedScalaOperator[_, _] => Some((contract.getUDF, contract.key, node.getIncomingConnection))
-        case contract: ReduceOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, new FieldSelector(contract.getUDF.inputUDT, Nil), node.getIncomingConnection))
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-  object DeltaIterationNode {
-    def unapply(node: OptimizerNode): Option[(UDF0[_], FieldSelector, PactConnection, PactConnection)] = node match {
-      case node: WorksetIterationNode => node.getPactContract match {
-        case contract: DeltaIteration with DeltaIterationScalaOperator[_] => Some((contract.getUDF, contract.key, node.getFirstIncomingConnection(), node.getSecondIncomingConnection()))
-        case _                                  => None
-      }
-      case _ => None
-    }
-  }
-  
-  object BulkIterationNode {
-    def unapply(node: OptimizerNode): Option[(UDF0[_], PactConnection)] = node match {
-      case node: BulkIterationNode => node.getPactContract match {
-        case contract: BulkIteration with BulkIterationScalaOperator[_] => Some((contract.getUDF, node.getIncomingConnection()))
-        case _                                  => None
-      }
-      case _ => None
-    }
-  }
+	object ReduceNode {
+		def unapply(node: OptimizerNode): Option[(UDF1[_, _], FieldSelector, PactConnection)] = node match {
+			case node: GroupReduceNode => node.getPactContract match {
+				case contract: ReduceOperator with OneInputKeyedScalaOperator[_, _] => Some((contract.getUDF, contract.key, node.getIncomingConnection))
+				case contract: ReduceOperator with OneInputScalaOperator[_, _] => Some((contract.getUDF, new FieldSelector(contract.getUDF.inputUDT, Nil), node.getIncomingConnection))
+				case _ => None
+			}
+			case _ => None
+		}
+	}
+	object DeltaIterationNode {
+		def unapply(node: OptimizerNode): Option[(UDF0[_], FieldSelector, PactConnection, PactConnection)] = node match {
+			case node: WorksetIterationNode => node.getPactContract match {
+				case contract: DeltaIteration with DeltaIterationScalaOperator[_] => Some((contract.getUDF, contract.key, node.getFirstIncomingConnection(), node.getSecondIncomingConnection()))
+				case _                                  => None
+			}
+			case _ => None
+		}
+	}
+	
+	object BulkIterationNode {
+		def unapply(node: OptimizerNode): Option[(UDF0[_], PactConnection)] = node match {
+			case node: BulkIterationNode => node.getPactContract match {
+				case contract: BulkIteration with BulkIterationScalaOperator[_] => Some((contract.getUDF, node.getIncomingConnection()))
+				case _                                  => None
+			}
+			case _ => None
+		}
+	}
 
 }

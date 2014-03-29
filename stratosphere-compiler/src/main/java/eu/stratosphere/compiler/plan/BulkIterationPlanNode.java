@@ -15,7 +15,6 @@ package eu.stratosphere.compiler.plan;
 
 import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE;
 import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE_AND_DAM;
-
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.costs.Costs;
@@ -24,8 +23,6 @@ import eu.stratosphere.compiler.dag.OptimizerNode;
 import eu.stratosphere.compiler.dag.TwoInputNode;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.util.Visitor;
-
-import java.util.Map;
 
 /**
  * 
@@ -146,8 +143,9 @@ public class BulkIterationPlanNode extends SingleInputPlanNode implements Iterat
 	public void acceptForStepFunction(Visitor<PlanNode> visitor) {
 		this.rootOfStepFunction.accept(visitor);
 		
-		if(this.rootOfTerminationCriterion != null)
+		if(this.rootOfTerminationCriterion != null) {
 			this.rootOfTerminationCriterion.accept(visitor);
+		}
 		
 	}
 

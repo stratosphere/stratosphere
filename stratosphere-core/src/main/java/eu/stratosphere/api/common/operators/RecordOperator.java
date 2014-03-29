@@ -19,10 +19,10 @@ import eu.stratosphere.types.Key;
  * Interface marking contract classes to be referring to the {@link Record} data model.
  */
 public interface RecordOperator {
-	
+
 	/**
 	 * Gets the key classes that this record works on.
-	 * 
+	 *
 	 * @return The key classes that this record works on.
 	 */
 	Class<? extends Key>[] getKeyClasses();

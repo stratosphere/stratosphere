@@ -14,7 +14,7 @@
 /**
  * This file is based on source code from the Hadoop Project (http://hadoop.apache.org/), licensed by the Apache
  * Software Foundation (ASF) under the Apache License, Version 2.0. See the NOTICE file distributed with this work for
- * additional information regarding copyright ownership. 
+ * additional information regarding copyright ownership.
  */
 
 package eu.stratosphere.nephele.net;
@@ -22,9 +22,7 @@ package eu.stratosphere.nephele.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -59,7 +57,7 @@ public class SocketInputStream extends InputStream implements ReadableByteChanne
 	 * Create a new input stream with the given timeout. If the timeout
 	 * is zero, it will be treated as infinite timeout. The socket's
 	 * channel will be configured to be non-blocking.
-	 * 
+	 *
 	 * @param channel
 	 *        Channel for reading, should also be a {@link SelectableChannel}.
 	 *        The channel will be configured to be non-blocking.
@@ -79,7 +77,7 @@ public class SocketInputStream extends InputStream implements ReadableByteChanne
 	 * Create a new input stream with the given timeout. If the timeout
 	 * is zero, it will be treated as infinite timeout. The socket's
 	 * channel will be configured to be non-blocking.
-	 * 
+	 *
 	 * @see SocketInputStream#SocketInputStream(ReadableByteChannel, long)
 	 * @param socket
 	 *        should have a channel associated with it.
@@ -99,7 +97,7 @@ public class SocketInputStream extends InputStream implements ReadableByteChanne
 	 * Create a new input stream with the given timeout. If the timeout
 	 * is zero, it will be treated as infinite timeout. The socket's
 	 * channel will be configured to be non-blocking.
-	 * 
+	 *
 	 * @see SocketInputStream#SocketInputStream(ReadableByteChannel, long)
 	 * @param socket
 	 *        should have a channel associated with it.
@@ -119,7 +117,7 @@ public class SocketInputStream extends InputStream implements ReadableByteChanne
 		byte[] buf = new byte[1];
 		int ret = read(buf, 0, 1);
 		if (ret > 0) {
-			return (byte) buf[0];
+			return buf[0];
 		}
 		if (ret != -1) {
 			// unexpected
@@ -163,7 +161,7 @@ public class SocketInputStream extends InputStream implements ReadableByteChanne
 	/**
 	 * waits for the underlying channel to be ready for reading.
 	 * The timeout specified for this stream applies to this wait.
-	 * 
+	 *
 	 * @throws SocketTimeoutException
 	 *         if select on the channel times out.
 	 * @throws IOException

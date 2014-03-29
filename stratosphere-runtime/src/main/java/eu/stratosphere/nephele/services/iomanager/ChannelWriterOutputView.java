@@ -34,45 +34,45 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 	 * The magic number that identifies blocks as blocks from a ChannelWriterOutputView.
 	 */
 	protected static final short HEADER_MAGIC_NUMBER = (short) 0xC0FE;
-	
+
 	/**
 	 * The length of the header put into the blocks.
 	 */
 	protected static final int HEADER_LENGTH = 8;
-	
+
 	/**
 	 * The offset to the flags in the header;
 	 */
 	protected static final int HEADER_FLAGS_OFFSET = 2;
-	
+
 	/**
 	 * The offset to the header field indicating the number of bytes in the block
 	 */
 	protected static final int HEAD_BLOCK_LENGTH_OFFSET = 4;
-	
+
 	/**
 	 * The flag marking a block as the last block.
 	 */
 	protected static final short FLAG_LAST_BLOCK = (short) 0x1;
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	private final BlockChannelWriter writer;		// the writer to the channel
-	
+
 	private long bytesBeforeSegment;				// the number of bytes written before the current memory segment
-	
+
 	private int blockCount;							// the number of blocks used
-	
+
 	private final int numSegments;					// the number of memory segments used by this view
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	/**
 	 * Creates an new ChannelWriterOutputView that writes to the given channel and buffers data
 	 * in the given memory segments. If the given memory segments are null, the writer takes its buffers
 	 * directly from the return queue of the writer. Note that this variant locks if no buffers are contained
 	 * in the return queue.
-	 * 
+	 *
 	 * @param writer The writer to write to.
 	 * @param memory The memory used to buffer data, or null, to utilize solely the return queue.
 	 * @param segmentSize The size of the memory segments.
@@ -80,12 +80,13 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 	public ChannelWriterOutputView(BlockChannelWriter writer, List<MemorySegment> memory, int segmentSize)
 	{
 		super(segmentSize, HEADER_LENGTH);
-		
-		if (writer == null)
+
+		if (writer == null) {
 			throw new NullPointerException();
-		
+		}
+
 		this.writer = writer;
-		
+
 		if (memory == null) {
 			this.numSegments = 0;
 		} else {
@@ -100,7 +101,7 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 				queue.add(seg);
 			}
 		}
-		
+
 		// get the first segment
 		try {
 			advance();
@@ -109,13 +110,13 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 			throw new RuntimeException("BUG: IOException occurred while getting first block for ChannelWriterOutputView.", ioex);
 		}
 	}
-	
+
 	/**
 	 * Creates an new ChannelWriterOutputView that writes to the given channel. It uses only a single
 	 * memory segment for the buffering, which it takes from the writers return queue.
 	 * Note that this variant locks if no buffers are contained
 	 * in the return queue.
-	 * 
+	 *
 	 * @param writer The writer to write to.
 	 * @param segmentSize The size of the memory segments.
 	 */
@@ -123,12 +124,12 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 	{
 		this(writer, null, segmentSize);
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	/**
 	 * Closes this OutputView, closing the underlying writer and returning all memory segments.
-	 * 
+	 *
 	 * @return A list containing all memory segments originally supplied to this view.
 	 * @throws IOException Thrown, if the underlying writer could not be properly closed.
 	 */
@@ -137,13 +138,13 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 		// send off set last segment
 		writeSegment(getCurrentSegment(), getCurrentPositionInSegment(), true);
 		clear();
-		
+
 		// close the writer and gather all segments
 		final LinkedBlockingQueue<MemorySegment> queue = this.writer.getReturnQueue();
 		this.writer.close();
-		
+
 		// re-collect all memory segments
-		ArrayList<MemorySegment> list = new ArrayList<MemorySegment>(this.numSegments);	
+		ArrayList<MemorySegment> list = new ArrayList<MemorySegment>(this.numSegments);
 		for (int i = 0; i < this.numSegments; i++) {
 			final MemorySegment m = queue.poll();
 			if (m == null) {
@@ -152,26 +153,26 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 			}
 			list.add(m);
 		}
-		
+
 		return list;
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	/**
 	 * Gets the number of blocks used by this view.
-	 * 
+	 *
 	 * @return The number of blocks used.
 	 */
 	public int getBlockCount()
 	{
 		return this.blockCount;
 	}
-	
+
 	/**
 	 * Gets the number of pay-load bytes already written. This excludes the number of bytes spent on headers
 	 * in the segments.
-	 * 
+	 *
 	 * @return The number of bytes that have been written to this output view.
 	 */
 	public long getBytesWritten()
@@ -181,7 +182,7 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 
 	/**
 	 * Gets the number of bytes used by this output view, including written bytes and header bytes.
-	 * 
+	 *
 	 * @return The number of bytes that have been written to this output view.
 	 */
 	public long getBytesMemoryUsed()
@@ -192,24 +193,24 @@ public final class ChannelWriterOutputView extends AbstractPagedOutputView
 	// --------------------------------------------------------------------------------------------
 	//                                      Page Management
 	// --------------------------------------------------------------------------------------------
-	
+
 	protected final MemorySegment nextSegment(MemorySegment current, int posInSegment) throws IOException
 	{
 		if (current != null) {
 			writeSegment(current, posInSegment, false);
 		}
-		
+
 		final MemorySegment next = this.writer.getNextReturnedSegment();
 		this.blockCount++;
 		return next;
 	}
-	
+
 	private final void writeSegment(MemorySegment segment, int writePosition, boolean lastSegment) throws IOException
 	{
 		segment.putShort(0, HEADER_MAGIC_NUMBER);
 		segment.putShort(HEADER_FLAGS_OFFSET, lastSegment ? FLAG_LAST_BLOCK : 0);
 		segment.putInt(HEAD_BLOCK_LENGTH_OFFSET, writePosition);
-		
+
 		this.writer.writeBlock(segment);
 		this.bytesBeforeSegment += writePosition - HEADER_LENGTH;
 	}

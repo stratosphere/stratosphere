@@ -13,7 +13,6 @@
 
 package eu.stratosphere.nephele.taskmanager.transferenvelope;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +27,7 @@ import eu.stratosphere.nephele.taskmanager.bytebuffered.RemoteReceiver;
  * {@link InetAddress} objects and finally checkpoints which are identified by
  * <p>
  * This class is thread-safe.
- * 
+ *
  */
 public class TransferEnvelopeReceiverList {
 

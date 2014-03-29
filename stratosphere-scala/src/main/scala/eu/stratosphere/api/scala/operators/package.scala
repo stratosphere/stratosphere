@@ -24,7 +24,7 @@ package object operators {
 //  implicit def funToIterate[SolutionItem, DeltaItem](s0: DataStream[SolutionItem]) = new IterateOperator(s0.contract)
 //  implicit def funToWorksetIterate[SolutionItem: UDT, WorksetItem: UDT](stepFunction: (DataStream[SolutionItem], DataStream[WorksetItem]) => (DataStream[SolutionItem], DataStream[WorksetItem])) = new WorksetIterateOperator(stepFunction)
 
-  implicit def traversableToIterator[T](i: TraversableOnce[T]): Iterator[T] = i.toIterator
-  implicit def optionToIterator[T](opt: Option[T]): Iterator[T] = opt.iterator
-  implicit def arrayToIterator[T](arr: Array[T]): Iterator[T] = arr.iterator
+	implicit def traversableToIterator[T](i: TraversableOnce[T]): Iterator[T] = i.toIterator
+	implicit def optionToIterator[T](opt: Option[T]): Iterator[T] = opt.iterator
+	implicit def arrayToIterator[T](arr: Array[T]): Iterator[T] = arr.iterator
 }

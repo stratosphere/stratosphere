@@ -18,51 +18,51 @@ import eu.stratosphere.types.LongValue;
 import eu.stratosphere.types.Record;
 
 public class ImprovedAdjacencyListInputFormat extends DelimitedInputFormat {
-  private static final long serialVersionUID = 1L;
+private static final long serialVersionUID = 1L;
 
-  private final LongValue vertexID = new LongValue();
-  private final AsciiLongArrayView arrayView = new AsciiLongArrayView();
-  private final LongArrayView adjacentVertices = new LongArrayView();
+private final LongValue vertexID = new LongValue();
+private final AsciiLongArrayView arrayView = new AsciiLongArrayView();
+private final LongArrayView adjacentVertices = new LongArrayView();
 
-  @Override
-  public Record readRecord(Record target, byte[] bytes, int offset, int numBytes) {
+@Override
+public Record readRecord(Record target, byte[] bytes, int offset, int numBytes) {
 
-    if (numBytes == 0) {
-      return null;
-    }
+	if (numBytes == 0) {
+	  return null;
+	}
 
-    arrayView.set(bytes, offset, numBytes);
+	arrayView.set(bytes, offset, numBytes);
 
-    int numElements = arrayView.numElements();
-    adjacentVertices.allocate(numElements - 1);
+	int numElements = arrayView.numElements();
+	adjacentVertices.allocate(numElements - 1);
 
-    try {
+	try {
 
-      int pos = 0;
-      while (arrayView.next()) {
+	  int pos = 0;
+	  while (arrayView.next()) {
 
-        if (pos == 0) {
-          vertexID.setValue(arrayView.element());
-        } else {
-          adjacentVertices.setQuick(pos - 1, arrayView.element());
-        }
+		if (pos == 0) {
+		  vertexID.setValue(arrayView.element());
+		} else {
+		  adjacentVertices.setQuick(pos - 1, arrayView.element());
+		}
 
-        pos++;
-      }
+		pos++;
+	  }
 
-      //sanity check
-      if (pos != numElements) {
-        throw new IllegalStateException("Should have gotten " + numElements + " elements, but saw " + pos);
-      }
+	  //sanity check
+	  if (pos != numElements) {
+		throw new IllegalStateException("Should have gotten " + numElements + " elements, but saw " + pos);
+	  }
 
-    } catch (RuntimeException e) {
-      throw new RuntimeException("Error parsing: " + arrayView.toString(), e);
-    }
+	} catch (RuntimeException e) {
+	  throw new RuntimeException("Error parsing: " + arrayView.toString(), e);
+	}
 
-    target.clear();
-    target.addField(vertexID);
-    target.addField(adjacentVertices);
-    return target;
-  }
+	target.clear();
+	target.addField(vertexID);
+	target.addField(adjacentVertices);
+	return target;
+}
 }
 

@@ -14,18 +14,17 @@
 package eu.stratosphere.nephele.io.channels;
 
 import eu.stratosphere.core.memory.MemorySegment;
-import eu.stratosphere.nephele.taskmanager.bufferprovider.LocalBufferPool;
 
 /**
  * The memory buffer pool connector provides a connection between {@link MemoryBuffer} and the {@link LocalBufferPool}
  * the memory buffer's encapsulated byte buffer has originally been taken from.
- * 
+ *
  */
 public interface MemoryBufferPoolConnector {
 
 	/**
 	 * Called by the {@link MemoryBufferRecycler} to return a buffer to its original buffer pool.
-	 * 
+	 *
 	 * @param byteBuffer
 	 *        the buffer to be recycled
 	 */

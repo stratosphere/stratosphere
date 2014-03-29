@@ -24,7 +24,7 @@ import eu.stratosphere.nephele.io.channels.ChannelType;
  * Nephele's internal scheduling representation for jobs.
  * <p>
  * This class is thread-safe.
- * 
+ *
  */
 public final class ExecutionGate {
 
@@ -73,7 +73,7 @@ public final class ExecutionGate {
 	}
 
 	void replaceAllEdges(final Collection<ExecutionEdge> newEdges) {
-		
+
 		this.edges.clear();
 		this.edges.addAll(newEdges);
 	}

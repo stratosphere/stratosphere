@@ -17,7 +17,6 @@ import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypePairComparator;
 import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 
 /**
@@ -26,13 +25,13 @@ import eu.stratosphere.types.Value;
  * supplied configuration.
  */
 public class ArrayRecordPairComparatorFactory implements TypePairComparatorFactory<Value[], Value[]> {
-	
+
 	private static final ArrayRecordPairComparatorFactory INSTANCE = new ArrayRecordPairComparatorFactory();
-	
+
 	/**
 	 * Gets an instance of the comparator factory. The instance is shared, since the factory is a
-	 * stateless class. 
-	 * 
+	 * stateless class.
+	 *
 	 * @return An instance of the comparator factory.
 	 */
 	public static final ArrayRecordPairComparatorFactory get() {
@@ -51,15 +50,15 @@ public class ArrayRecordPairComparatorFactory implements TypePairComparatorFacto
 		}
 		final ArrayRecordComparator prc1 = (ArrayRecordComparator) comparator1;
 		final ArrayRecordComparator prc2 = (ArrayRecordComparator) comparator2;
-		
+
 		final int[] pos1 = prc1.getKeyPositions();
 		final int[] pos2 = prc2.getKeyPositions();
-		
+
 		final Class<? extends Key>[] types1 = prc1.getKeyTypes();
 		final Class<? extends Key>[] types2 = prc2.getKeyTypes();
-		
+
 		checkComparators(pos1, pos2, types1, types2);
-		
+
 		return new ArrayRecordPairComparator(pos1, pos2, types1);
 	}
 
@@ -75,21 +74,21 @@ public class ArrayRecordPairComparatorFactory implements TypePairComparatorFacto
 		}
 		final ArrayRecordComparator prc1 = (ArrayRecordComparator) comparator1;
 		final ArrayRecordComparator prc2 = (ArrayRecordComparator) comparator2;
-		
+
 		final int[] pos1 = prc1.getKeyPositions();
 		final int[] pos2 = prc2.getKeyPositions();
-		
+
 		final Class<? extends Key>[] types1 = prc1.getKeyTypes();
 		final Class<? extends Key>[] types2 = prc2.getKeyTypes();
-		
+
 		checkComparators(pos1, pos2, types1, types2);
-		
+
 		return new ArrayRecordPairComparator(pos2, pos1, types1);
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
 
-	private static final void checkComparators(int[] pos1, int[] pos2, 
+	private static final void checkComparators(int[] pos1, int[] pos2,
 							Class<? extends Key>[] types1, Class<? extends Key>[] types2)
 	{
 		if (pos1.length != pos2.length || types1.length != types2.length) {

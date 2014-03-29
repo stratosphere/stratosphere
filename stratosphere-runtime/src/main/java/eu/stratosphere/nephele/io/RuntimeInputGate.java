@@ -26,11 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.nephele.event.task.AbstractEvent;
 import eu.stratosphere.nephele.event.task.AbstractTaskEvent;
-import eu.stratosphere.nephele.execution.Environment;
 import eu.stratosphere.nephele.io.channels.AbstractInputChannel;
 import eu.stratosphere.nephele.io.channels.ChannelID;
-import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkInputChannel;
 import eu.stratosphere.nephele.io.channels.bytebuffered.InMemoryInputChannel;
+import eu.stratosphere.nephele.io.channels.bytebuffered.NetworkInputChannel;
 import eu.stratosphere.nephele.jobgraph.JobID;
 
 /**
@@ -38,11 +37,11 @@ import eu.stratosphere.nephele.jobgraph.JobID;
  * channels, input gates are always parameterized to a specific type of record which they can transport. In contrast to
  * output gates input gates can be associated with a {@link DistributionPattern} object which dictates the concrete
  * wiring between two groups of vertices.
- * 
+ *
  * @param <T> The type of record that can be transported through this gate.
  */
 public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate<T> implements InputGate<T> {
-	
+
 	/**
 	 * The log object used for debugging.
 	 */
@@ -67,8 +66,8 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 	 * The listener object to be notified when a channel has at least one record available.
 	 */
 	private final AtomicReference<RecordAvailabilityListener<T>> recordAvailabilityListener = new AtomicReference<RecordAvailabilityListener<T>>(null);
-	
-	
+
+
 	private AbstractTaskEvent currentEvent;
 
 	/**
@@ -83,7 +82,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 
 	/**
 	 * Constructs a new runtime input gate.
-	 * 
+	 *
 	 * @param jobID
 	 *        the ID of the job this input gate belongs to
 	 * @param gateID
@@ -101,7 +100,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 
 	/**
 	 * Adds a new input channel to the input gate.
-	 * 
+	 *
 	 * @param inputChannel
 	 *        the input channel to be added.
 	 */
@@ -115,7 +114,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 
 	/**
 	 * Removes the input channel with the given ID from the input gate if it exists.
-	 * 
+	 *
 	 * @param inputChannelID
 	 *        the ID of the channel to be removed
 	 */
@@ -129,9 +128,10 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 				return;
 			}
 		}
-		
-		if (LOG.isDebugEnabled())
+
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Cannot find output channel with ID " + inputChannelID + " to remove");
+		}
 	}
 
 	@Override
@@ -181,46 +181,46 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 			if (this.isClosed()) {
 				return InputChannelResult.END_OF_STREAM;
 			}
-				
+
 			if (Thread.interrupted()) {
 				throw new InterruptedException();
 			}
-				
+
 			this.channelToReadFrom = waitForAnyChannelToBecomeAvailable();
 		}
-			
+
 		InputChannelResult result = this.getInputChannel(this.channelToReadFrom).readRecord(target);
 		switch (result) {
 			case INTERMEDIATE_RECORD_FROM_BUFFER: // full record and we can stay on the same channel
 				return InputChannelResult.INTERMEDIATE_RECORD_FROM_BUFFER;
-				
+
 			case LAST_RECORD_FROM_BUFFER: // full record, but we must switch the channel afterwards
 				this.channelToReadFrom = -1;
 				return InputChannelResult.LAST_RECORD_FROM_BUFFER;
-				
+
 			case END_OF_SUPERSTEP:
 				this.channelToReadFrom = -1;
 				return InputChannelResult.END_OF_SUPERSTEP;
-				
+
 			case TASK_EVENT: // task event
 				this.currentEvent = this.getInputChannel(this.channelToReadFrom).getCurrentEvent();
 				this.channelToReadFrom = -1;	// event always marks a unit as consumed
 				return InputChannelResult.TASK_EVENT;
-					
+
 			case NONE: // internal event or an incomplete record that needs further chunks
 				// the current unit is exhausted
 				this.channelToReadFrom = -1;
 				return InputChannelResult.NONE;
-				
+
 			case END_OF_STREAM: // channel is done
 				this.channelToReadFrom = -1;
 				return isClosed() ? InputChannelResult.END_OF_STREAM : InputChannelResult.NONE;
-				
+
 			default:   // silence the compiler
 				throw new RuntimeException();
 		}
 	}
-	
+
 	@Override
 	public AbstractTaskEvent getCurrentEvent() {
 		AbstractTaskEvent e = this.currentEvent;
@@ -242,7 +242,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 	 * This method returns the index of a channel which has at least
 	 * one record available. The method may block until at least one
 	 * channel has become ready.
-	 * 
+	 *
 	 * @return the index of the channel which has at least one record available
 	 */
 	public int waitForAnyChannelToBecomeAvailable() throws InterruptedException {
@@ -265,7 +265,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 		}
 
 		this.isClosed = true;
-		
+
 		return true;
 	}
 
@@ -299,7 +299,7 @@ public class RuntimeInputGate<T extends IOReadableWritable> extends AbstractGate
 
 	/**
 	 * Returns the {@link RecordDeserializerFactory} used by this input gate.
-	 * 
+	 *
 	 * @return The {@link RecordDeserializerFactory} used by this input gate.
 	 */
 	public RecordDeserializerFactory<T> getRecordDeserializerFactory() {

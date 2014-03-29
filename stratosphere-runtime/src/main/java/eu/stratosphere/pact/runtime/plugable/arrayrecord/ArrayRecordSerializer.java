@@ -19,7 +19,6 @@ import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.types.CopyableValue;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 import eu.stratosphere.util.InstantiationUtil;
 
@@ -29,24 +28,24 @@ import eu.stratosphere.util.InstantiationUtil;
 public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 {
 	private final Class<? extends CopyableValue<Value>>[] types;
-	
+
 	private final CopyableValue<Value>[] instances;
-	
+
 	private final int[] lengths;
-	
+
 	private final int len;
-	
+
 	private final Class<CopyableValue<Value>> clazz;
-	
+
 
 	@SuppressWarnings("unchecked")
 	public ArrayRecordSerializer(Class<? extends Value>[] types) {
 		this.types = new Class[types.length];
 		this.instances = new CopyableValue[types.length];
 		this.lengths = new int[types.length];
-		
+
 		int len = 0;
-		
+
 		for (int i = 0; i < types.length; i++) {
 			if (CopyableValue.class.isAssignableFrom(types[i])) {
 				this.types[i] = (Class<CopyableValue<Value>>) types[i];
@@ -64,13 +63,13 @@ public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 						CopyableValue.class.getName() + "'.");
 			}
 		}
-		
+
 		this.len = len;
 		this.clazz = (Class<CopyableValue<Value>>) (Class<?>) CopyableValue.class;
 	}
 
 	// --------------------------------------------------------------------------------------------
-	
+
 
 	@Override
 	public Value[] createInstance() {
@@ -78,7 +77,7 @@ public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 		for (int i = 0; i < vals.length; i++) {
 			vals[i] = InstantiationUtil.instantiate(this.types[i], this.clazz);
 		}
-		return vals; 
+		return vals;
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +91,7 @@ public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 		}
 		return reuse;
 	}
-	
+
 
 	@Override
 	public int getLength() {
@@ -100,7 +99,7 @@ public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 	}
 
 	// --------------------------------------------------------------------------------------------
-	
+
 	/* (non-Javadoc)
 	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#serialize(java.lang.Object, eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
 	 */
@@ -121,7 +120,7 @@ public final class ArrayRecordSerializer extends TypeSerializer<Value[]>
 		}
 		return reuse;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see eu.stratosphere.pact.runtime.plugable.TypeAccessorsV2#copy(eu.stratosphere.nephele.services.memorymanager.DataInputViewV2, eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
 	 */

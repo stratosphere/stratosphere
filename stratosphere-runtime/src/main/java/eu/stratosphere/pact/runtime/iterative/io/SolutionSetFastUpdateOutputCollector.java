@@ -15,10 +15,10 @@
 
 package eu.stratosphere.pact.runtime.iterative.io;
 
+import java.io.IOException;
+
 import eu.stratosphere.pact.runtime.hash.MutableHashTable;
 import eu.stratosphere.util.Collector;
-
-import java.io.IOException;
 
 /**
  * A {@link Collector} to update the solution set of a workset iteration.
@@ -33,36 +33,36 @@ import java.io.IOException;
  */
 public class SolutionSetFastUpdateOutputCollector<T> implements Collector<T> {
 
-    private final Collector<T> delegate;
-    private final MutableHashTable<T, ?> solutionSet;
+	private final Collector<T> delegate;
+	private final MutableHashTable<T, ?> solutionSet;
 
-    public SolutionSetFastUpdateOutputCollector(MutableHashTable<T, ?> solutionSet) {
-        this(solutionSet, null);
-    }
+	public SolutionSetFastUpdateOutputCollector(MutableHashTable<T, ?> solutionSet) {
+		this(solutionSet, null);
+	}
 
-    public SolutionSetFastUpdateOutputCollector(MutableHashTable<T, ?> solutionSet, Collector<T> delegate) {
-        this.solutionSet = solutionSet;
-        this.delegate = delegate;
-    }
+	public SolutionSetFastUpdateOutputCollector(MutableHashTable<T, ?> solutionSet, Collector<T> delegate) {
+		this.solutionSet = solutionSet;
+		this.delegate = delegate;
+	}
 
-    @Override
-    public void collect(T record) {
-        try {
-            MutableHashTable.HashBucketIterator<T, ?> bucket = solutionSet.getBuildSideIterator();
-            bucket.writeBack(record);
+	@Override
+	public void collect(T record) {
+		try {
+			MutableHashTable.HashBucketIterator<T, ?> bucket = solutionSet.getBuildSideIterator();
+			bucket.writeBack(record);
 
-            if (delegate != null) {
-                delegate.collect(record);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+			if (delegate != null) {
+				delegate.collect(record);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    @Override
-    public void close() {
-        if (delegate != null) {
-            delegate.close();
-        }
-    }
+	@Override
+	public void close() {
+		if (delegate != null) {
+			delegate.close();
+		}
+	}
 }

@@ -29,32 +29,32 @@ import eu.stratosphere.nephele.services.memorymanager.AbstractPagedInputView;
  * has been written by a {@link ChannelWriterOutputView}, due to block formatting.
  */
 public class ChannelReaderInputView extends AbstractPagedInputView {
-	
+
 	protected final BlockChannelReader reader;		// the block reader that reads memory segments
-	
+
 	protected int numRequestsRemaining;				// the number of block requests remaining
-	
+
 	private final int numSegments;					// the number of memory segment the view works with
-	
+
 	private final ArrayList<MemorySegment> freeMem;	// memory gathered once the work is done
-	
+
 	private boolean inLastBlock;					// flag indicating whether the view is already in the last block
-	
+
 	private boolean closed;							// flag indicating whether the reader is closed
-	
+
 	// --------------------------------------------------------------------------------------------
 
 	/**
 	 * Creates a new channel reader that reads from the given channel until the last block
 	 * (as marked by a {@link ChannelWriterOutputView}) is found.
-	 * 
+	 *
 	 * @param reader The reader that reads the data from disk back into memory.
 	 * @param memory A list of memory segments that the reader uses for reading the data in. If the
 	 *               list contains more than one segment, the reader will asynchronously pre-fetch
 	 *               blocks ahead.
 	 * @param waitForFirstBlock A flag indicating weather this constructor call should block
 	 *                          until the first block has returned from the asynchronous I/O reader.
-	 * 
+	 *
 	 * @throws IOException Thrown, if the read requests for the first blocks fail to be
 	 *                     served by the reader.
 	 */
@@ -63,14 +63,14 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 	{
 		this(reader, memory, -1, waitForFirstBlock);
 	}
-	
+
 	/**
 	 * Creates a new channel reader that reads from the given channel, expecting a specified
 	 * number of blocks in the channel.
 	 * <p>
 	 * WARNING: The reader will lock if the number of blocks given here is actually lower than
 	 * the actual number of blocks in the channel.
-	 * 
+	 *
 	 * @param reader The reader that reads the data from disk back into memory.
 	 * @param memory A list of memory segments that the reader uses for reading the data in. If the
 	 *               list contains more than one segment, the reader will asynchronously pre-fetch
@@ -80,23 +80,23 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 	 *                  beyond the channel size.
 	 * @param waitForFirstBlock A flag indicating weather this constructor call should block
 	 *                          until the first block has returned from the asynchronous I/O reader.
-	 * 
+	 *
 	 * @throws IOException Thrown, if the read requests for the first blocks fail to be
 	 *                     served by the reader.
 	 */
-	public ChannelReaderInputView(BlockChannelReader reader, List<MemorySegment> memory, 
+	public ChannelReaderInputView(BlockChannelReader reader, List<MemorySegment> memory,
 														int numBlocks, boolean waitForFirstBlock)
 	throws IOException
 	{
 		this(reader, memory, numBlocks, ChannelWriterOutputView.HEADER_LENGTH, waitForFirstBlock);
 	}
-		
+
 	/**
 	 * Non public constructor to allow subclasses to use this input view with different headers.
 	 * <p>
 	 * WARNING: The reader will lock if the number of blocks given here is actually lower than
 	 * the actual number of blocks in the channel.
-	 * 
+	 *
 	 * @param reader The reader that reads the data from disk back into memory.
 	 * @param memory A list of memory segments that the reader uses for reading the data in. If the
 	 *               list contains more than one segment, the reader will asynchronously pre-fetch
@@ -109,61 +109,63 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 	 *                  so any subclass changing the header length should override that methods as well.
 	 * @param waitForFirstBlock A flag indicating weather this constructor call should block
 	 *                          until the first block has returned from the asynchronous I/O reader.
-	 * 
+	 *
 	 * @throws IOException
 	 */
-	ChannelReaderInputView(BlockChannelReader reader, List<MemorySegment> memory, 
+	ChannelReaderInputView(BlockChannelReader reader, List<MemorySegment> memory,
 				int numBlocks, int headerLen, boolean waitForFirstBlock)
 	throws IOException
 	{
 		super(headerLen);
-		
-		if (reader == null || memory == null)
+
+		if (reader == null || memory == null) {
 			throw new NullPointerException();
-		if (memory.isEmpty())
+		}
+		if (memory.isEmpty()) {
 			throw new IllegalArgumentException("Empty list of memory segments given.");
+		}
 		if (numBlocks < 1 && numBlocks != -1) {
 			throw new IllegalArgumentException("The number of blocks must be a positive number, or -1, if unknown.");
 		}
-		
+
 		this.reader = reader;
 		this.numRequestsRemaining = numBlocks;
 		this.numSegments = memory.size();
 		this.freeMem = new ArrayList<MemorySegment>(this.numSegments);
-		
+
 		for (int i = 0; i < memory.size(); i++) {
 			sendReadRequest(memory.get(i));
 		}
-		
+
 		if (waitForFirstBlock) {
 			advance();
 		}
 	}
-	
+
 	public void waitForFirstBlock() throws IOException
 	{
 		if (getCurrentSegment() == null) {
 			advance();
 		}
 	}
-	
+
 	public boolean isClosed() {
 		return this.closed;
 	}
-	
+
 	/**
 	 * Closes this InputView, closing the underlying reader and returning all memory segments.
-	 * 
+	 *
 	 * @return A list containing all memory segments originally supplied to this view.
 	 * @throws IOException Thrown, if the underlying reader could not be properly closed.
 	 */
 	public List<MemorySegment> close() throws IOException
-	{	
+	{
 		if (this.closed) {
 			throw new IllegalStateException("Already closed.");
 		}
 		this.closed = true;
-		
+
 		// re-collect all memory segments
 		ArrayList<MemorySegment> list = this.freeMem;
 		final MemorySegment current = getCurrentSegment();
@@ -186,7 +188,7 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 		}
 		return list;
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
 	//                                        Utilities
 	// --------------------------------------------------------------------------------------------
@@ -197,12 +199,12 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 	 * adds the segment to the readers return queue, which thereby effectively collects all memory segments.
 	 * Secondly, the method fetches the next non-consumed segment
 	 * returned by the reader. If no further segments are available, this method thrown an {@link EOFException}.
-	 * 
+	 *
 	 * @param current The memory segment used for the next request.
 	 * @return The memory segment to read from next.
-	 * 
+	 *
 	 * @throws EOFException Thrown, if no further segments are available.
-	 * @throws IOException Thrown, if an I/O error occurred while reading 
+	 * @throws IOException Thrown, if an I/O error occurred while reading
 	 * @see eu.stratosphere.pact.runtime.io.AbstractPagedInputView#nextSegment(eu.stratosphere.core.memory.MemorySegment)
 	 */
 	@Override
@@ -212,16 +214,16 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 		if (this.inLastBlock) {
 			throw new EOFException();
 		}
-				
+
 		// send a request first. if we have only a single segment, this same segment will be the one obtained in
 		// the next lines
 		if (current != null) {
 			sendReadRequest(current);
 		}
-		
+
 		// get the next segment
 		final MemorySegment seg = this.reader.getNextReturnedSegment();
-		
+
 		// check the header
 		if (seg.getShort(0) != ChannelWriterOutputView.HEADER_MAGIC_NUMBER) {
 			throw new IOException("The current block does not belong to a ChannelWriterOutputView / " +
@@ -232,21 +234,21 @@ public class ChannelReaderInputView extends AbstractPagedInputView {
 			this.numRequestsRemaining = 0;
 			this.inLastBlock = true;
 		}
-		
+
 		return seg;
 	}
-	
+
 
 	@Override
 	protected int getLimitForSegment(MemorySegment segment)
 	{
 		return segment.getInt(ChannelWriterOutputView.HEAD_BLOCK_LENGTH_OFFSET);
 	}
-	
+
 	/**
 	 * Sends a new read requests, if further requests remain. Otherwise, this method adds the segment
 	 * directly to the readers return queue.
-	 * 
+	 *
 	 * @param seg The segment to use for the read request.
 	 * @throws IOException Thrown, if the reader is in error.
 	 */

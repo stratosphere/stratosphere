@@ -184,8 +184,9 @@ public class LocalExecutor extends PlanExecutor {
 	 *                   caused an exception.
 	 */
 	public JobExecutionResult executePlan(Plan plan) throws Exception {
-		if (plan == null)
+		if (plan == null) {
 			throw new IllegalArgumentException("The plan may not be null.");
+		}
 		
 		synchronized (this.lock) {
 			

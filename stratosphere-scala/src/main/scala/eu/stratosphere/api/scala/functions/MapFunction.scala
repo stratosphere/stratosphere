@@ -19,57 +19,57 @@ import eu.stratosphere.types.Record
 import eu.stratosphere.util.Collector
 
 abstract class MapFunctionBase[In: UDT, Out: UDT] extends JMapFunction with Serializable{
-  val inputUDT: UDT[In] = implicitly[UDT[In]]
-  val outputUDT: UDT[Out] = implicitly[UDT[Out]]
-  val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
+	val inputUDT: UDT[In] = implicitly[UDT[In]]
+	val outputUDT: UDT[Out] = implicitly[UDT[Out]]
+	val udf: UDF1[In, Out] = new UDF1(inputUDT, outputUDT)
 
-  protected lazy val deserializer: UDTSerializer[In] = udf.getInputDeserializer
-  protected lazy val serializer: UDTSerializer[Out] = udf.getOutputSerializer
-  protected lazy val discard: Array[Int] = udf.getDiscardIndexArray
-  protected lazy val outputLength: Int = udf.getOutputLength
+	protected lazy val deserializer: UDTSerializer[In] = udf.getInputDeserializer
+	protected lazy val serializer: UDTSerializer[Out] = udf.getOutputSerializer
+	protected lazy val discard: Array[Int] = udf.getDiscardIndexArray
+	protected lazy val outputLength: Int = udf.getOutputLength
 }
 
 abstract class MapFunction[In: UDT, Out: UDT] extends MapFunctionBase[In, Out] with Function1[In, Out] {
-  override def map(record: Record, out: Collector[Record]) = {
-    val input = deserializer.deserializeRecyclingOn(record)
-    val output = apply(input)
+	override def map(record: Record, out: Collector[Record]) = {
+		val input = deserializer.deserializeRecyclingOn(record)
+		val output = apply(input)
 
-    record.setNumFields(outputLength)
+		record.setNumFields(outputLength)
 
-    for (field <- discard)
-      record.setNull(field)
+		for (field <- discard)
+			record.setNull(field)
 
-    serializer.serialize(output, record)
-    out.collect(record)
-  }
+		serializer.serialize(output, record)
+		out.collect(record)
+	}
 }
 
 abstract class FlatMapFunction[In: UDT, Out: UDT] extends MapFunctionBase[In, Out] with Function1[In, Iterator[Out]] {
-  override def map(record: Record, out: Collector[Record]) = {
-    val input = deserializer.deserializeRecyclingOn(record)
-    val output = apply(input)
+	override def map(record: Record, out: Collector[Record]) = {
+		val input = deserializer.deserializeRecyclingOn(record)
+		val output = apply(input)
 
-    if (output.nonEmpty) {
+		if (output.nonEmpty) {
 
-      record.setNumFields(outputLength)
+			record.setNumFields(outputLength)
 
-      for (field <- discard)
-        record.setNull(field)
+			for (field <- discard)
+				record.setNull(field)
 
-      for (item <- output) {
+			for (item <- output) {
 
-        serializer.serialize(item, record)
-        out.collect(record)
-      }
-    }
-  }
+				serializer.serialize(item, record)
+				out.collect(record)
+			}
+		}
+	}
 }
 
 abstract class FilterFunction[In: UDT, Out: UDT] extends MapFunctionBase[In, Out] with Function1[In, Boolean]  {
-  override def map(record: Record, out: Collector[Record]) = {
-    val input = deserializer.deserializeRecyclingOn(record)
-    if (apply(input)) {
-      out.collect(record)
-    }
-  }
+	override def map(record: Record, out: Collector[Record]) = {
+		val input = deserializer.deserializeRecyclingOn(record)
+		if (apply(input)) {
+			out.collect(record)
+		}
+	}
 }

@@ -43,13 +43,13 @@ public class LocalInstanceManagerTest {
 			fail("Cannot locate configuration directory");
 		}
 
-        GlobalConfiguration.loadConfiguration(configDir);
-        
-        
+		GlobalConfiguration.loadConfiguration(configDir);
+		
+		
 		// start JobManager
-        ExecutionMode executionMode = ExecutionMode.LOCAL;
-        JobManager jm = new JobManager(executionMode);
-       
+		ExecutionMode executionMode = ExecutionMode.LOCAL;
+		JobManager jm = new JobManager(executionMode);
+	
 		final TestInstanceListener testInstanceListener = new TestInstanceListener();
 
 		LocalInstanceManager lm = (LocalInstanceManager) jm.getInstanceManager(); // this is for sure, because I chose the local strategy

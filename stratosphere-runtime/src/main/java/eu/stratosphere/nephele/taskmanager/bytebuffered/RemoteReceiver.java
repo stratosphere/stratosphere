@@ -25,7 +25,7 @@ import eu.stratosphere.util.StringUtils;
 
 /**
  * Objects of this class uniquely identify a connection to a remote {@link TaskManager}.
- * 
+ *
  */
 public final class RemoteReceiver implements IOReadableWritable {
 
@@ -41,7 +41,7 @@ public final class RemoteReceiver implements IOReadableWritable {
 
 	/**
 	 * Constructs a new remote receiver object.
-	 * 
+	 *
 	 * @param connectionAddress
 	 *        the address of the connection to the remote {@link TaskManager}
 	 * @param connectionIndex
@@ -71,7 +71,7 @@ public final class RemoteReceiver implements IOReadableWritable {
 
 	/**
 	 * Returns the address of the connection to the remote {@link TaskManager}.
-	 * 
+	 *
 	 * @return the address of the connection to the remote {@link TaskManager}
 	 */
 	public InetSocketAddress getConnectionAddress() {
@@ -81,7 +81,7 @@ public final class RemoteReceiver implements IOReadableWritable {
 
 	/**
 	 * Returns the index of the connection to the remote {@link TaskManager}.
-	 * 
+	 *
 	 * @return the index of the connection to the remote {@link TaskManager}
 	 */
 	public int getConnectionIndex() {

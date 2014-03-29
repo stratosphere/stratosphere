@@ -213,9 +213,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		if(archived_items > 0) {
 			this.archive = new MemoryArchivist(archived_items);
 			this.eventCollector.registerArchivist(archive);
-		}
-		else
+		} else {
 			this.archive = null;
+		}
 
 		// Create the accumulator manager, with same archiving limit as web
 		// interface. We need to store the accumulators for at least one job.
@@ -890,8 +890,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		ManagementGraph mg = this.eventCollector.getManagementGraph(jobID);
 		if (mg == null) {
-			if(this.archive != null)
+			if(this.archive != null) {
 				mg = this.archive.getManagementGraph(jobID);
+			}
 			
 			if (mg == null) {
 				throw new IOException("Cannot find job with ID " + jobID);

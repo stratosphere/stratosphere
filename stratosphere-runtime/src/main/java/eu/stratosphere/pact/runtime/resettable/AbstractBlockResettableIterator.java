@@ -64,8 +64,9 @@ abstract class AbstractBlockResettableIterator<T> implements MemoryBlockIterator
 			int numPages, AbstractInvokable ownerTask)
 	throws MemoryAllocationException
 	{
-		if (numPages < 1)
+		if (numPages < 1) {
 			throw new IllegalArgumentException("Block Resettable iterator requires at leat one page of memory");
+		}
 		
 		this.memoryManager = memoryManager;
 		this.serializer = serializer;
@@ -78,16 +79,18 @@ abstract class AbstractBlockResettableIterator<T> implements MemoryBlockIterator
 						new ListMemorySegmentSource(this.emptySegments), memoryManager.getPageSize());
 		this.readView = new RandomAccessInputView(this.fullSegments, memoryManager.getPageSize());
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Iterator initalized using " + numPages + " memory buffers.");
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------
 
 	public void open()
 	{
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Block Resettable Iterator opened.");
+		}
 	}
 	
 	/**
@@ -146,8 +149,9 @@ abstract class AbstractBlockResettableIterator<T> implements MemoryBlockIterator
 		this.memoryManager.release(this.emptySegments);
 		this.emptySegments.clear();
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Block Resettable Iterator closed.");
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------

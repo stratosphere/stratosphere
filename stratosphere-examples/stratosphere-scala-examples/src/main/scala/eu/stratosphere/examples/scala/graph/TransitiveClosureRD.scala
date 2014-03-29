@@ -21,62 +21,62 @@ import eu.stratosphere.api.scala.operators._
 import eu.stratosphere.client.LocalExecutor
 
 object RunTransitiveClosureRD {
-  def main(pArgs: Array[String]) {
-    if (pArgs.size < 3) {
-      println("usage: -vertices <file> -edges <file> -output <file>")
-      return
-    }
-    val args = Args.parse(pArgs)
-    val plan = new TransitiveClosureRD().getPlan(args("vertices"), args("edges"), args("output"))
-    LocalExecutor.execute(plan)
-    System.exit(0)
-  }
+	def main(pArgs: Array[String]) {
+		if (pArgs.size < 3) {
+			println("usage: -vertices <file> -edges <file> -output <file>")
+			return
+		}
+		val args = Args.parse(pArgs)
+		val plan = new TransitiveClosureRD().getPlan(args("vertices"), args("edges"), args("output"))
+		LocalExecutor.execute(plan)
+		System.exit(0)
+	}
 }
 
 class TransitiveClosureRD extends Serializable {
 
-  def getPlan(verticesInput: String, edgesInput: String, pathsOutput: String) = {
-    val vertices = DataSource(verticesInput, DelimitedInputFormat(parseVertex))
-    val edges = DataSource(edgesInput, DelimitedInputFormat(parseEdge))
+	def getPlan(verticesInput: String, edgesInput: String, pathsOutput: String) = {
+		val vertices = DataSource(verticesInput, DelimitedInputFormat(parseVertex))
+		val edges = DataSource(edgesInput, DelimitedInputFormat(parseEdge))
 
-    def createClosure = (c: DataSet[Path], x: DataSet[Path]) => {
+		def createClosure = (c: DataSet[Path], x: DataSet[Path]) => {
 
-      val cNewPaths = x join c where { p => p.to } isEqualTo { p => p.from } map joinPaths
-      val c1 = cNewPaths cogroup c where { p => (p.from, p.to) } isEqualTo { p => (p.from, p.to) } map selectShortestDistance
+			val cNewPaths = x join c where { p => p.to } isEqualTo { p => p.from } map joinPaths
+			val c1 = cNewPaths cogroup c where { p => (p.from, p.to) } isEqualTo { p => (p.from, p.to) } map selectShortestDistance
 
-      val xNewPaths = x join x where { p => p.to } isEqualTo { p => p.from } map joinPaths
-      val x1 = xNewPaths cogroup c1 where { p => (p.from, p.to) } isEqualTo { p => (p.from, p.to) } flatMap excludeKnownPaths
+			val xNewPaths = x join x where { p => p.to } isEqualTo { p => p.from } map joinPaths
+			val x1 = xNewPaths cogroup c1 where { p => (p.from, p.to) } isEqualTo { p => (p.from, p.to) } flatMap excludeKnownPaths
 
-      (c1, x1)
-    }
-    val transitiveClosure = vertices.iterateWithDelta(edges, { p => (p.from, p.to) }, createClosure, 10)
+			(c1, x1)
+		}
+		val transitiveClosure = vertices.iterateWithDelta(edges, { p => (p.from, p.to) }, createClosure, 10)
 
-    val output = transitiveClosure.write(pathsOutput, DelimitedOutputFormat(formatOutput))
+		val output = transitiveClosure.write(pathsOutput, DelimitedOutputFormat(formatOutput))
 
-    vertices.avgBytesPerRecord(16)
-    edges.avgBytesPerRecord(16)
+		vertices.avgBytesPerRecord(16)
+		edges.avgBytesPerRecord(16)
 
-    new ScalaPlan(Seq(output), "Transitive Closure with Recursive Doubling")
-  }
+		new ScalaPlan(Seq(output), "Transitive Closure with Recursive Doubling")
+	}
 
-  def selectShortestDistance = (dist1: Iterator[Path], dist2: Iterator[Path]) => (dist1 ++ dist2) minBy { _.dist }
+	def selectShortestDistance = (dist1: Iterator[Path], dist2: Iterator[Path]) => (dist1 ++ dist2) minBy { _.dist }
 
-  def excludeKnownPaths = (x: Iterator[Path], c: Iterator[Path]) => if (c.isEmpty) x else Iterator.empty
+	def excludeKnownPaths = (x: Iterator[Path], c: Iterator[Path]) => if (c.isEmpty) x else Iterator.empty
 
-  def joinPaths = (p1: Path, p2: Path) => (p1, p2) match {
-    case (Path(from, _, dist1), Path(_, to, dist2)) => Path(from, to, dist1 + dist2)
-  }
+	def joinPaths = (p1: Path, p2: Path) => (p1, p2) match {
+		case (Path(from, _, dist1), Path(_, to, dist2)) => Path(from, to, dist1 + dist2)
+	}
 
-  case class Path(from: Int, to: Int, dist: Int)
+	case class Path(from: Int, to: Int, dist: Int)
 
-  def parseVertex = (line: String) => { val v = line.toInt; Path(v, v, 0) }
+	def parseVertex = (line: String) => { val v = line.toInt; Path(v, v, 0) }
 
-  val EdgeInputPattern = """(\d+)\|(\d+)\|""".r
+	val EdgeInputPattern = """(\d+)\|(\d+)\|""".r
 
-  def parseEdge = (line: String) => line match {
-    case EdgeInputPattern(from, to) => Path(from.toInt, to.toInt, 1)
-  }
+	def parseEdge = (line: String) => line match {
+		case EdgeInputPattern(from, to) => Path(from.toInt, to.toInt, 1)
+	}
 
-  def formatOutput = (path: Path) => "%d|%d|%d".format(path.from, path.to, path.dist)
+	def formatOutput = (path: Path) => "%d|%d|%d".format(path.from, path.to, path.dist)
 }
 

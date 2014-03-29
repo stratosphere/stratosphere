@@ -41,7 +41,6 @@ import eu.stratosphere.nephele.io.RuntimeInputGate;
 import eu.stratosphere.nephele.io.RuntimeOutputGate;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.protocols.AccumulatorProtocol;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
@@ -140,7 +139,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 	 * The observer object for the task's execution.
 	 */
 	private volatile ExecutionObserver executionObserver = null;
-	
+
 	/**
 	 * The RPC procy to report accumulators to JobManager
 	 */
@@ -164,7 +163,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 	/**
 	 * Creates a new runtime environment object which contains the runtime information for the encapsulated Nephele
 	 * task.
-	 * 
+	 *
 	 * @param jobID
 	 *        the ID of the original Nephele job
 	 * @param taskName
@@ -200,7 +199,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Constructs a runtime environment from a task deployment description.
-	 * 
+	 *
 	 * @param tdd
 	 *        the task deployment description
 	 * @param memoryManager
@@ -293,7 +292,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Returns the invokable object that represents the Nephele task.
-	 * 
+	 *
 	 * @return the invokable object that represents the Nephele task
 	 */
 	public AbstractInvokable getInvokable() {
@@ -475,7 +474,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Returns the registered input gate with index <code>pos</code>.
-	 * 
+	 *
 	 * @param pos
 	 *        the index of the input gate to return
 	 * @return the input gate at index <code>pos</code> or <code>null</code> if no such index exists
@@ -490,7 +489,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Returns the registered output gate with index <code>pos</code>.
-	 * 
+	 *
 	 * @param pos
 	 *        the index of the output gate to return
 	 * @return the output gate at index <code>pos</code> or <code>null</code> if no such index exists
@@ -505,7 +504,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Returns the thread which is assigned to execute the user code.
-	 * 
+	 *
 	 * @return the thread which is assigned to execute the user code
 	 */
 	public Thread getExecutingThread() {
@@ -526,7 +525,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Blocks until all output channels are closed.
-	 * 
+	 *
 	 * @throws IOException
 	 *         thrown if an error occurred while closing the output channels
 	 * @throws InterruptedException
@@ -560,7 +559,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Blocks until all input channels are closed.
-	 * 
+	 *
 	 * @throws IOException
 	 *         thrown if an error occurred while closing the input channels
 	 * @throws InterruptedException
@@ -669,7 +668,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Returns the name of the task with its index in the subtask group and the total number of subtasks.
-	 * 
+	 *
 	 * @return the name of the task with its index in the subtask group and the total number of subtasks
 	 */
 	public String getTaskNameWithIndex() {
@@ -680,7 +679,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 	/**
 	 * Sets the execution observer for this environment.
-	 * 
+	 *
 	 * @param executionObserver
 	 *        the execution observer for this environment
 	 */
@@ -844,7 +843,7 @@ public class RuntimeEnvironment implements Environment, Runnable {
 
 		return Collections.unmodifiableSet(inputChannelIDs);
 	}
-	
+
 	@Override
 	public AccumulatorProtocol getAccumulatorProtocolProxy() {
 		return accumulatorProtocolProxy;

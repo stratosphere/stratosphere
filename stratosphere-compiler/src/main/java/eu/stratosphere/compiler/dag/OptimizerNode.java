@@ -315,8 +315,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 *        The id for this node.
 	 */
 	public void initId(int id) {
-		if (id <= 0)
+		if (id <= 0) {
 			throw new IllegalArgumentException();
+		}
 		
 		if (this.id == -1) {
 			this.id = id;
@@ -997,8 +998,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 * @return
 	 */
 	protected boolean areBranchCompatible(PlanNode plan1, PlanNode plan2) {
-		if (plan1 == null || plan2 == null)
+		if (plan1 == null || plan2 == null) {
 			throw new NullPointerException();
+		}
 		
 		// if there is no open branch, the children are always compatible.
 		// in most plans, that will be the dominant case
@@ -1023,10 +1025,11 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	protected List<UnclosedBranchDescriptor> getBranchesForParent(PactConnection toParent) {
 		if (this.outgoingConnections.size() == 1) {
 			// return our own stack of open branches, because nothing is added
-			if (this.openBranches == null || this.openBranches.isEmpty())
+			if (this.openBranches == null || this.openBranches.isEmpty()) {
 				return Collections.emptyList();
-			else
+			} else {
 				return new ArrayList<UnclosedBranchDescriptor>(this.openBranches);
+			}
 		}
 		else if (this.outgoingConnections.size() > 1) {
 			// we branch add a branch info to the stack
@@ -1060,8 +1063,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 
 	
 	protected void removeClosedBranches(List<UnclosedBranchDescriptor> openList) {
-		if (openList == null || openList.isEmpty() || this.closedBranchingNodes == null || this.closedBranchingNodes.isEmpty())
+		if (openList == null || openList.isEmpty() || this.closedBranchingNodes == null || this.closedBranchingNodes.isEmpty()) {
 			return;
+		}
 		
 		Iterator<UnclosedBranchDescriptor> it = openList.iterator();
 		while (it.hasNext()) {
@@ -1108,8 +1112,9 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 		// 2) if one side is null (or empty), the result is the other side.
 		// 3) both are set, then we need to merge.
 		if (child1open == null || child1open.isEmpty()) {
-			if(child2open != null && !child2open.isEmpty())
+			if(child2open != null && !child2open.isEmpty()) {
 				result.addAll(child2open);
+			}
 			return false;
 		}
 		

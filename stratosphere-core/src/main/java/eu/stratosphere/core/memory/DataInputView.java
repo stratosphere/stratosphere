@@ -15,7 +15,6 @@ package eu.stratosphere.core.memory;
 
 
 import java.io.DataInput;
-import java.io.EOFException;
 import java.io.IOException;
 
 
@@ -24,13 +23,13 @@ import java.io.IOException;
  * The view is typically backed by one or more {@link eu.stratosphere.core.memory.MemorySegment}.
  */
 public interface DataInputView extends DataInput {
-	
+
 	/**
 	 * Skips {@code numBytes} bytes of memory. In contrast to the {@link #skipBytes(int)} method,
 	 * this method always skips the desired number of bytes or throws an {@link java.io.EOFException}.
-	 * 
+	 *
 	 * @param numBytes The number of bytes to skip.
-	 * 
+	 *
 	 * @throws EOFException Thrown, when less then {@code numBytes} remain in the input.
 	 * @throws IOException Thrown, if any I/O related problem occurred such that the input could not
 	 *                     be advanced to the desired position.

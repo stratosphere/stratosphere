@@ -24,7 +24,11 @@ import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
-import eu.stratosphere.api.java.operators.translation.*;
+import eu.stratosphere.api.java.operators.translation.BinaryJavaPlanNode;
+import eu.stratosphere.api.java.operators.translation.JavaPlanNode;
+import eu.stratosphere.api.java.operators.translation.PlanBulkIterationOperator;
+import eu.stratosphere.api.java.operators.translation.PlanDataSource;
+import eu.stratosphere.api.java.operators.translation.UnaryJavaPlanNode;
 import eu.stratosphere.api.java.typeutils.AtomicType;
 import eu.stratosphere.api.java.typeutils.CompositeType;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -33,7 +37,18 @@ import eu.stratosphere.api.java.typeutils.runtime.RuntimePairComparatorFactory;
 import eu.stratosphere.api.java.typeutils.runtime.RuntimeSerializerFactory;
 import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.CompilerPostPassException;
-import eu.stratosphere.compiler.plan.*;
+import eu.stratosphere.compiler.plan.BulkIterationPlanNode;
+import eu.stratosphere.compiler.plan.BulkPartialSolutionPlanNode;
+import eu.stratosphere.compiler.plan.Channel;
+import eu.stratosphere.compiler.plan.DualInputPlanNode;
+import eu.stratosphere.compiler.plan.NAryUnionPlanNode;
+import eu.stratosphere.compiler.plan.OptimizedPlan;
+import eu.stratosphere.compiler.plan.PlanNode;
+import eu.stratosphere.compiler.plan.SingleInputPlanNode;
+import eu.stratosphere.compiler.plan.SinkPlanNode;
+import eu.stratosphere.compiler.plan.SolutionSetPlanNode;
+import eu.stratosphere.compiler.plan.SourcePlanNode;
+import eu.stratosphere.compiler.plan.WorksetPlanNode;
 
 public class JavaApiPostPass implements OptimizerPostPass {
 
@@ -332,8 +347,8 @@ public class JavaApiPostPass implements OptimizerPostPass {
 //		}
 		// catch the sources of the iterative step functions
 		else if (node instanceof BulkPartialSolutionPlanNode ||
-				 node instanceof SolutionSetPlanNode ||
-				 node instanceof WorksetPlanNode)
+				node instanceof SolutionSetPlanNode ||
+				node instanceof WorksetPlanNode)
 		{
 			// Do nothing :D
 		}

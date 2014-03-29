@@ -42,44 +42,44 @@ import eu.stratosphere.api.common.Plan
  */
 class PageRankWithWeight extends Program with Serializable {
 
-  def getScalaPlan(verticesPath: String, edgesPath: String, outputPath: String, numVertices: Long, maxIterations: Int) = {
+	def getScalaPlan(verticesPath: String, edgesPath: String, outputPath: String, numVertices: Long, maxIterations: Int) = {
 
-    case class PageWithRank(pageId: Long, rank: Double)
-    case class Edge(from: Long, to: Long, transitionProb: Double)
+		case class PageWithRank(pageId: Long, rank: Double)
+		case class Edge(from: Long, to: Long, transitionProb: Double)
 
-    val pages = DataSource(verticesPath, CsvInputFormat[Long]())
-    val edges = DataSource(edgesPath, CsvInputFormat[Edge]("\n", ' ')) // line delimiter (\n), field delimiter (' ')
+		val pages = DataSource(verticesPath, CsvInputFormat[Long]())
+		val edges = DataSource(edgesPath, CsvInputFormat[Edge]("\n", ' ')) // line delimiter (\n), field delimiter (' ')
 
-    val dampening = 0.85
-    val randomJump = (1.0 - dampening) / numVertices
-    val initialRank = 1.0 / numVertices
+		val dampening = 0.85
+		val randomJump = (1.0 - dampening) / numVertices
+		val initialRank = 1.0 / numVertices
 
-    val pagesWithRank = pages map { p => PageWithRank(p, initialRank) }
+		val pagesWithRank = pages map { p => PageWithRank(p, initialRank) }
 
-    def computeRank(ranks: DataSet[PageWithRank]) = {
+		def computeRank(ranks: DataSet[PageWithRank]) = {
 
-      val ranksForNeighbors = ranks join edges where { _.pageId } isEqualTo { _.from } map { (p, e) => (e.to, p.rank * e.transitionProb) }
+			val ranksForNeighbors = ranks join edges where { _.pageId } isEqualTo { _.from } map { (p, e) => (e.to, p.rank * e.transitionProb) }
 
-      ranksForNeighbors.groupBy { case (node, rank) => node }
-        .reduce { (a, b) => (a._1, a._2 + b._2) }
-        .map { case (node, rank) => PageWithRank(node, rank * dampening + randomJump) }
-    }
+			ranksForNeighbors.groupBy { case (node, rank) => node }
+				.reduce { (a, b) => (a._1, a._2 + b._2) }
+				.map { case (node, rank) => PageWithRank(node, rank * dampening + randomJump) }
+		}
 
-    val finalRanks = pagesWithRank.iterate(maxIterations, computeRank)
+		val finalRanks = pagesWithRank.iterate(maxIterations, computeRank)
 
-    val output = finalRanks.write(outputPath, CsvOutputFormat())
+		val output = finalRanks.write(outputPath, CsvOutputFormat())
 
-    new ScalaPlan(Seq(output), "Connected Components")
-  }
+		new ScalaPlan(Seq(output), "Connected Components")
+	}
 
-  override def getPlan(args: String*) = {
-    val planArgs: Array[String] = if (args.length < 5) Array[String]("", "", "", "", "") else args.toArray
-    val dop = if (args.size > 5) args(5).toInt else 1
+	override def getPlan(args: String*) = {
+		val planArgs: Array[String] = if (args.length < 5) Array[String]("", "", "", "", "") else args.toArray
+		val dop = if (args.size > 5) args(5).toInt else 1
 
-    val plan = getScalaPlan(planArgs(0), planArgs(1), planArgs(2), planArgs(3).toLong, planArgs(4).toInt)
-    plan.setDefaultParallelism(dop)
-    plan
-  }
+		val plan = getScalaPlan(planArgs(0), planArgs(1), planArgs(2), planArgs(3).toLong, planArgs(4).toInt)
+		plan.setDefaultParallelism(dop)
+		plan
+	}
 }
 
 /**
@@ -87,17 +87,17 @@ class PageRankWithWeight extends Program with Serializable {
  */
 object RunPageRankWithWeight {
 
-  def main(args: Array[String]) {
-    if (args.size < 5) {
-      println("PageRank <vertices> <edges> <result> <numVertices> <numIterations> [<parallelism=1>]")
-      return
-    }
+	def main(args: Array[String]) {
+		if (args.size < 5) {
+			println("PageRank <vertices> <edges> <result> <numVertices> <numIterations> [<parallelism=1>]")
+			return
+		}
 
-    val dop = if (args.length > 5) args(5).toInt else 1
-    val plan = new PageRankWithWeight().getScalaPlan(args(0), args(1), args(2), args(3).toLong, args(4).toInt);
+		val dop = if (args.length > 5) args(5).toInt else 1
+		val plan = new PageRankWithWeight().getScalaPlan(args(0), args(1), args(2), args(3).toLong, args(4).toInt);
 
-    plan.setDefaultParallelism(dop)
-    LocalExecutor.execute(plan)
-  }
+		plan.setDefaultParallelism(dop)
+		LocalExecutor.execute(plan)
+	}
 }
 

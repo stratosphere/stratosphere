@@ -15,7 +15,6 @@ package eu.stratosphere.nephele.services.iomanager;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * <p>
@@ -25,7 +24,7 @@ import java.io.InputStream;
  * Deserializers are stateful, but must not buffer the input since other producers may read from the input between calls
  * to {@link #deserialize(Object)}.
  * </p>
- * 
+ *
  * @param <T>
  */
 public interface Deserializer<T> {
@@ -42,7 +41,7 @@ public interface Deserializer<T> {
 	 * deserializer <i>may</i> set its internal state to the next object read from the input stream. Otherwise, if the
 	 * object <code>t</code> is null a new deserialized object will be created.
 	 * </p>
-	 * 
+	 *
 	 * @return the deserialized object
 	 */
 	T deserialize(T t) throws IOException;

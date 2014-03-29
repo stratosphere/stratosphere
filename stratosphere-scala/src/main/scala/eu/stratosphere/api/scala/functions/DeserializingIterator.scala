@@ -21,35 +21,35 @@ import eu.stratosphere.types.Record
 
 protected final class DeserializingIterator[T](deserializer: UDTSerializer[T]) extends Iterator[T] {
 
-  private var source: JIterator[Record] = null
-  private var first: Record = null
-  private var fresh = true
+	private var source: JIterator[Record] = null
+	private var first: Record = null
+	private var fresh = true
 
-  final def initialize(records: JIterator[Record]): Record = {
-    source = records
+	final def initialize(records: JIterator[Record]): Record = {
+		source = records
 
-    if (source.hasNext) {
-      fresh = true
-      first = source.next()
-    } else {
-      fresh = false
-      first = null
-    }
-    
-    first
-  }
+		if (source.hasNext) {
+			fresh = true
+			first = source.next()
+		} else {
+			fresh = false
+			first = null
+		}
+		
+		first
+	}
 
-  final def hasNext = fresh || source.hasNext
+	final def hasNext = fresh || source.hasNext
 
-  final def next(): T = {
+	final def next(): T = {
 
-    if (fresh) {
-      fresh = false
-      val record = deserializer.deserializeRecyclingOff(first)
-      first = null
-      record
-    } else {
-      deserializer.deserializeRecyclingOff(source.next())
-    }
-  }
+		if (fresh) {
+			fresh = false
+			val record = deserializer.deserializeRecyclingOff(first)
+			first = null
+			record
+		} else {
+			deserializer.deserializeRecyclingOff(source.next())
+		}
+	}
 }

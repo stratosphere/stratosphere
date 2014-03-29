@@ -14,10 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators.translation;
 
-import eu.stratosphere.api.common.functions.GenericMap;
 import eu.stratosphere.api.common.operators.BulkIteration;
-import eu.stratosphere.api.common.operators.base.PlainMapOperatorBase;
-import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 /**

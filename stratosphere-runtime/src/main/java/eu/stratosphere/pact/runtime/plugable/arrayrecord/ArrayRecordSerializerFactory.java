@@ -17,7 +17,6 @@ import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.runtime.task.util.CorruptConfigurationException;
 import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 
 /**
@@ -26,18 +25,18 @@ import eu.stratosphere.types.Value;
 public class ArrayRecordSerializerFactory implements TypeSerializerFactory<Value[]>
 {
 	private static final String NUM_FIELDS = "numfields";
-	
+
 	private static final String FIELD_CLASS_PREFIX = "fieldclass.";
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	private Class<? extends Value>[] types;
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	public ArrayRecordSerializerFactory() {
 	}
-	
+
 	public ArrayRecordSerializerFactory(Class<? extends Value>[] types) {
 		this.types = types;
 	}
@@ -47,11 +46,11 @@ public class ArrayRecordSerializerFactory implements TypeSerializerFactory<Value
 	public void writeParametersToConfig(Configuration config) {
 		for (int i = 0; i < this.types.length; i++) {
 			if (this.types[i] == null || !Value.class.isAssignableFrom(this.types[i])) {
-				throw new IllegalArgumentException("The key type " + i + " is null or not implenting the interface " + 
+				throw new IllegalArgumentException("The key type " + i + " is null or not implenting the interface " +
 					Key.class.getName() + ".");
 			}
 		}
-		
+
 		// write the config
 		config.setInteger(NUM_FIELDS, this.types.length);
 		for (int i = 0; i < this.types.length; i++) {
@@ -69,10 +68,10 @@ public class ArrayRecordSerializerFactory implements TypeSerializerFactory<Value
 		if (numFields < 0) {
 			throw new CorruptConfigurationException("The number of field for the serializer is invalid: " + numFields);
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		final Class<? extends Value>[] types = new Class[numFields];
-		
+
 		// read the individual key positions and types
 		for (int i = 0; i < numFields; i++) {
 			// next type
@@ -80,13 +79,13 @@ public class ArrayRecordSerializerFactory implements TypeSerializerFactory<Value
 			if (name != null) {
 				types[i] = Class.forName(name, true, cl).asSubclass(Key.class);
 			} else {
-				throw new CorruptConfigurationException("The key type (" + i + 
-					") for the comparator is null"); 
+				throw new CorruptConfigurationException("The key type (" + i +
+					") for the comparator is null");
 			}
 		}
 		this.types = types;
 	}
-	
+
 
 	@Override
 	public ArrayRecordSerializer getSerializer() {

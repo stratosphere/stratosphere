@@ -209,8 +209,9 @@ public class DualInputPlanNode extends PlanNode {
 					} else if (this.hasLeft == 1) {
 						this.hasLeft = 0;
 						return DualInputPlanNode.this.input2.getSource();
-					} else
+					} else {
 						throw new NoSuchElementException();
+					}
 				}
 				@Override
 				public void remove() {
@@ -248,8 +249,9 @@ public class DualInputPlanNode extends PlanNode {
 				} else if (this.hasLeft == 1) {
 					this.hasLeft = 0;
 					return DualInputPlanNode.this.input2;
-				} else
+				} else {
 					throw new NoSuchElementException();
+				}
 			}
 			@Override
 			public void remove() {

@@ -47,21 +47,21 @@ public class PairwiseSPITCase extends TestBase {
 	*/
 	
 	private String rdfData = "<A> <http://xmlns.com/foaf/0.1/knows> <C>\n" + "<A> <http://xmlns.com/foaf/0.1/knows> <D>\n" +
-	                         "<B> <http://xmlns.com/foaf/0.1/knows> <A>\n" + "<B> <http://xmlns.com/foaf/0.1/knows> <D>\n" +
-	                         "<C> <http://xmlns.com/foaf/0.1/knows> <B>\n" + "<C> <http://xmlns.com/foaf/0.1/knows> <E>\n" +
-	                         "<C> <http://xmlns.com/foaf/0.1/knows> <F>\n" + "<C> <http://xmlns.com/foaf/0.1/knows> <G>\n" +
-	                         "<D> <http://xmlns.com/foaf/0.1/knows> <F>\n" + "<E> <http://xmlns.com/foaf/0.1/knows> <H>\n" +
-	                         "<F> <http://xmlns.com/foaf/0.1/knows> <E>\n" + "<G> <http://xmlns.com/foaf/0.1/knows> <F>\n" +
-	                         "<H> <http://xmlns.com/foaf/0.1/knows> <D>\n" + "<H> <http://xmlns.com/foaf/0.1/knows> <E>\n";
+							 "<B> <http://xmlns.com/foaf/0.1/knows> <A>\n" + "<B> <http://xmlns.com/foaf/0.1/knows> <D>\n" +
+							 "<C> <http://xmlns.com/foaf/0.1/knows> <B>\n" + "<C> <http://xmlns.com/foaf/0.1/knows> <E>\n" +
+							 "<C> <http://xmlns.com/foaf/0.1/knows> <F>\n" + "<C> <http://xmlns.com/foaf/0.1/knows> <G>\n" +
+							 "<D> <http://xmlns.com/foaf/0.1/knows> <F>\n" + "<E> <http://xmlns.com/foaf/0.1/knows> <H>\n" +
+							 "<F> <http://xmlns.com/foaf/0.1/knows> <E>\n" + "<G> <http://xmlns.com/foaf/0.1/knows> <F>\n" +
+							 "<H> <http://xmlns.com/foaf/0.1/knows> <D>\n" + "<H> <http://xmlns.com/foaf/0.1/knows> <E>\n";
 
 	private String expected = "<A>|<C>|1|0| |\n"     + "<A>|<D>|1|0| |\n"     + "<B>|<A>|1|0| |\n"     + "<B>|<D>|1|0| |\n"   +
-	 						  "<C>|<B>|1|0| |\n"     + "<C>|<E>|1|0| |\n"     + "<C>|<F>|1|0| |\n"     + "<C>|<G>|1|0| |\n"   +
-	 						  "<D>|<F>|1|0| |\n"     + "<E>|<H>|1|0| |\n"     + "<F>|<E>|1|0| |\n"     + "<G>|<F>|1|0| |\n"   +
-	 						  "<H>|<D>|1|0| |\n"     + "<H>|<E>|1|0| |\n"     + "<A>|<B>|2|1|<C>|\n"   + "<A>|<E>|2|1|<C>|\n" +
-	 						  "<A>|<F>|2|1|<C>|\n"   + "<A>|<G>|2|1|<C>|\n"   + "<A>|<F>|2|1|<D>|\n"   + "<B>|<C>|2|1|<A>|\n" + 
-	 						  "<B>|<F>|2|1|<D>|\n"   + "<C>|<A>|2|1|<B>|\n"   + "<C>|<D>|2|1|<B>|\n"   + "<C>|<H>|2|1|<E>|\n" +
-				              "<D>|<E>|2|1|<F>|\n"   + "<E>|<D>|2|1|<H>|\n"   + "<F>|<H>|2|1|<E>|\n"   + "<G>|<E>|2|1|<F>|\n" + 
-				              "<H>|<F>|2|1|<D>|\n";
+							"<C>|<B>|1|0| |\n"     + "<C>|<E>|1|0| |\n"     + "<C>|<F>|1|0| |\n"     + "<C>|<G>|1|0| |\n"   +
+							"<D>|<F>|1|0| |\n"     + "<E>|<H>|1|0| |\n"     + "<F>|<E>|1|0| |\n"     + "<G>|<F>|1|0| |\n"   +
+							"<H>|<D>|1|0| |\n"     + "<H>|<E>|1|0| |\n"     + "<A>|<B>|2|1|<C>|\n"   + "<A>|<E>|2|1|<C>|\n" +
+							"<A>|<F>|2|1|<C>|\n"   + "<A>|<G>|2|1|<C>|\n"   + "<A>|<F>|2|1|<D>|\n"   + "<B>|<C>|2|1|<A>|\n" + 
+							"<B>|<F>|2|1|<D>|\n"   + "<C>|<A>|2|1|<B>|\n"   + "<C>|<D>|2|1|<B>|\n"   + "<C>|<H>|2|1|<E>|\n" +
+							  "<D>|<E>|2|1|<F>|\n"   + "<E>|<D>|2|1|<H>|\n"   + "<F>|<H>|2|1|<E>|\n"   + "<G>|<E>|2|1|<F>|\n" + 
+							  "<H>|<F>|2|1|<D>|\n";
 
 	public PairwiseSPITCase(Configuration config) {
 		super(config);

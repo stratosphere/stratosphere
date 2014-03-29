@@ -19,13 +19,13 @@ import eu.stratosphere.core.fs.Path;
 /**
  * Specialized subtype of {@link AbstractOutputTask} for tasks which are supposed to write output to
  * a file.
- * 
+ *
  */
 public abstract class AbstractFileOutputTask extends AbstractOutputTask {
 
 	/**
 	 * Returns the output path which has been assigned to the original {@link JobFileOutputVertex}.
-	 * 
+	 *
 	 * @return the output path which has been assigned to the original {@link JobFileOutputVertex} or <code>null</code>
 	 *         if the path cannot be retrieved
 	 */

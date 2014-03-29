@@ -17,14 +17,13 @@ import java.io.IOException;
 
 import eu.stratosphere.nephele.event.task.AbstractEvent;
 import eu.stratosphere.nephele.io.channels.Buffer;
-import eu.stratosphere.nephele.io.channels.bytebuffered.AbstractByteBufferedOutputChannel;
 import eu.stratosphere.nephele.taskmanager.transferenvelope.TransferEnvelope;
 
 /**
  * An output channel forwarder is a component which processes a {@link TransferEnvelope} after it has been produced by
  * an {@link AbstractByteBufferedOutputChannel}. The component can decide based on the transfer envelope whether to
  * forward the envelope, discard it, or to store it.
- * 
+ *
  */
 public abstract class AbstractOutputChannelForwarder {
 
@@ -42,7 +41,7 @@ public abstract class AbstractOutputChannelForwarder {
 	/**
 	 * Called by the framework to push a produced transfer envelope towards its receiver. This method will always be
 	 * called by the task thread itself.
-	 * 
+	 *
 	 * @param transferEnvelope
 	 *        the transfer envelope to be processed
 	 * @throws IOException

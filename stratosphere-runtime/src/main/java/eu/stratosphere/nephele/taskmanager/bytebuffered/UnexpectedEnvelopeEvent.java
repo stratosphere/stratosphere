@@ -18,14 +18,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import eu.stratosphere.nephele.event.task.AbstractEvent;
-import eu.stratosphere.nephele.taskmanager.transferenvelope.TransferEnvelope;
 
 /**
  * This event is sent by an {@link InputChannelContext}. It indicates that the input channel context has received a
  * {@link TransferEnvelope} with a lower sequence number than expected. The typical reason for this is that data is
  * being replayed from a checkpoint. With the help of this event it is possible to request the sender to skip sending
  * transfer envelopes up to the given expected sequence number.
- * 
+ *
  */
 public final class UnexpectedEnvelopeEvent extends AbstractEvent {
 
@@ -36,7 +35,7 @@ public final class UnexpectedEnvelopeEvent extends AbstractEvent {
 
 	/**
 	 * Constructs a new unexpected envelope event.
-	 * 
+	 *
 	 * @param expectedSequenceNumber
 	 *        the expected sequence number
 	 */
@@ -57,7 +56,7 @@ public final class UnexpectedEnvelopeEvent extends AbstractEvent {
 
 	/**
 	 * Returns the expected sequence number.
-	 * 
+	 *
 	 * @return the expected sequence number
 	 */
 	public int getExpectedSequenceNumber() {
