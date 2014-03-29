@@ -47,8 +47,9 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 	public ReduceOperator(DataSet<IN> input, ReduceFunction<IN> function) {
 		super(input, input.getType());
 		
-		if (function == null)
+		if (function == null) {
 			throw new NullPointerException("Reduce function must not be null.");
+		}
 		
 		this.function = function;
 		this.grouper = null;
@@ -58,8 +59,9 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 	public ReduceOperator(Grouping<IN> input, ReduceFunction<IN> function) {
 		super(input.getDataSet(), input.getDataSet().getType());
 		
-		if (function == null)
+		if (function == null) {
 			throw new NullPointerException("Reduce function must not be null.");
+		}
 		
 		this.function = function;
 		this.grouper = input;

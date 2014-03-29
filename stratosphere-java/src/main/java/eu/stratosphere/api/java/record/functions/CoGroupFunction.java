@@ -17,7 +17,6 @@ import java.util.Iterator;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericCoGrouper;
-import eu.stratosphere.api.java.record.operators.CoGroupOperator;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
@@ -32,27 +31,27 @@ public abstract class CoGroupFunction extends AbstractFunction implements Generi
 	 * This method must be implemented to provide a user implementation of a
 	 * matcher. It is called for each two key-value pairs that share the same
 	 * key and come from different inputs.
-	 * 
+	 *
 	 * @param records1 The records from the first input which were paired with the key.
 	 * @param records2 The records from the second input which were paired with the key.
 	 * @param out A collector that collects all output pairs.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the task and lets the fail-over logic
 	 *                   decide whether to retry the task execution.
 	 */
 	@Override
 	public abstract void coGroup(Iterator<Record> records1, Iterator<Record> records2, Collector<Record> out) throws Exception;
-	
+
 	/**
 	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
 	 * on their first input. In addition, the extending class must be annotated as CombinableFirst.
 	 * <p>
 	 * The use of the combiner is typically a pre-reduction of the data.
-	 * 
+	 *
 	 * @param records The records to be combined.
 	 * @param out The collector to write the result to.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the combine task and lets the fail-over logic
 	 *                   decide whether to retry the combiner execution.
@@ -61,16 +60,16 @@ public abstract class CoGroupFunction extends AbstractFunction implements Generi
 	public void combineFirst(Iterator<Record> records, Collector<Record> out) throws Exception {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
 	 * on their second input. In addition, the extending class must be annotated as CombinableSecond.
 	 * <p>
 	 * The use of the combiner is typically a pre-reduction of the data.
-	 * 
+	 *
 	 * @param records The records to be combined.
 	 * @param out The collector to write the result to.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the combine task and lets the fail-over logic
 	 *                   decide whether to retry the combiner execution.

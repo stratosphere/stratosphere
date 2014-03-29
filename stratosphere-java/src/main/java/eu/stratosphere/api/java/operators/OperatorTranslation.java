@@ -20,11 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 import eu.stratosphere.api.common.operators.AbstractUdfOperator;
+import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.Operator;
-import eu.stratosphere.api.common.operators.BulkIteration;
-
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.IterativeDataSet;
 import eu.stratosphere.api.java.IterativeResultDataSet;

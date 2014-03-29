@@ -59,8 +59,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) input.getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		AggregationFunctionFactory factory = function.getFactory();
 		AggregationFunction<?> aggFunct = factory.createAggregationFunction(inType.getTypeAt(field).getTypeClass());
@@ -90,8 +91,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) input.getDataSet().getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		AggregationFunctionFactory factory = function.getFactory();
 		AggregationFunction<?> aggFunct = factory.createAggregationFunction(inType.getTypeAt(field).getTypeClass());
@@ -108,8 +110,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		
 		AggregationFunctionFactory factory = function.getFactory();

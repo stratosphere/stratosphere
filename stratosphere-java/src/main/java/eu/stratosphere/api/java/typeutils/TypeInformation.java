@@ -18,9 +18,9 @@ import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.types.Value;
 
 

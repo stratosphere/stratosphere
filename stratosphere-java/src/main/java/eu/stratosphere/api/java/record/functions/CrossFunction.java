@@ -15,7 +15,6 @@ package eu.stratosphere.api.java.record.functions;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericCrosser;
-import eu.stratosphere.api.java.record.operators.CrossOperator;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
@@ -23,9 +22,9 @@ import eu.stratosphere.util.Collector;
  * The CrossFunction is the base class for functions that are invoked by a {@link CrossOperator}.
  */
 public abstract class CrossFunction extends AbstractFunction implements GenericCrosser<Record, Record, Record> {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * This method must be implemented to provide a user implementation of a cross.
 	 * It is called for each element of the Cartesian product of both input sets.
@@ -33,7 +32,7 @@ public abstract class CrossFunction extends AbstractFunction implements GenericC
 	 * @param record1 The record from the second input.
 	 * @param record2 The record from the second input.
 	 * @param out A collector that collects all output records.
-	 * 
+	 *
 	 * @throws Exception Implementations may forward exceptions, which are caught by the runtime. When the
 	 *                   runtime catches an exception, it aborts the task and lets the fail-over logic
 	 *                   decide whether to retry the task execution.

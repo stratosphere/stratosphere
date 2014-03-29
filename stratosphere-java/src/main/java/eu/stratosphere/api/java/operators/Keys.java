@@ -198,12 +198,14 @@ public abstract class Keys<T> {
 		int i = 1, k = 0;
 		int last = fields[0];
 		
-		if (last < 0 || last > maxAllowedField)
+		if (last < 0 || last > maxAllowedField) {
 			throw new IllegalArgumentException("Tuple position is out of range.");
+		}
 		
 		for (; i < fields.length; i++) {
-			if (fields[i] < 0 || i > maxAllowedField)
+			if (fields[i] < 0 || i > maxAllowedField) {
 				throw new IllegalArgumentException("Tuple position is out of range.");
+			}
 			
 			if (fields[i] != last) {
 				k++;

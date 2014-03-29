@@ -18,9 +18,15 @@ package eu.stratosphere.api.java.typeutils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-
 import eu.stratosphere.api.common.io.InputFormat;
-import eu.stratosphere.api.java.functions.*;
+import eu.stratosphere.api.java.functions.CoGroupFunction;
+import eu.stratosphere.api.java.functions.CrossFunction;
+import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.functions.GroupReduceFunction;
+import eu.stratosphere.api.java.functions.InvalidTypesException;
+import eu.stratosphere.api.java.functions.JoinFunction;
+import eu.stratosphere.api.java.functions.KeySelector;
+import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.tuple.Tuple;
 
 
@@ -151,7 +157,7 @@ public class TypeExtractor {
 			if (type instanceof ParameterizedType) {
 				ParameterizedType parameterizedType = (ParameterizedType) type;
 				if (parameterizedType.getRawType().equals(baseClass)) {
-				  return parameterizedType;
+				return parameterizedType;
 				}
 			}
 

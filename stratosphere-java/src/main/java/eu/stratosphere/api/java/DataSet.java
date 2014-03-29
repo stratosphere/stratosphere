@@ -28,9 +28,20 @@ import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.io.CsvOutputFormat;
 import eu.stratosphere.api.java.io.PrintingOutputFormat;
 import eu.stratosphere.api.java.io.TextOutputFormat;
-import eu.stratosphere.api.java.operators.*;
+import eu.stratosphere.api.java.operators.AggregateOperator;
+import eu.stratosphere.api.java.operators.CoGroupOperator;
+import eu.stratosphere.api.java.operators.CrossOperator;
+import eu.stratosphere.api.java.operators.DataSink;
+import eu.stratosphere.api.java.operators.DistinctOperator;
+import eu.stratosphere.api.java.operators.FilterOperator;
+import eu.stratosphere.api.java.operators.FlatMapOperator;
+import eu.stratosphere.api.java.operators.Grouping;
 import eu.stratosphere.api.java.operators.JoinOperator.JoinHint;
 import eu.stratosphere.api.java.operators.JoinOperator.JoinOperatorSets;
+import eu.stratosphere.api.java.operators.Keys;
+import eu.stratosphere.api.java.operators.MapOperator;
+import eu.stratosphere.api.java.operators.ReduceGroupOperator;
+import eu.stratosphere.api.java.operators.ReduceOperator;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -48,11 +59,13 @@ public abstract class DataSet<T> {
 	
 	
 	protected DataSet(ExecutionEnvironment context, TypeInformation<T> type) {
-		if (context == null)
+		if (context == null) {
 			throw new NullPointerException("context is null");
+		}
 
-		if (type == null)
+		if (type == null) {
 			throw new NullPointerException("type is null");
+		}
 		
 		this.context = context;
 		this.type = type;
@@ -252,7 +265,8 @@ public abstract class DataSet<T> {
 	// --------------------------------------------------------------------------------------------
 	
 	protected static void checkSameExecutionContext(DataSet<?> set1, DataSet<?> set2) {
-		if (set1.context != set2.context)
+		if (set1.context != set2.context) {
 			throw new IllegalArgumentException("The two inputs have different execution contexts.");
+		}
 	}
 }

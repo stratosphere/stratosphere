@@ -55,8 +55,9 @@ public class CrossOperator<I1, I2, OUT>
 		private final DataSet<I2> input2;
 		
 		public CrossOperatorSets(DataSet<I1> input1, DataSet<I2> input2) {
-			if (input1 == null || input2 == null)
+			if (input1 == null || input2 == null) {
 				throw new NullPointerException();
+			}
 			
 			this.input1 = input1;
 			this.input2 = input2;
