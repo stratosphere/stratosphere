@@ -12,22 +12,18 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators.translation;
+package eu.stratosphere.api.java.operators;
 
-import eu.stratosphere.api.common.operators.BulkIteration;
-import eu.stratosphere.api.java.typeutils.TypeInformation;
+import eu.stratosphere.api.java.DataSet;
 
-public class PlanBulkIterationOperator<T> extends BulkIteration implements JavaPlanNode<T> {
-
-	private final TypeInformation<T> type;
-
-	public PlanBulkIterationOperator(String name, TypeInformation<T> type) {
-		super(name);
-		this.type = type;
-	}
+/**
+ *
+ * @param <IN> The type of the data set consumed by this operator.
+ * @param <OUT> The type of the data set produced by this operator. 
+ */
+public interface CustomUnaryOperation<IN, OUT> {
 	
-	@Override
-	public TypeInformation<T> getReturnType() {
-		return this.type;
-	}
+	void setInput(DataSet<IN> inputData);
+	
+	Operator<OUT, ?> createOperator();
 }

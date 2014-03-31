@@ -12,26 +12,41 @@
  **********************************************************************************************************************/
 package eu.stratosphere.spargel.java;
 
+import java.util.Iterator;
 
-import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Value;
+import eu.stratosphere.api.java.tuple.Tuple2;
 
+/**
+ * An iterator that returns messages. The iterator is {@link java.lang.Iterable} at the same time to support
+ * the <i>foreach</i> syntax.
+ */
+public final class MessageIterator<Message> implements Iterator<Message>, Iterable<Message>, java.io.Serializable {
+	private static final long serialVersionUID = 1L;
 
-public final class Edge<VertexKey extends Key, EdgeValue extends Value> {
+	private transient Iterator<Tuple2<?, Message>> source;
 	
-	private VertexKey target;
-	private EdgeValue edgeValue;
 	
-	void set(VertexKey target, EdgeValue edgeValue) {
-		this.target = target;
-		this.edgeValue = edgeValue;
+	final void setSource(Iterator<Tuple2<?, Message>> source) {
+		this.source = source;
 	}
 	
-	public VertexKey target() {
-		return target;
+	@Override
+	public final boolean hasNext() {
+		return this.source.hasNext();
 	}
 	
-	public EdgeValue edgeValue() {
-		return edgeValue;
+	@Override
+	public final Message next() {
+		return this.source.next().f1;
+	}
+
+	@Override
+	public final void remove() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Iterator<Message> iterator() {
+		return this;
 	}
 }

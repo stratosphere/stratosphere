@@ -10,30 +10,28 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
+package eu.stratosphere.spargel.java.record;
 
-package eu.stratosphere.spargel.java.examples.connectedcomponents;
 
-import eu.stratosphere.api.java.record.io.TextInputFormat;
-import eu.stratosphere.types.LongValue;
-import eu.stratosphere.types.Record;
-import eu.stratosphere.types.parser.DecimalTextLongParser;
+import eu.stratosphere.types.Key;
+import eu.stratosphere.types.Value;
 
-public class DuplicateLongInputFormat extends TextInputFormat {
+
+public final class Edge<VertexKey extends Key, EdgeValue extends Value> {
 	
-	private static final long serialVersionUID = 1L;
+	private VertexKey target;
+	private EdgeValue edgeValue;
 	
-	private final LongValue l1 = new LongValue();
-	private final LongValue l2 = new LongValue();
+	void set(VertexKey target, EdgeValue edgeValue) {
+		this.target = target;
+		this.edgeValue = edgeValue;
+	}
 	
-	@Override
-	public Record readRecord(Record target, byte[] bytes, int offset, int numBytes) {
-		final long value = DecimalTextLongParser.parseField(bytes, offset, numBytes, (char) 0xffff);
-
-		this.l1.setValue(value);
-		this.l2.setValue(value);
-		
-		target.setField(0, this.l1);
-		target.setField(1, this.l2);
+	public VertexKey target() {
 		return target;
+	}
+	
+	public EdgeValue edgeValue() {
+		return edgeValue;
 	}
 }
