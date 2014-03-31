@@ -15,8 +15,14 @@
 package eu.stratosphere.api.java.operators.translation;
 
 import eu.stratosphere.api.common.functions.GenericCrosser;
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
+import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
+import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.functions.CrossFunction;
+import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.record.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 public class PlanCrossOperator<IN1, IN2, OUT> 
@@ -38,6 +44,9 @@ public class PlanCrossOperator<IN1, IN2, OUT>
 		this.inType2 = inType2;
 		this.outType = outType;
 		
+		UserCodeWrapper<CrossFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<CrossFunction<IN1, IN2, OUT>>(udf);
+        DualInputSemanticProperties sp = FunctionAnnotation.readDualConstantAnnotations(tmp);
+        setSemanticProperties(sp);	
 	}
 	
 	@Override

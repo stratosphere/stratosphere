@@ -15,8 +15,12 @@
 package eu.stratosphere.api.java.operators.translation;
 
 import eu.stratosphere.api.common.functions.GenericFlatMap;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.FlatMapOperatorBase;
+import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
+import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.record.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 /**
@@ -34,6 +38,10 @@ public class PlanFlatMapOperator<T, O> extends FlatMapOperatorBase<GenericFlatMa
 		super(udf, name);
 		this.inType = inType;
 		this.outType = outType;
+		
+		UserCodeWrapper<FlatMapFunction<T, O>> tmp = new UserCodeObjectWrapper<FlatMapFunction<T,O>>(udf);
+        SingleInputSemanticProperties sp = FunctionAnnotation.readSingleConstantAnnotations(tmp);
+        setSemanticProperties(sp);		
 	}
 	
 	@Override
