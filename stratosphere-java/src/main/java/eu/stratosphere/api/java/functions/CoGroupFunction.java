@@ -14,11 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.functions;
 
+import java.util.Iterator;
+
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericCoGrouper;
 import eu.stratosphere.util.Collector;
-
-import java.util.Iterator;
 
 
 public abstract class CoGroupFunction<IN1, IN2, OUT> extends AbstractFunction implements GenericCoGrouper<IN1, IN2, OUT> {

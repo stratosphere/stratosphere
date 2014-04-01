@@ -91,8 +91,9 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 	{
 		super(input1, input2, returnType);
 		
-		if (keys1 == null || keys2 == null)
+		if (keys1 == null || keys2 == null) {
 			throw new NullPointerException();
+		}
 		
 		this.keys1 = keys1;
 		this.keys2 = keys2;
@@ -128,8 +129,9 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 		{
 			super(input1, input2, keys1, keys2, returnType, hint);
 			
-			if (function == null)
+			if (function == null) {
 				throw new NullPointerException();
+			}
 			
 			this.function = function;
 		}
@@ -319,8 +321,9 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 		}
 		
 		public JoinOperatorSets(DataSet<I1> input1, DataSet<I2> input2, JoinHint hint) {
-			if (input1 == null || input2 == null)
+			if (input1 == null || input2 == null) {
 				throw new NullPointerException();
+			}
 			
 			this.input1 = input1;
 			this.input2 = input2;
@@ -347,8 +350,9 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 			private final Keys<I1> keys1;
 			
 			private JoinOperatorSetsPredicate(Keys<I1> keys1) {
-				if (keys1 == null)
+				if (keys1 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys1.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -368,8 +372,9 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 			
 			
 			protected DefaultJoin<I1, I2> createJoinOperator(Keys<I2> keys2) {
-				if (keys2 == null)
+				if (keys2 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys2.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -385,7 +390,7 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 
 		public class KeyedJoinOperatorSetsPredicate<K extends Comparable<K>> extends JoinOperatorSetsPredicate {
 			private KeyedJoinOperatorSetsPredicate(Keys<I1> keys1) {
-			  super(keys1);
+			super(keys1);
 			}
 
 			public DefaultJoin<I1, I2> equalTo(KeySelector<I2, K> keyExtractor) {

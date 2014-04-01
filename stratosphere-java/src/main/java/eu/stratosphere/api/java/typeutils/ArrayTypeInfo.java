@@ -86,8 +86,9 @@ public class ArrayTypeInfo<T, C> extends TypeInformation<T> {
 	// --------------------------------------------------------------------------------------------
 	
 	public static <X, C> ArrayTypeInfo<X, C> getInfoFor(Class<X> type) {
-		if (type == null)
+		if (type == null) {
 			throw new NullPointerException();
+		}
 		
 		@SuppressWarnings("unchecked")
 		ArrayTypeInfo<X, C> info = (ArrayTypeInfo<X, C>) TYPES.get(type);

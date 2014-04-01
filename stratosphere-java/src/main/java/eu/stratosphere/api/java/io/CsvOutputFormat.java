@@ -13,14 +13,18 @@
 
 package eu.stratosphere.api.java.io;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import eu.stratosphere.api.common.io.FileOutputFormat;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.types.StringValue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.*;
 
 /**
  * This is an OutputFormat to serialize {@link eu.stratosphere.api.java.tuple.Tuple}s to text. The output is

@@ -35,6 +35,6 @@ public interface UdfOperator<O extends UdfOperator<O>> {
 	// --------------------------------------------------------------------------------------------
 	
 	O withParameters(Configuration parameters);
-	 
+	
 	O withBroadcastSet(DataSet<?> data, String name);
 }

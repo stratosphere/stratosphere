@@ -17,7 +17,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.core.io.GenericInputSplit;
 import eu.stratosphere.core.io.StringRecord;
 
@@ -25,7 +24,7 @@ import eu.stratosphere.core.io.StringRecord;
  * The ExternalProcessInputSplit contains all informations for {@link InputFormat} that read their data from external processes.
  * Each parallel instance of an InputFormat starts an external process and reads its output.
  * The command to start the external process must be executable on all nodes.
- * 
+ *
  * @see ExternalProcessInputFormat
  * @see ExternalProcessFixedLengthInputFormat
  */
@@ -33,13 +32,13 @@ public class ExternalProcessInputSplit extends GenericInputSplit {
 
 	// command to be executed for this input split
 	private String extProcessCommand;
-	
+
 	// default constructor for deserialization
 	public ExternalProcessInputSplit() { }
-	
+
 	/**
 	 * Instantiates an ExternalProcessInputSplit
-	 * 
+	 *
 	 * @param splitNumber The number of the input split
 	 * @param extProcCommand The command to be executed for the input split
 	 */
@@ -47,17 +46,17 @@ public class ExternalProcessInputSplit extends GenericInputSplit {
 		super(splitNumber, numSplits);
 		this.extProcessCommand = extProcCommand;
 	}
-	
+
 	/**
 	 * Returns the command to be executed to derive the input for this split
-	 * 
+	 *
 	 * @return the command to be executed to derive the input for this split
 	 */
 	public String getExternalProcessCommand() {
 		return this.extProcessCommand;
 	}
-	
-	
+
+
 	@Override
 	public void read(DataInput in) throws IOException {
 		super.read(in);
