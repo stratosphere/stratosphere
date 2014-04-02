@@ -232,7 +232,28 @@ public abstract class DataSet<T> {
 	public IterativeDataSet<T> iterate(int maxIterations) {
 		return new IterativeDataSet<T>(getExecutionEnvironment(), getType(), this, maxIterations);
 	}
+	
+	/**
+	 * piped DataSet considered SolutionSet
+	 */	
+	public <R> DeltaIterativeDataSet<T, R> iterateDelta(DataSet<R> workset, int maxIterations, int keyPosition) {
+		return iterateDelta(workset, maxIterations, new int[] {keyPosition});
+	}
+	
+	public <R> DeltaIterativeDataSet<T, R> iterateDelta(DataSet<R> workset, int maxIterations, int [] keyPositions) {
+		return new DeltaIterativeDataSet<T, R>(getExecutionEnvironment(), getType(), this, workset, keyPositions, maxIterations);
+	}
 
+	// --------------------------------------------------------------------------------------------
+	//  Custom Operators
+	// -------------------------------------------------------------------------------------------
+	
+	public <X> DataSet<X> runOperation(CustomUnaryOperation<T, X> operation) {
+		Validate.notNull(operation, "The custom operator must not be null.");
+		operation.setInput(this);
+		return operation.createOperator();
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	//  Union
 	// --------------------------------------------------------------------------------------------
@@ -248,7 +269,6 @@ public abstract class DataSet<T> {
 	public void writeAsText(String filePath) {
 		output(new TextOutputFormat<T>(new Path(filePath)));
 	}
-	
 	
 	public void writeAsCsv(String filePath) {
 		writeAsCsv(filePath, CsvOutputFormat.DEFAULT_LINE_DELIMITER, CsvOutputFormat.DEFAULT_FIELD_DELIMITER);

@@ -10,23 +10,23 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
-package eu.stratosphere.spargel.java.util;
+package eu.stratosphere.spargel.java;
 
 import java.util.Iterator;
 
-import eu.stratosphere.types.Record;
-import eu.stratosphere.types.Value;
+import eu.stratosphere.api.java.tuple.Tuple2;
 
-public final class MessageIterator<Message extends Value> implements Iterator<Message>, Iterable<Message> {
+/**
+ * An iterator that returns messages. The iterator is {@link java.lang.Iterable} at the same time to support
+ * the <i>foreach</i> syntax.
+ */
+public final class MessageIterator<Message> implements Iterator<Message>, Iterable<Message>, java.io.Serializable {
+	private static final long serialVersionUID = 1L;
 
-	private final Message instance;
-	private Iterator<Record> source;
+	private transient Iterator<Tuple2<?, Message>> source;
 	
-	public MessageIterator(Message instance) {
-		this.instance = instance;
-	}
 	
-	public final void setSource(Iterator<Record> source) {
+	final void setSource(Iterator<Tuple2<?, Message>> source) {
 		this.source = source;
 	}
 	
@@ -37,8 +37,7 @@ public final class MessageIterator<Message extends Value> implements Iterator<Me
 	
 	@Override
 	public final Message next() {
-		this.source.next().getFieldInto(1, this.instance);
-		return this.instance;
+		return this.source.next().f1;
 	}
 
 	@Override

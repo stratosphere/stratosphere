@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
-package eu.stratosphere.spargel.java;
+package eu.stratosphere.spargel.java.record;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,7 +21,6 @@ import eu.stratosphere.api.java.record.functions.CoGroupFunction;
 import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFieldsFirst;
 import eu.stratosphere.api.java.record.operators.CoGroupOperator;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.spargel.java.util.MessageIterator;
 import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;

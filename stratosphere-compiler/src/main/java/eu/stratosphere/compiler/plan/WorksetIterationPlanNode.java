@@ -16,6 +16,7 @@ package eu.stratosphere.compiler.plan;
 import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE;
 import static eu.stratosphere.compiler.plan.PlanNode.SourceAndDamReport.FOUND_SOURCE_AND_DAM;
 
+import eu.stratosphere.api.common.operators.util.FieldList;
 import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.compiler.CompilerException;
@@ -51,6 +52,8 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 	private boolean immediateSolutionSetUpdate;
 	
 	public Object postPassHelper;
+	
+	private TypeSerializerFactory<?> serializerForIterationChannel;
 	
 	// --------------------------------------------------------------------------------------------
 
@@ -108,6 +111,10 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 	
 	public boolean isImmediateSolutionSetUpdate() {
 		return this.immediateSolutionSetUpdate;
+	}
+	
+	public FieldList getSolutionSetKeyFields() {
+		return getIterationNode().getSolutionSetKeyFields();
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -246,5 +253,15 @@ public class WorksetIterationPlanNode extends DualInputPlanNode implements Itera
 				this.branchPlan.put(brancher, selectedCandidate);
 			}
 		}
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	public TypeSerializerFactory<?> getSerializerForIterationChannel() {
+		return serializerForIterationChannel;
+	}
+	
+	public void setSerializerForIterationChannel(TypeSerializerFactory<?> serializerForIterationChannel) {
+		this.serializerForIterationChannel = serializerForIterationChannel;
 	}
 }
