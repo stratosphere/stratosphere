@@ -138,7 +138,7 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
 	private void extractTypes(OUT tuple) {
 		types = new SupportedTypes[tuple.getArity()];
 		for (int x = 0; x < tuple.getArity(); x++) {
-			types[x] = SupportedTypes.valueOf(tuple.getField(x).getClass().getSimpleName());
+			types[x] = SupportedTypes.valueOf(tuple.getField(x).getClass().getSimpleName().toUpperCase());
 		}
 	}
 
