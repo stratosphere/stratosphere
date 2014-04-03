@@ -29,67 +29,67 @@ import java.sql.Statement;
 
 public class JDBCExample {
 
-    public static void main(String[] args) throws Exception {
-        prepareTestDb();
+	public static void main(String[] args) throws Exception {
+		prepareTestDb();
 
-        ExecutionEnvironment environment = ExecutionEnvironment.getExecutionEnvironment();
-        DataSet<Tuple5> source
-                = environment.createInput(JDBCInputFormat.buildJDBCInputFormat()
-                        .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
-                        .setDBUrl("jdbc:derby:memory:ebookshop")
-                        .setQuery("select * from books")
-                        .finish(),
-                        new TupleTypeInfo(Tuple5.class, INT_TYPE_INFO, STRING_TYPE_INFO, STRING_TYPE_INFO, DOUBLE_TYPE_INFO, INT_TYPE_INFO)
-                );
+		ExecutionEnvironment environment = ExecutionEnvironment.getExecutionEnvironment();
+		DataSet<Tuple5> source
+				= environment.createInput(JDBCInputFormat.buildJDBCInputFormat()
+						.setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+						.setDBUrl("jdbc:derby:memory:ebookshop")
+						.setQuery("select * from books")
+						.finish(),
+						new TupleTypeInfo(Tuple5.class, INT_TYPE_INFO, STRING_TYPE_INFO, STRING_TYPE_INFO, DOUBLE_TYPE_INFO, INT_TYPE_INFO)
+				);
 
-        source.output(JDBCOutputFormat.buildJDBCOutputFormat()
-                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
-                .setDBUrl("jdbc:derby:memory:ebookshop")
-                .setQuery("insert into newbooks (id,title,author,price,qty) values (?,?,?,?,?)")
-                .finish());
-        environment.execute();
-    }
+		source.output(JDBCOutputFormat.buildJDBCOutputFormat()
+				.setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+				.setDBUrl("jdbc:derby:memory:ebookshop")
+				.setQuery("insert into newbooks (id,title,author,price,qty) values (?,?,?,?,?)")
+				.finish());
+		environment.execute();
+	}
 
-    private static void prepareTestDb() throws Exception {
-        String dbURL = "jdbc:derby:memory:ebookshop;create=true";
-        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-        Connection conn = DriverManager.getConnection(dbURL);
+	private static void prepareTestDb() throws Exception {
+		String dbURL = "jdbc:derby:memory:ebookshop;create=true";
+		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+		Connection conn = DriverManager.getConnection(dbURL);
 
-        StringBuilder sqlQueryBuilder = new StringBuilder("CREATE TABLE books (");
-        sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
-        sqlQueryBuilder.append("title VARCHAR(50) DEFAULT NULL,");
-        sqlQueryBuilder.append("author VARCHAR(50) DEFAULT NULL,");
-        sqlQueryBuilder.append("price FLOAT DEFAULT NULL,");
-        sqlQueryBuilder.append("qty INT DEFAULT NULL,");
-        sqlQueryBuilder.append("PRIMARY KEY (id))");
+		StringBuilder sqlQueryBuilder = new StringBuilder("CREATE TABLE books (");
+		sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
+		sqlQueryBuilder.append("title VARCHAR(50) DEFAULT NULL,");
+		sqlQueryBuilder.append("author VARCHAR(50) DEFAULT NULL,");
+		sqlQueryBuilder.append("price FLOAT DEFAULT NULL,");
+		sqlQueryBuilder.append("qty INT DEFAULT NULL,");
+		sqlQueryBuilder.append("PRIMARY KEY (id))");
 
-        Statement stat = conn.createStatement();
-        stat.executeUpdate(sqlQueryBuilder.toString());
-        stat.close();
+		Statement stat = conn.createStatement();
+		stat.executeUpdate(sqlQueryBuilder.toString());
+		stat.close();
 
-        sqlQueryBuilder = new StringBuilder("CREATE TABLE newbooks (");
-        sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
-        sqlQueryBuilder.append("title VARCHAR(50) DEFAULT NULL,");
-        sqlQueryBuilder.append("author VARCHAR(50) DEFAULT NULL,");
-        sqlQueryBuilder.append("price FLOAT DEFAULT NULL,");
-        sqlQueryBuilder.append("qty INT DEFAULT NULL,");
-        sqlQueryBuilder.append("PRIMARY KEY (id))");
+		sqlQueryBuilder = new StringBuilder("CREATE TABLE newbooks (");
+		sqlQueryBuilder.append("id INT NOT NULL DEFAULT 0,");
+		sqlQueryBuilder.append("title VARCHAR(50) DEFAULT NULL,");
+		sqlQueryBuilder.append("author VARCHAR(50) DEFAULT NULL,");
+		sqlQueryBuilder.append("price FLOAT DEFAULT NULL,");
+		sqlQueryBuilder.append("qty INT DEFAULT NULL,");
+		sqlQueryBuilder.append("PRIMARY KEY (id))");
 
-        stat = conn.createStatement();
-        stat.executeUpdate(sqlQueryBuilder.toString());
-        stat.close();
+		stat = conn.createStatement();
+		stat.executeUpdate(sqlQueryBuilder.toString());
+		stat.close();
 
-        sqlQueryBuilder = new StringBuilder("INSERT INTO books (id, title, author, price, qty) VALUES ");
-        sqlQueryBuilder.append("(1001, 'Java for dummies', 'Tan Ah Teck', 11.11, 11),");
-        sqlQueryBuilder.append("(1002, 'More Java for dummies', 'Tan Ah Teck', 22.22, 22),");
-        sqlQueryBuilder.append("(1003, 'More Java for more dummies', 'Mohammad Ali', 33.33, 33),");
-        sqlQueryBuilder.append("(1004, 'A Cup of Java', 'Kumar', 44.44, 44),");
-        sqlQueryBuilder.append("(1005, 'A Teaspoon of Java', 'Kevin Jones', 55.55, 55)");
+		sqlQueryBuilder = new StringBuilder("INSERT INTO books (id, title, author, price, qty) VALUES ");
+		sqlQueryBuilder.append("(1001, 'Java for dummies', 'Tan Ah Teck', 11.11, 11),");
+		sqlQueryBuilder.append("(1002, 'More Java for dummies', 'Tan Ah Teck', 22.22, 22),");
+		sqlQueryBuilder.append("(1003, 'More Java for more dummies', 'Mohammad Ali', 33.33, 33),");
+		sqlQueryBuilder.append("(1004, 'A Cup of Java', 'Kumar', 44.44, 44),");
+		sqlQueryBuilder.append("(1005, 'A Teaspoon of Java', 'Kevin Jones', 55.55, 55)");
 
-        stat = conn.createStatement();
-        stat.execute(sqlQueryBuilder.toString());
-        stat.close();
+		stat = conn.createStatement();
+		stat.execute(sqlQueryBuilder.toString());
+		stat.close();
 
-        conn.close();
-    }
+		conn.close();
+	}
 }
