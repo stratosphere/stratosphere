@@ -14,32 +14,30 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.io.jdbc;
 
+import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple5;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.stratosphere.configuration.Configuration;
-import org.junit.AfterClass;
-
 public class JDBCInputFormatTest {
     JDBCInputFormat jdbcInputFormat;
-    Configuration config;
+
     static Connection conn;
+
     static final Object[][] dbData = {
-        {new Integer(1001), ("Java for dummies"), ("Tan Ah Teck"), new Double(11.11), new Integer(11)},
-        {new Integer(1002), ("More Java for dummies"), ("Tan Ah Teck"), new Double(22.22), new Integer(22)},
-        {new Integer(1003), ("More Java for more dummies"), ("Mohammad Ali"), new Double(33.33), new Integer(33)},
-        {new Integer(1004), ("A Cup of Java"), ("Kumar"), new Double(44.44), new Integer(44)},
-        {new Integer(1005), ("A Teaspoon of Java"), ("Kevin Jones"), new Double(55.55), new Integer(55)}};
+        {1001, ("Java for dummies"), ("Tan Ah Teck"), 11.11, 11},
+        {1002, ("More Java for dummies"), ("Tan Ah Teck"), 22.22, 22},
+        {1003, ("More Java for more dummies"), ("Mohammad Ali"), 33.33, 33},
+        {1004, ("A Cup of Java"), ("Kumar"), 44.44, 44},
+        {1005, ("A Teaspoon of Java"), ("Kevin Jones"), 55.55, 55}};
 
     @BeforeClass
     public static void setUpClass() {
@@ -88,29 +86,78 @@ public class JDBCInputFormatTest {
     }
 
     @AfterClass
-    public static void tearDownClass(){
+    public static void tearDownClass() {
         cleanUpDerbyDatabases();
     }
-    
+
     private static void cleanUpDerbyDatabases() {
-    	 try {
-             String dbURL = "jdbc:derby:memory:ebookshop;create=true";
-             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-             
-             conn = DriverManager.getConnection(dbURL);
-             Statement stat = conn.createStatement();
-             stat.executeUpdate("DROP TABLE books");
-             stat.close();
-             conn.close();
-         } catch (Exception e) {
-        	 e.printStackTrace();
-             Assert.fail();
-         } 
+        try {
+            String dbURL = "jdbc:derby:memory:ebookshop;create=true";
+            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+
+            conn = DriverManager.getConnection(dbURL);
+            Statement stat = conn.createStatement();
+            stat.executeUpdate("DROP TABLE books");
+            stat.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
-    
+
     @After
     public void tearDown() {
         jdbcInputFormat = null;
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidDriver() throws IOException {
+        jdbcInputFormat = JDBCInputFormat.buildJDBCInputFormat()
+                .setDrivername("org.apache.derby.jdbc.idontexist")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("select * from books")
+                .finish();
+        jdbcInputFormat.open(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidURL() throws IOException {
+        jdbcInputFormat = JDBCInputFormat.buildJDBCInputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:der:iamanerror:mory:ebookshop")
+                .setQuery("select * from books")
+                .finish();
+        jdbcInputFormat.open(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidQuery() throws IOException {
+        jdbcInputFormat = JDBCInputFormat.buildJDBCInputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("iamnotsql")
+                .finish();
+        jdbcInputFormat.open(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIncompleteConfiguration() throws IOException {
+        jdbcInputFormat = JDBCInputFormat.buildJDBCInputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setQuery("select * from books")
+                .finish();
+    }
+
+    @Test(expected = IOException.class)
+    public void testIncompatibleTuple() throws IOException {
+        jdbcInputFormat = JDBCInputFormat.buildJDBCInputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("select * from books")
+                .finish();
+        jdbcInputFormat.open(null);
+        jdbcInputFormat.nextRecord(new Tuple2());
     }
 
     @Test

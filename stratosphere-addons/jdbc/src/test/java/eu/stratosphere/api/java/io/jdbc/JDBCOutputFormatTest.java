@@ -14,15 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.io.jdbc;
 
+import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.api.java.tuple.Tuple5;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,11 +34,11 @@ public class JDBCOutputFormatTest {
     private static Connection conn;
 
     static final Object[][] dbData = {
-        {new Integer(1001), ("Java for dummies"), ("Tan Ah Teck"), new Double(11.11), new Integer(11)},
-        {new Integer(1002), ("More Java for dummies"), ("Tan Ah Teck"), new Double(22.22), new Integer(22)},
-        {new Integer(1003), ("More Java for more dummies"), ("Mohammad Ali"), new Double(33.33), new Integer(33)},
-        {new Integer(1004), ("A Cup of Java"), ("Kumar"), new Double(44.44), new Integer(44)},
-        {new Integer(1005), ("A Teaspoon of Java"), ("Kevin Jones"), new Double(55.55), new Integer(55)}};
+        {1001, ("Java for dummies"), ("Tan Ah Teck"), 11.11, 11},
+        {1002, ("More Java for dummies"), ("Tan Ah Teck"), 22.22, 22},
+        {1003, ("More Java for more dummies"), ("Mohammad Ali"), 33.33, 33},
+        {1004, ("A Cup of Java"), ("Kumar"), 44.44, 44},
+        {1005, ("A Teaspoon of Java"), ("Kevin Jones"), 55.55, 55}};
 
     @BeforeClass
     public static void setUpClass() throws SQLException {
@@ -90,32 +89,88 @@ public class JDBCOutputFormatTest {
         stat.execute(sqlQueryBuilder.toString());
         stat.close();
     }
-    
+
     @AfterClass
-    public static void tearDownClass(){
+    public static void tearDownClass() {
         cleanUpDerbyDatabases();
     }
-    
+
     private static void cleanUpDerbyDatabases() {
-    	 try {
-             String dbURL = "jdbc:derby:memory:ebookshop;create=true";
-             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-             
-             conn = DriverManager.getConnection(dbURL);
-             Statement stat = conn.createStatement();
-             stat.executeUpdate("DROP TABLE books");
-             stat.executeUpdate("DROP TABLE newbooks");
-             stat.close();
-             conn.close();
-         } catch (Exception e) {
-        	 e.printStackTrace();
-             Assert.fail();
-         } 
+        try {
+            String dbURL = "jdbc:derby:memory:ebookshop;create=true";
+            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+
+            conn = DriverManager.getConnection(dbURL);
+            Statement stat = conn.createStatement();
+            stat.executeUpdate("DROP TABLE books");
+            stat.executeUpdate("DROP TABLE newbooks");
+            stat.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @After
     public void tearDown() {
         jdbcOutputFormat = null;
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidDriver() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.idontexist")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("insert into books (id, title, author, price, qty) values (?,?,?,?,?)")
+                .finish();
+        jdbcOutputFormat.open(0, 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidURL() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:der:iamanerror:mory:ebookshop")
+                .setQuery("insert into books (id, title, author, price, qty) values (?,?,?,?,?)")
+                .finish();
+        jdbcOutputFormat.open(0, 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidQuery() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("iamnotsql")
+                .finish();
+        jdbcOutputFormat.open(0, 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIncompleteConfiguration() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setQuery("insert into books (id, title, author, price, qty) values (?,?,?,?,?)")
+                .finish();
+    }
+
+    @Test(expected = IOException.class)
+    public void testIncompatibleTypes() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("insert into books (id, title, author, price, qty) values (?,?,?,?,?)")
+                .finish();
+        jdbcOutputFormat.open(0, 1);
+
+        Tuple3 tuple3 = new Tuple3();
+        tuple3.setField(4, 0);
+        tuple3.setField("hi", 1);
+        tuple3.setField(4.4, 2);
+
+        jdbcOutputFormat.writeRecord(tuple3);
+        jdbcOutputFormat.close();
     }
 
     @Test
@@ -124,7 +179,6 @@ public class JDBCOutputFormatTest {
         String targetTable = "newbooks";
         String driverPath = "org.apache.derby.jdbc.EmbeddedDriver";
         String dbUrl = "jdbc:derby:memory:ebookshop";
-
 
         jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
                 .setDBUrl(dbUrl)
@@ -164,7 +218,6 @@ public class JDBCOutputFormatTest {
             Assert.assertEquals("Field 2 should be String", String.class, tuple.getField(2).getClass());
             Assert.assertEquals("Field 3 should be float", Double.class, tuple.getField(3).getClass());
             Assert.assertEquals("Field 4 should be int", Integer.class, tuple.getField(4).getClass());
-
 
             for (int x = 0; x < 5; x++) {
                 Assert.assertEquals(dbData[recordCount][x], tuple.getField(x));

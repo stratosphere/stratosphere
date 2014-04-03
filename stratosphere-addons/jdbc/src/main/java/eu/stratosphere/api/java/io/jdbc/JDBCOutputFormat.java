@@ -112,6 +112,10 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
     @Override
     public void writeRecord(OUT tuple) throws IOException {
         try {
+            if (query.split("\\?,").length != tuple.getArity()) {
+                close();
+                throw new IOException("Tuple size does not match columncount");
+            }
             if (types == null) {
                 extractTypes(tuple);
             }
@@ -181,16 +185,19 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
             batchCount = 0;
         } catch (SQLException se) {
             throw new IllegalArgumentException("close() failed", se);
+        } catch (NullPointerException se) {
         }
         try {
             upload.close();
         } catch (SQLException se) {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
+        } catch (NullPointerException npe) {
         }
         try {
             dbConn.close();
         } catch (SQLException se) {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
+        } catch (NullPointerException npe) {
         }
     }
 

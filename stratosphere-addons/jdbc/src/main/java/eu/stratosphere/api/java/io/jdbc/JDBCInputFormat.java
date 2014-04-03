@@ -104,16 +104,19 @@ public class JDBCInputFormat<OUT extends Tuple> implements InputFormat<OUT, Inpu
             resultSet.close();
         } catch (SQLException se) {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
+        } catch (NullPointerException npe) {
         }
         try {
             statement.close();
         } catch (SQLException se) {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
+        } catch (NullPointerException npe) {
         }
         try {
             dbConn.close();
         } catch (SQLException se) {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
+        } catch (NullPointerException npe) {
         }
     }
 
@@ -165,6 +168,7 @@ public class JDBCInputFormat<OUT extends Tuple> implements InputFormat<OUT, Inpu
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         columnTypes = new int[resultSetMetaData.getColumnCount()];
         if (tuple.getArity() != columnTypes.length) {
+            close();
             throw new IOException("Tuple size does not match columncount");
         }
         for (int pos = 0; pos < columnTypes.length; pos++) {
@@ -248,7 +252,7 @@ public class JDBCInputFormat<OUT extends Tuple> implements InputFormat<OUT, Inpu
                 default:
                     throw new SQLException("Unsupported sql-type [" + columnTypes[pos] + "] on column [" + pos + "]");
 
-            // case java.sql.Types.BINARY:
+                // case java.sql.Types.BINARY:
                 // case java.sql.Types.VARBINARY:
                 // case java.sql.Types.LONGVARBINARY:
                 // case java.sql.Types.ARRAY:
