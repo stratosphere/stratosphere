@@ -156,7 +156,7 @@ public class JDBCOutputFormatTest {
     }
 
     @Test(expected = IOException.class)
-    public void testIncompatibleTypes() throws IOException {
+    public void testIncompatibleTuple() throws IOException {
         jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
                 .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
                 .setDBUrl("jdbc:derby:memory:ebookshop")
@@ -170,6 +170,26 @@ public class JDBCOutputFormatTest {
         tuple3.setField(4.4, 2);
 
         jdbcOutputFormat.writeRecord(tuple3);
+        jdbcOutputFormat.close();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIncompatibleTypes() throws IOException {
+        jdbcOutputFormat = JDBCOutputFormat.buildJDBCOutputFormat()
+                .setDrivername("org.apache.derby.jdbc.EmbeddedDriver")
+                .setDBUrl("jdbc:derby:memory:ebookshop")
+                .setQuery("insert into books (id, title, author, price, qty) values (?,?,?,?,?)")
+                .finish();
+        jdbcOutputFormat.open(0, 1);
+
+        Tuple5 tuple5 = new Tuple5();
+        tuple5.setField(4, 0);
+        tuple5.setField("hello", 1);
+        tuple5.setField("world", 2);
+        tuple5.setField(0.99, 3);
+        tuple5.setField("imthewrongtype", 4);
+
+        jdbcOutputFormat.writeRecord(tuple5);
         jdbcOutputFormat.close();
     }
 
