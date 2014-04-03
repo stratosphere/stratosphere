@@ -49,6 +49,8 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
     private Connection dbConn;
     private PreparedStatement upload;
 
+    private supportedTypes[] types = null;
+
     private int batchCount = 0;
 
     public JDBCOutputFormat() {
@@ -57,7 +59,7 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
     @Override
     public void configure(Configuration parameters) {
     }
-    
+
     /**
      * Connects to the target database and initializes the prepared statement.
      *
@@ -98,7 +100,7 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
         Float,
         Double
     }
-    
+
     /**
      * Adds a record to the prepared statement.
      * <p>
@@ -110,9 +112,10 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
     @Override
     public void writeRecord(OUT tuple) throws IOException {
         try {
-            for (int x = 0; x < tuple.getArity(); x++) {
-                addValue(x, tuple);
+            if (types == null) {
+                extractTypes(tuple);
             }
+            addValues(tuple);
             upload.addBatch();
             batchCount++;
             if (batchCount >= batchInterval) {
@@ -128,38 +131,41 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
         }
     }
 
-    private void addValue(int index, OUT tuple) throws SQLException {
-        supportedTypes type;
-        try {
-            type = supportedTypes.valueOf(tuple.getField(index).getClass().getSimpleName());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException("PactType not supported", iae);
+    private void extractTypes(OUT tuple) {
+        types = new supportedTypes[tuple.getArity()];
+        for (int x = 0; x < tuple.getArity(); x++) {
+            types[x] = supportedTypes.valueOf(tuple.getField(x).getClass().getSimpleName());
         }
-        switch (type) {
-            case Boolean:
-                upload.setBoolean(index + 1, (Boolean) tuple.getField(index));
-                break;
-            case Byte:
-                upload.setByte(index + 1, (Byte) tuple.getField(index));
-                break;
-            case Short:
-                upload.setShort(index + 1, (Short) tuple.getField(index));
-                break;
-            case Integer:
-                upload.setInt(index + 1, (Integer) tuple.getField(index));
-                break;
-            case Long:
-                upload.setLong(index + 1, (Long) tuple.getField(index));
-                break;
-            case String:
-                upload.setString(index + 1, (String) tuple.getField(index));
-                break;
-            case Float:
-                upload.setFloat(index + 1, (Float) tuple.getField(index));
-                break;
-            case Double:
-                upload.setDouble(index + 1, (Double) tuple.getField(index));
-                break;
+    }
+
+    private void addValues(OUT tuple) throws SQLException {
+        for (int index = 0; index < tuple.getArity(); index++) {
+            switch (types[index]) {
+                case Boolean:
+                    upload.setBoolean(index + 1, (Boolean) tuple.getField(index));
+                    break;
+                case Byte:
+                    upload.setByte(index + 1, (Byte) tuple.getField(index));
+                    break;
+                case Short:
+                    upload.setShort(index + 1, (Short) tuple.getField(index));
+                    break;
+                case Integer:
+                    upload.setInt(index + 1, (Integer) tuple.getField(index));
+                    break;
+                case Long:
+                    upload.setLong(index + 1, (Long) tuple.getField(index));
+                    break;
+                case String:
+                    upload.setString(index + 1, (String) tuple.getField(index));
+                    break;
+                case Float:
+                    upload.setFloat(index + 1, (Float) tuple.getField(index));
+                    break;
+                case Double:
+                    upload.setDouble(index + 1, (Double) tuple.getField(index));
+                    break;
+            }
         }
     }
 
@@ -187,7 +193,6 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
             LOG.info("Inputformat couldn't be closed - " + se.getMessage());
         }
     }
-    
 
     public static JDBCOutputFormatBuilder buildJDBCOutputFormat() {
         return new JDBCOutputFormatBuilder();
@@ -224,7 +229,6 @@ public class JDBCOutputFormat<OUT extends Tuple> implements OutputFormat<OUT> {
             format.query = query;
             return this;
         }
-
 
         public JDBCOutputFormatBuilder setBatchInterval(int batchInterval) {
             format.batchInterval = batchInterval;
