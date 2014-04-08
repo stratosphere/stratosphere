@@ -190,8 +190,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				ipcAddress = InetAddress.getByName(ipcAddressString);
 			} catch (UnknownHostException e) {
-				LOG.error("Cannot convert " + ipcAddressString + " to an IP address: "
-					+ StringUtils.stringifyException(e));
+				LOG.error("Cannot convert " + ipcAddressString + " to an IP address: ", e);
 				System.exit(FAILURERETURNCODE);
 			}
 		}
@@ -237,7 +236,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				handlerCount);
 			this.jobManagerServer.start();
 		} catch (IOException ioe) {
-			LOG.error("Cannot start RPC server: " + StringUtils.stringifyException(ioe));
+		    LOG.error("Cannot start RPC server", ioe);
 			System.exit(FAILURERETURNCODE);
 		}
 
@@ -249,7 +248,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				this.instanceManager = new LocalInstanceManager();
 			} catch (RuntimeException rte) {
-				LOG.fatal("Cannot instantiate local instance manager: " + StringUtils.stringifyException(rte));
+				LOG.fatal("Cannot instantiate local instance manager", rte);
 				System.exit(FAILURERETURNCODE);
 			}
 		} else {
@@ -287,8 +286,10 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			}
 		} else {
 			this.profiler = null;
-			LOG.debug("Profiler disabled");
-		}
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Profiler disabled");
+            }
+        }
 
 		// Add shutdown hook for clean up tasks
 		Runtime.getRuntime().addShutdownHook(new JobManagerCleanUp(this));
@@ -306,6 +307,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				Thread.sleep(SLEEPINTERVAL);
 			} catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
 				break;
 			}
 
@@ -340,9 +342,8 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			try {
 				this.executorService.awaitTermination(5000L, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(StringUtils.stringifyException(e));
-				}
+                Thread.currentThread().interrupt();
+			    LOG.error(e);
 			}
 		}
 
@@ -357,7 +358,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 
 		this.isShutDown = true;
-		LOG.debug("Shutdown of job manager completed");
+        if(LOG.isDebugEnabled()){
+		    LOG.debug("Shutdown of job manager completed");
+        }
 	}
 
 	/**
@@ -377,7 +380,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 					revision = properties.getProperty("git.commit.id.abbrev");
 				}
 			} catch (IOException e) {
-				LOG.info("Cannot determine code revision. Unable ro read version property file.");
+				LOG.error("Cannot determine code revision. Unable ro read version property file.", e);
 			}
 			
 			LOG.info("Starting Stratosphere JobManager (Version: " + version + ", Rev:" + revision + ")");
@@ -545,7 +548,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		// Try to create initial execution graph from job graph
 		LOG.info("Creating initial execution graph from job graph " + job.getName());
-		ExecutionGraph eg = null;
+		ExecutionGraph eg;
 
 		try {
 			eg = new ExecutionGraph(job, this.instanceManager);
@@ -631,7 +634,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			LibraryCacheManager.unregister(executionGraph.getJobID());
 		} catch (IOException ioe) {
 			if (LOG.isWarnEnabled()) {
-				LOG.warn(StringUtils.stringifyException(ioe));
+				LOG.warn(ioe);
 			}
 		}
 	}
@@ -1001,7 +1004,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				try {
 					instance.killTaskManager();
 				} catch (IOException ioe) {
-					LOG.error(StringUtils.stringifyException(ioe));
+					LOG.error(ioe);
 				}
 			}
 		};
@@ -1094,7 +1097,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 						it2.next().logBufferUtilization();
 					}
 				} catch (IOException ioe) {
-					LOG.error(StringUtils.stringifyException(ioe));
+					LOG.error(ioe);
 				}
 
 			}
@@ -1106,96 +1109,101 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 
 	@Override
-	public void deploy(final JobID jobID, final AbstractInstance instance,
-			final List<ExecutionVertex> verticesToBeDeployed) {
+    public void deploy(final JobID jobID, final AbstractInstance instance,
+                       final List<ExecutionVertex> verticesToBeDeployed) {
 
-		if (verticesToBeDeployed.isEmpty()) {
-			LOG.error("Method 'deploy' called but list of vertices to be deployed is empty");
-			return;
-		}
+        if (verticesToBeDeployed.isEmpty()) {
+            LOG.error("Method 'deploy' called but list of vertices to be deployed is empty");
+            return;
+        }
 
-		for (final ExecutionVertex vertex : verticesToBeDeployed) {
+        for (final ExecutionVertex vertex : verticesToBeDeployed) {
 
-			// Check vertex state
-			if (vertex.getExecutionState() != ExecutionState.READY) {
-				LOG.error("Expected vertex " + vertex + " to be in state READY but it is in state "
-					+ vertex.getExecutionState());
-			}
+            // Check vertex state
+            if (vertex.getExecutionState() != ExecutionState.READY) {
+                LOG.error("Expected vertex " + vertex + " to be in state READY but it is in state "
+                        + vertex.getExecutionState());
+            }
 
-			vertex.updateExecutionState(ExecutionState.STARTING, null);
-		}
+            vertex.updateExecutionState(ExecutionState.STARTING, null);
+        }
 
-		// Create a new runnable and pass it the executor service
-		final Runnable deploymentRunnable = new Runnable() {
+        // Create a new runnable and pass it the executor service
+        final Runnable deploymentRunnable = new Runnable() {
 
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public void run() {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public void run() {
 
-				// Check if all required libraries are available on the instance
-				try {
-					instance.checkLibraryAvailability(jobID);
-				} catch (IOException ioe) {
-					LOG.error("Cannot check library availability: " + StringUtils.stringifyException(ioe));
-				}
+                // Check if all required libraries are available on the instance
+                try {
+                    instance.checkLibraryAvailability(jobID);
+                } catch (IOException ioe) {
+                    LOG.error("Cannot check library availability", ioe);
+                }
 
-				final List<TaskDeploymentDescriptor> submissionList = new SerializableArrayList<TaskDeploymentDescriptor>();
+                final List<TaskDeploymentDescriptor> submissionList = new SerializableArrayList<TaskDeploymentDescriptor>();
 
-				// Check the consistency of the call
-				for (final ExecutionVertex vertex : verticesToBeDeployed) {
+                // Check the consistency of the call
+                for (final ExecutionVertex vertex : verticesToBeDeployed) {
 
-					submissionList.add(vertex.constructDeploymentDescriptor());
+                    submissionList.add(vertex.constructDeploymentDescriptor());
 
-					LOG.info("Starting task " + vertex + " on " + vertex.getAllocatedResource().getInstance());
-				}
+                    LOG.info("Starting task " + vertex + " on " + vertex.getAllocatedResource().getInstance());
+                }
 
-				List<TaskSubmissionResult> submissionResultList = null;
+                List<TaskSubmissionResult> submissionResultList = null;
 
-				try {
-					submissionResultList = instance.submitTasks(submissionList);
-				} catch (final IOException ioe) {
-					final String errorMsg = StringUtils.stringifyException(ioe);
-					for (final ExecutionVertex vertex : verticesToBeDeployed) {
-						vertex.updateExecutionStateAsynchronously(ExecutionState.FAILED, errorMsg);
-					}
-				}
+                try {
+                    submissionResultList = instance.submitTasks(submissionList);
+                } catch (final IOException ioe) {
+                    final String errorMsg = StringUtils.stringifyException(ioe);
+                    for (final ExecutionVertex vertex : verticesToBeDeployed) {
+                        vertex.updateExecutionStateAsynchronously(ExecutionState.FAILED, errorMsg);
+                    }
+                }
 
-				if (verticesToBeDeployed.size() != submissionResultList.size()) {
-					LOG.error("size of submission result list does not match size of list with vertices to be deployed");
-				}
+                if (submissionResultList != null &&
+                        (verticesToBeDeployed.size() != submissionResultList.size())) {
+                    LOG.error("size of submission result list does not match size of list with vertices to be deployed");
+                }
 
-				int count = 0;
-				for (final TaskSubmissionResult tsr : submissionResultList) {
+                int count = 0;
+                if (submissionResultList != null) {
+                    for (final TaskSubmissionResult tsr : submissionResultList) {
 
-					ExecutionVertex vertex = verticesToBeDeployed.get(count++);
-					if (!vertex.getID().equals(tsr.getVertexID())) {
-						LOG.error("Expected different order of objects in task result list");
-						vertex = null;
-						for (final ExecutionVertex candVertex : verticesToBeDeployed) {
-							if (tsr.getVertexID().equals(candVertex.getID())) {
-								vertex = candVertex;
-								break;
-							}
-						}
+                        ExecutionVertex vertex = verticesToBeDeployed.get(count++);
+                        if (!vertex.getID().equals(tsr.getVertexID())) {
+                            LOG.error("Expected different order of objects in task result list");
+                            vertex = null;
+                            for (final ExecutionVertex candVertex : verticesToBeDeployed) {
+                                if (tsr.getVertexID().equals(candVertex.getID())) {
+                                    vertex = candVertex;
+                                    break;
+                                }
+                            }
 
-						if (vertex == null) {
-							LOG.error("Cannot find execution vertex for vertex ID " + tsr.getVertexID());
-							continue;
-						}
-					}
+                            if (vertex == null) {
+                                LOG.error("Cannot find execution vertex for vertex ID " + tsr.getVertexID());
+                                continue;
+                            }
+                        }
 
-					if (tsr.getReturnCode() != AbstractTaskResult.ReturnCode.SUCCESS) {
-						// Change the execution state to failed and let the scheduler deal with the rest
-						vertex.updateExecutionStateAsynchronously(ExecutionState.FAILED, tsr.getDescription());
-					}
-				}
-			}
-		};
+                        if (tsr.getReturnCode() != AbstractTaskResult.ReturnCode.SUCCESS) {
+                            // Change the execution state to failed and let the scheduler deal with the rest
+                            vertex.updateExecutionStateAsynchronously(ExecutionState.FAILED, tsr.getDescription());
+                        }
+                    }
+                } else {
+                    LOG.warn("No submission result was received");
+                }
+            }
+        };
 
-		this.executorService.execute(deploymentRunnable);
-	}
+        this.executorService.execute(deploymentRunnable);
+    }
 
 
 	@Override
@@ -1229,9 +1237,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			server = new WebInfoServer(config, port, this);
 			server.start();
 		} catch (FileNotFoundException e) {
-			LOG.error(e.getMessage());
+			LOG.error(e.getMessage(), e);
 		} catch (Exception e) {
-			LOG.error("Cannot instantiate info server: " + StringUtils.stringifyException(e));
+			LOG.error("Cannot instantiate info server", e);
 		}
 	}
 	

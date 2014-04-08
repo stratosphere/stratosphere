@@ -50,7 +50,6 @@ import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.deployment.TaskDeploymentDescriptor;
-import eu.stratosphere.nephele.execution.Environment;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.execution.RuntimeEnvironment;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
@@ -153,7 +152,7 @@ public class TaskManager implements TaskOperationProtocol {
 		LOG.info("user property: "+System.getProperty("user.name"));
 		// IMPORTANT! At this point, the GlobalConfiguration must have been read!
 		final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
-		InetSocketAddress jobManagerAddress = null;
+		InetSocketAddress jobManagerAddress;
 		if (address == null) {
             throw new Exception("Job manager address not configured");
 		}
@@ -171,14 +170,14 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		LOG.info("Job manager address: " + jobManagerAddress);
 
-		InetAddress taskManagerAddress = null;
+		InetAddress taskManagerAddress;
 
 		// Try to create local stub for the job manager
-		JobManagerProtocol jobManager = null;
+		JobManagerProtocol jobManager;
 		try {
 			jobManager = RPC.getProxy(JobManagerProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize connection to JobManager: " + e.getMessage(), e);
 		}
 		
@@ -202,45 +201,45 @@ public class TaskManager implements TaskOperationProtocol {
 		LOG.info("Announcing connection information " + this.localInstanceConnectionInfo + " to job manager");
 		
 		// Try to create local stub of the global input split provider
-		InputSplitProviderProtocol globalInputSplitProvider = null;
+		InputSplitProviderProtocol globalInputSplitProvider;
 		try {
 			globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress, 
 				NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize connection to global input split provider: " + e.getMessage(), e);
 		}
 		this.globalInputSplitProvider = globalInputSplitProvider;
 
 		// Try to create local stub for the lookup service
-		ChannelLookupProtocol lookupService = null;
+		ChannelLookupProtocol lookupService;
 		try {
 			lookupService = RPC.getProxy(ChannelLookupProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize channel lookup protocol. " + e.getMessage(), e);
 		}
 		this.lookupService = lookupService;
 
 		// Try to create local stub for the job manager
-		AccumulatorProtocol accumulatorProtocolStub = null;
+		AccumulatorProtocol accumulatorProtocolStub;
 		try {
 			accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress,
 					NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
 		}
 		this.accumulatorProtocolProxy = accumulatorProtocolStub;
 
 		
 		// Start local RPC server
-		Server taskManagerServer = null;
+		Server taskManagerServer;
 		try {
 			taskManagerServer = RPC.getServer(this, taskManagerAddress.getHostName(), ipcPort, handlerCount);
 			taskManagerServer.start();
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.error(e);
 			throw new Exception("Failed to taskmanager server. " + e.getMessage(), e);
 		}
 		this.taskManagerServer = taskManagerServer;
@@ -256,7 +255,9 @@ public class TaskManager implements TaskOperationProtocol {
 			}
 		} else {
 			this.profiler = null;
-			LOG.debug("Profiler disabled");
+            if(LOG.isDebugEnabled()){
+			    LOG.debug("Profiler disabled");
+            }
 		}
 
 		// Get the directory for storing temporary files
@@ -266,21 +267,23 @@ public class TaskManager implements TaskOperationProtocol {
 		checkTempDirs(tmpDirPaths);
 
 		// Initialize the byte buffered channel manager
-		ByteBufferedChannelManager byteBufferedChannelManager = null;
+		ByteBufferedChannelManager byteBufferedChannelManager;
 		try {
 			byteBufferedChannelManager = new ByteBufferedChannelManager(this.lookupService,
 				this.localInstanceConnectionInfo);
 		} catch (IOException ioe) {
-			LOG.error(StringUtils.stringifyException(ioe));
+			LOG.error(ioe);
 			throw new Exception("Failed to instantiate Byte-buffered channel manager. " + ioe.getMessage(), ioe);
 		}
 		this.byteBufferedChannelManager = byteBufferedChannelManager;
 
 		// Determine hardware description
 		HardwareDescription hardware = HardwareDescriptionFactory.extractFromSystem(taskManagersPerJVM);
-		if (hardware == null) {
-			LOG.warn("Cannot determine hardware description");
-		}
+        if (hardware == null) {
+            String msg = "Cannot determine hardware description";
+            LOG.error(msg);
+            throw new Exception(msg);
+        }
 
 		// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
 		// of taking as much as is mentioned in the hardware description
@@ -319,17 +322,17 @@ public class TaskManager implements TaskOperationProtocol {
 				break;
 			}
 			} catch (IOException e) {
-				LOG.debug("Unable to allocate port "+e.getMessage(), e);
+				LOG.error("Unable to close the server socket " + e.getMessage(), e);
 			}
 		}
-		if(!serverSocket.isClosed()) {
-			try {
-				serverSocket.close();
-			} catch (IOException e) {
-				LOG.debug("error closing port",e);
-			}
-		}
-		return port;
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                LOG.error("error closing port", e);
+            }
+        }
+        return port;
 	}
 
 	/**
@@ -368,7 +371,7 @@ public class TaskManager implements TaskOperationProtocol {
 		try {
 			taskManager = new TaskManager(1);
 		} catch (Exception e) {
-			LOG.fatal("Taskmanager startup failed:" + StringUtils.stringifyException(e));
+			LOG.fatal("Taskmanager startup failed", e);
 			System.exit(FAILURERETURNCODE);
 		}
 		// Run the main I/O loop
@@ -387,20 +390,23 @@ public class TaskManager implements TaskOperationProtocol {
 		while (!Thread.interrupted()) {
 
 			// Sleep
-			try {
-				Thread.sleep(interval);
-			} catch (InterruptedException e1) {
-				LOG.debug("Heartbeat thread was interrupted");
-				break;
-			}
+            try {
+                Thread.sleep(interval);
+            } catch (InterruptedException e1) {
+                Thread.currentThread().interrupt();
+                LOG.error("Heartbeat thread was interrupted", e1);
+                break;
+            }
 
 			// Send heartbeat
 			try {
-				LOG.debug("heartbeat");
-				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("heartbeat");
+                }
+                this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
 			} catch (IOException e) {
 				e.printStackTrace();
-				LOG.info("sending the heart beat caused an IO Exception");
+				LOG.error("sending the heart beat caused an IO Exception", e);
 			}
 
 			// Check the status of the task threads to detect unexpected thread terminations
@@ -596,7 +602,7 @@ public class TaskManager implements TaskOperationProtocol {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);
 				result.setDescription(StringUtils.stringifyException(t));
-				LOG.error(result.getDescription());
+				LOG.error(result.getDescription(), t);
 				submissionResultList.add(result);
 				continue;
 			}
@@ -613,7 +619,7 @@ public class TaskManager implements TaskOperationProtocol {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.INSUFFICIENT_RESOURCES);
 				result.setDescription(e.getMessage());
-				LOG.error(result.getDescription());
+				LOG.error(result.getDescription(), e);
 				submissionResultList.add(result);
 				continue;
 			}
@@ -648,8 +654,6 @@ public class TaskManager implements TaskOperationProtocol {
 	 *        the job configuration that has been attached to the original job graph
 	 * @param environment
 	 *        the environment of the task to be registered
-	 * @param initialCheckpointState
-	 *        the task's initial checkpoint state
 	 * @param activeOutputChannels
 	 *        the set of initially active output channels
 	 * @return the task to be started or <code>null</code> if a task with the same ID was already running
@@ -667,7 +671,7 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 
 		// Task creation and registration must be atomic
-		Task task = null;
+		Task task;
 
 		synchronized (this) {
 			final Task runningTask = this.runningTasks.get(id);
@@ -687,7 +691,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 			}
 
-			final Environment ee = task.getEnvironment();
 			if (registerTask) {
 				// Register the task with the byte buffered channel manager
 				this.byteBufferedChannelManager.register(task, activeOutputChannels);
@@ -739,11 +742,9 @@ public class TaskManager implements TaskOperationProtocol {
 			try {
 				LibraryCacheManager.unregister(task.getJobID());
 			} catch (IOException e) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Unregistering the job vertex ID " + id + " caused an IOException");
-				}
-			}
-		}
+                LOG.error("Unregistering the job vertex ID " + id + " caused an IOException", e);
+            }
+        }
 	}
 
 
@@ -790,7 +791,7 @@ public class TaskManager implements TaskOperationProtocol {
 				this.jobManager.updateTaskExecutionState(new TaskExecutionState(jobID, id, newExecutionState,
 					optionalDescription));
 			} catch (IOException e) {
-				LOG.error(StringUtils.stringifyException(e));
+				LOG.error(e);
 			}
 		}
 	}
@@ -844,11 +845,10 @@ public class TaskManager implements TaskOperationProtocol {
 			try {
 				this.executorService.awaitTermination(5000L, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(StringUtils.stringifyException(e));
-				}
-			}
-		}
+                Thread.currentThread().interrupt();
+                LOG.error(e);
+            }
+        }
 
 		this.isShutDown = true;
 	}
