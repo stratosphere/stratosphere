@@ -1,3 +1,4 @@
+
 /***********************************************************************************************************************
  * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
@@ -10,8 +11,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
-
-package eu.stratosphere.api.java.record.functions;
+package eu.stratosphere.api.java.functions;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -21,11 +21,8 @@ import java.lang.annotation.Target;
 import com.google.common.primitives.Ints;
 
 import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
-import eu.stratosphere.api.common.operators.SemanticProperties;
 import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
-import eu.stratosphere.api.common.operators.util.FieldSet;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
-import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 
@@ -54,7 +51,7 @@ import eu.stratosphere.api.java.typeutils.TypeInformation;
  * ({@link MapFunction}, {@link ReduceFunction}) and some only for stubs with two inputs 
  * ({@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction}).
  */
-public class FunctionAnnotation {
+public class FunctionAnnotationJapi {
 	
 	/**
 	 * Specifies the fields of an input record that are unchanged in the output of 
@@ -62,6 +59,10 @@ public class FunctionAnnotation {
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
+	 * 
+	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
+	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
+	 * is expected that the position of the fields also remains constant.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -79,7 +80,8 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFields {
-		int[] value();
+		int[] from();
+		int[] to() default {};
 	}
 	
 	/**
@@ -112,6 +114,10 @@ public class FunctionAnnotation {
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
 	 * 
+	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
+	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
+	 * is expected that the position of the fields also remains constant.
+	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
 	 * Only fields that are always constant (regardless of value, stub call, etc.) to the output may be 
@@ -129,7 +135,8 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsFirst {
-		int[] value();
+		int[] from();
+		int[] to() default {};
 	}
 	
 	/**
@@ -138,6 +145,10 @@ public class FunctionAnnotation {
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
+	 * 
+	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
+	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
+	 * is expected that the position of the fields also remains constant.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -155,7 +166,8 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsSecond {
-		int[] value();
+		int[] from();
+		int[] to() default {};
 	}
 	
 	/**
@@ -244,251 +256,165 @@ public class FunctionAnnotation {
 	/**
 	 * Private constructor to prevent instantiation. This class is intended only as a container.
 	 */
-	private FunctionAnnotation() {}
+	private FunctionAnnotationJapi() {}
 	
 	// --------------------------------------------------------------------------------------------
 	//                                   Function Annotation Handling
 	// --------------------------------------------------------------------------------------------
+	/**
+	 * Reads the annotations of a user defined function with one input and returns semantic properties according to the constant fields annotated.
+	 * @param udf	The user defined function.
+	 * @param input	Type information of the operator input.
+	 * @param output	Type information of the operator output.
+	 * @return	The DualInputSemanticProperties containing the constant fields.
+	 */
 	
-	public static SingleInputSemanticProperties readSingleConstantAnnotations(UserCodeWrapper<?> udf) {
+	
+	public static SingleInputSemanticProperties readSingleConstantAnnotations(UserCodeWrapper<?> udf, TypeInformation<?> input, TypeInformation<?> output) {
+		if (!input.isTupleType() || !output.isTupleType()) {
+			return null;
+		}
+
 		
-		// get constantSet annotation from stub
 		AllFieldsConstants allConstants = udf.getUserCodeAnnotation(AllFieldsConstants.class);
 		ConstantFields constantSet = udf.getUserCodeAnnotation(ConstantFields.class);
 		ConstantFieldsExcept notConstantSet = udf.getUserCodeAnnotation(ConstantFieldsExcept.class);
+		
+		int inputArity = input.getArity();
+		int outputArity = output.getArity();
+		
+
 
 		if (notConstantSet != null && (constantSet != null || allConstants != null)) {
 			throw new RuntimeException("Either ConstantFields or ConstantFieldsExcept can be specified, not both.");
 		}
-		
+		SingleInputSemanticProperties semanticProperties = new SingleInputSemanticProperties();
+
 		// extract notConstantSet from annotation
 		if (notConstantSet != null) {
-			FieldSet nonConstant = new FieldSet(notConstantSet.value());
-			return new ImplicitlyForwardingSingleInputSemanticProperties(nonConstant);
+			for (int i = 0; i < inputArity && i < outputArity; i++) {
+				if (!Ints.contains(notConstantSet.value(), i)) {
+					semanticProperties.addForwardedField(i, i);
+				};
+			}
 		}
 		
 		// extract notConstantSet from annotation
 		if (allConstants != null) {
-			FieldSet nonConstant = new FieldSet();
-			return new ImplicitlyForwardingSingleInputSemanticProperties(nonConstant);
+			for (int i = 0; i < inputArity && i < outputArity; i++) {
+					semanticProperties.addForwardedField(i, i);
+			}
 		}
 		
-		SingleInputSemanticProperties semanticProperties = new SingleInputSemanticProperties();
 		
 		// extract constantSet from annotation
 		if (constantSet != null) {
-			for (int value: constantSet.value()) {
-				semanticProperties.addForwardedField(value,value);
+			if (constantSet.to().length == 0) {
+				for (int value: constantSet.from()) {
+					semanticProperties.addForwardedField(value,value);
+				}
+			} else if (constantSet.from().length == constantSet.to().length) {
+				for (int i = 0; i < constantSet.from().length; i++) {
+					semanticProperties.addForwardedField(constantSet.from()[i], constantSet.to()[i]);
+				}
+			} else {
+				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
 			}
 		}
 		
 		return semanticProperties;
+		
 	}
 	
-	// --------------------------------------------------------------------------------------------	
+	// --------------------------------------------------------------------------------------------
+	/**
+	 * Reads the annotations of a user defined function with two inputs and returns semantic properties according to the constant fields annotated.
+	 * @param udf	The user defined function.
+	 * @param input1	Type information of the first operator input.
+	 * @param input2	Type information of the second operator input.
+	 * @param output	Type information of the operator output.
+	 * @return	The DualInputSemanticProperties containing the constant fields.
+	 */
 	
-	public static DualInputSemanticProperties readDualConstantAnnotations(UserCodeWrapper<?> udf) {
-		ImplicitlyForwardingTwoInputSemanticProperties semanticProperties = new ImplicitlyForwardingTwoInputSemanticProperties();
-
+	public static DualInputSemanticProperties readDualConstantAnnotations(UserCodeWrapper<?> udf, TypeInformation<?> input1, TypeInformation<?> input2, TypeInformation<?> output) {
+		if (!input1.isTupleType() || !input2.isTupleType() || !output.isTupleType()) {
+			return null;
+		}
+		
+		int input1Arity = input1.getArity();
+		int input2Arity = input2.getArity();
+		int outputArity = output.getArity();
+				
 		// get readSet annotation from stub
-		ConstantFieldsFirst constantSet1Annotation = udf.getUserCodeAnnotation(ConstantFieldsFirst.class);
-		ConstantFieldsSecond constantSet2Annotation = udf.getUserCodeAnnotation(ConstantFieldsSecond.class);
-		
+		ConstantFieldsFirst constantSet1 = udf.getUserCodeAnnotation(ConstantFieldsFirst.class);
+		ConstantFieldsSecond constantSet2= udf.getUserCodeAnnotation(ConstantFieldsSecond.class);
+			
 		// get readSet annotation from stub
-		ConstantFieldsFirstExcept notConstantSet1Annotation = udf.getUserCodeAnnotation(ConstantFieldsFirstExcept.class);
-		ConstantFieldsSecondExcept notConstantSet2Annotation = udf.getUserCodeAnnotation(ConstantFieldsSecondExcept.class);
+		ConstantFieldsFirstExcept notConstantSet1 = udf.getUserCodeAnnotation(ConstantFieldsFirstExcept.class);
+		ConstantFieldsSecondExcept notConstantSet2 = udf.getUserCodeAnnotation(ConstantFieldsSecondExcept.class);
+			
 		
-		
-		if (notConstantSet1Annotation != null && constantSet1Annotation != null) {
+		if (notConstantSet1 != null && constantSet1 != null) {
 			throw new RuntimeException("Either ConstantFieldsFirst or ConstantFieldsFirstExcept can be specified, not both.");
 		}
 		
-		if (constantSet2Annotation != null && notConstantSet2Annotation != null) {
+		if (constantSet2 != null && notConstantSet2 != null) {
 			throw new RuntimeException("Either ConstantFieldsSecond or ConstantFieldsSecondExcept can be specified, not both.");
 		}
 		
+		DualInputSemanticProperties semanticProperties = new DualInputSemanticProperties();
 		
 		// extract readSets from annotations
-		if(notConstantSet1Annotation != null) {
-			semanticProperties.setImplicitlyForwardingFirstExcept(new FieldSet(notConstantSet1Annotation.value()));
+		if(notConstantSet1 != null) {
+			for (int i = 0; i < input1Arity && i < outputArity; i++) {
+				if (!Ints.contains(notConstantSet1.value(), i)) {
+					semanticProperties.addForwardedField1(i, i);;
+				};
+			}
 		}
-		
-		if(notConstantSet2Annotation != null) {
-			semanticProperties.setImplicitlyForwardingSecondExcept(new FieldSet(notConstantSet2Annotation.value()));
+			
+		if(notConstantSet2 != null) {
+			for (int i = 0; i < input2Arity && i < outputArity; i++) {
+				if (!Ints.contains(notConstantSet2.value(), i)) {
+					semanticProperties.addForwardedField2(i, i);;
+				};
+			}		
 		}
-		
+				
 		// extract readSets from annotations
-		if (constantSet1Annotation != null) {
-			for(int value: constantSet1Annotation.value()) {
-				semanticProperties.addForwardedField1(value, value);
+		if (constantSet1 != null) {
+			if (constantSet1.to().length == 0) {
+				for (int value: constantSet1.from()) {
+					semanticProperties.addForwardedField1(value,value);
+				}
+			} else if (constantSet1.from().length == constantSet1.to().length) {
+				for (int i = 0; i < constantSet1.from().length; i++) {
+					semanticProperties.addForwardedField1(constantSet1.from()[i], constantSet1.to()[i]);
+				}
+			} else {
+				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
 			}
 		}
-		
-		if (constantSet2Annotation != null) {
-			for(int value: constantSet2Annotation.value()) {
-				semanticProperties.addForwardedField2(value, value);
+				
+		if (constantSet2 != null) {
+			if (constantSet2.to().length == 0) {
+				for (int value: constantSet2.from()) {
+					semanticProperties.addForwardedField1(value,value);
+				}
+			} else if (constantSet2.from().length == constantSet2.to().length) {
+				for (int i = 0; i < constantSet2.from().length; i++) {
+					semanticProperties.addForwardedField2(constantSet2.from()[i], constantSet2.to()[i]);
+				}
+			} else {
+				throw new RuntimeException("Field 'from' and 'to' of the ConstantFields annotation should have the same length.");
 			}
 		}
-		
+				
 		return semanticProperties;
 	}
 	
 	
-	private static final class ImplicitlyForwardingSingleInputSemanticProperties extends SingleInputSemanticProperties {
-		private static final long serialVersionUID = 1L;
-		
-		private FieldSet nonForwardedFields;
-		
-		private ImplicitlyForwardingSingleInputSemanticProperties(FieldSet nonForwardedFields) {
-			this.nonForwardedFields = nonForwardedFields;
-			addWrittenFields(nonForwardedFields);
-		}
 		
 		
-		/**
-		 * Returns the logical position where the given field is written to.
-		 * In this variant of the semantic properties, all fields are assumed implicitly forwarded,
-		 * unless stated otherwise. We return the same field position, unless the field is explicitly
-		 * marked as modified.
-		 */
-		@Override
-		public FieldSet getForwardedField(int sourceField) {
-			if (this.nonForwardedFields.contains(sourceField)) {
-				return null;
-			} else {
-				return new FieldSet(sourceField);
-			}
-		}
-		
-		@Override
-		public void addForwardedField(int sourceField, int destinationField) {
-			throw new UnsupportedOperationException("When defining fields as implicitly constant " +
-					"(such as through the ConstantFieldsExcept annotation), you cannot manually add forwarded fields.");
-		}
-		
-		@Override
-		public void addForwardedField(int sourceField, FieldSet destinationFields) {
-			throw new UnsupportedOperationException("When defining fields as implicitly constant " +
-					"(such as through the ConstantFieldsExcept annotation), you cannot manually add forwarded fields.");
-		}
-		
-		@Override
-		public void setForwardedField(int sourceField, FieldSet destinationFields) {
-			throw new UnsupportedOperationException("When defining fields as implicitly constant " +
-					"(such as through the ConstantFieldsExcept annotation), you cannot manually add forwarded fields.");
-		}
 	}
-	
-	private static final class ImplicitlyForwardingTwoInputSemanticProperties extends DualInputSemanticProperties {
-		private static final long serialVersionUID = 1L;
-		
-		private FieldSet nonForwardedFields1;
-		private FieldSet nonForwardedFields2;
-		
-		private ImplicitlyForwardingTwoInputSemanticProperties() {}
-		
-		
-		public void setImplicitlyForwardingFirstExcept(FieldSet nonForwardedFields) {
-			this.nonForwardedFields1 = nonForwardedFields;
-		}
-		
-		public void setImplicitlyForwardingSecondExcept(FieldSet nonForwardedFields) {
-			this.nonForwardedFields2 = nonForwardedFields;
-		}
-		
 
-		@Override
-		public FieldSet getForwardedField1(int sourceField) {
-			if (this.nonForwardedFields1 == null) {
-				return super.getForwardedField1(sourceField);
-			}
-			else {
-				if (this.nonForwardedFields1.contains(sourceField)) {
-					return null;
-				} else {
-					return new FieldSet(sourceField);
-				}
-			}
-		}
-		
-		@Override
-		public FieldSet getForwardedField2(int sourceField) {
-			if (this.nonForwardedFields2 == null) {
-				return super.getForwardedField2(sourceField);
-			}
-			else {
-				if (this.nonForwardedFields2.contains(sourceField)) {
-					return null;
-				} else {
-					return new FieldSet(sourceField);
-				}
-			}
-		}
-		
-		@Override
-		public void addForwardedField1(int sourceField, int destinationField) {
-			if (this.nonForwardedFields1 == null) {
-				super.addForwardedField1(sourceField, destinationField);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsFirstExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-		
-		@Override
-		public void addForwardedField1(int sourceField, FieldSet destinationFields) {
-			if (this.nonForwardedFields1 == null) {
-				super.addForwardedField1(sourceField, destinationFields);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsFirstExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-		
-		@Override
-		public void setForwardedField1(int sourceField, FieldSet destinationFields) {
-			if (this.nonForwardedFields1 == null) {
-				super.addForwardedField1(sourceField, destinationFields);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsFirstExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-		
-		@Override
-		public void addForwardedField2(int sourceField, int destinationField) {
-			if (this.nonForwardedFields2 == null) {
-				super.addForwardedField2(sourceField, destinationField);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsSecondExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-		
-		@Override
-		public void addForwardedField2(int sourceField, FieldSet destinationFields) {
-			if (this.nonForwardedFields2 == null) {
-				super.addForwardedField2(sourceField, destinationFields);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsSecondExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-		
-		@Override
-		public void setForwardedField2(int sourceField, FieldSet destinationFields) {
-			if (this.nonForwardedFields2 == null) {
-				super.addForwardedField2(sourceField, destinationFields);
-			}
-			else {
-				throw new UnsupportedOperationException("When defining fields as implicitly constant for an input" +
-						"(such as through the ConstantFieldsSecondExcept annotation), you cannot manually add forwarded fields.");
-			}
-		}
-	}
-}

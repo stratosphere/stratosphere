@@ -17,14 +17,15 @@ package eu.stratosphere.example.java.wordcount;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.functions.FunctionAnnotationJapi.ConstantFields;
 import eu.stratosphere.api.java.tuple.*;
 import eu.stratosphere.util.Collector;
-
 import static eu.stratosphere.api.java.aggregation.Aggregations.*;
 
 @SuppressWarnings("serial")
+
 public class WordCountCollection {
-	
+	@ConstantFields(from={1,2,3}, to={0,1})
 	public static final class Tokenizer extends FlatMapFunction<String, Tuple2<String, Integer>> {
 
 		@Override

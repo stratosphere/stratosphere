@@ -19,9 +19,8 @@ import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
-import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.functions.FunctionAnnotationJapi;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
-import eu.stratosphere.api.java.record.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 /**
@@ -45,7 +44,7 @@ public class PlanGroupReduceOperator<IN, OUT> extends GroupReduceOperatorBase<Ge
 		this.outType = outputType;
 		
 		UserCodeWrapper<GroupReduceFunction<IN, OUT>> tmp = new UserCodeObjectWrapper<GroupReduceFunction<IN, OUT>>(udf);
-        SingleInputSemanticProperties sp = FunctionAnnotation.readSingleConstantAnnotations(tmp);
+        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, inType, outType);
         setSemanticProperties(sp);
 	}
 	
