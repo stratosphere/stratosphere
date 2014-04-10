@@ -147,7 +147,7 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			return new CoGroupOperatorSetsPredicate(new Keys.SelectorFunctionKeys<I1, K>(keyExtractor, input1.getType()));
 		}
 		
-		public CoGroupOperatorSetsPredicate where(String keyExpression) {
+		public CoGroupOperatorSetsPredicate where(String... keyExpression) {
 			return new CoGroupOperatorSetsPredicate(new Keys.ExpressionKeys<I1>(keyExpression, input1.getType()));
 		}
 	
@@ -178,7 +178,7 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 				return createCoGroupOperator(new Keys.SelectorFunctionKeys<I2, K>(keyExtractor, input2.getType()));
 			}
 			
-			public CoGroupOperatorWithoutFunction equalTo(String keyExpression) {
+			public CoGroupOperatorWithoutFunction equalTo(String... keyExpression) {
 				return createCoGroupOperator(new Keys.ExpressionKeys<I2>(keyExpression, input2.getType()));
 			}
 			

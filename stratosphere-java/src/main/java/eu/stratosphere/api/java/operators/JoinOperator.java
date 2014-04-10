@@ -169,9 +169,12 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 						getInput1Type(), getInput2Type(), getResultType(), name);
 				
 			}
-			else if (super.keys1 instanceof Keys.FieldPositionKeys 
+			else if ((super.keys1 instanceof Keys.FieldPositionKeys
 						&& super.keys2 instanceof Keys.FieldPositionKeys 
-						&& super.keys1.areCompatibale(super.keys2)
+						&& super.keys1.areCompatibale(super.keys2)) ||
+					(super.keys1 instanceof Keys.ExpressionKeys
+							&& super.keys2 instanceof Keys.ExpressionKeys
+							&& super.keys1.areCompatibale(super.keys2))
 					) {
 				
 				int[] logicalKeyPositions1 = super.keys1.computeLogicalKeyPositions();
@@ -336,7 +339,7 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 			return new KeyedJoinOperatorSetsPredicate<K>(new Keys.SelectorFunctionKeys<I1, K>(keyExtractor, input1.getType()));
 		}
 		
-		public JoinOperatorSetsPredicate where(String keyExpression) {
+		public JoinOperatorSetsPredicate where(String... keyExpression) {
 			return new JoinOperatorSetsPredicate(new Keys.ExpressionKeys<I1>(keyExpression, input1.getType()));
 		}
 	
@@ -362,7 +365,7 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 				return createJoinOperator(new Keys.FieldPositionKeys<I2>(fields, input2.getType()));
 			}
 
-			public DefaultJoin<I1, I2> equalTo(String keyExpression) {
+			public DefaultJoin<I1, I2> equalTo(String... keyExpression) {
 				return createJoinOperator(new Keys.ExpressionKeys<I2>(keyExpression, input2.getType()));
 			}
 			
