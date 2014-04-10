@@ -17,6 +17,7 @@ package eu.stratosphere.api.java.io;
 
 import java.io.IOException;
 
+import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.FileReader;
 import org.apache.avro.file.SeekableInput;
@@ -73,7 +74,7 @@ public class AvroInputFormat<E> extends FileInputFormat<E> implements ResultType
 	
 	@Override
 	public TypeInformation<E> getProducedType() {
-		return TypeInformation.getForClass(this.avroValueType);
+		return TypeExtractor.getForClass(this.avroValueType);
 	}
 	
 	// --------------------------------------------------------------------------------------------

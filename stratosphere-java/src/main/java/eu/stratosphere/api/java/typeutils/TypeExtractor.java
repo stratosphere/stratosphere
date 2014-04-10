@@ -15,13 +15,18 @@
 package eu.stratosphere.api.java.typeutils;
 
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
+import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.java.functions.*;
 import eu.stratosphere.api.java.tuple.Tuple;
+import eu.stratosphere.types.Value;
+import org.apache.commons.lang3.Validate;
 
 
 public class TypeExtractor {
@@ -114,12 +119,115 @@ public class TypeExtractor {
 			
 		} else if (t instanceof Class) {
 			// non tuple
-			return TypeInformation.getForClass((Class<X>) t);
+			return getForClass((Class<X>) t);
 		}
 		
 		return null;
 	}
-	
+
+
+	@SuppressWarnings("unchecked")
+	public static <X> TypeInformation<X> getForClass(Class<X> clazz) {
+		Validate.notNull(clazz);
+
+		// check for basic types
+		{
+			TypeInformation<X> basicTypeInfo = BasicTypeInfo.getInfoFor(clazz);
+			if (basicTypeInfo != null) {
+				return basicTypeInfo;
+			}
+		}
+
+		// check for subclasses of Value
+		if (Value.class.isAssignableFrom(clazz)) {
+			Class<? extends Value> valueClass = clazz.asSubclass(Value.class);
+			return (TypeInformation<X>) ValueTypeInfo.getValueTypeInfo(valueClass);
+		}
+
+		// check for subclasses of Tuple
+		if (Tuple.class.isAssignableFrom(clazz)) {
+			throw new IllegalArgumentException("Type information extraction for tuples cannot be done based on the class.");
+		}
+
+		List<Field> fields = getAllDeclaredFields(clazz);
+		List<PojoField> pojoFields = new ArrayList<PojoField>();
+		for (Field field : fields) {
+			if (!Modifier.isTransient(field.getModifiers())) {
+				pojoFields.add(new PojoField(field, createTypeInfo(field.getType())));
+			}
+		}
+
+		List<Method> methods = getAllDeclaredMethods(clazz);
+		boolean containsReadObjectOrWriteObject = false;
+		for (Method method : methods) {
+			if (method.getName().equals("readObject") || method.getName().equals("writeObject")) {
+				containsReadObjectOrWriteObject = true;
+				break;
+			}
+		}
+
+		if (!containsReadObjectOrWriteObject) {
+			return new PojoTypeInfo<X>(clazz, pojoFields);
+		}
+
+		// return a generic type
+		return new GenericTypeInfo<X>(clazz);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <X> TypeInformation<X> getForObject(X value) {
+		Validate.notNull(value);
+
+		// check if we can extract the types from tuples, otherwise work with the class
+		if (value instanceof Tuple) {
+			Tuple t = (Tuple) value;
+			int numFields = t.getArity();
+
+			TypeInformation<?>[] infos = new TypeInformation[numFields];
+			for (int i = 0; i < numFields; i++) {
+				Object field = t.getField(i);
+
+				if (field == null) {
+					throw new InvalidProgramException("Automatic type extraction is not possible on canidates with null values. " +
+							"Please specify the types directly.");
+				}
+
+				infos[i] = getForObject(field);
+			}
+
+
+			return (TypeInformation<X>) new TupleTypeInfo(value.getClass(), infos);
+		}
+		else {
+			return getForClass((Class<X>) value.getClass());
+		}
+	}
+
+	// recursively determine all declared fields
+	private static List<Field> getAllDeclaredFields(Class<?> clazz) {
+		List<Field> result = new ArrayList<Field>();
+		while (clazz != null) {
+			Field[] fields = clazz.getDeclaredFields();
+			for (Field field : fields) {
+				result.add(field);
+			}
+			clazz = clazz.getSuperclass();
+		}
+		return result;
+	}
+
+	// recursively determine all declared methods
+	private static List<Method> getAllDeclaredMethods(Class<?> clazz) {
+		List<Method> result = new ArrayList<Method>();
+		while (clazz != null) {
+			Method[] methods = clazz.getDeclaredMethods();
+			for (Method method : methods) {
+				result.add(method);
+			}
+			clazz = clazz.getSuperclass();
+		}
+		return result;
+	}
 	
 	public static ParameterizedType getTemplateTypesChecked(Class<?> baseClass, Class<?> clazz, int pos) {
 		Type t = getTemplateTypes(baseClass, clazz, pos);

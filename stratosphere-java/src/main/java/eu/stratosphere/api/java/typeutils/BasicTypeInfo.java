@@ -111,6 +111,11 @@ public class BasicTypeInfo<T> extends TypeInformation<T> implements AtomicType<T
 	public String toString() {
 		return clazz.getSimpleName();
 	}
+
+	@Override
+	public boolean isPrimitiveProduct() {
+		return true;
+	}
 	
 	// --------------------------------------------------------------------------------------------
 	

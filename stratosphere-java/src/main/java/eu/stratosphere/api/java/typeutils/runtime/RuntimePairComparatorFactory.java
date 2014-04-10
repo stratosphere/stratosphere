@@ -40,6 +40,17 @@ public final class RuntimePairComparatorFactory<T1, T2> implements TypePairCompa
 					tupleComp1.getComparators(), tupleComp2.getComparators());
 		}
 
+		if((comparator1 instanceof PojoComparator) && (comparator2 instanceof PojoComparator)) {
+
+			PojoComparator<?> pojoComp1 = ((PojoComparator<?>)comparator1);
+			PojoComparator<?> pojoComp2 = ((PojoComparator<?>)comparator2);
+
+			return (TypePairComparator<T1, T2>) new PojoPairComparator<Tuple, Tuple>(
+					pojoComp1.getKeyPositions(), pojoComp1.getKeyFields(),
+					pojoComp2.getKeyPositions(), pojoComp2.getKeyFields(),
+					pojoComp1.getComparators(), pojoComp2.getComparators());
+		}
+
 		if((comparator1 instanceof TupleSingleFieldComparator) && (comparator2 instanceof TupleSingleFieldComparator)) {
 
 			TupleSingleFieldComparator<?,? extends Object> tupleComp1 = ((TupleSingleFieldComparator<?,? extends Object>)comparator1);
@@ -68,6 +79,16 @@ public final class RuntimePairComparatorFactory<T1, T2> implements TypePairCompa
 			return (TypePairComparator<T2, T1>) new TuplePairComparator<Tuple, Tuple>(
 					tupleComp2.getKeyPositions(), tupleComp1.getKeyPositions(),
 					tupleComp2.getComparators(), tupleComp1.getComparators());
+		}
+		if((comparator1 instanceof PojoComparator) && (comparator2 instanceof PojoComparator)) {
+
+			PojoComparator<?> pojoComp1 = ((PojoComparator<?>)comparator1);
+			PojoComparator<?> pojoComp2 = ((PojoComparator<?>)comparator2);
+
+			return (TypePairComparator<T2, T1>) new PojoPairComparator<Tuple, Tuple>(
+					pojoComp2.getKeyPositions(), pojoComp2.getKeyFields(),
+					pojoComp1.getKeyPositions(), pojoComp1.getKeyFields(),
+					pojoComp2.getComparators(), pojoComp1.getComparators());
 		}
 		if((comparator1 instanceof TupleSingleFieldComparator) && (comparator2 instanceof TupleSingleFieldComparator)) {
 
