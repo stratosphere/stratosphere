@@ -12,38 +12,33 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators.translation;
+package eu.stratosphere.api.java.functions.util;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
-import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
-import eu.stratosphere.api.java.functions.ReduceFunction;
-import eu.stratosphere.api.java.typeutils.TypeInformation;
+import java.util.Collection;
+
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.util.Collector;
 
 /**
- *
+ * Implements an output collector that stores its collected elements in a supplied list.
  */
-public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupReduce<T,T>>
-	implements UnaryJavaPlanNode<T, T>
-{
-
-	private final TypeInformation<T> type;
+public class CollectionOutputCollector<E> implements Collector<E> {
 	
+	private final Collection<E> output;
+	private final TypeSerializer<E> serializer;
 	
-	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type) {
-		super(udf, logicalGroupingFields, name);
-		udf.setTypeSerializer(type.createSerializer());
-		this.type = type;
-	}
-	
-	
-	@Override
-	public TypeInformation<T> getReturnType() {
-		return this.type;
+	public CollectionOutputCollector(Collection<E> outputList, TypeSerializer<E> serializer) {
+		this.output = outputList;
+		this.serializer = serializer;
 	}
 
 	@Override
-	public TypeInformation<T> getInputType() {
-		return this.type;
+	public void collect(E in) {
+		E copy = serializer.createInstance();
+		serializer.copy(in, copy);
+		this.output.add(copy);
 	}
-	
+
+	@Override
+	public void close() {}
 }

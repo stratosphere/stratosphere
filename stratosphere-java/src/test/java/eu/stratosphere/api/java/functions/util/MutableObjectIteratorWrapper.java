@@ -12,38 +12,36 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators.translation;
+package eu.stratosphere.api.java.functions.util;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
-import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
-import eu.stratosphere.api.java.functions.ReduceFunction;
-import eu.stratosphere.api.java.typeutils.TypeInformation;
+import java.io.IOException;
+import java.util.Iterator;
+
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.util.MutableObjectIterator;
 
 /**
- *
+ * Wraps a regular iterator and emulates a MutableObjectIterator.
  */
-public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupReduce<T,T>>
-	implements UnaryJavaPlanNode<T, T>
-{
-
-	private final TypeInformation<T> type;
+public class MutableObjectIteratorWrapper<E> implements MutableObjectIterator<E> {
+	private final Iterator<E> source;
+	private final TypeSerializer<E> serializer;
 	
-	
-	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type) {
-		super(udf, logicalGroupingFields, name);
-		udf.setTypeSerializer(type.createSerializer());
-		this.type = type;
-	}
-	
-	
-	@Override
-	public TypeInformation<T> getReturnType() {
-		return this.type;
+	public MutableObjectIteratorWrapper(Iterator<E> source, TypeSerializer<E> serializer)
+	{
+		this.source = source;
+		this.serializer = serializer;
 	}
 
 	@Override
-	public TypeInformation<T> getInputType() {
-		return this.type;
+	public E next(E reuse) throws IOException {
+		if (this.source.hasNext()) {
+			this.serializer.copy(this.source.next(), reuse);
+			return reuse;
+		}
+		else {
+			return null;
+		}
 	}
-	
+
 }
