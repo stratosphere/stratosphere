@@ -68,7 +68,7 @@ public class TypeExtractor {
 	public static <IN, OUT> TypeInformation<OUT> getKeyExtractorType(KeySelector<IN, OUT> selector, TypeInformation<IN> inType) {
 		return createTypeInfo(KeySelector.class, selector.getClass(), 1, inType, null);
 	}
-	
+
 	public static <IN> TypeInformation<IN> extractInputFormatTypes(InputFormat<IN, ?> format) {
 		throw new UnsupportedOperationException("not implemented yet");
 	}
@@ -87,7 +87,7 @@ public class TypeExtractor {
 	public static <IN1, IN2, OUT> TypeInformation<OUT> createTypeInfo(Class<?> baseClass, Class<?> clazz, int returnParamPos,
 			TypeInformation<IN1> in1Type, TypeInformation<IN2> in2Type) {
 		ArrayList<Type> typeHierarchy = new ArrayList<Type>();
-		Type returnType = getFunctionType(baseClass, typeHierarchy, clazz, returnParamPos);
+		Type returnType = getParameterType(baseClass, typeHierarchy, clazz, returnParamPos);
 
 		TypeInformation<OUT> typeInfo = null;
 
@@ -106,7 +106,11 @@ public class TypeExtractor {
 		return (TypeInformation<OUT>) createTypeInfoWithTypeHierarchy(typeHierarchy, returnType, in1Type, in2Type);
 	}
 
-	public static Type getFunctionType(Class<?> baseClass, ArrayList<Type> typeHierarchy, Class<?> clazz, int pos) {
+	public static Type getParameterType(Class<?> baseClass, Class<?> clazz, int pos) {
+		return getParameterType(baseClass, null, clazz, pos);
+	}
+
+	private static Type getParameterType(Class<?> baseClass, ArrayList<Type> typeHierarchy, Class<?> clazz, int pos) {
 		Type t = clazz.getGenericSuperclass();
 
 		// check if type is child of the base class
@@ -114,14 +118,18 @@ public class TypeExtractor {
 				&& !(t instanceof ParameterizedType && baseClass.isAssignableFrom((Class<?>) ((ParameterizedType) t).getRawType()))) {
 			throw new IllegalArgumentException("A generic function base class must be a super class.");
 		}
-		typeHierarchy.add(t);
+		if (typeHierarchy != null) {
+			typeHierarchy.add(t);
+		}
 
 		Type curT = t;
 		// go up the hierarchy until we reach the base class (with or without generics)
 		// collect the types while moving up for a later top-down 
 		while (!(curT instanceof ParameterizedType && ((Class<?>) ((ParameterizedType) curT).getRawType()).equals(baseClass))
 				&& !(curT instanceof Class<?> && ((Class<?>) curT).equals(baseClass))) {
-			typeHierarchy.add(curT);
+			if (typeHierarchy != null) {
+				typeHierarchy.add(curT);
+			}
 
 			// parameterized type
 			if (curT instanceof ParameterizedType) {
@@ -138,7 +146,9 @@ public class TypeExtractor {
 			throw new InvalidTypesException("Function needs to be parameterized by using generics.");
 		}
 
-		typeHierarchy.add(curT);
+		if (typeHierarchy != null) {
+			typeHierarchy.add(curT);
+		}
 
 		ParameterizedType baseClassChild = (ParameterizedType) curT;
 
