@@ -19,12 +19,11 @@ import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.tuple.*;
 import eu.stratosphere.util.Collector;
-
 import static eu.stratosphere.api.java.aggregation.Aggregations.*;
 
 @SuppressWarnings("serial")
+
 public class WordCountCollection {
-	
 	public static final class Tokenizer extends FlatMapFunction<String, Tuple2<String, Integer>> {
 
 		@Override

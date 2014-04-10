@@ -179,7 +179,7 @@ public abstract class JoinOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, 
 				
 				return new BinaryNodeTranslation(
 						new PlanJoinOperator<I1, I2, OUT>(function, logicalKeyPositions1, logicalKeyPositions2, 
-								name, getInput1Type(), getInput2Type(), getResultType()));
+								name, getInput1Type(), getInput2Type(), getResultType(), getSemanticProps()));
 			}
 			else {
 				throw new UnsupportedOperationException("Unrecognized or incompatible key types.");

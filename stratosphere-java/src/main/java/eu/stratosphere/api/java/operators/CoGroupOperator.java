@@ -89,7 +89,7 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		
 		return new BinaryNodeTranslation(
 				new PlanCogroupOperator<I1, I2, OUT>(function, logicalKeyPositions1, logicalKeyPositions2, 
-						name, getInput1Type(), getInput2Type(), getResultType()));
+						name, getInput1Type(), getInput2Type(), getResultType(), getSemanticProps()));
 		}
 		else {
 			throw new UnsupportedOperationException("Unrecognized or incompatible key types.");

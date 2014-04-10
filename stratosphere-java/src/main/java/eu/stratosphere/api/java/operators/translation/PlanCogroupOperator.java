@@ -15,8 +15,10 @@
 package eu.stratosphere.api.java.operators.translation;
 
 import eu.stratosphere.api.common.functions.GenericCoGrouper;
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
+import eu.stratosphere.api.java.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 public class PlanCogroupOperator<IN1, IN2, OUT> 
@@ -27,6 +29,19 @@ public class PlanCogroupOperator<IN1, IN2, OUT>
 	private final TypeInformation<IN2> inType2;
 	private final TypeInformation<OUT> outType;
 
+	public PlanCogroupOperator(
+			CoGroupFunction<IN1, IN2, OUT> udf,
+			int[] keyPositions1, int[] keyPositions2, String name, TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType, DualInputSemanticProperties semanticProps) {
+		this(udf, keyPositions1, keyPositions2, name, inType1, inType2, outType);
+		
+		if (semanticProps == null) {
+	        DualInputSemanticProperties sp = FunctionAnnotation.readDualConstantAnnotations(this.getUserCodeWrapper(), inType1, inType2, outType);
+	        setSemanticProperties(sp);
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
+	
 	public PlanCogroupOperator(
 			CoGroupFunction<IN1, IN2, OUT> udf,
 			int[] keyPositions1, int[] keyPositions2, String name, TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType) {

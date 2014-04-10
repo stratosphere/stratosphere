@@ -15,7 +15,9 @@
 package eu.stratosphere.api.java.operators.translation;
 
 import eu.stratosphere.api.common.functions.GenericMap;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.PlainMapOperatorBase;
+import eu.stratosphere.api.java.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
@@ -30,6 +32,16 @@ public class PlanMapOperator<T, O> extends PlainMapOperatorBase<GenericMap<T, O>
 	
 	private final TypeInformation<O> outType;
 	
+	public PlanMapOperator(MapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType, SingleInputSemanticProperties semanticProps) {
+		this(udf, name, inType, outType);		
+		
+		if (semanticProps == null) {
+	        SingleInputSemanticProperties sp = FunctionAnnotation.readSingleConstantAnnotations(this.getUserCodeWrapper(), inType, outType);
+	        setSemanticProperties(sp);	
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
 	
 	public PlanMapOperator(MapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType) {
 		super(udf, name);

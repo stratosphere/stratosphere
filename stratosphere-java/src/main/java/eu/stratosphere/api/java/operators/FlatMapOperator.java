@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.operators.translation.PlanFlatMapOperator;
@@ -32,7 +33,7 @@ public class FlatMapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, Fl
 	
 	public FlatMapOperator(DataSet<IN> input, FlatMapFunction<IN, OUT> function) {
 		super(input, TypeExtractor.getFlatMapReturnTypes(function));
-		
+
 		if (function == null)
 			throw new NullPointerException("FlatMap function must not be null.");
 		
@@ -42,6 +43,6 @@ public class FlatMapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, Fl
 	@Override
 	protected UnaryNodeTranslation translateToDataFlow() {
 		String name = getName() != null ? getName() : function.getClass().getName();
-		return new UnaryNodeTranslation(new PlanFlatMapOperator<IN, OUT>(function, name, getInputType(), getResultType()));
+		return new UnaryNodeTranslation(new PlanFlatMapOperator<IN, OUT>(function, name, getInputType(), getResultType(), getSemanticProps()));
 	}
 }

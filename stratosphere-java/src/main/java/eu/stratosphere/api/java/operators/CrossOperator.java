@@ -41,7 +41,7 @@ public class CrossOperator<I1, I2, OUT>
 	@Override
 	protected BinaryNodeTranslation translateToDataFlow() {
 		String name = getName() != null ? getName() : function.getClass().getName();
-		return new BinaryNodeTranslation(new PlanCrossOperator<I1, I2, OUT>(function, name, getInput1Type(), getInput2Type(), getResultType()));
+		return new BinaryNodeTranslation(new PlanCrossOperator<I1, I2, OUT>(function, name, getInput1Type(), getInput2Type(), getResultType(), getSemanticProps()));
 	}
 	
 

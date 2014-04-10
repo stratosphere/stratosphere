@@ -43,6 +43,6 @@ public class MapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, MapOpe
 	@Override
 	protected UnaryNodeTranslation translateToDataFlow() {
 		String name = getName() != null ? getName() : function.getClass().getName();
-		return new UnaryNodeTranslation(new PlanMapOperator<IN, OUT>(function, name, getInputType(), getResultType()));
+		return new UnaryNodeTranslation(new PlanMapOperator<IN, OUT>(function, name, getInputType(), getResultType(), getSemanticProps()));
 	}
 }
