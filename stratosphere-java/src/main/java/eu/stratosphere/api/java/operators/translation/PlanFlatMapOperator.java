@@ -33,15 +33,22 @@ public class PlanFlatMapOperator<T, O> extends FlatMapOperatorBase<GenericFlatMa
 	
 	private final TypeInformation<O> outType;
 	
+	public PlanFlatMapOperator(FlatMapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType, SingleInputSemanticProperties semanticProps) {
+		this(udf, name, inType, outType);
+
+		if (semanticProps == null) {
+			UserCodeWrapper<FlatMapFunction<T, O>> tmp = new UserCodeObjectWrapper<FlatMapFunction<T,O>>(udf);
+	        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, inType, outType);
+	        setSemanticProperties(sp);	
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
 	
 	public PlanFlatMapOperator(FlatMapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType) {
 		super(udf, name);
 		this.inType = inType;
 		this.outType = outType;
-
-		UserCodeWrapper<FlatMapFunction<T, O>> tmp = new UserCodeObjectWrapper<FlatMapFunction<T,O>>(udf);
-        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, inType, outType);
-        setSemanticProperties(sp);		
 	}
 	
 	@Override

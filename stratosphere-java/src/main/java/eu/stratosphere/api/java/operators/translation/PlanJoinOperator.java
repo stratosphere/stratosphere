@@ -33,16 +33,26 @@ public class PlanJoinOperator<IN1, IN2, OUT>
 
 	public PlanJoinOperator(
 			JoinFunction<IN1, IN2, OUT> udf,
+			int[] keyPositions1, int[] keyPositions2, String name, TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType, DualInputSemanticProperties semanticProps) {
+		this(udf, keyPositions1, keyPositions2, name, inType1, inType2, outType);
+		
+		if (semanticProps == null) {
+			UserCodeWrapper<JoinFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<JoinFunction<IN1, IN2, OUT>>(udf);
+	        DualInputSemanticProperties sp = FunctionAnnotationJapi.readDualConstantAnnotations(tmp, inType1, inType2, outType);
+	        setSemanticProperties(sp);
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
+	
+	public PlanJoinOperator(
+			JoinFunction<IN1, IN2, OUT> udf,
 			int[] keyPositions1, int[] keyPositions2, String name, TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType) {
 		super(udf, keyPositions1, keyPositions2, name);
 		
 		this.inType1 = inType1;
 		this.inType2 = inType2;
 		this.outType = outType;
-		
-		UserCodeWrapper<JoinFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<JoinFunction<IN1, IN2, OUT>>(udf);
-        DualInputSemanticProperties sp = FunctionAnnotationJapi.readDualConstantAnnotations(tmp, inType1, inType2, outType);
-        setSemanticProperties(sp);
 	}
 	
 	@Override

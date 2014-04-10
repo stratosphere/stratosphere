@@ -74,7 +74,7 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 		// distinguish between grouped reduce and non-grouped reduce
 		if (grouper == null) {
 			// non grouped reduce
-			return new UnaryNodeTranslation(new PlanReduceOperator<IN>(function, new int[0], name, getInputType()));
+			return new UnaryNodeTranslation(new PlanReduceOperator<IN>(function, new int[0], name, getInputType(), getSemanticProps()));
 		}
 		
 		
@@ -87,7 +87,7 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 		}
 		else if (grouper.getKeys() instanceof Keys.FieldPositionKeys) {
 			int[] logicalKeyPositions = grouper.getKeys().computeLogicalKeyPositions();
-			PlanReduceOperator<IN> reduceOp = new PlanReduceOperator<IN>(function, logicalKeyPositions, name, getInputType());
+			PlanReduceOperator<IN> reduceOp = new PlanReduceOperator<IN>(function, logicalKeyPositions, name, getInputType(), getSemanticProps());
 			
 			// set group order
 			if(grouper.getGroupSortKeyPositions() != null) {

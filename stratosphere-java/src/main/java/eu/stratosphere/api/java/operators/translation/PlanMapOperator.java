@@ -34,15 +34,22 @@ public class PlanMapOperator<T, O> extends PlainMapOperatorBase<GenericMap<T, O>
 	
 	private final TypeInformation<O> outType;
 	
+	public PlanMapOperator(MapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType, SingleInputSemanticProperties semanticProps) {
+		this(udf, name, inType, outType);		
+		
+		if (semanticProps == null) {
+			UserCodeWrapper<MapFunction<T, O>> tmp = new UserCodeObjectWrapper<MapFunction<T,O>>(udf);
+	        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, inType, outType);
+	        setSemanticProperties(sp);	
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
 	
 	public PlanMapOperator(MapFunction<T, O> udf, String name, TypeInformation<T> inType, TypeInformation<O> outType) {
 		super(udf, name);
 		this.inType = inType;
 		this.outType = outType;
-		
-		UserCodeWrapper<MapFunction<T, O>> tmp = new UserCodeObjectWrapper<MapFunction<T,O>>(udf);
-        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, inType, outType);
-        setSemanticProperties(sp);	
 	}
 	
 	@Override

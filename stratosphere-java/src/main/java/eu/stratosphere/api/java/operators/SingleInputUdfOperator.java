@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import eu.stratosphere.api.common.operators.SemanticProperties;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.configuration.Configuration;
@@ -33,6 +35,7 @@ public abstract class SingleInputUdfOperator<IN, OUT, O extends SingleInputUdfOp
 	private Configuration parameters;
 	
 	private Map<String, DataSet<?>> broadcastVariables;
+	private SingleInputSemanticProperties semanticProps;
 	
 	// --------------------------------------------------------------------------------------------
 	
@@ -66,7 +69,13 @@ public abstract class SingleInputUdfOperator<IN, OUT, O extends SingleInputUdfOp
 		return returnType;
 	}
 	
-	
+	public O withSemanticProps(SingleInputSemanticProperties semanticProps) {
+		this.semanticProps = semanticProps;
+		
+		@SuppressWarnings("unchecked")
+		O returnType = (O) this;
+		return returnType;
+	}
 	// --------------------------------------------------------------------------------------------
 	// Accessors
 	// --------------------------------------------------------------------------------------------
@@ -79,5 +88,9 @@ public abstract class SingleInputUdfOperator<IN, OUT, O extends SingleInputUdfOp
 	@Override
 	public Configuration getParameters() {
 		return this.parameters;
+	}
+
+	public SingleInputSemanticProperties getSemanticProps() {
+		return semanticProps;
 	}
 }

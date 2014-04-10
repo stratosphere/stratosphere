@@ -23,7 +23,9 @@ import com.google.common.primitives.Ints;
 import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
 import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
+import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
+import eu.stratosphere.util.Collector;
 
 
 /**
@@ -34,16 +36,15 @@ import eu.stratosphere.api.java.typeutils.TypeInformation;
  * use it the following way:
  * 
  * <pre><blockquote>
- * \@ConstantFieldsExcept(fields={2})
- * public class MyMapper extends MapFunction
+ * \@ConstantFieldsExcept(inTuple={1,2}, outTuple={2,1})
+ * public class MyMapper extends FlatMapFunction<Tuple3<String, Integer, Integer>, Tuple3<String, Integer, Integer>>
  * {
- *     public void map(Record record, Collector out)
- *     {
- *        int value = record.getField(2, IntValue.class).getValue();
-		  record.setField(2, new IntValue(Math.abs(value)));
-		  
-		  out.collect(record);
- *     }
+ *     public void flatMap(Tuple3<String, Integer, Integer> value, Collector<Tuple3<String, Integer, Integer>> out) {
+			Integer tmp = value.f2;
+			value.f2 = value.f1;
+			value.f1 = tmp;
+			out.collect(value);
+		}
  * }
  * </blockquote></pre>
  * 
@@ -60,9 +61,10 @@ public class FunctionAnnotationJapi {
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
 	 * 
-	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
-	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
-	 * is expected that the position of the fields also remains constant.
+	 * The annotation takes two int or String arrays. For correct use, one or two parameters should be set. The
+	 * first array contains either integer positions of constant fields if tuples are used or the names of the fields
+	 * for custom types. If only input positions are specified, it is assumed that the positions in the output remain identical. If
+	 * a second parameter is set, it specifies the position of the values in the output data.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -80,8 +82,10 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFields {
-		int[] from();
-		int[] to() default {};
+		int[] inTuplePos() default {};
+		int[] outTuplePos() default {};
+		String[] inCustomPos() default {};
+		String[] outCustomPos() default {};
 	}
 	
 	/**
@@ -114,9 +118,10 @@ public class FunctionAnnotationJapi {
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
 	 * 
-	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
-	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
-	 * is expected that the position of the fields also remains constant.
+	 * The annotation takes two int or String arrays. For correct use, one or two parameters should be set. The
+	 * first array contains either integer positions of constant fields if tuples are used or the names of the fields
+	 * for custom types. If only input positions are specified, it is assumed that the positions in the output remain identical. If
+	 * a second parameter is set, it specifies the position of the values in the output data.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -135,8 +140,10 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsFirst {
-		int[] from();
-		int[] to() default {};
+		int[] inTuplePos() default {};
+		int[] outTuplePos() default {};
+		String[] inCustomPos() default {};
+		String[] outCustomPos() default {};
 	}
 	
 	/**
@@ -146,9 +153,10 @@ public class FunctionAnnotationJapi {
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
 	 * 
-	 * The annotation takes two int arrays. The first specifies the fields that are constant in the input, the second
-	 * int array is optional and contains the position of the fields in the output. If the 'from' array is not given, it
-	 * is expected that the position of the fields also remains constant.
+	 * The annotation takes two int or String arrays. For correct use, one or two parameters should be set. The
+	 * first array contains either integer positions of constant fields if tuples are used or the names of the fields
+	 * for custom types. If only input positions are specified, it is assumed that the positions in the output remain identical. If
+	 * a second parameter is set, it specifies the position of the values in the output data.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -166,8 +174,10 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsSecond {
-		int[] from();
-		int[] to() default {};
+		int[] inTuplePos() default {};
+		int[] outTuplePos() default {};
+		String[] outCustomPos() default {};
+		String[] inCustomPos() default {};
 	}
 	
 	/**
@@ -177,6 +187,11 @@ public class FunctionAnnotationJapi {
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
+	 * 
+	 * The annotation takes one array specifying the positions of the input types that do not remain constant. This
+	 * is possible for custom types using the 'inCustomPos' parameter and for tuples using the 'inTuplePos' parameter.
+	 * When this annotation is used, it is assumed that all other values remain at the same position in input and output. To model
+	 * more complex situations use the \@ConstantFields annotation.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -194,7 +209,8 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsExcept {
-		int[] value();
+		int[] inTuplePos() default {};
+		String[] inCustomPos() default {};
 	}
 	
 	/**
@@ -204,6 +220,11 @@ public class FunctionAnnotationJapi {
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
+	 * 
+	 * The annotation takes one array specifying the positions of the input types that do not remain constant. This
+	 * is possible for custom types using the 'inCustomPos' parameter and for tuples using the 'inTuplePos' parameter.
+	 * When this annotation is used, it is assumed that all other values remain at the same position in input and output. To model
+	 * more complex situations use the \@ConstantFields annotation.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -221,7 +242,8 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsFirstExcept {
-		int[] value();
+		int[] inTuplePos() default {};
+		String[] inCustomPos() default {};
 	}
 	
 	
@@ -232,6 +254,11 @@ public class FunctionAnnotationJapi {
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
 	 * output record.
+	 * 
+	 * The annotation takes one array specifying the positions of the input types that do not remain constant. This
+	 * is possible for custom types using the 'inCustomPos' parameter and for tuples using the 'inTuplePos' parameter.
+	 * When this annotation is used, it is assumed that all other values remain at the same position in input and output. To model
+	 * more complex situations use the \@ConstantFields annotation.
 	 * 
 	 * <b>
 	 * It is very important to follow a conservative strategy when specifying constant fields.
@@ -249,7 +276,8 @@ public class FunctionAnnotationJapi {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsSecondExcept {
-		int[] value();
+		int[] inTuplePos() default {};
+		String[] inCustomPos() default {};
 	}
 	
 	
@@ -261,6 +289,78 @@ public class FunctionAnnotationJapi {
 	// --------------------------------------------------------------------------------------------
 	//                                   Function Annotation Handling
 	// --------------------------------------------------------------------------------------------
+	private static boolean checkValidity(ConstantFields constantSet) {
+		int counter = 0;
+		if (constantSet.inTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.inCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (counter > 2) {
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean checkValidity(ConstantFieldsFirst constantSet) {
+		int counter = 0;
+		if (constantSet.inTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.inCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (counter > 2) {
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean checkValidity(ConstantFieldsSecond constantSet) {
+		int counter = 0;
+		if (constantSet.inTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outTuplePos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.outCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (constantSet.inCustomPos().length > 0) {
+			counter++;
+		};
+		
+		if (counter > 2) {
+			return false;
+		}
+		return true;
+	}
+	
 	/**
 	 * Reads the annotations of a user defined function with one input and returns semantic properties according to the constant fields annotated.
 	 * @param udf	The user defined function.
@@ -268,7 +368,6 @@ public class FunctionAnnotationJapi {
 	 * @param output	Type information of the operator output.
 	 * @return	The DualInputSemanticProperties containing the constant fields.
 	 */
-	
 	
 	public static SingleInputSemanticProperties readSingleConstantAnnotations(UserCodeWrapper<?> udf, TypeInformation<?> input, TypeInformation<?> output) {
 		if (!input.isTupleType() || !output.isTupleType()) {
@@ -282,24 +381,26 @@ public class FunctionAnnotationJapi {
 		
 		int inputArity = input.getArity();
 		int outputArity = output.getArity();
-		
-
 
 		if (notConstantSet != null && (constantSet != null || allConstants != null)) {
 			throw new RuntimeException("Either ConstantFields or ConstantFieldsExcept can be specified, not both.");
 		}
+		
+		if (constantSet != null && !checkValidity(constantSet)) {
+			throw new RuntimeException("Only two parameters of the annotation should be used at once.");
+		}
+		
 		SingleInputSemanticProperties semanticProperties = new SingleInputSemanticProperties();
 
 		// extract notConstantSet from annotation
-		if (notConstantSet != null) {
+		if (notConstantSet != null && notConstantSet.inTuplePos().length > 0) {
 			for (int i = 0; i < inputArity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet.value(), i)) {
+				if (!Ints.contains(notConstantSet.inTuplePos(), i)) {
 					semanticProperties.addForwardedField(i, i);
 				};
 			}
 		}
 		
-		// extract notConstantSet from annotation
 		if (allConstants != null) {
 			for (int i = 0; i < inputArity && i < outputArity; i++) {
 					semanticProperties.addForwardedField(i, i);
@@ -309,13 +410,13 @@ public class FunctionAnnotationJapi {
 		
 		// extract constantSet from annotation
 		if (constantSet != null) {
-			if (constantSet.to().length == 0) {
-				for (int value: constantSet.from()) {
+			if (constantSet.outTuplePos().length == 0 && constantSet.inTuplePos().length > 0) {
+				for (int value: constantSet.inTuplePos()) {
 					semanticProperties.addForwardedField(value,value);
 				}
-			} else if (constantSet.from().length == constantSet.to().length) {
-				for (int i = 0; i < constantSet.from().length; i++) {
-					semanticProperties.addForwardedField(constantSet.from()[i], constantSet.to()[i]);
+			} else if (constantSet.inTuplePos().length == constantSet.outTuplePos().length && constantSet.inTuplePos().length > 0) {
+				for (int i = 0; i < constantSet.inTuplePos().length; i++) {
+					semanticProperties.addForwardedField(constantSet.inTuplePos()[i], constantSet.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
@@ -362,20 +463,24 @@ public class FunctionAnnotationJapi {
 			throw new RuntimeException("Either ConstantFieldsSecond or ConstantFieldsSecondExcept can be specified, not both.");
 		}
 		
+		if (constantSet1 != null && constantSet2 != null && (!checkValidity(constantSet1) || !checkValidity(constantSet2))) {
+			throw new RuntimeException("Only two parameters of the annotation should be used at once.");
+		}
+		
 		DualInputSemanticProperties semanticProperties = new DualInputSemanticProperties();
 		
 		// extract readSets from annotations
-		if(notConstantSet1 != null) {
+		if(notConstantSet1 != null && notConstantSet1.inTuplePos().length > 0) {
 			for (int i = 0; i < input1Arity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet1.value(), i)) {
+				if (!Ints.contains(notConstantSet1.inTuplePos(), i)) {
 					semanticProperties.addForwardedField1(i, i);;
 				};
 			}
 		}
 			
-		if(notConstantSet2 != null) {
+		if(notConstantSet2 != null && notConstantSet2.inTuplePos().length > 0) {
 			for (int i = 0; i < input2Arity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet2.value(), i)) {
+				if (!Ints.contains(notConstantSet2.inTuplePos(), i)) {
 					semanticProperties.addForwardedField2(i, i);;
 				};
 			}		
@@ -383,13 +488,13 @@ public class FunctionAnnotationJapi {
 				
 		// extract readSets from annotations
 		if (constantSet1 != null) {
-			if (constantSet1.to().length == 0) {
-				for (int value: constantSet1.from()) {
+			if (constantSet1.outTuplePos().length == 0 && constantSet1.inTuplePos().length > 0) {
+				for (int value: constantSet1.inTuplePos()) {
 					semanticProperties.addForwardedField1(value,value);
 				}
-			} else if (constantSet1.from().length == constantSet1.to().length) {
-				for (int i = 0; i < constantSet1.from().length; i++) {
-					semanticProperties.addForwardedField1(constantSet1.from()[i], constantSet1.to()[i]);
+			} else if (constantSet1.inTuplePos().length == constantSet1.outTuplePos().length && constantSet1.inTuplePos().length > 0) {
+				for (int i = 0; i < constantSet1.inTuplePos().length; i++) {
+					semanticProperties.addForwardedField1(constantSet1.inTuplePos()[i], constantSet1.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
@@ -397,13 +502,13 @@ public class FunctionAnnotationJapi {
 		}
 				
 		if (constantSet2 != null) {
-			if (constantSet2.to().length == 0) {
-				for (int value: constantSet2.from()) {
+			if (constantSet2.outTuplePos().length == 0 && constantSet1.inTuplePos().length > 0) {
+				for (int value: constantSet2.inTuplePos()) {
 					semanticProperties.addForwardedField1(value,value);
 				}
-			} else if (constantSet2.from().length == constantSet2.to().length) {
-				for (int i = 0; i < constantSet2.from().length; i++) {
-					semanticProperties.addForwardedField2(constantSet2.from()[i], constantSet2.to()[i]);
+			} else if (constantSet2.inTuplePos().length == constantSet2.outTuplePos().length && constantSet2.inTuplePos().length > 0) {
+				for (int i = 0; i < constantSet2.inTuplePos().length; i++) {
+					semanticProperties.addForwardedField2(constantSet2.inTuplePos()[i], constantSet2.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the ConstantFields annotation should have the same length.");

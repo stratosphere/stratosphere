@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.configuration.Configuration;
@@ -33,8 +35,9 @@ public abstract class TwoInputUdfOperator<IN1, IN2, OUT, O extends TwoInputUdfOp
 {
 	private Configuration parameters;
 	
-	private Map<String, DataSet<?>> broadcastVariables;
+	private Map<String, DataSet<?>> broadcastVariables;	
 	
+	private DualInputSemanticProperties semanticProps;
 	// --------------------------------------------------------------------------------------------
 	
 	protected TwoInputUdfOperator(DataSet<IN1> input1, DataSet<IN2> input2, TypeInformation<OUT> resultType) {
@@ -65,11 +68,24 @@ public abstract class TwoInputUdfOperator<IN1, IN2, OUT, O extends TwoInputUdfOp
 		@SuppressWarnings("unchecked")
 		O returnType = (O) this;
 		return returnType;
+	}	
+	
+	public O withSemanticProps(DualInputSemanticProperties semanticProps) {
+		this.semanticProps = semanticProps;
+		
+		@SuppressWarnings("unchecked")
+		O returnType = (O) this;
+		return returnType;
 	}
 	
 	// --------------------------------------------------------------------------------------------
 	// Accessors
 	// --------------------------------------------------------------------------------------------
+	
+
+	public DualInputSemanticProperties getSemanticProps() {
+		return semanticProps;
+	}
 	
 	@Override
 	public Map<String, DataSet<?>> getBroadcastSets() {

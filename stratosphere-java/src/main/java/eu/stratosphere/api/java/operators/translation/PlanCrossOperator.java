@@ -35,16 +35,27 @@ public class PlanCrossOperator<IN1, IN2, OUT>
 	public PlanCrossOperator(
 			CrossFunction<IN1, IN2, OUT> udf,
 			String name,
+			 TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType, DualInputSemanticProperties semanticProps) {
+		this(udf, name, inType1, inType2, outType);
+		
+		if (semanticProps == null) {
+			UserCodeWrapper<CrossFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<CrossFunction<IN1, IN2, OUT>>(udf);
+	        DualInputSemanticProperties sp = FunctionAnnotationJapi.readDualConstantAnnotations(tmp, inType1, inType2, outType);
+	        setSemanticProperties(sp);	
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
+	
+	public PlanCrossOperator(
+			CrossFunction<IN1, IN2, OUT> udf,
+			String name,
 			 TypeInformation<IN1> inType1, TypeInformation<IN2> inType2, TypeInformation<OUT> outType) {
 		super(udf, name);
 		
 		this.inType1 = inType1;
 		this.inType2 = inType2;
 		this.outType = outType;
-		
-		UserCodeWrapper<CrossFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<CrossFunction<IN1, IN2, OUT>>(udf);
-        DualInputSemanticProperties sp = FunctionAnnotationJapi.readDualConstantAnnotations(tmp, inType1, inType2, outType);
-        setSemanticProperties(sp);	
 	}
 	
 	@Override

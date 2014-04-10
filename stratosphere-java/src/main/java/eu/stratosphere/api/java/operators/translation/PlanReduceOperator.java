@@ -34,13 +34,21 @@ public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupR
 
 	private final TypeInformation<T> type;
 	
+	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type, SingleInputSemanticProperties semanticProps) {
+		this(udf, logicalGroupingFields, name, type);
+		
+		if (semanticProps == null) {			
+			UserCodeWrapper<ReduceFunction<T>> tmp = new UserCodeObjectWrapper<ReduceFunction<T>>(udf);
+	        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, type, type);
+	        setSemanticProperties(sp);	
+		} else {
+			setSemanticProperties(semanticProps);
+		}
+	}
 	
 	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type) {
 		super(udf, logicalGroupingFields, name);
 		this.type = type;
-		UserCodeWrapper<ReduceFunction<T>> tmp = new UserCodeObjectWrapper<ReduceFunction<T>>(udf);
-        SingleInputSemanticProperties sp = FunctionAnnotationJapi.readSingleConstantAnnotations(tmp, type, type);
-        setSemanticProperties(sp);	
 	}
 	
 	
