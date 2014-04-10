@@ -20,7 +20,7 @@ import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.functions.CrossFunction;
-import eu.stratosphere.api.java.functions.FunctionAnnotationJapi;
+import eu.stratosphere.api.java.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 public class PlanCrossOperator<IN1, IN2, OUT> 
@@ -40,7 +40,7 @@ public class PlanCrossOperator<IN1, IN2, OUT>
 		
 		if (semanticProps == null) {
 			UserCodeWrapper<CrossFunction<IN1, IN2, OUT>> tmp = new UserCodeObjectWrapper<CrossFunction<IN1, IN2, OUT>>(udf);
-	        DualInputSemanticProperties sp = FunctionAnnotationJapi.readDualConstantAnnotations(tmp, inType1, inType2, outType);
+	        DualInputSemanticProperties sp = FunctionAnnotation.readDualConstantAnnotations(tmp, inType1, inType2, outType);
 	        setSemanticProperties(sp);	
 		} else {
 			setSemanticProperties(semanticProps);

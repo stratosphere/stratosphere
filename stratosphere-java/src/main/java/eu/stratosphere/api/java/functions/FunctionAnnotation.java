@@ -52,7 +52,7 @@ import eu.stratosphere.util.Collector;
  * ({@link MapFunction}, {@link ReduceFunction}) and some only for stubs with two inputs 
  * ({@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction}).
  */
-public class FunctionAnnotationJapi {
+public class FunctionAnnotation {
 	
 	/**
 	 * Specifies the fields of an input record that are unchanged in the output of 
@@ -284,7 +284,7 @@ public class FunctionAnnotationJapi {
 	/**
 	 * Private constructor to prevent instantiation. This class is intended only as a container.
 	 */
-	private FunctionAnnotationJapi() {}
+	private FunctionAnnotation() {}
 	
 	// --------------------------------------------------------------------------------------------
 	//                                   Function Annotation Handling
