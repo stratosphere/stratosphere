@@ -17,8 +17,6 @@ package eu.stratosphere.api.java.operators.translation;
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
-import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
-import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -35,9 +33,8 @@ public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupR
 	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type, SingleInputSemanticProperties semanticProps) {
 		this(udf, logicalGroupingFields, name, type);
 		
-		if (semanticProps == null) {			
-			UserCodeWrapper<ReduceFunction<T>> tmp = new UserCodeObjectWrapper<ReduceFunction<T>>(udf);
-	        SingleInputSemanticProperties sp = FunctionAnnotation.readSingleConstantAnnotations(tmp, type, type);
+		if (semanticProps == null) {		
+	        SingleInputSemanticProperties sp = FunctionAnnotation.readSingleConstantAnnotations(this.getUserCodeWrapper(), type, type);
 	        setSemanticProperties(sp);	
 		} else {
 			setSemanticProperties(semanticProps);
