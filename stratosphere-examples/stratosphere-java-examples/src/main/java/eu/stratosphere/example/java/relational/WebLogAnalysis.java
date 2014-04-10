@@ -16,7 +16,7 @@ package eu.stratosphere.example.java.relational;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
-import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.functions.FilterFunction;
 import eu.stratosphere.api.java.functions.JoinFunction;
 import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.api.java.tuple.Tuple2;
@@ -26,7 +26,7 @@ import eu.stratosphere.util.Collector;
 import java.util.Iterator;
 
 /**
- * Implements the following relational OLAP query as PACT program:
+ * Implements the following relational OLAP query as Stratosphere program:
  *
  * <code><pre>
  * SELECT r.pageURL, r.pageRank, r.avgDuration
@@ -69,7 +69,7 @@ public class WebLogAnalysis {
 	 * MapFunction that filters for documents that contain a certain set of
 	 * keywords.
 	 */
-	public static class FilterDocs extends FlatMapFunction<Tuple2<String, String>, Tuple1<String>> {
+	public static class FilterDocs extends FilterFunction<Tuple2<String, String>> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -80,30 +80,26 @@ public class WebLogAnalysis {
 		 *
 		 * Output Format:
 		 * 0: URL
+		 * 1: DOCUMENT_TEXT
 		 */
 		@Override
-		public void flatMap(Tuple2<String, String> value, Collector<Tuple1<String>> out) throws Exception {
+		public boolean filter(Tuple2<String, String> value) throws Exception {
 			// FILTER
 			// Only collect the document if all keywords are contained
 			String docText = value.f1;
-			boolean allContained = true;
 			for (String kw : KEYWORDS) {
 				if (!docText.contains(kw)) {
-					allContained = false;
-					break;
+					return false;
 				}
 			}
-
-			if (allContained) {
-				out.collect(new Tuple1(value.f0));
-			}
+			return true;
 		}
 	}
 
 	/**
 	 * MapFunction that filters for records where the rank exceeds a certain threshold.
 	 */
-	public static class FilterRanks extends FlatMapFunction<Tuple3<Integer, String, Integer>, Tuple3<Integer, String, Integer>> {
+	public static class FilterRanks extends FilterFunction<Tuple3<Integer, String, Integer>> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -119,11 +115,9 @@ public class WebLogAnalysis {
 		 * 2: AVG_DURATION
 		 */
 		@Override
-		public void flatMap(Tuple3<Integer, String, Integer> value, Collector<Tuple3<Integer, String, Integer>> out) throws Exception {
+		public boolean filter(Tuple3<Integer, String, Integer> value) throws Exception {
 
-			if (value.f0 > RANKFILTER) {
-				out.collect(value);
-			}
+			return (value.f0 > RANKFILTER);
 		}
 	}
 
@@ -131,7 +125,7 @@ public class WebLogAnalysis {
 	 * MapFunction that filters for records of the visits relation where the year
 	 * (from the date string) is equal to a certain value.
 	 */
-	public static class FilterVisits extends FlatMapFunction<Tuple2<String, String>, Tuple1<String>> {
+	public static class FilterVisits extends FilterFunction<Tuple2<String, String>> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -143,16 +137,15 @@ public class WebLogAnalysis {
 		 *
 		 * Output Format:
 		 * 0: URL
+		 * 1: DATE
 		 */
 		@Override
-		public void flatMap(Tuple2<String, String> value, Collector<Tuple1<String>> out) throws Exception {
+		public boolean filter(Tuple2<String, String> value) throws Exception {
 			// Parse date string with the format YYYY-MM-DD and extract the year
 			String dateString = value.f1;
 			int year = Integer.parseInt(dateString.substring(0,4));
 
-			if (year == YEARFILTER) {
-				out.collect(new Tuple1(value.f0));
-			}
+			return (year == YEARFILTER);
 		}
 	}
 
@@ -258,20 +251,20 @@ public class WebLogAnalysis {
 			.includeFields("011000000")
 			.types(String.class, String.class);
 
-		// Create MapOperator for filtering the entries from the documents relation
-		DataSet<Tuple1<String>> filterDocs = docs.flatMap(new FilterDocs());
+		// Create DataSet for filtering the entries from the documents relation
+		DataSet<Tuple1<String>> filterDocs = docs.filter(new FilterDocs()).project("TF").types(String.class);
 
-		// Create MapOperator for filtering the entries from the ranks relation
-		DataSet<Tuple3<Integer, String, Integer>> filterRanks = ranks.flatMap(new FilterRanks());
+		// Create DataSet for filtering the entries from the ranks relation
+		DataSet<Tuple3<Integer, String, Integer>> filterRanks = ranks.filter(new FilterRanks());
 
-		// Create MapOperator for filtering the entries from the visits relation
-		DataSet<Tuple1<String>> filterVisits = visits.flatMap(new FilterVisits());
+		// Create DataSet for filtering the entries from the visits relation
+		DataSet<Tuple1<String>> filterVisits = visits.filter(new FilterVisits()).project("TF").types(String.class);
 
-		// Create JoinOperator to join the filtered documents and ranks relation
+		// Create DataSet to join the filtered documents and ranks relation
 		DataSet<Tuple3<Integer, String, Integer>> joinDocsRanks = filterDocs.join(filterRanks)
 			.where(0).equalTo(1).with(new JoinDocRanks());
 
-		// Create CoGroupOperator to realize a anti join between the joined
+		// Create DataSet to realize a anti join between the joined
 		// documents and ranks relation and the filtered visits relation
 		DataSet<Tuple3<Integer, String, Integer>> antiJoinVisits = joinDocsRanks.coGroup(filterVisits)
 			.where(1).equalTo(0).with(new AntiJoinVisits());
