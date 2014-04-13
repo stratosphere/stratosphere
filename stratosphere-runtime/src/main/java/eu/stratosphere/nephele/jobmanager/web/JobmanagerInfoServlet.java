@@ -249,7 +249,7 @@ public class JobmanagerInfoServlet extends HttpServlet {
 					} else {
 						wrt.write(",");
 					}
-					wrt.write("{\"node\": \"" + instanceName + "\"}");
+					wrt.write("{\"node\": \"" + instanceName + " - " + managementVertex.getOptMessage().replaceAll("\n", "<br\\>").replaceAll("\t", " ")+ "\"}");
 					map.add(instanceName);
 				}
 			}
