@@ -49,6 +49,7 @@ import eu.stratosphere.api.java.operators.ProjectOperator;
 import eu.stratosphere.api.java.operators.ProjectOperator.Projection;
 import eu.stratosphere.api.java.operators.ReduceGroupOperator;
 import eu.stratosphere.api.java.operators.ReduceOperator;
+import eu.stratosphere.api.java.operators.UnionOperator;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.InputTypeConfigurable;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -532,6 +533,18 @@ public abstract class DataSet<T> {
 	public <R> CrossOperator.CrossOperatorSets<T, R> crossWithHuge(DataSet<R> other) {
 		return new CrossOperator.CrossOperatorSets<T, R>(this, other);
 	}
+
+	/**
+	 * Union with an other {@link Tuple} {@link DataSet} which must be of the same type.
+	 * 
+	 * @param other The other DataSet which is appended to the current DataSet via union .
+	 * @return The result DataSet which is of the same type as the two inputs
+	 */
+
+	public UnionOperator<T> union(DataSet<T> other){
+		return new UnionOperator<T>(this, other);
+	}
+
 
 	// --------------------------------------------------------------------------------------------
 	//  Iterations
