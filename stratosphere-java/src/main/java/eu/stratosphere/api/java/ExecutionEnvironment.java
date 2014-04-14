@@ -300,18 +300,6 @@ public abstract class ExecutionEnvironment {
 		rec.setDegreeOfParallelism(degreeOfParallelism);
 		return rec;
 	}
-
-	public static ExecutionEnvironment createLocalDistributedEnvironment(int numTaskManager){
-		return createLocalDistributedEnvironment(numTaskManager, defaultLocalDop);
-	}
-
-	public static ExecutionEnvironment createLocalDistributedEnvironment(int numTaskManager, int degreeOfParallelism){
-		LocalEnvironment lee = new LocalEnvironment();
-		lee.setNumTaskManager(numTaskManager);
-		lee.setDegreeOfParallelism(degreeOfParallelism);
-
-		return lee;
-	}
 	
 	public static void setDefaultLocalParallelism(int degreeOfParallelism) {
 		defaultLocalDop = degreeOfParallelism;
