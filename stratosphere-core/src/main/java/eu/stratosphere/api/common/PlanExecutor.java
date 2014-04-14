@@ -72,7 +72,8 @@ public abstract class PlanExecutor {
 			return leClass.getConstructor(String.class, int.class, List.class).newInstance(hostname, port, files);
 		}
 		catch (Throwable t) {
-			throw new RuntimeException("An error occurred while loading the local executor (" + LOCAL_EXECUTOR_CLASS + ").", t);
+			throw new RuntimeException("An error occurred while loading the remote executor (" + REMOTE_EXECUTOR_CLASS
+					+ ").", t);
 		}
 	}
 	
