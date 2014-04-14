@@ -14,7 +14,11 @@
 package eu.stratosphere.nephele.instance.local;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
