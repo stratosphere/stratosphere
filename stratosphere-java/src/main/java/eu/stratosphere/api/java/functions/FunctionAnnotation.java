@@ -22,6 +22,7 @@ import com.google.common.primitives.Ints;
 
 import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
 import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
+import eu.stratosphere.api.common.operators.util.FieldSet;
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
@@ -34,7 +35,7 @@ import eu.stratosphere.api.java.typeutils.TypeInformation;
  * use it the following way:
  * 
  * <pre><blockquote>
- * \@ConstantFieldsExcept(inTuple={1,2}, outTuple={2,1})
+ * \@ConstantFieldsExcept(value={1,2}, outTuplePos={2,1})
  * public class MyMapper extends FlatMapFunction<Tuple3<String, Integer, Integer>, Tuple3<String, Integer, Integer>>
  * {
  *     public void flatMap(Tuple3<String, Integer, Integer> value, Collector<Tuple3<String, Integer, Integer>> out) {
@@ -53,7 +54,7 @@ import eu.stratosphere.api.java.typeutils.TypeInformation;
 public class FunctionAnnotation {
 	
 	/**
-	 * Specifies the fields of an input record that are unchanged in the output of 
+	 * Specifies the fields of an input tuple or custom object that are unchanged in the output of 
 	 * a stub with a single input ( {@link MapFunction}, {@link ReduceFunction}).
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
@@ -80,14 +81,14 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFields {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		int[] outTuplePos() default {};
 		String[] inCustomPos() default {};
 		String[] outCustomPos() default {};
 	}
 	
 	/**
-	 * Specifies that all fields of an input record that are unchanged in the output of 
+	 * Specifies that all fields of an input tuple or custom object that are unchanged in the output of 
 	 * a {@link MapFunction}, or {@link ReduceFunction}).
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
@@ -110,7 +111,7 @@ public class FunctionAnnotation {
 	public @interface AllFieldsConstants {}
 	
 	/**
-	 * Specifies the fields of an input record of the first input that are unchanged in 
+	 * Specifies the fields of an input tuple or custom object of the first input that are unchanged in 
 	 * the output of a stub with two inputs ( {@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction})
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
@@ -138,14 +139,14 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsFirst {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		int[] outTuplePos() default {};
 		String[] inCustomPos() default {};
 		String[] outCustomPos() default {};
 	}
 	
 	/**
-	 * Specifies the fields of an input record of the second input that are unchanged in 
+	 * Specifies the fields of an input tuple or custom object of the second input that are unchanged in 
 	 * the output of a stub with two inputs ( {@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction})
 	 * 
 	 * A field is considered to be constant if its value is not changed and copied to the same position of 
@@ -172,14 +173,14 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsSecond {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		int[] outTuplePos() default {};
 		String[] outCustomPos() default {};
 		String[] inCustomPos() default {};
 	}
 	
 	/**
-	 * Specifies the fields of an input record that are changed in the output of 
+	 * Specifies the fields of an input tuple or custom object that are changed in the output of 
 	 * a stub with a single input ( {@link MapFunction}, {@link ReduceFunction}). All other 
 	 * fields are assumed to be constant.
 	 * 
@@ -207,12 +208,12 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsExcept {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		String[] inCustomPos() default {};
 	}
 	
 	/**
-	 * Specifies the fields of an input record of the first input that are changed in 
+	 * Specifies the fields of an input tuple or custom object of the first input that are changed in 
 	 * the output of a stub with two inputs ( {@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction})
 	 * All other fields are assumed to be constant.
 	 * 
@@ -240,13 +241,13 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsFirstExcept {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		String[] inCustomPos() default {};
 	}
 	
 	
 	/**
-	 * Specifies the fields of an input record of the second input that are changed in 
+	 * Specifies the fields of an input tuple or custom object of the second input that are changed in 
 	 * the output of a stub with two inputs ( {@link CrossFunction}, {@link JoinFunction}, {@link CoGroupFunction})
 	 * All other fields are assumed to be constant.
 	 * 
@@ -274,11 +275,45 @@ public class FunctionAnnotation {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface ConstantFieldsSecondExcept {
-		int[] inTuplePos() default {};
+		int[] value() default {};
 		String[] inCustomPos() default {};
 	}
 	
+	/**
+	 * Specifies the fields of an input tuple or custom object that are accessed in the function. This annotation should be used
+	 * with user defined functions with one input.
+	 */
 	
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface ReadFields {
+		int[] value() default {};
+		String[] inCustomPos() default {};
+	}
+	
+	/**
+	 * Specifies the fields of an input tuple or custom object that are accessed in the function. This annotation should be used
+	 * with user defined functions with two inputs.
+	 */
+	
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface ReadFieldsSecond {
+		int[] value() default {};
+		String[] inCustomPos() default {};
+	}
+	
+	/**
+	 * Specifies the fields of an input tuple or custom object that are accessed in the function. This annotation should be used
+	 * with user defined functions with two inputs.
+	 */
+	
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface ReadFieldsFirst {
+		int[] value() default {};
+		String[] inCustomPos() default {};
+	}
 	/**
 	 * Private constructor to prevent instantiation. This class is intended only as a container.
 	 */
@@ -289,7 +324,7 @@ public class FunctionAnnotation {
 	// --------------------------------------------------------------------------------------------
 	private static boolean checkValidity(ConstantFields constantSet) {
 		int counter = 0;
-		if (constantSet.inTuplePos().length > 0) {
+		if (constantSet.value().length > 0) {
 			counter++;
 		};
 		
@@ -313,7 +348,7 @@ public class FunctionAnnotation {
 	
 	private static boolean checkValidity(ConstantFieldsFirst constantSet) {
 		int counter = 0;
-		if (constantSet.inTuplePos().length > 0) {
+		if (constantSet.value().length > 0) {
 			counter++;
 		};
 		
@@ -337,7 +372,7 @@ public class FunctionAnnotation {
 	
 	private static boolean checkValidity(ConstantFieldsSecond constantSet) {
 		int counter = 0;
-		if (constantSet.inTuplePos().length > 0) {
+		if (constantSet.value().length > 0) {
 			counter++;
 		};
 		
@@ -376,6 +411,8 @@ public class FunctionAnnotation {
 		AllFieldsConstants allConstants = udf.getUserCodeAnnotation(AllFieldsConstants.class);
 		ConstantFields constantSet = udf.getUserCodeAnnotation(ConstantFields.class);
 		ConstantFieldsExcept notConstantSet = udf.getUserCodeAnnotation(ConstantFieldsExcept.class);
+		ReadFields readfieldSet = udf.getUserCodeAnnotation(ReadFields.class);
+		
 		
 		int inputArity = input.getArity();
 		int outputArity = output.getArity();
@@ -390,10 +427,14 @@ public class FunctionAnnotation {
 		
 		SingleInputSemanticProperties semanticProperties = new SingleInputSemanticProperties();
 
+		if (readfieldSet != null && readfieldSet.value().length > 0) {
+			semanticProperties.setReadFields(new FieldSet(readfieldSet.value()));
+		}
+		
 		// extract notConstantSet from annotation
-		if (notConstantSet != null && notConstantSet.inTuplePos().length > 0) {
+		if (notConstantSet != null && notConstantSet.value().length > 0) {
 			for (int i = 0; i < inputArity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet.inTuplePos(), i)) {
+				if (!Ints.contains(notConstantSet.value(), i)) {
 					semanticProperties.addForwardedField(i, i);
 				};
 			}
@@ -408,13 +449,13 @@ public class FunctionAnnotation {
 		
 		// extract constantSet from annotation
 		if (constantSet != null) {
-			if (constantSet.outTuplePos().length == 0 && constantSet.inTuplePos().length > 0) {
-				for (int value: constantSet.inTuplePos()) {
+			if (constantSet.outTuplePos().length == 0 && constantSet.value().length > 0) {
+				for (int value: constantSet.value()) {
 					semanticProperties.addForwardedField(value,value);
 				}
-			} else if (constantSet.inTuplePos().length == constantSet.outTuplePos().length && constantSet.inTuplePos().length > 0) {
-				for (int i = 0; i < constantSet.inTuplePos().length; i++) {
-					semanticProperties.addForwardedField(constantSet.inTuplePos()[i], constantSet.outTuplePos()[i]);
+			} else if (constantSet.value().length == constantSet.outTuplePos().length && constantSet.value().length > 0) {
+				for (int i = 0; i < constantSet.value().length; i++) {
+					semanticProperties.addForwardedField(constantSet.value()[i], constantSet.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
@@ -452,6 +493,8 @@ public class FunctionAnnotation {
 		ConstantFieldsFirstExcept notConstantSet1 = udf.getUserCodeAnnotation(ConstantFieldsFirstExcept.class);
 		ConstantFieldsSecondExcept notConstantSet2 = udf.getUserCodeAnnotation(ConstantFieldsSecondExcept.class);
 			
+		ReadFieldsFirst readfieldSet1 = udf.getUserCodeAnnotation(ReadFieldsFirst.class);
+		ReadFieldsSecond readfieldSet2 = udf.getUserCodeAnnotation(ReadFieldsSecond.class);
 		
 		if (notConstantSet1 != null && constantSet1 != null) {
 			throw new RuntimeException("Either ConstantFieldsFirst or ConstantFieldsFirstExcept can be specified, not both.");
@@ -467,18 +510,26 @@ public class FunctionAnnotation {
 		
 		DualInputSemanticProperties semanticProperties = new DualInputSemanticProperties();
 		
+		if (readfieldSet1 != null && readfieldSet2.value().length > 0) {
+			semanticProperties.setReadFields1(new FieldSet(readfieldSet1.value()));
+		}
+		
+		if (readfieldSet2 != null && readfieldSet2.value().length > 0) {
+			semanticProperties.setReadFields2(new FieldSet(readfieldSet2.value()));
+		}
+		
 		// extract readSets from annotations
-		if(notConstantSet1 != null && notConstantSet1.inTuplePos().length > 0) {
+		if(notConstantSet1 != null && notConstantSet1.value().length > 0) {
 			for (int i = 0; i < input1Arity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet1.inTuplePos(), i)) {
+				if (!Ints.contains(notConstantSet1.value(), i)) {
 					semanticProperties.addForwardedField1(i, i);;
 				};
 			}
 		}
 			
-		if(notConstantSet2 != null && notConstantSet2.inTuplePos().length > 0) {
+		if(notConstantSet2 != null && notConstantSet2.value().length > 0) {
 			for (int i = 0; i < input2Arity && i < outputArity; i++) {
-				if (!Ints.contains(notConstantSet2.inTuplePos(), i)) {
+				if (!Ints.contains(notConstantSet2.value(), i)) {
 					semanticProperties.addForwardedField2(i, i);;
 				};
 			}		
@@ -486,13 +537,13 @@ public class FunctionAnnotation {
 				
 		// extract readSets from annotations
 		if (constantSet1 != null) {
-			if (constantSet1.outTuplePos().length == 0 && constantSet1.inTuplePos().length > 0) {
-				for (int value: constantSet1.inTuplePos()) {
+			if (constantSet1.outTuplePos().length == 0 && constantSet1.value().length > 0) {
+				for (int value: constantSet1.value()) {
 					semanticProperties.addForwardedField1(value,value);
 				}
-			} else if (constantSet1.inTuplePos().length == constantSet1.outTuplePos().length && constantSet1.inTuplePos().length > 0) {
-				for (int i = 0; i < constantSet1.inTuplePos().length; i++) {
-					semanticProperties.addForwardedField1(constantSet1.inTuplePos()[i], constantSet1.outTuplePos()[i]);
+			} else if (constantSet1.value().length == constantSet1.outTuplePos().length && constantSet1.value().length > 0) {
+				for (int i = 0; i < constantSet1.value().length; i++) {
+					semanticProperties.addForwardedField1(constantSet1.value()[i], constantSet1.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the annotation should have the same length.");
@@ -500,13 +551,13 @@ public class FunctionAnnotation {
 		}
 				
 		if (constantSet2 != null) {
-			if (constantSet2.outTuplePos().length == 0 && constantSet1.inTuplePos().length > 0) {
-				for (int value: constantSet2.inTuplePos()) {
+			if (constantSet2.outTuplePos().length == 0 && constantSet1.value().length > 0) {
+				for (int value: constantSet2.value()) {
 					semanticProperties.addForwardedField1(value,value);
 				}
-			} else if (constantSet2.inTuplePos().length == constantSet2.outTuplePos().length && constantSet2.inTuplePos().length > 0) {
-				for (int i = 0; i < constantSet2.inTuplePos().length; i++) {
-					semanticProperties.addForwardedField2(constantSet2.inTuplePos()[i], constantSet2.outTuplePos()[i]);
+			} else if (constantSet2.value().length == constantSet2.outTuplePos().length && constantSet2.value().length > 0) {
+				for (int i = 0; i < constantSet2.value().length; i++) {
+					semanticProperties.addForwardedField2(constantSet2.value()[i], constantSet2.outTuplePos()[i]);
 				}
 			} else {
 				throw new RuntimeException("Field 'from' and 'to' of the ConstantFields annotation should have the same length.");
