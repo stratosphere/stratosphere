@@ -136,7 +136,9 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final IOManager ioManager;
 
-	private final HardwareDescription hardwareDescription;
+	private static HardwareDescription hardwareDescription = null;
+
+	private static Object synchronization = new Object();
 
 	/**
 	 * Stores whether the task manager has already been shut down.
@@ -277,28 +279,38 @@ public class TaskManager implements TaskOperationProtocol {
 		this.byteBufferedChannelManager = byteBufferedChannelManager;
 
 		// Determine hardware description
-		HardwareDescription hardware = HardwareDescriptionFactory.extractFromSystem(taskManagersPerJVM);
-		if (hardware == null) {
-			LOG.warn("Cannot determine hardware description");
+		synchronized(synchronization){
+			if(this.hardwareDescription == null){
+				HardwareDescription hardware = HardwareDescriptionFactory.extractFromSystem(taskManagersPerJVM);
+				if (hardware == null) {
+					LOG.warn("Cannot determine hardware description");
+				}
+
+				// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
+				// of taking as much as is mentioned in the hardware description
+				long memorySize = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, -1);
+
+				if (memorySize > 0) {
+					// manually configured memory size. override the value in the hardware config
+					hardware = HardwareDescriptionFactory.construct(hardware.getNumberOfCPUCores(),
+							hardware.getSizeOfPhysicalMemory(), memorySize * 1024L * 1024L);
+				}
+				this.hardwareDescription = hardware;
+			}
 		}
 
-		// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
-		// of taking as much as is mentioned in the hardware description
-		long memorySize = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, -1);
-
-		if (memorySize > 0) {
-			// manually configured memory size. override the value in the hardware config
-			hardware = HardwareDescriptionFactory.construct(hardware.getNumberOfCPUCores(),
-				hardware.getSizeOfPhysicalMemory(), memorySize * 1024L * 1024L);
+		if(this.hardwareDescription == null){
+			LOG.error("Unable to find hardware description for instance.");
+			throw new RuntimeException("Unable to find hardware description for instance.");
 		}
-		this.hardwareDescription = hardware;
 
 		// Initialize the memory manager
-		LOG.info("Initializing memory manager with " + (hardware.getSizeOfFreeMemory() >>> 20) + " megabytes of memory");
+		LOG.info("Initializing memory manager with " + (this.hardwareDescription.getSizeOfFreeMemory() >>> 20) + " megabytes of " +
+				"memory");
 		try {
-			this.memoryManager = new DefaultMemoryManager(hardware.getSizeOfFreeMemory());
+			this.memoryManager = new DefaultMemoryManager(this.hardwareDescription.getSizeOfFreeMemory());
 		} catch (RuntimeException rte) {
-			LOG.fatal("Unable to initialize memory manager with " + (hardware.getSizeOfFreeMemory() >>> 20)
+			LOG.fatal("Unable to initialize memory manager with " + (this.hardwareDescription.getSizeOfFreeMemory() >>> 20)
 				+ " megabytes of memory", rte);
 			throw rte;
 		}

@@ -287,6 +287,7 @@ public abstract class ExecutionEnvironment {
 	public static LocalEnvironment createLocalEnvironment(int degreeOfParallelism) {
 		LocalEnvironment lee = new LocalEnvironment();
 		lee.setDegreeOfParallelism(degreeOfParallelism);
+		lee.setNumTaskManager(1);
 		return lee;
 	}
 	

@@ -25,13 +25,15 @@ import eu.stratosphere.util.LogUtils;
 public class LocalEnvironment extends ExecutionEnvironment {
 	
 	private boolean logging = false;
+
+	private int numTaskManager = 1;
 	
 	@Override
 	public JobExecutionResult execute(String jobName) throws Exception {
 		Plan p = createProgramPlan(jobName);
 		p.setDefaultParallelism(getDegreeOfParallelism());
 		
-		PlanExecutor executor = PlanExecutor.createLocalExecutor();
+		PlanExecutor executor = PlanExecutor.createLocalExecutor(numTaskManager);
 		initLogging();
 		return executor.executePlan(p);
 	}
@@ -41,7 +43,7 @@ public class LocalEnvironment extends ExecutionEnvironment {
 		Plan p = createProgramPlan("unnamed job");
 		p.setDefaultParallelism(getDegreeOfParallelism());
 		
-		PlanExecutor executor = PlanExecutor.createLocalExecutor();
+		PlanExecutor executor = PlanExecutor.createLocalExecutor(numTaskManager);
 		initLogging();
 		return executor.getOptimizerPlanAsJSON(p);
 	}
@@ -53,6 +55,12 @@ public class LocalEnvironment extends ExecutionEnvironment {
 	public void disableLogging() {
 		this.logging = false;
 	}
+
+	public void setNumTaskManager(int numTaskManager){
+		this.numTaskManager = numTaskManager;
+	}
+
+	public int getNumTaskManager() { return this.numTaskManager; }
 	
 	public boolean isLoggingEnabled() {
 		return this.logging;
@@ -61,9 +69,10 @@ public class LocalEnvironment extends ExecutionEnvironment {
 	private void initLogging() {
 		LogUtils.initializeDefaultConsoleLogger(logging ? Level.INFO : Level.OFF);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Local Environment (DOP = " + (getDegreeOfParallelism() == -1 ? "default" : getDegreeOfParallelism()) + ") : " + getIdString();
+		return "Local Environment (DOP = " + (getDegreeOfParallelism() == -1 ? "default" : getDegreeOfParallelism())
+				+ "Number task manager = " + getNumTaskManager() + ") : " + getIdString();
 	}
 }

@@ -45,11 +45,11 @@ public abstract class PlanExecutor {
 	
 	
 	
-	public static PlanExecutor createLocalExecutor() {
+	public static PlanExecutor createLocalExecutor(int numTaskManager) {
 		Class<? extends PlanExecutor> leClass = loadExecutorClass(LOCAL_EXECUTOR_CLASS);
 		
 		try {
-			return leClass.newInstance();
+			return leClass.getConstructor(int.class).newInstance(numTaskManager);
 		}
 		catch (Throwable t) {
 			throw new RuntimeException("An error occurred while loading the local executor (" + LOCAL_EXECUTOR_CLASS + ").", t);
@@ -72,7 +72,8 @@ public abstract class PlanExecutor {
 			return leClass.getConstructor(String.class, int.class, List.class).newInstance(hostname, port, files);
 		}
 		catch (Throwable t) {
-			throw new RuntimeException("An error occurred while loading the local executor (" + LOCAL_EXECUTOR_CLASS + ").", t);
+			throw new RuntimeException("An error occurred while loading the remote executor (" + REMOTE_EXECUTOR_CLASS
+					+ ").", t);
 		}
 	}
 	

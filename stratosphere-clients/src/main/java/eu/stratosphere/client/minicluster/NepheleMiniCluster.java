@@ -148,8 +148,12 @@ public class NepheleMiniCluster {
 		configuration.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, jobManagerRpcPort);
 		return new JobClient(jobGraph, configuration);
 	}
+
+	public void start() throws Exception{
+		start(1);
+	}
 	
-	public void start() throws Exception {
+	public void start(int numTaskManagers) throws Exception {
 		synchronized (startStopLock) {
 			// set up the global configuration
 			if (this.configDir != null) {
@@ -176,6 +180,10 @@ public class NepheleMiniCluster {
 					t.join();
 				}
 			}
+
+			Configuration tmConf = new Configuration();
+			tmConf.setInteger(ConfigConstants.LOCAL_INSTANCE_MANAGER_NUMBER_TASK_MANAGER, numTaskManagers);
+			GlobalConfiguration.includeConfiguration(tmConf);
 			
 			// start the job manager
 			jobManager = new JobManager(ExecutionMode.LOCAL);
@@ -189,7 +197,7 @@ public class NepheleMiniCluster {
 			runner.setDaemon(true);
 			runner.start();
 	
-			waitForJobManagerToBecomeReady();
+			waitForJobManagerToBecomeReady(numTaskManagers);
 		}
 	}
 
@@ -212,9 +220,8 @@ public class NepheleMiniCluster {
 	// Network utility methods
 	// ------------------------------------------------------------------------
 	
-	private void waitForJobManagerToBecomeReady() throws InterruptedException {
-		Map<InstanceType, InstanceTypeDescription> instanceMap;
-		while ((instanceMap = jobManager.getMapOfAvailableInstanceTypes()) == null || instanceMap.isEmpty()) {
+	private void waitForJobManagerToBecomeReady(int numTaskManagers) throws InterruptedException {
+		while (jobManager.getNumberOfTaskTrackers() < numTaskManagers) {
 			Thread.sleep(100);
 		}
 	}
