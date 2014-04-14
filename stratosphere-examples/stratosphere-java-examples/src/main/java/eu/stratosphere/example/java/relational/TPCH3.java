@@ -342,17 +342,18 @@ public class TPCH3 {
 		or = or.filter(new FilterFunction<Order>() {
 			private static final long serialVersionUID = 1L;
 			private  DateFormat format;
+			private Calendar cal;
 			
 			@Override
 			public void open(Configuration parameters) throws Exception {
 				super.open(parameters);
 				format = new SimpleDateFormat("yyyy-MM-dd");
+				cal = Calendar.getInstance();
+				cal.set(1995, 3, 12);
 			}
 			
 			@Override
 			public boolean filter(Order value) throws Exception {
-				Calendar cal = Calendar.getInstance();
-				cal.set(1995, 3, 12);
 				Date orderDate = format.parse(value.getOrderdate());
 				return orderDate.before(cal.getTime());
 			}
@@ -363,12 +364,19 @@ public class TPCH3 {
 		 */
 		li = li.filter(new FilterFunction<Lineitem>() {
 			private static final long serialVersionUID = 1L;
-			private final DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			private DateFormat format;
+			private Calendar cal;
+			
+			@Override
+			public void open(Configuration parameters) throws Exception {
+				super.open(parameters);
+				format = new SimpleDateFormat("yyyy-MM-dd");
+				cal = Calendar.getInstance();
+				cal.set(1995, 3, 12);
+			}
 			
 			@Override
 			public boolean filter(Lineitem value) throws Exception {
-				Calendar cal = Calendar.getInstance();
-				cal.set(1995, 3, 12);
 				Date shipDate = format.parse(value.getShipdate());
 				return shipDate.after(cal.getTime());
 			}
