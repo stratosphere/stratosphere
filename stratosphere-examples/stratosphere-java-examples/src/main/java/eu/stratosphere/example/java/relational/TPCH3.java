@@ -32,7 +32,9 @@ import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.api.java.tuple.Tuple4;
+import eu.stratosphere.api.java.tuple.Tuple5;
 import eu.stratosphere.api.java.tuple.Tuple7;
+import eu.stratosphere.configuration.Configuration;
 
 /**
  * This program implements a modified version of the TPC-H query 3. Order by ist not yet supported.
@@ -64,12 +66,7 @@ import eu.stratosphere.api.java.tuple.Tuple7;
  * 
  */
 public class TPCH3 {
-	public static class Lineitem {
-
-		public Integer l_orderkey;
-		public Double l_discount;
-		public Double l_extendedprice;
-		public String l_shipdate;
+	public static class Lineitem extends Tuple4<Integer, Double, Double, String> {
 
 		public Lineitem() {
 			// default constructor
@@ -77,33 +74,73 @@ public class TPCH3 {
 
 		public Lineitem(Integer l_orderkey, Double l_extendedprice,
 				Double l_discount, String l_shipdate) {
-			this.l_orderkey = l_orderkey;
-			this.l_discount = l_discount;
-			this.l_extendedprice = l_extendedprice;
-			this.l_shipdate = l_shipdate;
+			this.f0 = l_orderkey;
+			this.f1 = l_extendedprice;
+			this.f2 = l_discount;
+			this.f3 = l_shipdate;
+		}
+
+		public Integer getOrderkey() {
+			return this.f0;
+		}
+
+		public void setOrderkey(Integer l_orderkey) {
+			this.f0 = l_orderkey;
+		}
+
+		public Double getDiscount() {
+			return this.f2;
+		}
+
+		public void setDiscount(Double l_discount) {
+			this.f2 = l_discount;
+		}
+
+		public Double getExtendedprice() {
+			return this.f1;
+		}
+
+		public void setExtendedprice(Double l_extendedprice) {
+			this.f1 = l_extendedprice;
+		}
+
+		public String getShipdate() {
+			return this.f3;
+		}
+
+		public void setShipdate(String l_shipdate) {
+			this.f3 = l_shipdate;
 		}
 	}
 
-	public static class Customer {
-
-		public Integer c_custkey;
-		public String c_mktsegment;
+	public static class Customer extends Tuple2<Integer, String>{
 
 		public Customer() {
-			// default constructor
 		}
 
 		public Customer(Integer c_custkey, String c_mktsegment) {
-			this.c_custkey = c_custkey;
-			this.c_mktsegment = c_mktsegment;
+			this.f0 = c_custkey;
+			this.f1 = c_mktsegment;
+		}
+		
+		public Integer getCustKey() {
+			return this.f0;
+		}
+		
+		public String getMktsegment() {
+			return this.f1;
+		}
+		
+		public void setCustKey(Integer c_custkey) {
+			this.f0 = c_custkey;
+		}
+		
+		public void setMktsegment(String c_mktsegment) {
+			this.f1 = c_mktsegment;
 		}
 	}
 
-	public static class Order {
-
-		public Integer o_orderkey;
-		public String o_orderdate;
-		public Integer o_shippriority;
+	public static class Order extends Tuple3<Integer, String, Integer>{
 
 		public Order() {
 			// default constructor
@@ -111,19 +148,37 @@ public class TPCH3 {
 
 		public Order(Integer o_orderkey, String o_orderdate,
 				Integer o_shippriority) {
-			this.o_orderkey = o_orderkey;
-			this.o_orderdate = o_orderdate;
-			this.o_shippriority = o_shippriority;
+			this.f0 = o_orderkey;
+			this.f1 = o_orderdate;
+			this.f2 = o_shippriority;
+		}
+		
+		public Integer getOrderkey() {
+			return this.f0;
+		}
+
+		public void setOrderkey(Integer o_orderkey) {
+			this.f0 = o_orderkey;
+		}
+
+		public String getOrderdate() {
+			return this.f1;
+		}
+
+		public void setOrderdate(String o_orderdate) {
+			this.f1 = o_orderdate;
+		}
+
+		public Integer getShippriority() {
+			return this.f2;
+		}
+
+		public void setShippriority(Integer o_shippriority) {
+			this.f2 = o_shippriority;
 		}
 	}
 
-	public static class ShippingPriorityItem {
-
-		public Integer l_orderkey;
-		public Double revenue;
-		public String o_orderdate;
-		public Integer o_shippriority;
-		public Integer o_orderkey;
+	public static class ShippingPriorityItem extends Tuple5<Integer, Double, String, Integer, Integer> {
 
 		public ShippingPriorityItem() {
 			// default constructor
@@ -131,16 +186,56 @@ public class TPCH3 {
 
 		public ShippingPriorityItem(Integer l_orderkey, Double revenue,
 				String o_orderdate, Integer o_shippriority, Integer o_orderkey) {
-			this.l_orderkey = l_orderkey;
-			this.revenue = revenue;
-			this.o_orderdate = o_orderdate;
-			this.o_shippriority = o_shippriority;
-			this.o_orderkey = o_orderkey;
+			this.f0 = l_orderkey;
+			this.f1 = revenue;
+			this.f2 = o_orderdate;
+			this.f3 = o_shippriority;
+			this.f4 = o_orderkey;
 		}
 		
+		public Integer getL_Orderkey() {
+			return this.f0;
+		}
+
+		public void setOrderkey(Integer l_orderkey) {
+			this.f0 = l_orderkey;
+		}
+
+		public Double getRevenue() {
+			return this.f1;
+		}
+
+		public void setRevenue(Double revenue) {
+			this.f1 = revenue;
+		}
+
+		public String getOrderdate() {
+			return this.f2;
+		}
+
+		public void setOrderdate(String o_orderdate) {
+			this.f2 = o_orderdate;
+		}
+
+		public Integer getShippriority() {
+			return this.f3;
+		}
+
+		public void setShippriority(Integer o_shippriority) {
+			this.f3 = o_shippriority;
+		}
+
+		public Integer getO_Orderkey() {
+			return this.f4;
+		}
+
+		public void setO_Orderkey(Integer o_orderkey) {
+			this.f4 = o_orderkey;
+		}
+
 		@Override
 		public String toString() {
-			return l_orderkey + "; " + revenue + "; " + o_orderdate + "; " + o_shippriority + "; " + o_orderkey;
+			return this.f0 + "; " + this.f1 + "; " + this.f2 + "; " + this.f3 + "; " + this.f4;
 		}
 	}
 	/*
@@ -237,7 +332,7 @@ public class TPCH3 {
 			@Override
 			public boolean filter(Customer value) throws Exception {
 				
-				return value.c_mktsegment.equals("AUTOMOBILE");
+				return value.getMktsegment().equals("AUTOMOBILE");
 			}
 		});
 
@@ -246,13 +341,19 @@ public class TPCH3 {
 		 */
 		or = or.filter(new FilterFunction<Order>() {
 			private static final long serialVersionUID = 1L;
-			private final DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-	
+			private  DateFormat format;
+			
+			@Override
+			public void open(Configuration parameters) throws Exception {
+				super.open(parameters);
+				format = new SimpleDateFormat("yyyy-MM-dd");
+			}
+			
 			@Override
 			public boolean filter(Order value) throws Exception {
 				Calendar cal = Calendar.getInstance();
 				cal.set(1995, 3, 12);
-				Date orderDate = format.parse(value.o_orderdate);
+				Date orderDate = format.parse(value.getOrderdate());
 				return orderDate.before(cal.getTime());
 			}
 		});
@@ -268,7 +369,7 @@ public class TPCH3 {
 			public boolean filter(Lineitem value) throws Exception {
 				Calendar cal = Calendar.getInstance();
 				cal.set(1995, 3, 12);
-				Date shipDate = format.parse(value.l_shipdate);
+				Date shipDate = format.parse(value.getShipdate());
 				return shipDate.after(cal.getTime());
 			}
 		});
@@ -278,32 +379,18 @@ public class TPCH3 {
 		 */
 		DataSet<ShippingPriorityItem> customerWithOrders = cust
 				.join(or)
-				.where(new KeySelector<Customer, Integer>() {
-
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Integer getKey(Customer value) {
-						return value.c_custkey;
-					}
-				})
-				.equalTo(new KeySelector<Order, Integer>() {
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Integer getKey(Order value) {
-						return value.o_orderkey;
-					}
-				})
+				.where(0)
+				.equalTo(0)
 				.with(new JoinFunction<Customer, Order, ShippingPriorityItem>() {
 					private static final long serialVersionUID = 1L;
 
 					@Override
 					public ShippingPriorityItem join(Customer first,
 							Order second) throws Exception {
-						return new ShippingPriorityItem(0, 0.0,
-								second.o_orderdate, second.o_shippriority,
-								second.o_orderkey);
+						ShippingPriorityItem it = new ShippingPriorityItem(0, 0.0,
+								second.getOrderdate(), second.getShippriority(),
+								second.getOrderkey());
+						return it;
 					}
 				});
 		
@@ -312,33 +399,10 @@ public class TPCH3 {
 		 */
 		DataSet<ShippingPriorityItem> joined = customerWithOrders
 				.join(li)
-				.where(new KeySelector<ShippingPriorityItem, Integer>() {
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Integer getKey(ShippingPriorityItem value) {
-						return value.o_orderkey;
-					}
-
-				})
-				.equalTo(new KeySelector<Lineitem, Integer>() {
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Integer getKey(Lineitem value) {
-						return value.l_orderkey;
-					}
-				})
+				.where(4)
+				.equalTo(0)
 				.with(new JoinFunction<ShippingPriorityItem, Lineitem, ShippingPriorityItem>() {
-					/**
-					 * 
-					 */
+
 					private static final long serialVersionUID = 1L;
 
 					@Override
@@ -346,8 +410,8 @@ public class TPCH3 {
 							ShippingPriorityItem first, Lineitem second)
 							throws Exception {
 						
-						first.l_orderkey = second.l_orderkey;
-						first.revenue = second.l_extendedprice * (1 - second.l_discount);
+						first.setOrderkey(second.getOrderkey());
+						first.setRevenue(second.getExtendedprice() * (1 - second.getDiscount()));
 						return first;
 					}
 				});
@@ -356,24 +420,18 @@ public class TPCH3 {
 		 * GroupBy l_orderkey, o_orderdate and o_shippriority
 		 * After that, the reduce function calculates the revenue.
 		 */
-		joined = joined.groupBy(new KeySelector<ShippingPriorityItem, String>() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public String getKey(ShippingPriorityItem value) {
-				return value.l_orderkey.toString().concat(value.o_orderdate).concat(value.o_shippriority.toString());
-			}
-		}).reduce(new ReduceFunction<TPCH3.ShippingPriorityItem>() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public ShippingPriorityItem reduce(ShippingPriorityItem value1,
-					ShippingPriorityItem value2) throws Exception {
-				value1.revenue += value2.revenue;
-				return value1;
-			}
-		});
-
+		joined = joined
+				.groupBy(0, 2, 3)
+				.reduce(new ReduceFunction<TPCH3.ShippingPriorityItem>() {
+				private static final long serialVersionUID = 1L;
+	
+					@Override
+					public ShippingPriorityItem reduce(ShippingPriorityItem value1,
+							ShippingPriorityItem value2) throws Exception {
+						value1.setRevenue(value1.getRevenue() + value2.getRevenue());
+						return value1;
+					}
+			});
 		
 			try {
 				joined.print();
