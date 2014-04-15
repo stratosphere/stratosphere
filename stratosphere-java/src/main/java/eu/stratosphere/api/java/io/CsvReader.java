@@ -23,7 +23,6 @@ import eu.stratosphere.api.java.operators.DataSource;
 import eu.stratosphere.api.java.tuple.*;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
-import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.core.fs.Path;
 
 
