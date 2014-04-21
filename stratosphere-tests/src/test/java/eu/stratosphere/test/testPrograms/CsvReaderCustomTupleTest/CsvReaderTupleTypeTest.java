@@ -27,13 +27,18 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.functions.MapFunction;
+import eu.stratosphere.api.java.io.CsvInputFormat;
 import eu.stratosphere.api.java.io.CsvReader;
 import eu.stratosphere.api.java.operators.DataSource;
 import eu.stratosphere.api.java.tuple.Tuple4;
+import eu.stratosphere.api.java.typeutils.BasicTypeInfo;
+import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
+import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.util.Collector;
 
@@ -79,45 +84,59 @@ public class CsvReaderTupleTypeTest {
 		}
 	}	
 	
-	public static void main(String[] args) throws Exception {
-	String testString = "1|value1|32.4|value3";
+	public static class SubItem extends Item {
 		
-			ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-			String filePath = createTempFile(testString);
-			DataSet<Item> itemSet = env.readCsvFile(filePath).fieldDelimiter('|').lineDelimiter(";").includeFields("1111").tupleType(Item.class);
-			itemSet = itemSet.flatMap(new FlatMapFunction<Item, Item>() {
-				Item expected;
-				
-				@Override
-				public void open(Configuration parameters) throws Exception {
-					super.open(parameters);
-					expected = new Item(1, "value1", 32.4, "value3");
-				}
+		public SubItem() {			
+		}		
 
-				@Override
-				public void flatMap(Item value, Collector<Item> out) throws Exception {
-					System.out.println(value + " | " + expected);
-					Assert.assertTrue(value.getID() == expected.getID());
-					Assert.assertTrue(value.getValue1().equals(expected.getValue1()));
-					Assert.assertTrue(value.getValue3().equals(expected.getValue3()));
-					Assert.assertTrue(value.getDouble1() == expected.getDouble1());
-					out.collect(value);
-				}
-				
-			});
-			itemSet.print();
-			env.execute();
-		
+		public SubItem(Integer f0, String f1, Double f2, String f3) {
+			this.setID(f0);
+			this.setValue1(f1);
+			this.setDouble1(f2);
+			this.setValue3(f3);
+		}
 	}
 	
-	static private String createTempFile(String content) throws IOException {
-		File tempFile = File.createTempFile("test_contents", "tmp");
-		tempFile.deleteOnExit();
+	@Test
+	public void testReturnType() throws Exception {
+		CsvReader reader = new CsvReader("test/test", ExecutionEnvironment.getExecutionEnvironment());
+		DataSource<Item> items = reader.tupleType(Item.class);
+		Assert.assertTrue(items.getType().getTypeClass() == Item.class);
+	}
+	
+	@Test
+	public void testFieldTypes() throws Exception {
+		CsvReader reader = new CsvReader("test/test", ExecutionEnvironment.getExecutionEnvironment());
+		DataSource<Item> items = reader.tupleType(Item.class);
+		TypeInformation<?> info = items.getType();
+		if (!info.isTupleType()) {
+			Assert.fail();
+		} else {
+			TupleTypeInfo<?> tinfo = (TupleTypeInfo<?>) info;
+			Assert.assertEquals(BasicTypeInfo.INT_TYPE_INFO, tinfo.getTypeAt(0));
+			Assert.assertEquals(BasicTypeInfo.STRING_TYPE_INFO, tinfo.getTypeAt(1));
+			Assert.assertEquals(BasicTypeInfo.DOUBLE_TYPE_INFO, tinfo.getTypeAt(2));
+			Assert.assertEquals(BasicTypeInfo.STRING_TYPE_INFO, tinfo.getTypeAt(3));
+
+		}		
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSubClass() throws Exception {
+		CsvReader reader = new CsvReader("test/test", ExecutionEnvironment.getExecutionEnvironment());
+		DataSource<SubItem> sitems = reader.tupleType(SubItem.class);
+		TypeInformation<?> info = sitems.getType();
 		
-		FileWriter wrt = new FileWriter(tempFile);
-		wrt.write(content);
-		wrt.close();
+		Assert.assertEquals(true, info.isTupleType());
+		Assert.assertEquals(SubItem.class, info.getTypeClass());
+		
+		TupleTypeInfo<SubItem> tinfo = (TupleTypeInfo<SubItem>) info;
+		
+		Assert.assertEquals(BasicTypeInfo.INT_TYPE_INFO, tinfo.getTypeAt(0));
+		Assert.assertEquals(BasicTypeInfo.STRING_TYPE_INFO, tinfo.getTypeAt(1));
+		Assert.assertEquals(BasicTypeInfo.DOUBLE_TYPE_INFO, tinfo.getTypeAt(2));
+		Assert.assertEquals(BasicTypeInfo.STRING_TYPE_INFO, tinfo.getTypeAt(3));
 			
-		return tempFile.getAbsolutePath();
 	}
 }
