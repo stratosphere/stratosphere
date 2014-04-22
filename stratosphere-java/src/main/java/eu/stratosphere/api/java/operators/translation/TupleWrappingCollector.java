@@ -14,60 +14,31 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators.translation;
 
-import java.util.Iterator;
-
 import eu.stratosphere.api.java.tuple.Tuple2;
-
+import eu.stratosphere.util.Collector;
 
 /**
- *
+ * Needed to wrap tuples to Tuple2<key, value> pairs for combine method of group reduce with key selector function
  */
-public class TupleUnwrappingIterator<T, K> implements Iterator<T>, java.io.Serializable {
+public class TupleWrappingCollector<K, IN> implements Collector<IN> {
 
-	private static final long serialVersionUID = 1L;
-
-	
-	private Iterator<Tuple2<K, T>> iterator;
-	
 	private K key;
-
-	private Tuple2<K, T> first;
 	
-	public void set(Iterator<Tuple2<K, T>> iterator) {
-		this.iterator = iterator;
-		
-		// This construct is needed to provide a key for the TupleWrappingCollector in case of a specified 
-		// combine method of group reduce with key selector function
-		if(this.hasNext()) {
-			this.first = iterator.next();
-			this.key = this.first.f0;
-		}
-	}
-
-	@Override
-	public boolean hasNext() {
-		if(this.first != null) {
-			return true;
-		}
-		return iterator.hasNext();
-	}
-
-	@Override
-	public T next() {
-		if(this.first != null) {
-			T val = this.first.f1;
-			this.first = null;
-			return val;
-		}
-		return iterator.next().f1;
+	private Collector<Tuple2<K, IN>> outerCollector;
+	
+	public TupleWrappingCollector(K key, Collector<Tuple2<K, IN>> outerCollector) {
+		this.key = key;
+		this.outerCollector = outerCollector;
 	}
 	
-	public K getKey() {
-		return this.key;
+	@Override
+	public void close() {
+		this.outerCollector.close();
 	}
 
 	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
+	public void collect(IN record) {
+		this.outerCollector.collect(new Tuple2<K, IN>(this.key, record));
 	}
+
 }
