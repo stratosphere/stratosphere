@@ -35,7 +35,7 @@ import eu.stratosphere.test.util.JavaProgramTestBase;
 @RunWith(Parameterized.class)
 public class FilterITCase extends JavaProgramTestBase {
 	
-	private static int NUM_PROGRAMS = 7; 
+	private static int NUM_PROGRAMS = 8; 
 	
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
@@ -291,6 +291,41 @@ public class FilterITCase extends JavaProgramTestBase {
 						"2,2,Hello\n" +
 						"3,2,Hello world\n" +
 						"4,3,Hello world, how are you?\n";
+			}
+			case 8: {
+				/*
+				 * Test filter with broadcast variables
+				 */
+					
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Integer> intDs = CollectionDataSets.getIntegerDataSet(env);
+				
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
+				DataSet<Tuple3<Integer, Long, String>> filterDs = ds.
+						filter(new FilterFunction<Tuple3<Integer,Long,String>>() {
+							private static final long serialVersionUID = 1L;
+
+							@Override
+							public boolean filter(Tuple3<Integer, Long, String> value) throws Exception {
+								Collection<Integer> ints = this.getRuntimeContext().getBroadcastVariable("ints");
+								int sum = 0;
+								for(Integer i : ints) {
+									sum += i;
+								}
+								return (value.f1 == (sum / 11));
+							}
+						}).withBroadcastSet(intDs, "ints");;
+				filterDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "11,5,Comment#5\n" +
+						"12,5,Comment#6\n" +
+						"13,5,Comment#7\n" +
+						"14,5,Comment#8\n" +
+						"15,5,Comment#9\n";
+				
 			}
 			default: 
 				throw new IllegalArgumentException("Invalid program id");
