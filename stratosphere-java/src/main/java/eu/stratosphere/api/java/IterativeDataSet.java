@@ -14,11 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.aggregators.Aggregator;
 import eu.stratosphere.api.common.aggregators.AggregatorRegistry;
 import eu.stratosphere.api.common.aggregators.ConvergenceCriterion;
 import eu.stratosphere.api.java.operators.SingleInputOperator;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.types.Value;
 
@@ -58,7 +58,7 @@ public class IterativeDataSet<T> extends SingleInputOperator<T, T, IterativeData
 	}
 
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
 		// All the translation magic happens when the iteration end is encountered.
 		throw new UnsupportedOperationException("This should never happen.");
 	}

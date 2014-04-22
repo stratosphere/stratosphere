@@ -15,9 +15,9 @@
 
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.operators.Union;
 import eu.stratosphere.api.java.DataSet;
-import eu.stratosphere.api.java.operators.translation.BinaryNodeTranslation;
 
 public class UnionOperator<T> extends TwoInputOperator<T, T, T, UnionOperator<T>> {
 
@@ -26,7 +26,15 @@ public class UnionOperator<T> extends TwoInputOperator<T, T, T, UnionOperator<T>
 	}
 	 
 	@Override
-	protected BinaryNodeTranslation translateToDataFlow() {
-		return new BinaryNodeTranslation(new Union());
+	protected Operator translateToDataFlow(Operator input1, Operator input2) {
+		
+		// create operator
+		Union u = new Union();
+		// set inputs
+		u.setFirstInput(input1);
+		u.setSecondInput(input2);
+		
+		return u;
 	}
+	
 }
