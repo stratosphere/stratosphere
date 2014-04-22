@@ -684,22 +684,35 @@ public class ClusterManager implements InstanceManager {
 
 
 	@Override
-	public synchronized void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+	public synchronized void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo) {
 
 		ClusterInstance host = registeredHosts.get(instanceConnectionInfo);
 
-		// check whether we have discovered a new host
-		if (host == null) {
+		// check whether the host is registered
+		if(host != null){
+			host.reportHeartBeat();
+		}else{
+			LOG.error("There is no registered host for the given instance connection info: " + instanceConnectionInfo
+					+ ".");
+		}
+	}
+
+	@Override
+	public synchronized void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
+												 final HardwareDescription hardwareDescription){
+		ClusterInstance host = registeredHosts.get(instanceConnectionInfo);
+
+		if(host == null){
 			host = createNewHost(instanceConnectionInfo, hardwareDescription);
 
-			if (host == null) {
+			if(host == null){
 				LOG.error("Could not create a new host object for incoming heart-beat. "
-					+ "Probably the configuration file is lacking some entries.");
+						+ "Probably the configuration file is lacking some entries.");
 				return;
 			}
 
 			this.registeredHosts.put(instanceConnectionInfo, host);
+
 			LOG.info("New number of registered hosts is " + this.registeredHosts.size());
 
 			// Update the list of instance type descriptions
@@ -707,9 +720,10 @@ public class ClusterManager implements InstanceManager {
 
 			// Check if a pending request can be fulfilled by the new host
 			checkPendingRequests();
+		}else{
+			LOG.error("There is already a task manager registered for the instance connection info: " +
+					instanceConnectionInfo + ".");
 		}
-
-		host.reportHeartBeat();
 	}
 
 	/**

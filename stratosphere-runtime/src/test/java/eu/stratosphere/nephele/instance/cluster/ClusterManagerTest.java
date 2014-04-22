@@ -169,7 +169,7 @@ public class ClusterManagerTest {
 
 			// Although the hardware description indicates an instance of type "small", the cluster manager is supposed
 			// to take the user-defined instance type "high"
-			cm.reportHeartBeat(ici, hardwareDescription);
+			cm.registerTaskManager(ici, hardwareDescription);
 
 			instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
 			assertEquals(3, instanceTypeDescriptions.size());
@@ -199,7 +199,7 @@ public class ClusterManagerTest {
 
 			ipAddress = "192.168.198.3";
 			ici = new InstanceConnectionInfo(InetAddress.getByName(ipAddress), ipAddress, null, ipcPort, dataPort);
-			cm.reportHeartBeat(ici, hardwareDescription);
+			cm.registerTaskManager(ici, hardwareDescription);
 
 			instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
 
@@ -256,7 +256,7 @@ public class ClusterManagerTest {
 				InetAddress.getByName(ipAddress), ipAddress, null, 1234, 1235);
 			final HardwareDescription hardwareDescription = HardwareDescriptionFactory.construct(8,
 				8L * 1024L * 1024L * 1024L, 8L * 1024L * 1024L * 1024L);
-			cm.reportHeartBeat(instanceConnectionInfo, hardwareDescription);
+			cm.registerTaskManager(instanceConnectionInfo, hardwareDescription);
 
 			// now we should be able to request two instances of type small and one of type medium
 			final JobID jobID = new JobID();
@@ -353,7 +353,7 @@ public class ClusterManagerTest {
 				InetAddress.getByName(ipAddress), ipAddress, null, 1234, 1235);
 			final HardwareDescription hardwareDescription = HardwareDescriptionFactory.construct(8,
 				8L * 1024L * 1024L * 1024L, 8L * 1024L * 1024L * 1024L);
-			cm.reportHeartBeat(instanceConnectionInfo, hardwareDescription);
+			cm.registerTaskManager(instanceConnectionInfo, hardwareDescription);
 
 			final JobID jobID = new JobID();
 			final Configuration conf = new Configuration();

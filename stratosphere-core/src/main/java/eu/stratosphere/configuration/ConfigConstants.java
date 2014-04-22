@@ -92,6 +92,11 @@ public final class ConfigConstants {
 	 * The config parameter defining the size of the buffers used in the network stack.
 	 */
 	public static final String TASK_MANAGER_NETWORK_BUFFER_SIZE_KEY = "taskmanager.network.bufferSizeInBytes";
+
+	/**
+	 * The config parameter defining the number of task slots of a task manager.
+	 */
+	public static final String TASK_MANAGER_NUM_TASK_SLOTS = "taskmanager.numberOfTaskSlots";
 	
 	/**
 	 * Parameter for the maximum fan for out-of-core algorithms.

@@ -86,10 +86,18 @@ public interface InstanceManager {
 	 * 
 	 * @param instanceConnectionInfo
 	 *        the {@link InstanceConnectionInfo} object attached to the heart beat message
-	 * @param hardwareDescription
-	 *        a hardware description with details on the instance's compute resources.
 	 */
-	void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription);
+	void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo);
+
+	/**
+	 * Registers a task manager at the instance manager
+	 *
+	 * @param instanceConnectionInfo the {@link InstanceConnectionInfo} object attached to the register task manager
+	 *                                  message
+	 * @param hardwareDescription the {@link eu.stratosphere.nephele.instance.HardwareDescription} object attached to
+	 *                               the register task manager message
+	 */
+	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription);
 
 	/**
 	 * Translates the name of an instance type to the corresponding instance type object.

@@ -124,10 +124,15 @@ public class ExecutionGraphTest {
 		 * {@inheritDoc}
 		 */
 		@Override
-		public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-				final HardwareDescription hardwareDescription) {
+		public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo) {
 
 			throw new IllegalStateException("reportHeartBeat called on TestInstanceManager");
+		}
+
+		@Override
+		public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
+										final HardwareDescription hardwareDescription){
+			throw new IllegalStateException("registerTaskManager called on TestInstanceManager");
 		}
 
 		/**

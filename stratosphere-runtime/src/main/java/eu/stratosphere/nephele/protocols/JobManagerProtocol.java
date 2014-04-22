@@ -33,12 +33,20 @@ public interface JobManagerProtocol extends VersionedProtocol {
 	 * 
 	 * @param instanceConnectionInfo
 	 *        the information the job manager requires to connect to the instance's task manager
-	 * @param hardwareDescription
-	 *        a hardware description with details on the instance's compute resources.
 	 * @throws IOException
 	 *         thrown if an error occurs during this remote procedure call
 	 */
-	void sendHeartbeat(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription)
+	void sendHeartbeat(InstanceConnectionInfo instanceConnectionInfo)
+			throws IOException;
+
+	/**
+	 * Registers a task manager at the JobManager.
+	 *
+	 * @param instanceConnectionInfo the information the job manager requires to connect to the instance's task manager
+	 * @param hardwareDescription a hardware description with details on the instance's compute resources.
+	 * @throws IOException
+	 */
+	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription)
 			throws IOException;
 
 	/**

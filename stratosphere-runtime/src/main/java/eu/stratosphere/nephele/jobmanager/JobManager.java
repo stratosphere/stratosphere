@@ -638,8 +638,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 
 	@Override
-	public void sendHeartbeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+	public void sendHeartbeat(final InstanceConnectionInfo instanceConnectionInfo) {
 
 		// Delegate call to instance manager
 		if (this.instanceManager != null) {
@@ -648,11 +647,26 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 				@Override
 				public void run() {
-					instanceManager.reportHeartBeat(instanceConnectionInfo, hardwareDescription);
+					instanceManager.reportHeartBeat(instanceConnectionInfo);
 				}
 			};
 
 			this.executorService.execute(heartBeatRunnable);
+		}
+	}
+
+	@Override
+	public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
+									final HardwareDescription hardwareDescription){
+		if(this.instanceManager != null) {
+			final Runnable registerTaskManagerRunnable = new Runnable() {
+				@Override
+				public void run(){
+					instanceManager.registerTaskManager(instanceConnectionInfo, hardwareDescription);
+				}
+			};
+
+			this.executorService.execute(registerTaskManagerRunnable);
 		}
 	}
 

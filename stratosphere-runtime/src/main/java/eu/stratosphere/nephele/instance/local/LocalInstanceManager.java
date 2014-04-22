@@ -211,17 +211,19 @@ public class LocalInstanceManager implements InstanceManager {
 
 
 	@Override
-	public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription) {
+	public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo) {
+	}
 
-		synchronized (this.synchronizationObject) {
-			if (this.localInstance == null) {
-				this.localInstance = new LocalInstance(this.defaultInstanceType,
-					instanceConnectionInfo, this.networkTopology.getRootNode(), this.networkTopology,
-					hardwareDescription);
+	@Override
+	public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
+									final HardwareDescription hardwareDescription){
+		synchronized(this.synchronizationObject){
+			if(this.localInstance == null){
+				this.localInstance = new LocalInstance(this.defaultInstanceType, instanceConnectionInfo,
+						this.networkTopology.getRootNode(), this.networkTopology, hardwareDescription);
 
-				this.instanceTypeDescriptionMap.put(this.defaultInstanceType,
-					InstanceTypeDescriptionFactory.construct(this.defaultInstanceType, hardwareDescription, 1));
+				this.instanceTypeDescriptionMap.put(this.defaultInstanceType, InstanceTypeDescriptionFactory
+						.construct(this.defaultInstanceType, hardwareDescription, 1));
 			}
 		}
 	}

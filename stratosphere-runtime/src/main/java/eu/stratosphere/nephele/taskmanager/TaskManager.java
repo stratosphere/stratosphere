@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import eu.stratosphere.nephele.instance.Hardware;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -137,6 +138,10 @@ public class TaskManager implements TaskOperationProtocol {
 	private final IOManager ioManager;
 
 	private final HardwareDescription hardwareDescription;
+
+	private final int numTaskSlots;
+
+	private final int numTaskManagerPerJVM;
 
 	/**
 	 * Stores whether the task manager has already been shut down.
@@ -276,6 +281,11 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		this.byteBufferedChannelManager = byteBufferedChannelManager;
 
+		numTaskManagerPerJVM = taskManagersPerJVM;
+
+		numTaskSlots = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS,
+				Hardware.getNumberCPUCores());
+
 		// Determine hardware description
 		HardwareDescription hardware = HardwareDescriptionFactory.extractFromSystem(taskManagersPerJVM);
 		if (hardware == null) {
@@ -383,28 +393,34 @@ public class TaskManager implements TaskOperationProtocol {
 	public void runIOLoop() {
 		long interval = GlobalConfiguration.getInteger("taskmanager.setup.periodictaskinterval",
 			DEFAULTPERIODICTASKSINTERVAL);
+		boolean registered = false;
 
-		while (!Thread.interrupted()) {
+		//register task manager at the job manager
+		try{
+			this.jobManager.registerTaskManager(this.localInstanceConnectionInfo, this.hardwareDescription);
+			registered = true;
+		}catch(IOException e){
+			LOG.info("Registering the task manager at the job manager caused an IO Exception.", e);
+		}
 
-			// Send heartbeat
-			try {
-				LOG.debug("heartbeat");
-				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
-			} catch (IOException e) {
-				e.printStackTrace();
-				LOG.info("sending the heart beat caused an IO Exception");
+		if(registered){
+			while (!Thread.interrupted()) {
+				// Sleep
+				try {
+					Thread.sleep(interval);
+				} catch (InterruptedException e1) {
+					LOG.debug("Heartbeat thread was interrupted");
+					break;
+				}
+
+				// Send heartbeat
+				try {
+					LOG.debug("heartbeat");
+					this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo);
+				} catch (IOException e) {
+					LOG.info("sending the heart beat caused an IO Exception",e);
+				}
 			}
-			
-			// Sleep
-			try {
-				Thread.sleep(interval);
-			} catch (InterruptedException e1) {
-				LOG.debug("Heartbeat thread was interrupted");
-				break;
-			}
-
-			// Check the status of the task threads to detect unexpected thread terminations
-			checkTaskExecution();
 		}
 
 		// Shutdown the individual components of the task manager
@@ -861,26 +877,6 @@ public class TaskManager implements TaskOperationProtocol {
 	public synchronized boolean isShutDown() {
 
 		return this.isShutDown;
-	}
-
-	/**
-	 * This method is periodically called by the framework to check
-	 * the state of the task threads. If any task thread has unexpectedly
-	 * switch to TERMINATED, this indicates that an {@link Error} has occurred
-	 * during its execution.
-	 */
-	private void checkTaskExecution() {
-
-		final Iterator<Map.Entry<ExecutionVertexID, Task>> it = this.runningTasks.entrySet().iterator();
-		while (it.hasNext()) {
-			final Map.Entry<ExecutionVertexID, Task> task = it.next();
-
-			if (task.getValue().isTerminated()) {
-				if (this.runningTasks.containsKey(task.getKey())) {
-					task.getValue().markAsFailed();
-				}
-			}
-		}
 	}
 
 
