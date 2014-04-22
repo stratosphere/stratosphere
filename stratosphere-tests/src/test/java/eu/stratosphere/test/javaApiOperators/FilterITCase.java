@@ -305,15 +305,19 @@ public class FilterITCase extends JavaProgramTestBase {
 				DataSet<Tuple3<Integer, Long, String>> filterDs = ds.
 						filter(new FilterFunction<Tuple3<Integer,Long,String>>() {
 							private static final long serialVersionUID = 1L;
+							private  int broadcastSum = 0;
+							
+							@Override
+							public void open(Configuration config) {
+								Collection<Integer> ints = this.getRuntimeContext().getBroadcastVariable("ints");
+								for(Integer i : ints) {
+									broadcastSum += i;
+								}
+							}
 
 							@Override
 							public boolean filter(Tuple3<Integer, Long, String> value) throws Exception {
-								Collection<Integer> ints = this.getRuntimeContext().getBroadcastVariable("ints");
-								int sum = 0;
-								for(Integer i : ints) {
-									sum += i;
-								}
-								return (value.f1 == (sum / 11));
+								return (value.f1 == (broadcastSum / 11));
 							}
 						}).withBroadcastSet(intDs, "ints");;
 				filterDs.writeAsCsv(resultPath);
