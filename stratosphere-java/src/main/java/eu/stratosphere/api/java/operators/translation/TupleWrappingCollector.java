@@ -20,13 +20,18 @@ import eu.stratosphere.util.Collector;
 /**
  * Needed to wrap tuples to Tuple2<key, value> pairs for combine method of group reduce with key selector function
  */
-public class TupleWrappingCollector<K, IN> implements Collector<IN> {
+public class TupleWrappingCollector<K, IN> implements Collector<IN>, java.io.Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
 	private K key;
 	
 	private Collector<Tuple2<K, IN>> outerCollector;
 	
-	public TupleWrappingCollector(K key, Collector<Tuple2<K, IN>> outerCollector) {
+	public TupleWrappingCollector() {
+	}
+	
+	public void set(K key, Collector<Tuple2<K, IN>> outerCollector) {
 		this.key = key;
 		this.outerCollector = outerCollector;
 	}

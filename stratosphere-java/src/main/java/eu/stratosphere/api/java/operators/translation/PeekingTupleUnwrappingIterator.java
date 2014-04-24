@@ -22,26 +22,48 @@ import eu.stratosphere.api.java.tuple.Tuple2;
 /**
  *
  */
-public class TupleUnwrappingIterator<T, K> implements Iterator<T>, java.io.Serializable {
+public class PeekingTupleUnwrappingIterator<T, K> implements Iterator<T>, java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	
 	private Iterator<Tuple2<K, T>> iterator;
+	
+	private K key;
 
+	private Tuple2<K, T> first;
 	
 	public void set(Iterator<Tuple2<K, T>> iterator) {
 		this.iterator = iterator;
+		
+		// This construct is needed to provide a key for the TupleWrappingCollector in case of a specified 
+		// combine method of group reduce with key selector function
+		if(this.hasNext()) {
+			this.first = iterator.next();
+			this.key = this.first.f0;
+		}
 	}
 
 	@Override
 	public boolean hasNext() {
+		if(this.first != null) {
+			return true;
+		}
 		return iterator.hasNext();
 	}
 
 	@Override
 	public T next() {
+		if(this.first != null) {
+			T val = this.first.f1;
+			this.first = null;
+			return val;
+		}
 		return iterator.next().f1;
+	}
+	
+	public K getKey() {
+		return this.key;
 	}
 
 	@Override

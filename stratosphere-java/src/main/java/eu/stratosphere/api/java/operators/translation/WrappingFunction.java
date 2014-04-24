@@ -65,9 +65,6 @@ public abstract class WrappingFunction<T extends AbstractFunction> extends Abstr
 		}
 	}
 	
-	public T getWrappedFunction() {
-		return this.wrappedFunction;
-	}
 	
 	
 	private static class WrappingRuntimeContext implements RuntimeContext {

@@ -39,12 +39,7 @@ public class PlanGroupReduceOperator<IN, OUT> extends GroupReduceOperatorBase<Ge
 		
 		this.inType = inputType;
 		this.outType = outputType;
-		super.setCombinable(this.isCombinable());
-	}
-	
-	@Override
-	public boolean isCombinable() {
-		return super.isCombinable() || getUserCodeWrapper().getUserCodeAnnotation(Combinable.class) != null;
+		super.setCombinable(getUserCodeWrapper().getUserCodeAnnotation(Combinable.class) != null);
 	}
 	
 	@Override
