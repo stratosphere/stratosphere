@@ -14,11 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.common.typeutils.base;
 
-import java.util.Random;
-
 import eu.stratosphere.api.common.typeutils.SerializerTestBase;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
-import eu.stratosphere.util.StringUtils;
 
 /**
  * A test for the {@link StringSerializer}.
