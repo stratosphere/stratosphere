@@ -27,6 +27,7 @@ import org.apache.commons.lang3.Validate;
 
 import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.JobExecutionResult;
+import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.java.io.CollectionInputFormat;
 import eu.stratosphere.api.java.io.CsvReader;
@@ -62,6 +63,8 @@ public abstract class ExecutionEnvironment {
 	private final List<DataSink<?>> sinks = new ArrayList<DataSink<?>>();
 	
 	private int degreeOfParallelism = -1;
+	
+	protected List<String> cacheFile = new ArrayList<String>();
 	
 	
 	// --------------------------------------------------------------------------------------------
@@ -246,6 +249,17 @@ public abstract class ExecutionEnvironment {
 	public abstract JobExecutionResult execute(String jobName) throws Exception;
 	
 	public abstract String getExecutionPlan() throws Exception;
+	
+	public void registerCachedFile(String filePath, String name){
+		this.cacheFile.add(filePath);
+		this.cacheFile.add(name);
+	}
+	
+	protected void registerCachedFiles(Plan p){
+		for(int x=0;x<cacheFile.size();x+=2){
+			p.registerCachedFile(cacheFile.get(x), cacheFile.get(x+1));
+		}
+	}
 	
 	public JavaPlan createProgramPlan() {
 		return createProgramPlan(null);
