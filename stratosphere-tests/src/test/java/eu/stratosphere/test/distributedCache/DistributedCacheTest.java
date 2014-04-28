@@ -133,7 +133,11 @@ public class DistributedCacheTest extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		Plan plan =  getPlan(1 , textPath, resultPath);
-		plan.registerCachedFile(cachePath, "cache_test");
+		try {
+			plan.registerCachedFile(cachePath, "cache_test");
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
 		return plan;
 	}
 
