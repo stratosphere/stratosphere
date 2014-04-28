@@ -27,7 +27,7 @@ public abstract class AbstractUdfOperator<T extends Function> extends Operator {
 	/**
 	 * The object or class containing the user function.
 	 */
-	protected final UserCodeWrapper<T> stub;
+	protected final UserCodeWrapper<T> userFunction;
 	
 	/**
 	 * The extra inputs which parameterize the user function.
@@ -39,18 +39,18 @@ public abstract class AbstractUdfOperator<T extends Function> extends Operator {
 	/**
 	 * Creates a new abstract operator with the given name wrapping the given user function.
 	 *
-	 * @param stub The object containing the user function.
+	 * @param function The wrapper object containing the user function.
 	 * @param name The given name for the operator, used in plans, logs and progress messages.
 	 */
-	protected AbstractUdfOperator(UserCodeWrapper<T> stub, String name) {
+	protected AbstractUdfOperator(UserCodeWrapper<T> function, String name) {
 		super(name);
-		this.stub = stub;
+		this.userFunction = function;
 	}
 	
 	// --------------------------------------------------------------------------------------------
 	
 	/**
-	 * Gets the stub that is wrapped by this contract. The stub is the actual implementation of the
+	 * Gets the function that is held by this operator. The function is the actual implementation of the
 	 * user code.
 	 * 
 	 * This throws an exception if the pact does not contain an object but a class for the user
@@ -62,7 +62,7 @@ public abstract class AbstractUdfOperator<T extends Function> extends Operator {
 	 */
 	@Override
 	public UserCodeWrapper<T> getUserCodeWrapper() {
-		return stub;
+		return userFunction;
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -99,11 +99,9 @@ public abstract class AbstractUdfOperator<T extends Function> extends Operator {
 	 * 
 	 * @param inputs The <name, root> pairs to be set as broadcast inputs.
 	 */
-	public void setBroadcastVariables(Map<String, Operator> roots) {
+	public void setBroadcastVariables(Map<String, Operator> inputs) {
 		this.broadcastInputs.clear();
-		for (Map.Entry<String, Operator> e: roots.entrySet()) {
-			setBroadcastVariable(e.getKey(), e.getValue());
-		}
+		this.broadcastInputs.putAll(inputs);
 	}
 	
 	// --------------------------------------------------------------------------------------------

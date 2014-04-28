@@ -13,19 +13,22 @@
 
 package eu.stratosphere.api.common;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.util.Visitable;
 import eu.stratosphere.util.Visitor;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * This class encapsulates a single stratosphere job (an instantiated data flow), together with some parameters.
@@ -56,6 +59,8 @@ public class Plan implements Visitable<Operator> {
 	 * The maximal number of machines to use in the job.
 	 */
 	protected int maxNumberMachines;
+
+	protected HashMap<String, String> cacheFile = new HashMap<String, String>();
 
 	// ------------------------------------------------------------------------
 
@@ -286,5 +291,26 @@ public class Plan implements Visitable<Operator> {
 		for (GenericDataSink sink : this.sinks) {
 			sink.accept(visitor);
 		}
+	}
+
+	/**
+	 *  register cache files in program level
+	 * @param filePath The files must be stored in a place that can be accessed from all workers (most commonly HDFS)
+	 * @param name user defined name of that file
+	 */
+	public void registerCachedFile(String filePath, String name) throws RuntimeException{
+		if (!this.cacheFile.containsKey(name)) {
+			this.cacheFile.put(name, filePath);
+		} else {
+			throw new RuntimeException("cache file " + name + "already exists!");
+		}
+	}
+
+	/**
+	 * return the registered caches files
+	 * @return Set of (name, filePath) pairs
+	 */
+	public Set<Entry<String,String>> getCachedFiles() {
+		return this.cacheFile.entrySet();
 	}
 }

@@ -18,15 +18,24 @@ package eu.stratosphere.api.common.operators;
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 
+/**
+ * This operator represents a Union between two inputs.
+ */
 public class Union extends DualInputOperator<AbstractFunction> {
 	
-	private final static String NAME = "UNION";
+	private final static String NAME = "Union";
 	
-	/* 
-	 * Represent a union as contract with abstract function,  
-	 * it will be replaced in the PACT compiler later
+	/** 
+	 * Creates a new Union operator.
 	 */
 	public Union() {
+		// we pass it an AbstractFunction, because currently all operators expect some form of UDF
 		super(new UserCodeClassWrapper<AbstractFunction>(AbstractFunction.class), NAME);
+	}
+	
+	public Union(Operator input1, Operator input2) {
+		this();
+		setFirstInput(input1);
+		setSecondInput(input2);
 	}
 }

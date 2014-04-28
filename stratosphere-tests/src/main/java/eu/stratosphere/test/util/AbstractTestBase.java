@@ -47,6 +47,8 @@ import eu.stratosphere.util.LogUtils;
 public abstract class AbstractTestBase {
 	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
+	
+	private static final long TASK_MANAGER_MEMORY_SIZE = 80;
 
 	
 	protected final Configuration config;
@@ -79,7 +81,8 @@ public abstract class AbstractTestBase {
 	public void startCluster() throws Exception {
 		this.executor = new NepheleMiniCluster();
 		this.executor.setDefaultOverwriteFiles(true);
-		
+		this.executor.setLazyMemoryAllocation(true);
+		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
 		this.executor.start();
 	}
 
@@ -225,7 +228,7 @@ public abstract class AbstractTestBase {
 		String[] result = (String[]) list.toArray(new String[list.size()]);
 		Arrays.sort(result);
 		
-		String[] expected = expectedResultStr.split("\n");
+		String[] expected = expectedResultStr.isEmpty() ? new String[0] : expectedResultStr.split("\n");
 		Arrays.sort(expected);
 		
 		Assert.assertEquals("Different number of lines in expected and obtained result.", expected.length, result.length);

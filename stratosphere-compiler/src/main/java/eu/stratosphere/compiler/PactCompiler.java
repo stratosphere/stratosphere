@@ -94,7 +94,6 @@ import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.protocols.ExtendedManagementProtocol;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
-import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.util.InstantiationUtil;
 import eu.stratosphere.util.Visitor;
@@ -110,7 +109,7 @@ import eu.stratosphere.util.Visitor;
  * alternative plans, pruning against the interesting properties.
  * <p>
  * The optimizer also assigns the memory to the individual tasks. This is currently done in a very simple fashion: All
- * sub-tasks that need memory (e.g. reduce or match) are given an equal share of memory.
+ * sub-tasks that need memory (e.g. reduce or join) are given an equal share of memory.
  */
 public class PactCompiler {
 
@@ -798,9 +797,9 @@ public class PactCompiler {
 
 		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP, int maxMachines,
 									 int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
-			if(closure == null){
+			if (closure == null){
 				con2node = new HashMap<Operator, OptimizerNode>();
-			}else{
+			} else {
 				con2node = closure;
 			}
 			this.sources = new ArrayList<DataSourceNode>(4);
@@ -861,8 +860,8 @@ public class PactCompiler {
 			else if (c instanceof DeltaIteration) {
 				n = new WorksetIterationNode((DeltaIteration) c);
 			}
-			else if(c instanceof Union){
-				n = new BinaryUnionNode((Union)c);
+			else if (c instanceof Union){
+				n = new BinaryUnionNode((Union) c);
 			}
 			else if (c instanceof PartialSolutionPlaceHolder) {
 				final PartialSolutionPlaceHolder holder = (PartialSolutionPlaceHolder) c;
@@ -948,7 +947,7 @@ public class PactCompiler {
 			OptimizerNode n = this.con2node.get(c);
 
 			// first connect to the predecessors
-			n.setInputs(this.con2node);
+			n.setInput(this.con2node);
 			n.setBroadcastInputs(this.con2node);
 			
 			// if the node represents a bulk iteration, we recursively translate the data flow now
@@ -983,14 +982,6 @@ public class PactCompiler {
 					if (terminationCriterion == null) {
 						iter.getTerminationCriterion().accept(recursiveCreator);
 						terminationCriterion = recursiveCreator.con2node.get(iter.getTerminationCriterion());
-						
-						// this does unfortunately not work, as the partial solution node is known to exist at
-						// this point (otherwise the check for the next partial solution would have failed already)
-//						partialSolution = (BulkPartialSolutionNode) recursiveCreator.con2node.get(iter.getPartialSolution());
-//						
-//						if (partialSolution == null) {
-//							throw new CompilerException("Error: The termination criterion result does not depend on the partial solution.");
-//						}
 					}
 				}
 				
@@ -1030,24 +1021,19 @@ public class PactCompiler {
 				
 				iter.getNextWorkset().accept(recursiveCreator);
 				
-				// for now, check that the solution set it joined with only once. we want to allow multiple joins
-				// with the solution set later when we can share data structures among operators. also, the join
-				// must be a match which is at the same time the solution set delta
 				if (solutionSetNode == null || solutionSetNode.getOutgoingConnections() == null || solutionSetNode.getOutgoingConnections().isEmpty()) {
 					throw new CompilerException("Error: The step function does not reference the solution set.");
 				} else {
-					if (solutionSetNode.getOutgoingConnections().size() > 1) {
-						throw new CompilerException("Error: The solution set may currently be joined with only once.");
-					} else {
-						OptimizerNode successor = solutionSetNode.getOutgoingConnections().get(0).getTarget();
-						
+					for (PactConnection conn : solutionSetNode.getOutgoingConnections()) {
+						OptimizerNode successor = conn.getTarget();
+					
 						if (successor.getClass() == MatchNode.class) {
 							// find out which input to the match the solution set is
 							MatchNode mn = (MatchNode) successor;
 							if (mn.getFirstPredecessorNode() == solutionSetNode) {
-								mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_FIRST);
+								mn.makeJoinWithSolutionSet(0);
 							} else if (mn.getSecondPredecessorNode() == solutionSetNode) {
-								mn.fixDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_SECOND);
+								mn.makeJoinWithSolutionSet(1);
 							} else {
 								throw new CompilerException();
 							}
@@ -1063,7 +1049,7 @@ public class PactCompiler {
 							}
 						}
 						else {
-							throw new CompilerException("Error: The solution set may only be joined with through a Match or a CoGroup.");
+							throw new CompilerException("Error: The solution set may only be joined with through a Join or a CoGroup function.");
 						}
 					}
 				}
@@ -1559,8 +1545,12 @@ public class PactCompiler {
 				throw new NullPointerException("Returned instance map is <null>");
 			}
 		}
+		catch (IOException e) {
+			throw new CompilerException(e.getMessage());
+		}
 		catch (Throwable t) {
-			throw new CompilerException("Available instances could not be determined from job manager: " + 
+			throw new CompilerException("Cannot connect to the JobManager to determine the available TaskManagers. "
+					+ "Check if the JobManager is running (using the web interface or log files). Reason: " + 
 				t.getMessage(), t);
 		}
 
@@ -1646,7 +1636,7 @@ public class PactCompiler {
 		}
 		
 		
-		public void waitForCompletion() throws Throwable {
+		public Map<InstanceType, InstanceTypeDescription> waitForCompletion() throws Throwable {
 			long start = System.currentTimeMillis();
 			long remaining = MAX_MILLIS_TO_WAIT;
 			
@@ -1654,7 +1644,7 @@ public class PactCompiler {
 				throw this.error;
 			}
 			if (this.instances != null) {
-				return;
+				return this.instances;
 			}
 			
 			do {
@@ -1671,11 +1661,11 @@ public class PactCompiler {
 				throw this.error;
 			}
 			if (this.instances != null) {
-				return;
+				return this.instances;
 			}
 			
-			// try to forcefully shut this thread down
-			throw new IOException("Connection timed out.");
+			throw new IOException("Could not connect to the JobManager at " + jobManagerAddress + 
+				". Please make sure that the Job Manager is started properly.");
 		}
 		
 
