@@ -27,8 +27,14 @@ import java.util.Set;
 
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.util.Visitable;
 import eu.stratosphere.util.Visitor;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * This class encapsulates a single stratosphere job (an instantiated data flow), together with some parameters.
@@ -292,15 +298,31 @@ public class Plan implements Visitable<Operator> {
 			sink.accept(visitor);
 		}
 	}
-
+	
 	/**
 	 *  register cache files in program level
 	 * @param filePath The files must be stored in a place that can be accessed from all workers (most commonly HDFS)
 	 * @param name user defined name of that file
 	 */
-	public void registerCachedFile(String filePath, String name) throws RuntimeException{
+	public void registerCachedFile(String filePath, String name) throws RuntimeException {
 		if (!this.cacheFile.containsKey(name)) {
-			this.cacheFile.put(name, filePath);
+			try {
+				FileSystem fs = FileSystem.get(new URI(filePath));
+				if (fs.exists(new Path(filePath))) {
+					this.cacheFile.put(name, filePath);
+				} else {
+					throw new RuntimeException("File "+filePath+" doesn't exist.");
+				}
+			} catch (IOException ex) {
+				File f = new File(filePath);
+				if (f.exists()) {
+					this.cacheFile.put(name, f.getAbsolutePath());
+				} else {
+					throw new RuntimeException("File "+f.getAbsolutePath()+" doesn't exist.");
+				}
+			} catch (URISyntaxException ex) {
+				throw new RuntimeException("Invalid path.");
+			}
 		} else {
 			throw new RuntimeException("cache file " + name + "already exists!");
 		}
