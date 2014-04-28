@@ -37,7 +37,7 @@ import eu.stratosphere.test.util.JavaProgramTestBase;
 @RunWith(Parameterized.class)
 public class CrossITCase extends JavaProgramTestBase {
 	
-	private static int NUM_PROGRAMS = 6;
+	private static int NUM_PROGRAMS = 7;
 	
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
@@ -243,8 +243,35 @@ public class CrossITCase extends JavaProgramTestBase {
 						"4,Hallo Welt wieHallo Welt wie\n";
 				
 			}
+			case 7: {
+				
+				/*
+				 * check correctness of default cross
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
+				DataSet<Tuple2<Tuple3<Integer, Long, String>, Tuple5<Integer, Long, Integer, String, Long>>> coGroupDs = ds.cross(ds2);
+				
+				coGroupDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "(1, 1, Hi),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(1, 1, Hi),(1, 1, 0, Hallo, 1)\n" +
+						"(1, 1, Hi),(2, 3, 2, Hallo Welt wie, 1)\n" +
+						"(2, 2, Hello),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(2, 2, Hello),(1, 1, 0, Hallo, 1)\n" +
+						"(2, 2, Hello),(2, 3, 2, Hallo Welt wie, 1)\n" +
+						"(3, 2, Hello world),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(3, 2, Hello world),(1, 1, 0, Hallo, 1)\n" +
+						"(3, 2, Hello world),(2, 3, 2, Hallo Welt wie, 1)\n";
+				
+			}
 			// TODO Currently not working because AvroSerializer does not implement copy()
-//			case 7: {
+//			case 8: {
 //				
 //				/*
 //				 * check correctness of cross on two custom type inputs
@@ -271,7 +298,7 @@ public class CrossITCase extends JavaProgramTestBase {
 //						",44,Hallo Welt wieHallo Welt wie\n";
 //			}
 			// TODO Currently not working because AvroSerializer does not implement copy()
-//			case 8: {
+//			case 9: {
 //				
 //				/*
 //				 * check correctness of cross a tuple input and a custom type input
