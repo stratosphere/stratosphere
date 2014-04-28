@@ -16,11 +16,10 @@ package eu.stratosphere.pact.runtime.task;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
+import eu.stratosphere.api.common.functions.GenericCombine;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
-
 import eu.stratosphere.pact.runtime.sort.AsynchronousPartialSorter;
 import eu.stratosphere.pact.runtime.task.util.CloseableInputProvider;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
@@ -41,12 +40,12 @@ import eu.stratosphere.util.MutableObjectIterator;
  * 
  * @param <T> The data type consumed and produced by the combiner.
  */
-public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
+public class CombineDriver<T> implements PactDriver<GenericCombine<T>, T>
 {
 	private static final Log LOG = LogFactory.getLog(CoGroupDriver.class);
 
 	
-	private PactTaskContext<GenericGroupReduce<T, ?>, T> taskContext;
+	private PactTaskContext<GenericCombine<T>, T> taskContext;
 	
 	private CloseableInputProvider<T> input;
 
@@ -60,7 +59,7 @@ public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
 
 
 	@Override
-	public void setup(PactTaskContext<GenericGroupReduce<T, ?>, T> context) {
+	public void setup(PactTaskContext<GenericCombine<T>, T> context) {
 		this.taskContext = context;
 		this.running = true;
 	}
@@ -81,9 +80,9 @@ public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
 	 * @see eu.stratosphere.pact.runtime.task.AbstractPactTask#getStubType()
 	 */
 	@Override
-	public Class<GenericGroupReduce<T, ?>> getStubType() {
+	public Class<GenericCombine<T>> getStubType() {
 		@SuppressWarnings("unchecked")
-		final Class<GenericGroupReduce<T, ?>> clazz = (Class<GenericGroupReduce<T, ?>>) (Class<?>) GenericGroupReduce.class;
+		final Class<GenericCombine<T>> clazz = (Class<GenericCombine<T>>) (Class<?>) GenericCombine.class;
 		return clazz;
 	}
 
@@ -117,7 +116,7 @@ public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
 		this.comparator = this.taskContext.getInputComparator(0);
 
 		switch (ls) {
-		case PARTIAL_GROUP:
+		case PARTIAL_GROUP_COMBINE:
 			this.input = new AsynchronousPartialSorter<T>(memoryManager, in, this.taskContext.getOwningNepheleTask(),
 						this.serializer, this.comparator.duplicate(), availableMemory);
 			break;
@@ -141,7 +140,7 @@ public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
 				this.serializer, this.comparator);
 
 		// cache references on the stack
-		final GenericGroupReduce<T, ?> stub = this.taskContext.getStub();
+		final GenericCombine<T> stub = this.taskContext.getStub();
 		final Collector<T> output = this.taskContext.getOutputCollector();
 
 		// run stub implementation

@@ -82,7 +82,7 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 			// The Input is combined using a sort-merge strategy. Before spilling on disk, the data volume is reduced using
 			// the combine() method of the ReduceFunction.
 			// An iterator on the sorted, grouped, and combined pairs is created and returned
-			case PARTIAL_GROUP:
+			case PARTIAL_GROUP_COMBINE:
 				this.sorter = new AsynchronousPartialSorterCollector<T>(memoryManager, this.parent,
 						serializer, comparator.duplicate(), availableMemory);
 				this.inputCollector = this.sorter.getInputCollector();

@@ -87,6 +87,12 @@ public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOpe
 			int[] logicalKeyPositions = grouper.getKeys().computeLogicalKeyPositions();
 			PlanReduceOperator<IN> reduceOp = new PlanReduceOperator<IN>(function, logicalKeyPositions, name, getInputType());
 			
+			// Show an Exception if the user tries two sort on a ReduceFunction, which is not supported
+			if(grouper.getGroupSortKeyPositions() != null) {
+				throw new UnsupportedOperationException("Sort is supported for ReduceFuntion, please use GroupReduceFuntion or"
+						+ "delete the sort");
+			}
+			
 			return new UnaryNodeTranslation(reduceOp);
 		}
 		else {

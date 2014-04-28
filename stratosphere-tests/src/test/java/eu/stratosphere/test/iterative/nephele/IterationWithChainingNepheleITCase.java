@@ -32,7 +32,7 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializerFactory;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
-import eu.stratosphere.pact.runtime.task.ReduceDriver;
+import eu.stratosphere.pact.runtime.task.GroupReduceDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedCollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
@@ -183,7 +183,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
             tailConfig.setOutputSerializer(serializer);
 
             // the driver
-            tailConfig.setDriver(ReduceDriver.class);
+            tailConfig.setDriver(GroupReduceDriver.class);
             tailConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP);
             tailConfig.setDriverComparator(comparator, 0);
             tailConfig.setStubWrapper(new UserCodeClassWrapper<DummyReducer>(DummyReducer.class));

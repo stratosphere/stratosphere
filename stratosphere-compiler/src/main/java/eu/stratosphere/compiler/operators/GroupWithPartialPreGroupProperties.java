@@ -87,7 +87,7 @@ public final class GroupWithPartialPreGroupProperties extends OperatorDescriptor
 			combinerNode.setDegreeOfParallelism(in.getSource().getDegreeOfParallelism());
 			combinerNode.setSubtasksPerInstance(in.getSource().getSubtasksPerInstance());
 			
-			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", toCombiner, DriverStrategy.PARTIAL_GROUP, this.keyList);
+			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", toCombiner, DriverStrategy.PARTIAL_GROUP_COMBINE, this.keyList);
 			combiner.setCosts(new Costs(0, 0));
 			combiner.initProperties(toCombiner.getGlobalProperties(), toCombiner.getLocalProperties());
 			
