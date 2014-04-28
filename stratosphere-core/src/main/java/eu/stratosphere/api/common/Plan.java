@@ -303,25 +303,23 @@ public class Plan implements Visitable<Operator> {
 	 *  register cache files in program level
 	 * @param filePath The files must be stored in a place that can be accessed from all workers (most commonly HDFS)
 	 * @param name user defined name of that file
+	 * @throws java.io.IOException
 	 */
-	public void registerCachedFile(String filePath, String name) throws RuntimeException {
+	public void registerCachedFile(String filePath, String name) throws RuntimeException, IOException {
 		if (!this.cacheFile.containsKey(name)) {
 			try {
-				FileSystem fs = FileSystem.get(new URI(filePath));
-				if (fs.exists(new Path(filePath))) {
-					this.cacheFile.put(name, filePath);
-				} else {
-					throw new RuntimeException("File "+filePath+" doesn't exist.");
+				URI u = new URI(filePath);
+				if (!u.getPath().startsWith("/")) {
+					u = new URI(new File(filePath).getAbsolutePath());
 				}
-			} catch (IOException ex) {
-				File f = new File(filePath);
-				if (f.exists()) {
-					this.cacheFile.put(name, f.getAbsolutePath());
+				FileSystem fs = FileSystem.get(u);
+				if (fs.exists(new Path(u.getPath()))) {
+					this.cacheFile.put(name, u.toString());
 				} else {
-					throw new RuntimeException("File "+f.getAbsolutePath()+" doesn't exist.");
+					throw new RuntimeException("File " + u.toString() + " oesn't exist.");
 				}
 			} catch (URISyntaxException ex) {
-				throw new RuntimeException("Invalid path.");
+				throw new RuntimeException("Invalid path: " + filePath);
 			}
 		} else {
 			throw new RuntimeException("cache file " + name + "already exists!");
