@@ -17,7 +17,6 @@ package eu.stratosphere.api.java.functions;
 import java.util.Iterator;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.common.functions.GenericReduce;
 import eu.stratosphere.util.Collector;
 

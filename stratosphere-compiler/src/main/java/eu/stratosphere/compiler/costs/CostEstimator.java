@@ -166,6 +166,10 @@ public abstract class CostEstimator {
 		case SORTED_REDUCE:
 			// grouping or co-grouping over sorted streams for free
 			
+		case HASH_REDUCE:
+			// I just assume it's 0 for the first prototype
+			// TODO adjust this
+			
 		case PARTIAL_GROUP_COMBINE:
 			// partial grouping is always local and main memory resident. we should add a relative cpu cost at some point
 		

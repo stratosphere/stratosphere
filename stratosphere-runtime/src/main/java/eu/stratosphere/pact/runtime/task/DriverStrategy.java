@@ -46,6 +46,9 @@ public enum DriverStrategy {
 	ALL_GROUP(AllGroupReduceDriver.class, null, PIPELINED, false),
 	// group everything together into one group and apply the Reduce function
 	ALL_REDUCE(AllReduceDriver.class, null, PIPELINED, false),
+	// apply the reduce function to groups of inputs. But compared to the other reduce Strategies this
+	// hashes each record to assign a group and saves result in a hash-table, instead of sorting inputs.
+	HASH_REDUCE(HashReduceDriver.class, null, FULL_DAM, true),
 	// already grouped input, within a key values are crossed in a nested loop fashion
 	GROUP_SELF_NESTEDLOOP(null, null, PIPELINED, true),	// Note: Self-Match currently inactive
 	// both inputs are merged, but materialized to the side for block-nested-loop-join among values with equal key
