@@ -18,9 +18,7 @@ import java.util.List;
 
 import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.compiler.DataStatistics;
-import eu.stratosphere.compiler.operators.AllGroupWithPartialPreGroupProperties;
 import eu.stratosphere.compiler.operators.AllReduceWithPartialPreGroupProperties;
-import eu.stratosphere.compiler.operators.GroupWithPartialPreGroupProperties;
 import eu.stratosphere.compiler.operators.OperatorDescriptorSingle;
 import eu.stratosphere.compiler.operators.ReduceWithPartialPreGroupProperties;
 
