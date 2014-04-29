@@ -14,10 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.operators.translation.PlanFlatMapOperator;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 
 /**
@@ -31,7 +31,7 @@ public class FlatMapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, Fl
 	
 	
 	public FlatMapOperator(DataSet<IN> input, FlatMapFunction<IN, OUT> function) {
-		super(input, TypeExtractor.getFlatMapReturnTypes(function));
+		super(input, TypeExtractor.getFlatMapReturnTypes(function, input.getType()));
 		
 		if (function == null)
 			throw new NullPointerException("FlatMap function must not be null.");
@@ -40,8 +40,22 @@ public class FlatMapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, Fl
 	}
 
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
+		
 		String name = getName() != null ? getName() : function.getClass().getName();
-		return new UnaryNodeTranslation(new PlanFlatMapOperator<IN, OUT>(function, name, getInputType(), getResultType()));
+		// create operator
+		PlanFlatMapOperator<IN, OUT> po = new PlanFlatMapOperator<IN, OUT>(function, name, getInputType(), getResultType());
+		// set input
+		po.setInput(input);
+		// set dop
+		if(this.getParallelism() > 0) {
+			// use specified dop
+			po.setDegreeOfParallelism(this.getParallelism());
+		} else {
+			// if no dop has been specified, use dop of input operator to enable chaining
+			po.setDegreeOfParallelism(input.getDegreeOfParallelism());
+		}
+		
+		return po;
 	}
 }

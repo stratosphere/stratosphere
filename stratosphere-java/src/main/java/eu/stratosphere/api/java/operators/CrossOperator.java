@@ -14,9 +14,9 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.CrossFunction;
-import eu.stratosphere.api.java.operators.translation.BinaryNodeTranslation;
 import eu.stratosphere.api.java.operators.translation.PlanCrossOperator;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -39,9 +39,18 @@ public class CrossOperator<I1, I2, OUT>
 	}
 	
 	@Override
-	protected BinaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input1, Operator input2) {
+		
 		String name = getName() != null ? getName() : function.getClass().getName();
-		return new BinaryNodeTranslation(new PlanCrossOperator<I1, I2, OUT>(function, name, getInput1Type(), getInput2Type(), getResultType()));
+		// create operator
+		PlanCrossOperator<I1, I2, OUT> po = new PlanCrossOperator<I1, I2, OUT>(function, name, getInput1Type(), getInput2Type(), getResultType());
+		// set inputs
+		po.setFirstInput(input1);
+		po.setSecondInput(input2);
+		// set dop
+		po.setDegreeOfParallelism(this.getParallelism());
+		
+		return po;
 	}
 	
 
@@ -63,7 +72,7 @@ public class CrossOperator<I1, I2, OUT>
 		}
 
 		public <R> CrossOperator<I1, I2, R> with(CrossFunction<I1, I2, R> function) {
-			TypeInformation<R> returnType = TypeExtractor.getCrossReturnTypes(function);
+			TypeInformation<R> returnType = TypeExtractor.getCrossReturnTypes(function, input1.getType(), input2.getType());
 			return new CrossOperator<I1, I2, R>(input1, input2, function, returnType);
 		}
 	}

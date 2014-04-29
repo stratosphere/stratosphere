@@ -13,14 +13,15 @@
 
 package eu.stratosphere.api.common.operators;
 
+import java.util.List;
+
 import eu.stratosphere.api.common.operators.util.UserCodeWrapper;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.util.Visitable;
 
 /**
-* Abstract base class for all Parallelization Contracts (PACTs).
-* A Pact receives one or multiple input sets of records (see {@link Record}). It partitions and combines them
-* into independent sets which are processed by user functions.
+* Abstract base class for all operators. An operator is a source, sink, or it applies an operation to
+* one or more inputs, producing a result.
 */
 public abstract class Operator implements Visitable<Operator> {
 	
@@ -169,9 +170,75 @@ public abstract class Operator implements Visitable<Operator> {
 		return null;
 	}
 	
+	/**
+	 * Takes a list of operators and creates a cascade of unions of this inputs, if needed.
+	 * If not needed (there was only one operator in the list), then that operator is returned.
+	 * 
+	 * @param operators The operators.
+	 * @return The single operator or a cascade of unions of the operators.
+	 */
+	public static Operator createUnionCascade(List<Operator> operators) {
+		return createUnionCascade((Operator[]) operators.toArray(new Operator[operators.size()]));
+	}
 	
+	/**
+	 * Takes a list of operators and creates a cascade of unions of this inputs, if needed.
+	 * If not needed (there was only one operator in the list), then that operator is returned.
+	 * 
+	 * @param operators The operators.
+	 * @return The single operator or a cascade of unions of the operators.
+	 */
+	public static Operator createUnionCascade(Operator... operators) {
+		return createUnionCascade(null, operators);
+	}
+	
+	/**
+	 * Takes a single Operator and a list of operators and creates a cascade of unions of this inputs, if needed.
+	 * If not needed there was only one operator as input, then this operator is returned.
+	 * 
+	 * @param input1 The first input operator.
+	 * @param input2 The other input operators.
+	 * 
+	 * @return The single operator or a cascade of unions of the operators.
+	 */
+	public static Operator createUnionCascade(Operator input1, Operator... input2) {
+		// return cases where we don't need a union
+		if (input2 == null || input2.length == 0) {
+			return input1;
+		} else if (input2.length == 1 && input1 == null) {
+			return input2[0];
+		}
+		// Otherwise construct union cascade
+		Union lastUnion = new Union();
+		int i;
+		if (input2[0] == null) {
+			throw new IllegalArgumentException("The input may not contain null elements.");
+		}
+		lastUnion.setFirstInput(input2[0]);
+
+		if (input1 != null) {
+			lastUnion.setSecondInput(input1);
+			i = 1;
+		} else {
+			if (input2[1] == null) {
+				throw new IllegalArgumentException("The input may not contain null elements.");
+			}
+			lastUnion.setSecondInput(input2[1]);
+			i = 2;
+		}
+		for (; i < input2.length; i++) {
+			Union tmpUnion = new Union();
+			tmpUnion.setSecondInput(lastUnion);
+			if (input2[i] == null) {
+				throw new IllegalArgumentException("The input may not contain null elements.");
+			}
+			tmpUnion.setFirstInput(input2[i]);
+			lastUnion = tmpUnion;
+		}
+		return lastUnion;
+	}
+
 	// --------------------------------------------------------------------------------------------
-	
 
 	@Override
 	public String toString() {

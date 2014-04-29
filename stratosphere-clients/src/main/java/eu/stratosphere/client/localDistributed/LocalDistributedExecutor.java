@@ -30,10 +30,11 @@ import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.client.JobClient;
-import eu.stratosphere.nephele.instance.local.LocalTaskManagerThread;
+import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.jobmanager.JobManager.ExecutionMode;
+import eu.stratosphere.nephele.taskmanager.TaskManager;
 
 /**
  * This executor allows to execute jobs locally on a single machine using multiple task managers.
@@ -46,7 +47,7 @@ public class LocalDistributedExecutor extends PlanExecutor {
 	
 	private static final int JOB_MANAGER_RPC_PORT = 6498;
 
-	private static final int SLEEP_TIME = 100;
+	private static final int SLEEP_TIME = 50;
 
 	private static final int START_STOP_TIMEOUT = 2000;
 
@@ -54,53 +55,40 @@ public class LocalDistributedExecutor extends PlanExecutor {
 
 	private boolean running = false;
 
-	private JobManagerThread jobManagerThread;
+	private JobManager jobManager;
 
-	private List<LocalTaskManagerThread> taskManagerThreads = new ArrayList<LocalTaskManagerThread>();
+	private List<TaskManager> taskManagers = new ArrayList<TaskManager>();
 
-	public static class JobManagerThread extends Thread {
-		JobManager jm;
 
-		public JobManagerThread(JobManager jm) {
-			this.jm = jm;
-		}
-
-		@Override
-		public void run() {
-			this.jm.runTaskLoop();
-		}
-
-		public void shutDown() {
-			this.jm.shutdown();
-		}
-
-		public boolean isShutDown() {
-			return this.jm.isShutDown();
-		}
-	}
-
-	public synchronized void start(int numTaskMgr) throws InterruptedException {
+	public synchronized void start(int numTaskMgr) throws Exception {
 		if (this.running) {
 			return;
 		}
 		
+
+		// we need to down size the memory. determine the memory and divide it by the number of task managers
+		long javaMem = HardwareDescriptionFactory.extractFromSystem().getSizeOfFreeMemory();
+		
+		// at this time, we need to scale down the memory, because we cannot dedicate all free memory to the 
+		// memory manager. we have to account for the buffer pools as well, and the job manager#s data structures
+		long bufferMem = GlobalConfiguration.getLong(ConfigConstants.TASK_MANAGER_NETWORK_NUM_BUFFERS_KEY,
+			ConfigConstants.DEFAULT_TASK_MANAGER_NETWORK_NUM_BUFFERS) * 
+			GlobalConfiguration.getLong(ConfigConstants.TASK_MANAGER_NETWORK_BUFFER_SIZE_KEY,
+				ConfigConstants.DEFAULT_TASK_MANAGER_NETWORK_BUFFER_SIZE);
+		
+		javaMem = (long) (0.8 * (javaMem - bufferMem));
+		
+		javaMem /= numTaskMgr;
+		
+		// convert memory from bytes to megabytes
+		javaMem >>>= 20;
+		
 		Configuration conf = NepheleMiniCluster.getMiniclusterDefaultConfig(
-				JOB_MANAGER_RPC_PORT, 6500, 7501, null, true, true, false);
+				JOB_MANAGER_RPC_PORT, 6500, 7501, javaMem, null, false, true, false);
 		GlobalConfiguration.includeConfiguration(conf);
 			
 		// start job manager
-		JobManager jobManager;
-		try {
-			jobManager = new JobManager(ExecutionMode.CLUSTER);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-
-		this.jobManagerThread = new JobManagerThread(jobManager);
-		this.jobManagerThread.setDaemon(true);
-		this.jobManagerThread.start();
+		this.jobManager = new JobManager(ExecutionMode.CLUSTER);
 		
 		// start the task managers
 		for (int tm = 0; tm < numTaskMgr; tm++) {
@@ -115,14 +103,11 @@ public class LocalDistributedExecutor extends PlanExecutor {
 
 			GlobalConfiguration.includeConfiguration(tmConf);
 
-			LocalTaskManagerThread t = new LocalTaskManagerThread(
-					"LocalDistributedExecutor: LocalTaskManagerThread-#" + tm, numTaskMgr);
-
-			t.start();
-			taskManagerThreads.add(t);
+			TaskManager t = new TaskManager();
+			taskManagers.add(t);
 		}
 
-		int timeout = START_STOP_TIMEOUT * this.taskManagerThreads.size();
+		int timeout = START_STOP_TIMEOUT * this.taskManagers.size();
 
 		// wait for all task managers to register at the JM
 		for (int sleep = 0; sleep < timeout; sleep += SLEEP_TIME) {
@@ -146,21 +131,19 @@ public class LocalDistributedExecutor extends PlanExecutor {
 		}
 
 		// 1. shut down task managers
-		for (LocalTaskManagerThread t : this.taskManagerThreads) {
-			t.shutDown();
-			t.interrupt();
-			t.join(START_STOP_TIMEOUT);
+		for (TaskManager t : this.taskManagers) {
+			t.shutdown();
 		}
 
 		boolean isTaskManagersShutDown = false;
 
 		// wait for task managers to shut down
-		int timeout = START_STOP_TIMEOUT * this.taskManagerThreads.size();
+		int timeout = START_STOP_TIMEOUT * this.taskManagers.size();
 
 		for (int sleep = 0; sleep < timeout; sleep += SLEEP_TIME) {
 			isTaskManagersShutDown = true;
 
-			for (LocalTaskManagerThread t : this.taskManagerThreads) {
+			for (TaskManager t : this.taskManagers) {
 				if (!t.isShutDown()) {
 					isTaskManagersShutDown = false;
 				}
@@ -174,16 +157,14 @@ public class LocalDistributedExecutor extends PlanExecutor {
 		}
 
 		if (!isTaskManagersShutDown) {
-			throw new RuntimeException(String.format("Task managers shut down timed out (%d ms).", timeout));
+			throw new RuntimeException(String.format("TaskManager shut down timed out (%d ms).", timeout));
 		}
 
 		// 2. shut down job manager
-		this.jobManagerThread.shutDown();
-		this.jobManagerThread.interrupt();
-		this.jobManagerThread.join(START_STOP_TIMEOUT);
+		this.jobManager.shutdown();
 
 		for (int sleep = 0; sleep < START_STOP_TIMEOUT; sleep += SLEEP_TIME) {
-			if (this.jobManagerThread.isShutDown()) {
+			if (this.jobManager.isShutDown()) {
 				break;
 			}
 
@@ -191,12 +172,12 @@ public class LocalDistributedExecutor extends PlanExecutor {
 		}
 
 		try {
-			if (!this.jobManagerThread.isShutDown()) {
+			if (!this.jobManager.isShutDown()) {
 				throw new RuntimeException(String.format("Job manager shut down timed out (%d ms).", START_STOP_TIMEOUT));
 			}
 		} finally {
-			this.taskManagerThreads.clear();
-			this.jobManagerThread = null;
+			this.taskManagers.clear();
+			this.jobManager = null;
 			this.running = false;
 		}
 	}

@@ -14,19 +14,16 @@ package eu.stratosphere.api.common.aggregators;
 
 import eu.stratosphere.types.LongValue;
 
-
 /**
- *
+ * An {@link Aggregator} that sums up long values.
  */
 public class LongSumAggregator implements Aggregator<LongValue> {
 
-	private LongValue wrapper = new LongValue();
-	private long sum;
+	private long sum;	// the sum
 	
 	@Override
 	public LongValue getAggregate() {
-		wrapper.setValue(sum);
-		return wrapper;
+		return new LongValue(sum);
 	}
 
 	@Override
@@ -34,6 +31,11 @@ public class LongSumAggregator implements Aggregator<LongValue> {
 		sum += element.getValue();
 	}
 	
+	/**
+	 * Adds the given value to the current aggregate.
+	 * 
+	 * @param value The value to add to the aggregate.
+	 */
 	public void aggregate(long value) {
 		sum += value;
 	}

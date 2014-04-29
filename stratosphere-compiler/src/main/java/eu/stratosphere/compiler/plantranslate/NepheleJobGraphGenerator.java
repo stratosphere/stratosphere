@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import eu.stratosphere.api.common.cache.DistributedCache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,7 +31,6 @@ import eu.stratosphere.api.common.aggregators.AggregatorWithName;
 import eu.stratosphere.api.common.aggregators.ConvergenceCriterion;
 import eu.stratosphere.api.common.aggregators.LongSumAggregator;
 import eu.stratosphere.api.common.distributions.DataDistribution;
-import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.dag.TempMode;
@@ -69,13 +70,13 @@ import eu.stratosphere.pact.runtime.iterative.task.IterationSynchronizationSinkT
 import eu.stratosphere.pact.runtime.iterative.task.IterationTailPactTask;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.CoGroupDriver;
+import eu.stratosphere.pact.runtime.task.CoGroupWithSolutionSetFirstDriver;
+import eu.stratosphere.pact.runtime.task.CoGroupWithSolutionSetSecondDriver;
 import eu.stratosphere.pact.runtime.task.DataSinkTask;
 import eu.stratosphere.pact.runtime.task.DataSourceTask;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
-import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetCoGroupDriver.SolutionSetFirstCoGroupDriver;
-import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetCoGroupDriver.SolutionSetSecondCoGroupDriver;
-import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetMatchDriver.SolutionSetFirstJoinDriver;
-import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetMatchDriver.SolutionSetSecondJoinDriver;
+import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetFirstDriver;
+import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetSecondDriver;
 import eu.stratosphere.pact.runtime.task.MatchDriver;
 import eu.stratosphere.pact.runtime.task.NoOpDriver;
 import eu.stratosphere.pact.runtime.task.RegularPactTask;
@@ -95,12 +96,13 @@ import eu.stratosphere.util.Visitor;
  */
 public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	
-	public static final String MERGE_ITERATION_AUX_TASKS_KEY = "pact.compiler.merge-iteration-aux";
+	public static final String MERGE_ITERATION_AUX_TASKS_KEY = "compiler.merge-iteration-aux";
 	
-	private static final boolean mergeIterationAuxTasks = GlobalConfiguration.getBoolean(
-		MERGE_ITERATION_AUX_TASKS_KEY, true);
+	private static final boolean mergeIterationAuxTasks = GlobalConfiguration.getBoolean(MERGE_ITERATION_AUX_TASKS_KEY, true);
 	
 	private static final Log LOG = LogFactory.getLog(NepheleJobGraphGenerator.class);
+	
+	private static final TaskInChain ALREADY_VISITED_PLACEHOLDER = new TaskInChain(null, null, null);
 	
 	// ------------------------------------------------------------------------
 
@@ -202,6 +204,10 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			}
 		}
 
+		// add registered cache file into job configuration
+		for (Entry<String, String> e: program.getOriginalPactPlan().getCachedFiles()) {
+			DistributedCache.addCachedFile(e.getKey(), e.getValue(), this.jobGraph.getJobConfiguration());
+		}
 		JobGraph graph = this.jobGraph;
 
 		// release all references again
@@ -303,7 +309,36 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 				vertex = createBulkIterationHead((BulkPartialSolutionPlanNode) node);
 			}
 			else if (node instanceof SolutionSetPlanNode) {
-				// skip the solution set place holder. we create the head at the workset place holder
+				// this represents an access into the solution set index.
+				// we do not create a vertex for the solution set here (we create the head at the workset place holder)
+				
+				// we adjust the joins / cogroups that go into the solution set here
+				for (Channel c : node.getOutgoingChannels()) {
+					DualInputPlanNode target = (DualInputPlanNode) c.getTarget();
+					AbstractJobVertex accessingVertex = this.vertices.get(target);
+					TaskConfig conf = new TaskConfig(accessingVertex.getConfiguration());
+					int inputNum = c == target.getInput1() ? 0 : c == target.getInput2() ? 1 : -1;
+					
+					// sanity checks
+					if (inputNum == -1) {
+						throw new CompilerException();
+					}
+					
+					// adjust the driver
+					if (conf.getDriver().equals(MatchDriver.class)) {
+						conf.setDriver(inputNum == 0 ? JoinWithSolutionSetFirstDriver.class : JoinWithSolutionSetSecondDriver.class);
+					}
+					else if (conf.getDriver().equals(CoGroupDriver.class)) {
+						conf.setDriver(inputNum == 0 ? CoGroupWithSolutionSetFirstDriver.class : CoGroupWithSolutionSetSecondDriver.class);
+					}
+					else {
+						throw new CompilerException("Found join with solution set using incompatible operator (only Join/CoGroup are valid).");
+					}
+				}
+				
+				// make sure we do not visit this node again. for that, we add a 'already seen' entry into one of the sets
+				this.chainedTasks.put(node, ALREADY_VISITED_PLACEHOLDER);
+				
 				vertex = null;
 			}
 			else if (node instanceof WorksetPlanNode) {
@@ -375,7 +410,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			// skip data source node (they have no inputs)
 			// also, do nothing for union nodes, we connect them later when gathering the inputs for a task
 			// solution sets have no input. the initial solution set input is connected when the iteration node is in its postVisit
-			if (node instanceof SourcePlanNode || node instanceof NAryUnionPlanNode) {
+			if (node instanceof SourcePlanNode || node instanceof NAryUnionPlanNode || node instanceof SolutionSetPlanNode) {
 				return;
 			}
 			
@@ -400,56 +435,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					headConfig.setIterationHeadSolutionSetInputIndex(inputIndex);
 					translateChannel(wsNode.getInitialSolutionSetInput(), inputIndex, headVertex, headConfig, false);
 				}
-				
-				return;
-			} else if (node instanceof SolutionSetPlanNode) {
-				// this represents an access into the solution set index.
-				// add the necessary information to all nodes that access the index
-				if (node.getOutgoingChannels().size() != 1) {
-					throw new CompilerException("Currently, only one join with the solution set is allowed.");
-				}
-				
-				Channel c = node.getOutgoingChannels().get(0);
-				DualInputPlanNode target = (DualInputPlanNode) c.getTarget();
-				AbstractJobVertex accessingVertex = this.vertices.get(target);
-				TaskConfig conf = new TaskConfig(accessingVertex.getConfiguration());
-				int inputNum = c == target.getInput1() ? 0 : c == target.getInput2() ? 1 : -1;
-				
-				// sanity checks
-				if (inputNum == -1) {
-					throw new CompilerException();
-				}
-				
-				// adjust the driver
-				if (conf.getDriver().equals(MatchDriver.class)) {
-					conf.setDriver(inputNum == 0 ? SolutionSetFirstJoinDriver.class : SolutionSetSecondJoinDriver.class);
-				}
-				else if (conf.getDriver().equals(CoGroupDriver.class)) {
-					conf.setDriver(inputNum == 0 ? SolutionSetFirstCoGroupDriver.class : SolutionSetSecondCoGroupDriver.class);
-				}
-				else {
-					throw new CompilerException("Found join with solution set using incompatible operator (only Join/CoGroup are valid.");
-				}
-				
-				// set the serializer / comparator information
-				conf.setSolutionSetSerializer(((SolutionSetPlanNode) node).getContainingIterationNode().getSolutionSetSerializer());
-				
-				// hack: for now, we need the prober in the workset iteration head task
-				IterationDescriptor iter = this.iterations.get(((SolutionSetPlanNode) node).getContainingIterationNode());
-				TaskConfig headConf = iter.getHeadConfig();
-				
-				TypeSerializerFactory<?> otherSerializer;
-				TypeComparatorFactory<?> otherComparator;
-				if (inputNum == 0) {
-					otherSerializer = target.getInput2().getSerializer();
-					otherComparator = target.getComparator2();
-				} else {
-					otherSerializer = target.getInput1().getSerializer();
-					otherComparator = target.getComparator1();
-				}
-				headConf.setSolutionSetProberSerializer(otherSerializer);
-				headConf.setSolutionSetProberComparator(otherComparator);
-				headConf.setSolutionSetPairComparator(target.getPairComparator());
 				
 				return;
 			}
@@ -745,6 +730,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			chaining = ds.getPushChainDriverClass() != null &&
 					!(pred instanceof NAryUnionPlanNode) &&	// first op after union is stand-alone, because union is merged
 					!(pred instanceof BulkPartialSolutionPlanNode) &&	// partial solution merges anyways
+					!(pred instanceof WorksetPlanNode) &&	// workset merges anyways
 					!(pred instanceof IterationPlanNode) && // cannot chain with iteration heads currently
 					inConn.getShipStrategy() == ShipStrategyType.FORWARD &&
 					inConn.getLocalStrategy() == LocalStrategy.NONE &&
@@ -767,7 +753,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			if (this.currentIteration != null && this.currentIteration instanceof BulkIterationPlanNode)
 			{
 				BulkIterationPlanNode wspn = (BulkIterationPlanNode) this.currentIteration;
-				if(node == wspn.getRootOfTerminationCriterion() && wspn.getRootOfStepFunction() == pred){
+				if (node == wspn.getRootOfTerminationCriterion() && wspn.getRootOfStepFunction() == pred){
 					chaining = false;
 				}else if(node.getOutgoingChannels().size() > 0 &&(wspn.getRootOfStepFunction() == pred ||
 						wspn.getRootOfTerminationCriterion() == pred)) {
@@ -1577,15 +1563,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		
 		public JobTaskVertex getHeadTask() {
 			return headTask;
-		}
-		
-		public TaskConfig getHeadConfig() {
-			// if there is no configuration yet (solution set parameterization before the
-			// head is created) then we create one now 
-			if (this.headConfig == null) {
-				this.headConfig = new TaskConfig(new Configuration());
-			}
-			return headConfig;
 		}
 		
 		public TaskConfig getHeadFinalResultConfig() {

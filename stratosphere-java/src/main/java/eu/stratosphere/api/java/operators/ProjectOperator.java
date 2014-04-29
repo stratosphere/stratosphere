@@ -16,9 +16,9 @@ package eu.stratosphere.api.java.operators;
 
 import java.util.Arrays;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.operators.translation.PlanProjectOperator;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.api.java.tuple.Tuple10;
@@ -62,9 +62,17 @@ public class ProjectOperator<IN, OUT extends Tuple>
 	}
 
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
+		
 		String name = getName() != null ? getName() : "Projection "+Arrays.toString(fields);
-		return new UnaryNodeTranslation(new PlanProjectOperator<IN, OUT>(fields, name, getInputType(), getResultType()));
+		// create operator
+		PlanProjectOperator<IN, OUT> ppo = new PlanProjectOperator<IN, OUT>(fields, name, getInputType(), getResultType());
+		// set input
+		ppo.setInput(input);
+		// set dop
+		ppo.setDegreeOfParallelism(this.getParallelism());
+		
+		return ppo;
 	}
 
 	
@@ -94,14 +102,6 @@ public class ProjectOperator<IN, OUT extends Tuple>
 			
 			this.ds = ds;
 			this.fieldIndexes = fieldIndexes;
-		}
-		
-		public Projection(DataSet<T> ds, String fieldMask) {
-			this(ds, getFieldIndexesFromMask(fieldMask));
-		}
-		
-		public Projection(DataSet<T> ds, boolean[] fieldFlags) {
-			this(ds, getFieldIndexesFromFlags(fieldFlags));
 		}
 		
 		// --------------------------------------------------------------------------------------------	
@@ -778,39 +778,6 @@ public class ProjectOperator<IN, OUT extends Tuple>
 			}
 			
 			return fieldTypes;
-		}
-		
-		private static int[] getFieldIndexesFromMask(String fieldMask) {
-			
-			int[] fieldIndexes = new int[fieldMask.length()];
-			int fieldCnt = 0;
-			
-			fieldMask = fieldMask.toUpperCase();
-			for (int i = 0; i < fieldMask.length(); i++) {
-				char c = fieldMask.charAt(i);
-				if (c == '1' || c == 'T') {
-					fieldIndexes[fieldCnt++] = i;
-				} else if (c != '0' && c != 'F') {
-					throw new IllegalArgumentException("Mask string may contain only '0' and '1'.");
-				}
-			}
-			fieldIndexes = Arrays.copyOf(fieldIndexes, fieldCnt);
-			
-			return fieldIndexes;
-		}
-		
-		private static int[] getFieldIndexesFromFlags(boolean[] fieldFlags) {
-			int[] fieldIndexes = new int[fieldFlags.length];
-			int fieldCnt = 0;
-			
-			for (int i = 0; i < fieldFlags.length; i++) {
-				if (fieldFlags[i]) {
-					fieldIndexes[fieldCnt++] = i;
-				}
-			}
-			fieldIndexes = Arrays.copyOf(fieldIndexes, fieldCnt);
-			
-			return fieldIndexes;
 		}
 		
 	}

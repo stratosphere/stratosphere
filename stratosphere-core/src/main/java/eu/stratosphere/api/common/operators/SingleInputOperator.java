@@ -13,7 +13,6 @@
 
 package eu.stratosphere.api.common.operators;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import eu.stratosphere.api.common.functions.Function;
@@ -28,7 +27,7 @@ public abstract class SingleInputOperator<T extends Function> extends AbstractUd
 	/**
 	 * The input which produces the data consumed by this operator.
 	 */
-	protected final List<Operator> input = new ArrayList<Operator>();
+	protected Operator input;
 	
 	/**
 	 * The positions of the keys in the tuple.
@@ -69,73 +68,73 @@ public abstract class SingleInputOperator<T extends Function> extends AbstractUd
 	// --------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns the input, or null, if none is set.
+	 * Returns the input operator or data source, or null, if none is set.
 	 * 
-	 * @return The contract's input contract.
+	 * @return This operator's input.
 	 */
-	public List<Operator> getInputs() {
+	public Operator getInput() {
 		return this.input;
 	}
 	
 	/**
-	 * Removes all inputs from this contract.
+	 * Removes all inputs.
 	 */
 	public void clearInputs() {
-		this.input.clear();
-	}
-
-	/**
-	 * Connects the input to the task wrapped in this contract
-	 * 
-	 * @param input The contract will be set as input.
-	 */
-	public void addInput(Operator ... input) {
-		for (int i = 0; i < input.length; i++) {
-			if (input[i] == null) {
-				throw new IllegalArgumentException("The input may not contain null elements.");
-			} else {
-				this.input.add(input[i]);
-			}
-		}
+		this.input = null;
 	}
 	
 	/**
-	 * Connects the inputs to the task wrapped in this contract
+	 * Sets the given operator as the input to this operator.
 	 * 
-	 * @param inputs The contracts will be set as input.
+	 * @param input The operator to use as the input.
 	 */
-	public void addInputs(List<Operator> inputs) {
-		for (Operator element : inputs) {
-			if (element == null) {
-				throw new IllegalArgumentException("The input may not contain null elements.");
-			} else {
-				this.input.add(element);
-			}
-		}
+	public void setInput(Operator input) {
+		this.input = input;
 	}
-
+	
 	/**
-	 * Clears all previous connections and sets the given contract as
-	 * single input of this contract.
+	 * Sets the input to the union of the given operators.
 	 * 
-	 * @param input The contract will be set as input.
+	 * @param input The operator(s) that form the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public void setInput(Operator ... input) {
-		this.input.clear();
-		addInput(input);
+		this.input = Operator.createUnionCascade(null, input);
 	}
 	
 	/**
-	 * Clears all previous connections and sets the given contracts as
-	 * inputs of this contract.
+	 * Sets the input to the union of the given operators.
 	 * 
-	 * @param inputs The contracts will be set as inputs.
+	 * @param inputs The operator(s) that form the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public void setInputs(List<Operator> inputs) {
-		this.input.clear();
-		addInputs(inputs);
+		this.input = Operator.createUnionCascade(null, inputs.toArray(new Operator[inputs.size()]));
+	}
+
+	/**
+	 * Adds to the input the union of the given operators.
+	 * 
+	 * @param input The operator(s) that form the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
+	 */
+	@Deprecated
+	public void addInput(Operator ... input) {
+		this.input = Operator.createUnionCascade(this.input, input);
 	}
 	
+	/**
+	 * Adds to the input the union of the given operators.
+	 * 
+	 * @param inputs The operator(s) that form the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
+	 */
+	@Deprecated
+	public void addInput(List<Operator> inputs) {
+		this.input = Operator.createUnionCascade(this.input, inputs.toArray(new Operator[inputs.size()]));
+	}
 
 	// --------------------------------------------------------------------------------------------
 
@@ -177,9 +176,7 @@ public abstract class SingleInputOperator<T extends Function> extends AbstractUd
 	@Override
 	public void accept(Visitor<Operator> visitor) {
 		if (visitor.preVisit(this)) {
-			for (Operator c : this.input) {
-				c.accept(visitor);
-			}
+			this.input.accept(visitor);
 			for (Operator c : this.broadcastInputs.values()) {
 				c.accept(visitor);
 			}

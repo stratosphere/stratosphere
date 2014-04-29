@@ -30,12 +30,12 @@ import eu.stratosphere.api.java.record.operators.CoGroupOperator;
 import eu.stratosphere.api.java.record.operators.JoinOperator;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.CoGroupOperator.CombinableFirst;
+import eu.stratosphere.test.testPrograms.WorksetConnectedComponents.DuplicateLongMap;
+import eu.stratosphere.test.testPrograms.WorksetConnectedComponents.NeighborWithComponentIDJoin;
 import eu.stratosphere.types.LongValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
-import eu.stratosphere.example.java.record.connectedcomponents.WorksetConnectedComponents.DuplicateLongMap;
-import eu.stratosphere.example.java.record.connectedcomponents.WorksetConnectedComponents.NeighborWithComponentIDJoin;
 
 /**
  *
@@ -77,7 +77,7 @@ public class ConnectedComponentsWithCoGroup implements Program {
 		}
 		
 		@Override
-		public void combineFirst(Iterator<Record> records, Collector<Record> out) throws Exception {
+		public Record combineFirst(Iterator<Record> records) {
 			Record next = null;
 			long min = Long.MAX_VALUE;
 			while (records.hasNext()) {
@@ -87,7 +87,7 @@ public class ConnectedComponentsWithCoGroup implements Program {
 			
 			newComponentId.setValue(min);
 			next.setField(1, newComponentId);
-			out.collect(next);
+			return next;
 		}
 	}
 	
