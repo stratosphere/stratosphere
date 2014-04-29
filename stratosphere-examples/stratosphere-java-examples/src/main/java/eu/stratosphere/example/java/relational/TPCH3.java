@@ -205,57 +205,20 @@ public class TPCH3 {
 		/*
 		 * Read Data from files
 		 */
-		DataSet<Tuple4<Integer, Double, Double, String>> lineitems = env
+		DataSet<Lineitem> li = env
 				.readCsvFile(lineitemPath).fieldDelimiter('|')
 				.includeFields("1000011000100000")
-				.types(Integer.class, Double.class, Double.class, String.class);
-		
-		DataSet<Tuple2<Integer, String>> customers = env
-				.readCsvFile(customerPath).fieldDelimiter('|')
-				.includeFields("10000010").types(Integer.class, String.class);
-		
-		DataSet<Tuple3<Integer, String, Integer>> orders = env
+				.tupleType(Lineitem.class);
+
+		DataSet<Order> or = env
 				.readCsvFile(ordersPath).fieldDelimiter('|')
 				.includeFields("100010010")
-				.types(Integer.class, String.class, Integer.class);
-
-		/*
-		 * Convert Tuple DataSet to Lineitem Dataset
-		 */
-		DataSet<Lineitem> li = lineitems
-				.map(new MapFunction<Tuple4<Integer, Double, Double, String>, Lineitem>() {
-					@Override
-					public Lineitem map(
-							Tuple4<Integer, Double, Double, String> value)
-							throws Exception {
-						return new Lineitem(value.f0, value.f1, value.f2,
-								value.f3);
-					}
-				});
-
-		/*
-		 * Convert Tuple DataSet to Order Dataset
-		 */
-		DataSet<Order> or = orders
-					.map(new MapFunction<Tuple3<Integer, String, Integer>, Order>() {
-						@Override
-						public Order map(Tuple3<Integer, String, Integer> value)
-								throws Exception {
-							return new Order(value.f0, value.f1, value.f2);
-						}
-					});
+				.tupleType(Order.class);
 	
-		/*
-		 * Convert Tuple DataSet to Customer Dataset
-		 */
-		DataSet<Customer> cust = customers
-				.map(new MapFunction<Tuple2<Integer, String>, Customer>() {
-					@Override
-					public Customer map(Tuple2<Integer, String> value)
-							throws Exception {
-						return new Customer(value.f0, value.f1);
-					}
-				});
+		DataSet<Customer> cust = env
+				.readCsvFile(customerPath).fieldDelimiter('|')
+				.includeFields("10000010")
+				.tupleType(Customer.class);
 		
 		/*
 		 * Filter market segment "AUTOMOBILE"
