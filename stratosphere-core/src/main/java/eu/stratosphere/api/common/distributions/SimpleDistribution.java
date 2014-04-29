@@ -23,7 +23,7 @@ public class SimpleDistribution implements DataDistribution {
 	
 	private static final long serialVersionUID = 1L;
 
-	protected Key[][] boundaries; 
+	protected Key<?>[][] boundaries; 
 	
 	protected int dim;
 	
@@ -32,7 +32,7 @@ public class SimpleDistribution implements DataDistribution {
 		boundaries = new Key[0][];
 	}
 	
-	public SimpleDistribution(Key[] bucketBoundaries) {
+	public SimpleDistribution(Key<?>[] bucketBoundaries) {
 		if (bucketBoundaries == null)
 			throw new IllegalArgumentException("Bucket boundaries must not be null.");
 		if (bucketBoundaries.length == 0)

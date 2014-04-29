@@ -16,8 +16,6 @@ package eu.stratosphere.hadoopcompatibility.datatypes;
 import eu.stratosphere.types.*;
 import org.apache.hadoop.io.*;
 
-import java.lang.reflect.ParameterizedType;
-
 /**
  * Converter Stratosphere Record into the default hadoop writables.
  *
@@ -42,6 +40,7 @@ public class DefaultStratosphereTypeConverter<K,V> implements StratosphereTypeCo
 		return convert(stratosphereRecord, 1, this.valueClass);
 	}
 
+	@SuppressWarnings("unchecked")
 	private<T> T convert(Record stratosphereType, int pos, Class<T> hadoopType) {
 		if(hadoopType == LongWritable.class ) {
 			return (T) new LongWritable((stratosphereType.getField(pos, LongValue.class)).getValue());

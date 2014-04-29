@@ -54,12 +54,14 @@ public class HadoopInputSplitWrapper implements InputSplit {
 		hadoopInputSplit.write(out);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void read(DataInput in) throws IOException {
 		this.splitNumber=in.readInt();
 		this.hadoopInputSplitTypeName = in.readUTF();
 		if(hadoopInputSplit == null) {
 			try {
+				@SuppressWarnings("rawtypes")
 				Class inputSplit = Class.forName(hadoopInputSplitTypeName );
 				this.hadoopInputSplit = (org.apache.hadoop.mapred.InputSplit) WritableFactories.newInstance( inputSplit );
 			} catch (Exception e) {
