@@ -278,10 +278,6 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 		return this.template.getDegreeOfParallelism();
 	}
 	
-	public int getSubtasksPerInstance() {
-		return this.template.getSubtasksPerInstance();
-	}
-	
 	public long getGuaranteedAvailableMemory() {
 		return this.template.getMinimalMemoryAcrossAllSubTasks();
 	}

@@ -124,7 +124,6 @@ public final class SpeedTest {
 		final JobGenericInputVertex producer = new JobGenericInputVertex("Speed Test Producer", jobGraph);
 		producer.setInputClass(SpeedTestProducer.class);
 		producer.setNumberOfSubtasks(numberOfSubtasks);
-		producer.setNumberOfSubtasksPerInstance(numberOfSubtasksPerInstance);
 		producer.getConfiguration().setInteger(DATA_VOLUME_CONFIG_KEY, amountOfDataToSend);
 
 		JobTaskVertex forwarder = null;
@@ -132,13 +131,11 @@ public final class SpeedTest {
 			forwarder = new JobTaskVertex("Speed Test Forwarder", jobGraph);
 			forwarder.setTaskClass(SpeedTestForwarder.class);
 			forwarder.setNumberOfSubtasks(numberOfSubtasks);
-			forwarder.setNumberOfSubtasksPerInstance(numberOfSubtasksPerInstance);
 		}
 
 		final JobGenericOutputVertex consumer = new JobGenericOutputVertex("Speed Test Consumer", jobGraph);
 		consumer.setOutputClass(SpeedTestConsumer.class);
 		consumer.setNumberOfSubtasks(numberOfSubtasks);
-		consumer.setNumberOfSubtasksPerInstance(numberOfSubtasksPerInstance);
 
 		// Set vertex sharing
 		producer.setVertexToShareInstancesWith(consumer);

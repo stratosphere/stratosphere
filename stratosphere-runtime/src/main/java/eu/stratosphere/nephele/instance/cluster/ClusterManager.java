@@ -503,31 +503,43 @@ public class ClusterManager implements InstanceManager {
 
 
 	@Override
-	public void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription) {
+	public void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo) {
 
 		synchronized (this.lock) {
 			ClusterInstance host = registeredHosts.get(instanceConnectionInfo);
 	
-			// check whether we have discovered a new host
-			if (host == null) {
-				host = createNewHost(instanceConnectionInfo, hardwareDescription);
-	
-				if (host == null) {
-					LOG.error("Could not create a new host object for incoming heart-beat. "
-						+ "Probably the configuration file is lacking some entries.");
-					return;
-				}
-	
-				this.registeredHosts.put(instanceConnectionInfo, host);
-				LOG.info("New number of registered hosts is " + this.registeredHosts.size());
-	
-				// Update the list of instance type descriptions
-				updateInstaceTypeDescriptionMap();
-	
-				// Check if a pending request can be fulfilled by the new host
-				checkPendingRequests();
+			if(host == null){
+				LOG.error("Task manager with connection info " + instanceConnectionInfo + " has not been registered.");
+				return;
 			}
 			
+			host.reportHeartBeat();
+		}
+	}
+
+	@Override
+	public void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo,
+									HardwareDescription hardwareDescription){
+		synchronized(this.lock){
+			if(registeredHosts.containsKey(instanceConnectionInfo)){
+				LOG.error("Task manager with connection info " + instanceConnectionInfo + " has already been " +
+						"registered.");
+				return;
+			}
+
+			ClusterInstance host = createNewHost(instanceConnectionInfo, hardwareDescription);
+
+			if(host == null){
+				LOG.error("Could not create a new host object for register task manager for connection info " +
+						instanceConnectionInfo);
+				return;
+			}
+
+			this.registeredHosts.put(instanceConnectionInfo, host);
+			LOG.info("New number of registered hosts is " + this.registeredHosts.size());
+			updateInstaceTypeDescriptionMap();
+			checkPendingRequests();
+
 			host.reportHeartBeat();
 		}
 	}

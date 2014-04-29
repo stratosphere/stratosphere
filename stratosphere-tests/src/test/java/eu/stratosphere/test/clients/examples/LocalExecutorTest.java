@@ -41,8 +41,7 @@ public class LocalExecutorTest {
 			
 			// run WordCount
 			WordCount wc = new WordCount();
-			wc.getPlan("4", inFile.toURI().toString(), outFile.toURI().toString());
-			
+
 			LocalExecutor executor = new LocalExecutor();
 			LocalExecutor.setLoggingLevel(Level.WARN);
 			executor.setDefaultOverwriteFiles(true);

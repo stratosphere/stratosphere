@@ -94,16 +94,6 @@ public final class ExecutionGroupVertex {
 	private final boolean userDefinedInstanceType;
 
 	/**
-	 * Stores the number of subtasks per instance.
-	 */
-	private volatile int numberOfSubtasksPerInstance = -1;
-
-	/**
-	 * Stores whether the number of subtasks per instance is user defined.
-	 */
-	private final boolean userDefinedNumberOfSubtasksPerInstance;
-
-	/**
 	 * Number of retries in case of an error before the task represented by this vertex is considered as failed.
 	 */
 	private final int numberOfExecutionRetries;
@@ -179,8 +169,6 @@ public final class ExecutionGroupVertex {
 	 *        the instance type to be used for execution vertices this group vertex manages.
 	 * @param userDefinedInstanceType
 	 *        <code>true</code> if the instance type is user defined, <code>false</code> otherwise
-	 * @param numberOfSubtasksPerInstance
-	 *        the user defined number of subtasks per instance, -1 if the user did not specify the number
 	 * @param userDefinedVertexToShareInstanceWith
 	 *        <code>true</code> if the user specified another vertex to share instances with, <code>false</code>
 	 *        otherwise
@@ -198,8 +186,8 @@ public final class ExecutionGroupVertex {
 	 */
 	public ExecutionGroupVertex(final String name, final JobVertexID jobVertexID, final ExecutionGraph executionGraph,
 			final int userDefinedNumberOfMembers, final InstanceType instanceType,
-			final boolean userDefinedInstanceType, final int numberOfSubtasksPerInstance,
-			final boolean userDefinedVertexToShareInstanceWith, final int numberOfExecutionRetries,
+			final boolean userDefinedInstanceType, final boolean userDefinedVertexToShareInstanceWith,
+			final int numberOfExecutionRetries,
 			final Configuration configuration, final ExecutionSignature signature,
 			final Class<? extends AbstractInvokable> invokableClass) throws Exception {
 
@@ -208,13 +196,6 @@ public final class ExecutionGroupVertex {
 		this.userDefinedNumberOfMembers = userDefinedNumberOfMembers;
 		this.instanceType = instanceType;
 		this.userDefinedInstanceType = userDefinedInstanceType;
-		if (numberOfSubtasksPerInstance != -1) {
-			this.numberOfSubtasksPerInstance = numberOfSubtasksPerInstance;
-			this.userDefinedNumberOfSubtasksPerInstance = true;
-		} else {
-			this.numberOfSubtasksPerInstance = 1;
-			this.userDefinedNumberOfSubtasksPerInstance = false;
-		}
 		if (numberOfExecutionRetries >= 0) {
 			this.numberOfExecutionRetries = numberOfExecutionRetries;
 		} else {
@@ -376,10 +357,6 @@ public final class ExecutionGroupVertex {
 	 *        the channel type to be used for this edge
 	 * @param userDefinedChannelType
 	 *        <code>true</code> if the channel type is user defined, <code>false</code> otherwise
-	 * @param compressionLevel
-	 *        the compression level to be used for this edge
-	 * @param userDefinedCompressionLevel
-	 *        <code>true</code> if the compression level is user defined, <code>false</code> otherwise
 	 * @param distributionPattern
 	 *        the distribution pattern to create the wiring between the group members
 	 * @param isBroadcast
@@ -435,8 +412,8 @@ public final class ExecutionGroupVertex {
 	/**
 	 * Creates a back link from the current group vertex to the specified group vertex.
 	 * 
-	 * @param groupVertex
-	 *        the target of the back link
+	 * @param edge
+	 *        the containing the back link
 	 */
 	private void wireBackLink(final ExecutionGroupEdge edge) {
 
@@ -481,10 +458,10 @@ public final class ExecutionGroupVertex {
 	 * @throws GraphConversionException
 	 *         thrown if the number of execution vertices for this group vertex cannot be set to the desired value
 	 */
-	void createInitialExecutionVertices(final int initalNumberOfVertices) throws GraphConversionException {
+	void createInitialExecutionVertices(final int initialNumberOfVertices) throws GraphConversionException {
 
 		// If the requested number of group vertices does not change, do nothing
-		if (initalNumberOfVertices == this.getCurrentNumberOfGroupMembers()) {
+		if (initialNumberOfVertices == this.getCurrentNumberOfGroupMembers()) {
 			return;
 		}
 
@@ -518,13 +495,13 @@ public final class ExecutionGroupVertex {
 		 * }
 		 */
 
-		if (initalNumberOfVertices < this.getMinimumNumberOfGroupMember()) {
+		if (initialNumberOfVertices < this.getMinimumNumberOfGroupMember()) {
 			throw new GraphConversionException("Number of members must be at least "
 				+ this.getMinimumNumberOfGroupMember());
 		}
 
 		if ((this.getMaximumNumberOfGroupMembers() != -1)
-			&& (initalNumberOfVertices > this.getMaximumNumberOfGroupMembers())) {
+			&& (initialNumberOfVertices > this.getMaximumNumberOfGroupMembers())) {
 			throw new GraphConversionException("Number of members cannot exceed "
 				+ this.getMaximumNumberOfGroupMembers());
 		}
@@ -532,7 +509,7 @@ public final class ExecutionGroupVertex {
 		final ExecutionVertex originalVertex = this.getGroupMember(0);
 		int currentNumberOfExecutionVertices = this.getCurrentNumberOfGroupMembers();
 
-		while (currentNumberOfExecutionVertices++ < initalNumberOfVertices) {
+		while (currentNumberOfExecutionVertices++ < initialNumberOfVertices) {
 
 			final ExecutionVertex vertex = originalVertex.splitVertex();
 			vertex.setAllocatedResource(new AllocatedResource(DummyInstance
@@ -675,25 +652,6 @@ public final class ExecutionGroupVertex {
 		return this.instanceType;
 	}
 
-	boolean isNumberOfSubtasksPerInstanceUserDefined() {
-
-		return this.userDefinedNumberOfSubtasksPerInstance;
-	}
-
-	void setNumberOfSubtasksPerInstance(final int numberOfSubtasksPerInstance) throws GraphConversionException {
-
-		if (this.userDefinedNumberOfSubtasksPerInstance
-			&& (numberOfSubtasksPerInstance != this.numberOfSubtasksPerInstance)) {
-			throw new GraphConversionException("Cannot overwrite user defined number of subtasks per instance");
-		}
-
-		this.numberOfSubtasksPerInstance = numberOfSubtasksPerInstance;
-	}
-
-	int getNumberOfSubtasksPerInstance() {
-		return this.numberOfSubtasksPerInstance;
-	}
-
 	/**
 	 * Returns the number of retries in case of an error before the task represented by this vertex is considered as
 	 * failed.
@@ -767,27 +725,13 @@ public final class ExecutionGroupVertex {
 
 	}
 
-	void repairSubtasksPerInstance() {
-
-		final Iterator<ExecutionVertex> it = this.groupMembers.iterator();
-		int count = 0;
-		while (it.hasNext()) {
-
-			final ExecutionVertex v = it.next();
-			v.setAllocatedResource(this.groupMembers.get(
-				(count++ / this.numberOfSubtasksPerInstance) * this.numberOfSubtasksPerInstance)
-				.getAllocatedResource());
-		}
-	}
-
 	void repairInstanceSharing(final Set<AllocatedResource> availableResources) {
 
 		// Number of required resources by this group vertex
-		final int numberOfRequiredInstances = (this.groupMembers.size() / this.numberOfSubtasksPerInstance)
-			+ (((this.groupMembers.size() % this.numberOfSubtasksPerInstance) != 0) ? 1 : 0);
+		final int numberOfRequiredSlots = this.groupMembers.size();
 
 		// Number of resources to be replaced
-		final int resourcesToBeReplaced = Math.min(availableResources.size(), numberOfRequiredInstances);
+		final int resourcesToBeReplaced = Math.min(availableResources.size(), numberOfRequiredSlots);
 
 		// Build the replacement map if necessary
 		final Map<AllocatedResource, AllocatedResource> replacementMap = new HashMap<AllocatedResource, AllocatedResource>();

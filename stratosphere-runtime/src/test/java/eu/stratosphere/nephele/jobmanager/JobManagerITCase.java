@@ -876,27 +876,23 @@ public class JobManagerITCase {
 			i1.setFileInputClass(FileLineReader.class);
 			i1.setFilePath(new Path(inputFile1.toURI()));
 			i1.setNumberOfSubtasks(numberOfSubtasks);
-			i1.setNumberOfSubtasksPerInstance(numberOfSubtasks);
 
 			// input vertex 2
 			final JobFileInputVertex i2 = new JobFileInputVertex("Input 2", jg);
 			i2.setFileInputClass(FileLineReader.class);
 			i2.setFilePath(new Path(inputFile2.toURI()));
 			i2.setNumberOfSubtasks(numberOfSubtasks);
-			i2.setNumberOfSubtasksPerInstance(numberOfSubtasks);
 
 			// union task
 			final JobTaskVertex f1 = new JobTaskVertex("Forward 1", jg);
 			f1.setTaskClass(DoubleTargetTask.class);
 			f1.setNumberOfSubtasks(numberOfSubtasks);
-			f1.setNumberOfSubtasksPerInstance(numberOfSubtasks);
 
 			// output vertex
 			JobFileOutputVertex o1 = new JobFileOutputVertex("Output", jg);
 			o1.setFileOutputClass(FileLineWriter.class);
 			o1.setFilePath(new Path(outputFile.toURI()));
 			o1.setNumberOfSubtasks(numberOfSubtasks);
-			o1.setNumberOfSubtasksPerInstance(numberOfSubtasks);
 
 			i1.setVertexToShareInstancesWith(o1);
 			i2.setVertexToShareInstancesWith(o1);

@@ -152,8 +152,7 @@ public class WorksetIterationNode extends TwoInputNode implements IterationNode 
 		UnaryOperatorNode solutionSetDeltaUpdateAux = new UnaryOperatorNode("Solution-Set Delta", getSolutionSetKeyFields(),
 				new SolutionSetDeltaOperator(getSolutionSetKeyFields()));
 		solutionSetDeltaUpdateAux.setDegreeOfParallelism(getDegreeOfParallelism());
-		solutionSetDeltaUpdateAux.setSubtasksPerInstance(getSubtasksPerInstance());
-		
+
 		PactConnection conn = new PactConnection(solutionSetDelta, solutionSetDeltaUpdateAux);
 		solutionSetDeltaUpdateAux.setIncomingConnection(conn);
 		solutionSetDelta.addOutgoingConnection(conn);
@@ -213,11 +212,6 @@ public class WorksetIterationNode extends TwoInputNode implements IterationNode 
 	// --------------------------------------------------------------------------------------------
 	//                             Properties and Optimization
 	// --------------------------------------------------------------------------------------------
-	
-	@Override
-	public boolean isMemoryConsumer() {
-		return true;
-	}
 	
 	@Override
 	protected List<OperatorDescriptorDual> getPossibleProperties() {
@@ -471,7 +465,6 @@ public class WorksetIterationNode extends TwoInputNode implements IterationNode 
 			super(NoOpBinaryUdfOp.INSTANCE);
 			
 			setDegreeOfParallelism(1);
-			setSubtasksPerInstance(1);
 		}
 		
 		public void setInputs(PactConnection input1, PactConnection input2) {

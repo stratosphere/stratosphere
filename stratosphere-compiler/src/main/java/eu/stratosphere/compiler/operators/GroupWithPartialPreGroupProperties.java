@@ -85,8 +85,7 @@ public final class GroupWithPartialPreGroupProperties extends OperatorDescriptor
 			// create an input node for combine with same DOP as input node
 			GroupReduceNode combinerNode = ((GroupReduceNode) node).getCombinerUtilityNode();
 			combinerNode.setDegreeOfParallelism(in.getSource().getDegreeOfParallelism());
-			combinerNode.setSubtasksPerInstance(in.getSource().getSubtasksPerInstance());
-			
+
 			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", toCombiner, DriverStrategy.PARTIAL_GROUP, this.keyList);
 			combiner.setCosts(new Costs(0, 0));
 			combiner.initProperties(toCombiner.getGlobalProperties(), toCombiner.getLocalProperties());

@@ -215,7 +215,6 @@ public class ExecutionGraph implements ExecutionListener {
 			final ExecutionGroupVertex groupVertex = it2.next();
 			if (groupVertex.isNumberOfMembersUserDefined()) {
 				groupVertex.createInitialExecutionVertices(groupVertex.getUserDefinedNumberOfMembers());
-				groupVertex.repairSubtasksPerInstance();
 			}
 		}
 
@@ -494,7 +493,7 @@ public class ExecutionGraph implements ExecutionListener {
 		try {
 			groupVertex = new ExecutionGroupVertex(jobVertex.getName(), jobVertex.getID(), this,
 				jobVertex.getNumberOfSubtasks(), instanceType, userDefinedInstanceType,
-				jobVertex.getNumberOfSubtasksPerInstance(), jobVertex.getVertexToShareInstancesWith() != null ? true
+					jobVertex.getVertexToShareInstancesWith() != null ? true
 					: false, jobVertex.getNumberOfExecutionRetries(), jobVertex.getConfiguration(), signature,
 				invokableClass);
 		} catch (Throwable t) {
@@ -529,12 +528,6 @@ public class ExecutionGraph implements ExecutionListener {
 						+ " can be at most " + maximumNumberOfSubtasks);
 				}
 			}
-		}
-
-		// Check number of subtasks per instance
-		if (jobVertex.getNumberOfSubtasksPerInstance() != -1 && jobVertex.getNumberOfSubtasksPerInstance() < 1) {
-			throw new GraphConversionException("Cannot set number of subtasks per instance to "
-				+ jobVertex.getNumberOfSubtasksPerInstance() + " for vertex " + jobVertex.getName());
 		}
 
 		// Assign min/max to the group vertex (settings are actually applied in applyUserDefinedSettings)

@@ -73,11 +73,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	private String instanceType = null;
 
 	/**
-	 * Number of subtasks to share the same instance at runtime.
-	 */
-	private int numberOfSubtasksPerInstance = -1;
-
-	/**
 	 * Number of retries in case of an error before the task represented by this vertex is considered as failed.
 	 */
 	private int numberOfExecutionRetries = -1;
@@ -151,8 +146,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 *        the vertex this vertex should connect to
 	 * @param channelType
 	 *        the channel type the two vertices should be connected by at runtime
-	 * @param compressionLevel
-	 *        the compression level the corresponding channel should have at runtime
 	 * @throws JobGraphDefinitionException
 	 *         thrown if the given vertex cannot be connected to <code>vertex</code> in the requested manner
 	 */
@@ -167,8 +160,8 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 *        the vertex this vertex should connect to
 	 * @param channelType
 	 *        the channel type the two vertices should be connected by at runtime
-	 * @param compressionLevel
-	 *        the compression level the corresponding channel should have at runtime
+	 * @param distributionPattern
+	 *        the distribution pattern between the two job vertices
 	 * @throws JobGraphDefinitionException
 	 *         thrown if the given vertex cannot be connected to <code>vertex</code> in the requested manner
 	 */
@@ -185,14 +178,14 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 *        the vertex this vertex should connect to
 	 * @param channelType
 	 *        the channel type the two vertices should be connected by at runtime
-	 * @param compressionLevel
-	 *        the compression level the corresponding channel should have at runtime
 	 * @param indexOfOutputGate
 	 *        index of the producing task's output gate to be used, <code>-1</code> will determine the next free index
 	 *        number
 	 * @param indexOfInputGate
 	 *        index of the consuming task's input gate to be used, <code>-1</code> will determine the next free index
 	 *        number
+	 * @param distributionPattern
+	 * 		  the distribution pattern between the two job vertices
 	 * @throws JobGraphDefinitionException
 	 *         thrown if the given vertex cannot be connected to <code>vertex</code> in the requested manner
 	 */
@@ -275,12 +268,12 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 *        the job vertex to connect to
 	 * @param channelType
 	 *        the channel type the two vertices should be connected by at runtime
-	 * @param compressionLevel
-	 *        the compression level the corresponding channel should have at runtime
 	 * @param indexOfOutputGate
 	 *        index of the producing task's output gate to be used
 	 * @param indexOfInputGate
 	 *        index of the consuming task's input gate to be used
+	 * @param distributionPattern
+	 * 		  the distribution pattern between the two job vertices
 	 */
 	private void connectBacklink(final AbstractJobVertex vertex, final ChannelType channelType,
 			final int indexOfOutputGate, final int indexOfInputGate,
@@ -365,32 +358,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	}
 
 	/**
-	 * Returns the index of the edge which is used to connect the given job vertex to this job vertex.
-	 * 
-	 * @param jv
-	 *        the connected job vertex
-	 * @return the index of the edge which is used to connect the given job vertex to this job vertex or -1 if the given
-	 *         vertex is not connected to this job vertex
-	 */
-	/*
-	 * public int getBackwardConnectionIndex(AbstractJobVertex jv) {
-	 * if(jv == null) {
-	 * return -1;
-	 * }
-	 * final Iterator<JobEdge> it = this.backwardEdges.iterator();
-	 * int i = 0;
-	 * while(it.hasNext()) {
-	 * final JobEdge edge = it.next();
-	 * if(edge.getConnectedVertex() == jv) {
-	 * return i;
-	 * }
-	 * i++;
-	 * }
-	 * return -1;
-	 * }
-	 */
-
-	/**
 	 * Returns the ID of this job vertex.
 	 * 
 	 * @return the ID of this job vertex
@@ -413,9 +380,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 
 		// Read number of subtasks
 		this.numberOfSubtasks = in.readInt();
-
-		// Read number of subtasks per instance
-		this.numberOfSubtasksPerInstance = in.readInt();
 
 		// Number of execution retries
 		this.numberOfExecutionRetries = in.readInt();
@@ -495,9 +459,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 
 		// Number of subtasks
 		out.writeInt(this.numberOfSubtasks);
-
-		// Number of subtasks per instance
-		out.writeInt(this.numberOfSubtasksPerInstance);
 
 		// Number of execution retries
 		out.writeInt(this.numberOfExecutionRetries);
@@ -612,25 +573,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 */
 	public String getInstanceType() {
 		return this.instanceType;
-	}
-
-	/**
-	 * Sets the number of subtasks that should be assigned to the same instance.
-	 * 
-	 * @param numberOfSubtasksPerInstance
-	 *        the number of subtasks that should be assigned to the same instance
-	 */
-	public void setNumberOfSubtasksPerInstance(final int numberOfSubtasksPerInstance) {
-		this.numberOfSubtasksPerInstance = numberOfSubtasksPerInstance;
-	}
-
-	/**
-	 * Returns the number of subtasks that should be assigned to the same instance, <code>-1</code> if undefined.
-	 * 
-	 * @return the number of subtasks that should be assigned to the same instance, <code>-1</code> if undefined
-	 */
-	public int getNumberOfSubtasksPerInstance() {
-		return this.numberOfSubtasksPerInstance;
 	}
 
 	/**

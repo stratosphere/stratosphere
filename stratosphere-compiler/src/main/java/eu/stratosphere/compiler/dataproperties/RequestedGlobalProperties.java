@@ -55,8 +55,7 @@ public final class RequestedGlobalProperties implements Cloneable
 	/**
 	 * Sets the partitioning property for the global properties.
 	 * 
-	 * @param partitioning The new partitioning to set.
-	 * @param partitionedFields 
+	 * @param partitionedFields
 	 */
 	public void setHashPartitioned(FieldSet partitionedFields) {
 		if (partitionedFields == null) {
@@ -218,9 +217,8 @@ public final class RequestedGlobalProperties implements Cloneable
 	 * 
 	 * @param channel The channel to parameterize.
 	 * @param globalDopChange
-	 * @param localDopChange
 	 */
-	public void parameterizeChannel(Channel channel, boolean globalDopChange, boolean localDopChange) {
+	public void parameterizeChannel(Channel channel, boolean globalDopChange) {
 		// if we request nothing, then we need no special strategy. forward, if the number of instances remains
 		// the same, randomly repartition otherwise
 		if (isTrivial()) {
@@ -231,19 +229,8 @@ public final class RequestedGlobalProperties implements Cloneable
 		final GlobalProperties inGlobals = channel.getSource().getGlobalProperties();
 		// if we have no global parallelism change, check if we have already compatible global properties
 		if (!globalDopChange && isMetBy(inGlobals)) {
-			if (localDopChange) {
-				// if the local degree of parallelism changes, we need to adjust
-				if (inGlobals.getPartitioning() == PartitioningProperty.HASH_PARTITIONED) {
-					// to preserve the hash partitioning, we need to locally hash re-partition
-					channel.setShipStrategy(ShipStrategyType.PARTITION_LOCAL_HASH, inGlobals.getPartitioningFields());
-					return;
-				}
-				// else fall though
-			} else {
-				// we meet already everything, so go forward
-				channel.setShipStrategy(ShipStrategyType.FORWARD);
-				return;
-			}
+			channel.setShipStrategy(ShipStrategyType.FORWARD);
+			return;
 		}
 		
 		// if we fall through the conditions until here, we need to re-establish
@@ -261,24 +248,6 @@ public final class RequestedGlobalProperties implements Cloneable
 				if(this.dataDistribution != null) {
 					channel.setDataDistribution(this.dataDistribution);
 				}
-				break;
-			default:
-				throw new CompilerException();
-		}
-	}
-	
-	public void addMinimalRequiredCosts(Costs to, CostEstimator estimator, OptimizerNode source, OptimizerNode target) {
-		if (this.partitioning == null || this.partitioning == PartitioningProperty.RANDOM) {
-			return;
-		} else switch (this.partitioning) {
-			case FULL_REPLICATION:
-				estimator.addBroadcastCost(source, target.getDegreeOfParallelism(), to);
-			case ANY_PARTITIONING:
-			case HASH_PARTITIONED:
-				estimator.addHashPartitioningCost(source, to);
-				break;
-			case RANGE_PARTITIONED:
-				estimator.addRangePartitionCost(source, to);
 				break;
 			default:
 				throw new CompilerException();

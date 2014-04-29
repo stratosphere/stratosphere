@@ -348,19 +348,6 @@ public class Channel implements EstimateProvider, Cloneable, DumpableConnection<
 				case PARTITION_RANDOM:
 					this.globalProps.reset();
 					break;
-				case PARTITION_LOCAL_HASH:
-					if (getSource().getGlobalProperties().isPartitionedOnFields(this.shipKeys)) {
-						// after a local hash partitioning, we can only state that the data is somehow
-						// partitioned. even if we had a hash partitioning before over 8 partitions,
-						// locally rehashing that onto 16 partitions (each one partition into two) gives you
-						// a different result than directly hashing to 16 partitions. the hash-partitioning
-						// property is only valid, if the assumed built in hash function is directly used.
-						// hence, we can only state that this is some form of partitioning.
-						this.globalProps.setAnyPartitioning(this.shipKeys);
-					} else {
-						this.globalProps.reset();
-					}
-					break;
 				case NONE:
 					throw new CompilerException("Cannot produce GlobalProperties before ship strategy is set.");
 			}
@@ -399,7 +386,6 @@ public class Channel implements EstimateProvider, Cloneable, DumpableConnection<
 				case PARTITION_RANDOM:
 					props.reset();
 					break;
-				case PARTITION_LOCAL_HASH:
 				case FORWARD:
 					break;
 				case NONE:
@@ -423,8 +409,7 @@ public class Channel implements EstimateProvider, Cloneable, DumpableConnection<
 		// some strategies globally reestablish properties
 		switch (this.shipStrategy) {
 		case FORWARD:
-		case PARTITION_LOCAL_HASH:
-			throw new CompilerException("Cannot use FORWARD or LOCAL_HASH strategy between operations " +
+			throw new CompilerException("Cannot use FORWARD strategy between operations " +
 					"with different number of parallel instances.");
 		case NONE: // excluded by sanity check. lust here for verification check completion
 		case BROADCAST:
@@ -433,34 +418,6 @@ public class Channel implements EstimateProvider, Cloneable, DumpableConnection<
 		case PARTITION_RANDOM:
 			return;
 		}
-		throw new CompilerException("Unrecognized Ship Strategy Type: " + this.shipStrategy);
-	}
-	
-	public void adjustGlobalPropertiesForLocalParallelismChange() {
-		if (this.shipStrategy == null || this.shipStrategy == ShipStrategyType.NONE) {
-			throw new IllegalStateException("Cannot adjust channel for degree of parallelism " +
-					"change before the ship strategy is set.");
-		}
-		
-		// make sure the properties are acquired
-		if (this.globalProps == null) {
-			getGlobalProperties();
-		}
-		
-		// some strategies globally reestablish properties
-		switch (this.shipStrategy) {
-		case FORWARD:
-			this.globalProps.reset();
-			return;
-		case NONE: // excluded by sanity check. lust here for verification check completion
-		case PARTITION_LOCAL_HASH:
-		case BROADCAST:
-		case PARTITION_HASH:
-		case PARTITION_RANGE:
-		case PARTITION_RANDOM:
-			return;
-		}
-		
 		throw new CompilerException("Unrecognized Ship Strategy Type: " + this.shipStrategy);
 	}
 

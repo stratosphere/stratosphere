@@ -145,6 +145,8 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final HardwareDescription hardwareDescription;
 
+	private final int numTaskManagerSlots;
+
 	private final Thread heartbeatThread;
 	
 	private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
@@ -291,6 +293,8 @@ public class TaskManager implements TaskOperationProtocol {
 		
 		{
 			HardwareDescription resources = HardwareDescriptionFactory.extractFromSystem();
+			numTaskManagerSlots = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS,
+					Hardware.getNumberCPUCores());
 
 			// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
 			// of taking as much as is mentioned in the hardware description
@@ -328,7 +332,7 @@ public class TaskManager implements TaskOperationProtocol {
 				runHeartbeatLoop();
 			}
 		};
-		
+
 		this.heartbeatThread.setName("Heartbeat Thread");
 		this.heartbeatThread.start();
 		
@@ -414,19 +418,16 @@ public class TaskManager implements TaskOperationProtocol {
 						ConfigConstants.TASK_MANAGER_HEARTBEAT_INTERVAL_KEY,
 						ConfigConstants.DEFAULT_TASK_MANAGER_HEARTBEAT_INTERVAL);
 
-		while (!shutdownStarted.get()) {
-			// send heart beat
-			try {
-				LOG.debug("heartbeat");
-				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
-			} catch (IOException e) {
-				if (shutdownStarted.get()) {
-					break;
-				} else {
-					LOG.error("Sending the heart beat caused an exception: " + e.getMessage(), e);
-				}
+		try {
+			this.jobManager.registerTaskManager(this.localInstanceConnectionInfo, this.hardwareDescription);
+		} catch (IOException e) {
+			if(!shutdownStarted.get()){
+				LOG.error("Registering task manager caused an exception: " + e.getMessage(), e);
 			}
-			
+			return;
+		}
+
+		while (!shutdownStarted.get()) {
 			// sleep until the next heart beat
 			try {
 				Thread.sleep(interval);
@@ -434,6 +435,18 @@ public class TaskManager implements TaskOperationProtocol {
 			catch (InterruptedException e) {
 				if (!shutdownStarted.get()) {
 					LOG.error("TaskManager heart beat loop was interrupted without shutdown.");
+				}
+			}
+
+			// send heart beat
+			try {
+				LOG.debug("heartbeat");
+				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo);
+			} catch (IOException e) {
+				if (shutdownStarted.get()) {
+					break;
+				} else {
+					LOG.error("Sending the heart beat caused an exception: " + e.getMessage(), e);
 				}
 			}
 		}

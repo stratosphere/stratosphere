@@ -230,7 +230,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	 * @param node
 	 *        The node that is currently processed.
 	 * @return True, if the visitor should descend to the node's children, false if not.
-	 * @see eu.stratosphere.util.Visitor#preVisit(eu.stratosphere.pact.common.plan.Visitable)
+	 * @see eu.stratosphere.util.Visitor#preVisit(eu.stratosphere.util.Visitable)
 	 */
 	@Override
 	public boolean preVisit(PlanNode node) {
@@ -259,8 +259,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 				// operator with the tail, if they have the same DOP. not merging is currently not
 				// implemented
 				PlanNode root = iterationNode.getRootOfStepFunction();
-				if (root.getDegreeOfParallelism() != node.getDegreeOfParallelism() || 
-						root.getSubtasksPerInstance() != node.getSubtasksPerInstance()) 
+				if (root.getDegreeOfParallelism() != node.getDegreeOfParallelism())
 				{
 					throw new CompilerException("Error: The final operator of the step " +
 							"function has a different degree of parallelism than the iteration operator itself.");
@@ -277,14 +276,12 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 				PlanNode nextWorkSet = iterationNode.getNextWorkSetPlanNode();
 				PlanNode solutionSetDelta  = iterationNode.getSolutionSetDeltaPlanNode();
 				
-				if (nextWorkSet.getDegreeOfParallelism() != node.getDegreeOfParallelism() || 
-					nextWorkSet.getSubtasksPerInstance() != node.getSubtasksPerInstance())
+				if (nextWorkSet.getDegreeOfParallelism() != node.getDegreeOfParallelism())
 				{
 					throw new CompilerException("It is currently not supported that the final operator of the step " +
 							"function has a different degree of parallelism than the iteration operator itself.");
 				}
-				if (solutionSetDelta.getDegreeOfParallelism() != node.getDegreeOfParallelism() || 
-					solutionSetDelta.getSubtasksPerInstance() != node.getSubtasksPerInstance())
+				if (solutionSetDelta.getDegreeOfParallelism() != node.getDegreeOfParallelism())
 				{
 					throw new CompilerException("It is currently not supported that the final operator of the step " +
 							"function has a different degree of parallelism than the iteration operator itself.");
@@ -363,11 +360,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			if (this.maxDegreeVertex == null || this.maxDegreeVertex.getNumberOfSubtasks() < pd) {
 				this.maxDegreeVertex = vertex;
 			}
-	
-			// set the number of tasks per instance
-			if (node.getSubtasksPerInstance() >= 1) {
-				vertex.setNumberOfSubtasksPerInstance(node.getSubtasksPerInstance());
-			}
 			
 			// check whether this vertex is part of an iteration step function
 			if (this.currentIteration != null) {
@@ -376,10 +368,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 				if (iterationNode.getDegreeOfParallelism() < pd) {
 					throw new CompilerException("Error: All functions that are part of an iteration must have the same, or a lower, degree-of-parallelism than the iteration operator.");
 				}
-				if (iterationNode.getSubtasksPerInstance() < node.getSubtasksPerInstance()) {
-					throw new CompilerException("Error: All functions that are part of an iteration must have the same, or a lower, number of subtasks-per-node than the iteration operator.");
-				}
-				
+
 				// store the id of the iterations the step functions participate in
 				IterationDescriptor descr = this.iterations.get(this.currentIteration);
 				new TaskConfig(vertex.getConfiguration()).setIterationId(descr.getId());
@@ -400,7 +389,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	 * 
 	 * @param node
 	 *        The node currently processed during the post-visit.
-	 * @see eu.stratosphere.util.Visitor#postVisit(eu.stratosphere.pact.common.plan.Visitable)
+	 * @see eu.stratosphere.util.Visitor#postVisit(eu.stratosphere.util.Visitable) t
 	 */
 	@Override
 	public void postVisit(PlanNode node) {
@@ -736,7 +725,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					inConn.getLocalStrategy() == LocalStrategy.NONE &&
 					pred.getOutgoingChannels().size() == 1 &&
 					node.getDegreeOfParallelism() == pred.getDegreeOfParallelism() && 
-					node.getSubtasksPerInstance() == pred.getSubtasksPerInstance() &&
 					node.getBroadcastInputs().isEmpty();
 			
 			// cannot chain the nodes that produce the next workset or the next solution set, if they are not the
@@ -876,7 +864,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					c.getLocalStrategy() == LocalStrategy.NONE &&
 					c.getTempMode() == TempMode.NONE &&
 					successor.getDegreeOfParallelism() == pspn.getDegreeOfParallelism() &&
-					successor.getSubtasksPerInstance() == pspn.getSubtasksPerInstance() &&
 					!(successor instanceof NAryUnionPlanNode) &&
 					successor != iteration.getRootOfStepFunction() &&
 					iteration.getInput().getLocalStrategy() == LocalStrategy.NONE;
@@ -945,7 +932,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					c.getLocalStrategy() == LocalStrategy.NONE &&
 					c.getTempMode() == TempMode.NONE &&
 					successor.getDegreeOfParallelism() == wspn.getDegreeOfParallelism() &&
-					successor.getSubtasksPerInstance() == wspn.getSubtasksPerInstance() &&
 					!(successor instanceof NAryUnionPlanNode) &&
 					successor != iteration.getNextWorkSetPlanNode() &&
 					iteration.getInitialWorksetInput().getLocalStrategy() == LocalStrategy.NONE;
@@ -1017,13 +1003,13 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	 * channel is then the channel into the union node, the local strategy channel the one from the union to the
 	 * actual target operator.
 	 *
-	 * @param channelForGlobalStrategy
-	 * @param channelForLocalStrategy
+	 * @param channel
 	 * @param inputNumber
 	 * @param sourceVertex
 	 * @param sourceConfig
 	 * @param targetVertex
 	 * @param targetConfig
+	 * @param isBroadcast
 	 * @throws JobGraphDefinitionException
 	 * @throws CompilerException
 	 */
@@ -1038,7 +1024,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 
 		switch (channel.getShipStrategy()) {
 			case FORWARD:
-			case PARTITION_LOCAL_HASH:
 				distributionPattern = DistributionPattern.POINTWISE;
 				channelType = ChannelType.NETWORK;
 				break;
@@ -1217,7 +1202,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			JobOutputVertex fakeTail = new JobOutputVertex("Fake Tail", this.jobGraph);
 			fakeTail.setOutputClass(FakeOutputTask.class);
 			fakeTail.setNumberOfSubtasks(headVertex.getNumberOfSubtasks());
-			fakeTail.setNumberOfSubtasksPerInstance(headVertex.getNumberOfSubtasksPerInstance());
 			this.auxVertices.add(fakeTail);
 			
 			// connect the fake tail
@@ -1260,7 +1244,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			JobOutputVertex fakeTailTerminationCriterion = new JobOutputVertex("Fake Tail for Termination Criterion", this.jobGraph);
 			fakeTailTerminationCriterion.setOutputClass(FakeOutputTask.class);
 			fakeTailTerminationCriterion.setNumberOfSubtasks(headVertex.getNumberOfSubtasks());
-			fakeTailTerminationCriterion.setNumberOfSubtasksPerInstance(headVertex.getNumberOfSubtasksPerInstance());
 			this.auxVertices.add(fakeTailTerminationCriterion);
 		
 			// connect the fake tail
@@ -1394,7 +1377,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					JobOutputVertex fakeTail = new JobOutputVertex("Fake Tail", this.jobGraph);
 					fakeTail.setOutputClass(FakeOutputTask.class);
 					fakeTail.setNumberOfSubtasks(headVertex.getNumberOfSubtasks());
-					fakeTail.setNumberOfSubtasksPerInstance(headVertex.getNumberOfSubtasksPerInstance());
 					this.auxVertices.add(fakeTail);
 					
 					// connect the fake tail
@@ -1433,7 +1415,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 					JobOutputVertex fakeTail = new JobOutputVertex("Fake Tail", this.jobGraph);
 					fakeTail.setOutputClass(FakeOutputTask.class);
 					fakeTail.setNumberOfSubtasks(headVertex.getNumberOfSubtasks());
-					fakeTail.setNumberOfSubtasksPerInstance(headVertex.getNumberOfSubtasksPerInstance());
 					this.auxVertices.add(fakeTail);
 					
 					// connect the fake tail
@@ -1500,9 +1481,9 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		
 		private AbstractJobVertex containingVertex;
 
-		@SuppressWarnings("unchecked")
-		TaskInChain(@SuppressWarnings("rawtypes") Class<? extends ChainedDriver> chainedTask, TaskConfig taskConfig, String taskName) {
-			this.chainedTask = (Class<? extends ChainedDriver<?, ?>>) chainedTask;
+		TaskInChain(Class<? extends ChainedDriver<?, ?>> chainedTask, TaskConfig taskConfig,
+					String taskName) {
+			this.chainedTask = chainedTask;
 			this.taskConfig = taskConfig;
 			this.taskName = taskName;
 		}

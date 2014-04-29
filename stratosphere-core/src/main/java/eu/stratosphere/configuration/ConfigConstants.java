@@ -272,11 +272,6 @@ public final class ConfigConstants {
 	 */
 	public static final int DEFAULT_PARALLELIZATION_DEGREE = -1;
 
-	/**
-	 * The default intra-node parallelism.
-	 */
-	public static final int DEFAULT_MAX_INTRA_NODE_PARALLELIZATION_DEGREE = -1;
-	
 	// ------------------------------ Runtime ---------------------------------
 	
 	/**

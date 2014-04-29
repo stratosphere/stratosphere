@@ -342,7 +342,6 @@ public class ExecutionGraphTest {
 			assertEquals("Input 1", egv0.getName());
 			assertEquals(0, egv0.getNumberOfBackwardLinks());
 			assertEquals(1, egv0.getNumberOfForwardLinks());
-			assertEquals(1, egv0.getNumberOfSubtasksPerInstance());
 			assertEquals(0, egv0.getStageNumber());
 			assertEquals(-1, egv0.getUserDefinedNumberOfMembers());
 			assertEquals(INSTANCE_MANAGER.getDefaultInstanceType(), egv0.getInstanceType());
@@ -364,7 +363,6 @@ public class ExecutionGraphTest {
 			assertEquals("Output 1", egv1.getName());
 			assertEquals(1, egv1.getNumberOfBackwardLinks());
 			assertEquals(0, egv1.getNumberOfForwardLinks());
-			assertEquals(1, egv1.getNumberOfSubtasksPerInstance());
 			assertEquals(0, egv1.getStageNumber());
 			assertEquals(-1, egv1.getUserDefinedNumberOfMembers());
 			assertEquals(INSTANCE_MANAGER.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME), egv1.getInstanceType());
@@ -388,7 +386,6 @@ public class ExecutionGraphTest {
 			assertEquals("Task 1", egv2.getName());
 			assertEquals(1, egv2.getNumberOfBackwardLinks());
 			assertEquals(1, egv2.getNumberOfForwardLinks());
-			assertEquals(1, egv2.getNumberOfSubtasksPerInstance());
 			assertEquals(0, egv2.getStageNumber());
 			assertEquals(-1, egv2.getUserDefinedNumberOfMembers());
 			assertEquals(INSTANCE_MANAGER.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME), egv2.getInstanceType());
@@ -833,40 +830,32 @@ public class ExecutionGraphTest {
 			i1.setFileInputClass(FileLineReader.class);
 			i1.setFilePath(new Path(inputFile1.toURI()));
 			i1.setNumberOfSubtasks(4);
-			i1.setNumberOfSubtasksPerInstance(2);
 			final JobFileInputVertex i2 = new JobFileInputVertex("Input 2", jg);
 			i2.setFileInputClass(FileLineReader.class);
 			i2.setFilePath(new Path(inputFile2.toURI()));
 			i2.setNumberOfSubtasks(4);
-			i2.setNumberOfSubtasksPerInstance(2);
 			// task vertex
 			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
 			t1.setTaskClass(ForwardTask1Input1Output.class);
 			t1.setNumberOfSubtasks(4);
-			t1.setNumberOfSubtasksPerInstance(2);
 			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
 			t2.setTaskClass(ForwardTask1Input1Output.class);
 			t2.setNumberOfSubtasks(4);
-			t2.setNumberOfSubtasksPerInstance(2);
 			final JobTaskVertex t3 = new JobTaskVertex("Task 3", jg);
 			t3.setTaskClass(ForwardTask2Inputs1Output.class);
 			t3.setNumberOfSubtasks(8);
-			t3.setNumberOfSubtasksPerInstance(4);
 			final JobTaskVertex t4 = new JobTaskVertex("Task 4", jg);
 			t4.setTaskClass(ForwardTask1Input2Outputs.class);
 			t4.setNumberOfSubtasks(8);
-			t4.setNumberOfSubtasksPerInstance(4);
 			// output vertex
 			final JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
 			o1.setFileOutputClass(FileLineWriter.class);
 			o1.setFilePath(new Path(outputFile1.toURI()));
 			o1.setNumberOfSubtasks(4);
-			o1.setNumberOfSubtasksPerInstance(2);
 			final JobFileOutputVertex o2 = new JobFileOutputVertex("Output 2", jg);
 			o2.setFileOutputClass(FileLineWriter.class);
 			o2.setFilePath(new Path(outputFile2.toURI()));
 			o2.setNumberOfSubtasks(4);
-			o2.setNumberOfSubtasksPerInstance(2);
 			o1.setVertexToShareInstancesWith(o2);
 
 			// connect vertices
@@ -891,7 +880,7 @@ public class ExecutionGraphTest {
 			
 			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
 			assertEquals(1, instanceRequestMap.size());
-			assertEquals(8,
+			assertEquals(20,
 				(int) instanceRequestMap.getMaximumNumberOfInstances(INSTANCE_MANAGER
 					.getInstanceTypeByName(DEFAULT_INSTANCE_TYPE_NAME)));
 			// Fake transition to next stage by triggering execution state changes manually

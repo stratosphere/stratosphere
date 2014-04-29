@@ -343,19 +343,10 @@ public class PactCompiler {
 	private final InetSocketAddress jobManagerAddress;
 
 	/**
-	 * The maximum number of machines (instances) to use, per the configuration.
-	 */
-	private int maxMachines;
-
-	/**
 	 * The default degree of parallelism for jobs compiled by this compiler.
 	 */
 	private int defaultDegreeOfParallelism;
 
-	/**
-	 * The maximum number of subtasks that should share an instance.
-	 */
-	private int maxIntraNodeParallelism;
 
 	// ------------------------------------------------------------------------
 	// Constructor & Setup
@@ -443,22 +434,9 @@ public class PactCompiler {
 
 		Configuration config = GlobalConfiguration.getConfiguration();
 
-		// determine the maximum number of instances to use
-		this.maxMachines = -1;
-
 		// determine the default parallelization degree
 		this.defaultDegreeOfParallelism = config.getInteger(ConfigConstants.DEFAULT_PARALLELIZATION_DEGREE_KEY,
 			ConfigConstants.DEFAULT_PARALLELIZATION_DEGREE);
-
-		// determine the default intra-node parallelism
-		int maxInNodePar = config.getInteger(ConfigConstants.PARALLELIZATION_MAX_INTRA_NODE_DEGREE_KEY,
-			ConfigConstants.DEFAULT_MAX_INTRA_NODE_PARALLELIZATION_DEGREE);
-		if (maxInNodePar == 0 || maxInNodePar < -1) {
-			LOG.error("Invalid maximum degree of intra-node parallelism: " + maxInNodePar +
-				". Ignoring parameter.");
-			maxInNodePar = ConfigConstants.DEFAULT_MAX_INTRA_NODE_PARALLELIZATION_DEGREE;
-		}
-		this.maxIntraNodeParallelism = maxInNodePar;
 
 		// assign the connection to the job-manager
 		if (jobManagerConnection != null) {
@@ -485,18 +463,6 @@ public class PactCompiler {
 	//                             Getters / Setters
 	// ------------------------------------------------------------------------
 	
-	public int getMaxMachines() {
-		return maxMachines;
-	}
-	
-	public void setMaxMachines(int maxMachines) {
-		if (maxMachines == -1 || maxMachines > 0) {
-			this.maxMachines = maxMachines;
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-	
 	public int getDefaultDegreeOfParallelism() {
 		return defaultDegreeOfParallelism;
 	}
@@ -504,18 +470,6 @@ public class PactCompiler {
 	public void setDefaultDegreeOfParallelism(int defaultDegreeOfParallelism) {
 		if (defaultDegreeOfParallelism == -1 || defaultDegreeOfParallelism > 0) {
 			this.defaultDegreeOfParallelism = defaultDegreeOfParallelism;
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-	
-	public int getMaxIntraNodeParallelism() {
-		return maxIntraNodeParallelism;
-	}
-	
-	public void setMaxIntraNodeParallelism(int maxIntraNodeParallelism) {
-		if (maxIntraNodeParallelism == -1 || maxIntraNodeParallelism > 0) {
-			this.maxIntraNodeParallelism = maxIntraNodeParallelism;
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -590,68 +544,14 @@ public class PactCompiler {
 		
 		// we subtract some percentage of the memory to accommodate for rounding errors
 		final long memoryPerInstance = (long) (type.getHardwareDescription().getSizeOfFreeMemory() * 0.96f);
-		final int numInstances = type.getMaximumNumberOfAvailableInstances();
-		
-		// determine the maximum number of machines to use
-		int maxMachinesJob = program.getMaxNumberMachines();
-
-		if (maxMachinesJob < 1) {
-			maxMachinesJob = this.maxMachines;
-		} else if (this.maxMachines >= 1) {
-			// check if the program requested more than the global config allowed
-			if (maxMachinesJob > this.maxMachines && LOG.isWarnEnabled()) {
-				LOG.warn("Maximal number of machines specified in program (" + maxMachinesJob
-					+ ") exceeds the maximum number in the global configuration (" + this.maxMachines
-					+ "). Using the global configuration value.");
-			}
-
-			maxMachinesJob = Math.min(maxMachinesJob, this.maxMachines);
-		}
-
-		// adjust the maximum number of machines the the number of available instances
-		if (maxMachinesJob < 1) {
-			maxMachinesJob = numInstances;
-		} else if (maxMachinesJob > numInstances) {
-			maxMachinesJob = numInstances;
-			if (LOG.isInfoEnabled()) {
-				LOG.info("Maximal number of machines decreased to " + maxMachinesJob +
-					" because no more instances are available.");
-			}
-		}
 
 		// set the default degree of parallelism
 		int defaultParallelism = program.getDefaultParallelism() > 0 ?
 			program.getDefaultParallelism() : this.defaultDegreeOfParallelism;
-		
-		if (this.maxIntraNodeParallelism > 0) {
-			if (defaultParallelism < 1) {
-				defaultParallelism = maxMachinesJob * this.maxIntraNodeParallelism;
-			}
-			else if (defaultParallelism > maxMachinesJob * this.maxIntraNodeParallelism) {
-				int oldParallelism = defaultParallelism;
-				defaultParallelism = maxMachinesJob * this.maxIntraNodeParallelism;
-
-				if (LOG.isInfoEnabled()) {
-					LOG.info("Decreasing default degree of parallelism from " + oldParallelism +
-						" to " + defaultParallelism + " to fit a maximum number of " + maxMachinesJob +
-						" instances with a intra-parallelism of " + this.maxIntraNodeParallelism);
-				}
-			}
-		} else if (defaultParallelism < 1) {
-			defaultParallelism = maxMachinesJob;
-			if (LOG.isInfoEnabled()) {
-				LOG.info("No default parallelism specified. Using default parallelism of " + defaultParallelism + " (One task per instance)");
-			}
-		}
 
 		// log the output
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Using a default degree of parallelism of " + defaultParallelism +
-				", a maximum intra-node parallelism of " + this.maxIntraNodeParallelism + '.');
-			if (this.maxMachines > 0) {
-				LOG.debug("The execution is limited to a maximum number of " + maxMachinesJob + " machines.");
-			}
-
+			LOG.debug("Using a default degree of parallelism of " + defaultParallelism + '.');
 		}
 
 		// the first step in the compilation is to create the optimizer plan representation
@@ -663,7 +563,7 @@ public class PactCompiler {
 		// 4) It makes estimates about the data volume of the data sources and
 		// propagates those estimates through the plan
 
-		GraphCreatingVisitor graphCreator = new GraphCreatingVisitor(maxMachinesJob, defaultParallelism);
+		GraphCreatingVisitor graphCreator = new GraphCreatingVisitor(defaultParallelism);
 		program.accept(graphCreator);
 
 		// if we have a plan with multiple data sinks, add logical optimizer nodes that have two data-sinks as children
@@ -686,8 +586,7 @@ public class PactCompiler {
 		// now that we have all nodes created and recorded which ones consume memory, tell the nodes their minimal
 		// guaranteed memory, for further cost estimations. we assume an equal distribution of memory among consumer tasks
 		
-		rootNode.accept(new IdAndMemoryAndEstimatesVisitor(this.statistics,
-			graphCreator.getMemoryConsumerCount() == 0 ? 0 : memoryPerInstance / graphCreator.getMemoryConsumerCount()));
+		rootNode.accept(new IdAndEstimatesVisitor(this.statistics));
 		
 		// Now that the previous step is done, the next step is to traverse the graph again for the two
 		// steps that cannot directly be performed during the plan enumeration, because we are dealing with DAGs
@@ -752,7 +651,7 @@ public class PactCompiler {
 	 *         from the plan can be traversed.
 	 */
 	public static List<DataSinkNode> createPreOptimizedPlan(Plan program) {
-		GraphCreatingVisitor graphCreator = new GraphCreatingVisitor(-1, 1);
+		GraphCreatingVisitor graphCreator = new GraphCreatingVisitor(1);
 		program.accept(graphCreator);
 		return graphCreator.sinks;
 	}
@@ -780,22 +679,18 @@ public class PactCompiler {
 
 		private final List<DataSinkNode> sinks; // all data sink nodes in the optimizer plan
 
-		private final int maxMachines; // the maximum number of machines to use
-
 		private final int defaultParallelism; // the default degree of parallelism
-		
-		private int numMemoryConsumers;
 		
 		private final GraphCreatingVisitor parent;	// reference to enclosing creator, in case of a recursive translation
 		
 		private final boolean forceDOP;
 
 		
-		private GraphCreatingVisitor(int maxMachines, int defaultParallelism) {
-			this(null, false, maxMachines, defaultParallelism, null);
+		private GraphCreatingVisitor(int defaultParallelism) {
+			this(null, false, defaultParallelism, null);
 		}
 
-		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP, int maxMachines,
+		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP,
 									 int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
 			if (closure == null){
 				con2node = new HashMap<Operator, OptimizerNode>();
@@ -804,7 +699,6 @@ public class PactCompiler {
 			}
 			this.sources = new ArrayList<DataSourceNode>(4);
 			this.sinks = new ArrayList<DataSinkNode>(2);
-			this.maxMachines = maxMachines;
 			this.defaultParallelism = defaultParallelism;
 			this.parent = parent;
 			this.forceDOP = forceDOP;
@@ -872,7 +766,6 @@ public class PactCompiler {
 				// catch this for the recursive translation of step functions
 				BulkPartialSolutionNode p = new BulkPartialSolutionNode(holder, containingIterationNode);
 				p.setDegreeOfParallelism(containingIterationNode.getDegreeOfParallelism());
-				p.setSubtasksPerInstance(containingIterationNode.getSubtasksPerInstance());
 				n = p;
 			}
 			else if (c instanceof WorksetPlaceHolder) {
@@ -884,7 +777,6 @@ public class PactCompiler {
 				// catch this for the recursive translation of step functions
 				WorksetNode p = new WorksetNode(holder, containingIterationNode);
 				p.setDegreeOfParallelism(containingIterationNode.getDegreeOfParallelism());
-				p.setSubtasksPerInstance(containingIterationNode.getSubtasksPerInstance());
 				n = p;
 			}
 			else if (c instanceof SolutionSetPlaceHolder) {
@@ -896,7 +788,6 @@ public class PactCompiler {
 				// catch this for the recursive translation of step functions
 				SolutionSetNode p = new SolutionSetNode(holder, containingIterationNode);
 				p.setDegreeOfParallelism(containingIterationNode.getDegreeOfParallelism());
-				p.setSubtasksPerInstance(containingIterationNode.getSubtasksPerInstance());
 				n = p;
 			}
 			else {
@@ -905,9 +796,6 @@ public class PactCompiler {
 
 			this.con2node.put(c, n);
 			
-			// record the potential memory consumption
-			this.numMemoryConsumers += n.isMemoryConsumer() ? 1 : 0;
-
 			// set the parallelism only if it has not been set before. some nodes have a fixed DOP, such as the
 			// key-less reducer (all-reduce)
 			if (n.getDegreeOfParallelism() < 1) {
@@ -925,19 +813,6 @@ public class PactCompiler {
 				n.setDegreeOfParallelism(par);
 			}
 
-			// check if we need to set the instance sharing accordingly such that
-			// the maximum number of machines is not exceeded
-			if (n.getSubtasksPerInstance() < 1) {
-				int tasksPerInstance = 1;
-				if (this.maxMachines > 0) {
-					int p = n.getDegreeOfParallelism();
-					tasksPerInstance = (p / this.maxMachines) + (p % this.maxMachines == 0 ? 0 : 1);
-				}
-	
-				// we group together n tasks per machine, depending on config and the above computed
-				// value required to obey the maximum number of machines
-				n.setSubtasksPerInstance(tasksPerInstance);
-			}
 			return true;
 		}
 
@@ -960,7 +835,7 @@ public class PactCompiler {
 
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
-					this.maxMachines, iterNode.getDegreeOfParallelism(), closure);
+					iterNode.getDegreeOfParallelism(), closure);
 				
 				BulkPartialSolutionNode partialSolution = null;
 				
@@ -988,9 +863,6 @@ public class PactCompiler {
 				iterNode.setNextPartialSolution(rootOfStepFunction, terminationCriterion);
 				iterNode.setPartialSolution(partialSolution);
 				
-				// account for the nested memory consumers
-				this.numMemoryConsumers += recursiveCreator.numMemoryConsumers;
-				
 				// go over the contained data flow and mark the dynamic path nodes
 				StaticDynamicPathIdentifier identifier = new StaticDynamicPathIdentifier(iterNode.getCostWeight());
 				rootOfStepFunction.accept(identifier);
@@ -1007,7 +879,7 @@ public class PactCompiler {
 
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
-					this.maxMachines, iterNode.getDegreeOfParallelism(), closure);
+					iterNode.getDegreeOfParallelism(), closure);
 				// descend from the solution set delta. check that it depends on both the workset
 				// and the solution set. If it does depend on both, this descend should create both nodes
 				iter.getSolutionSetDelta().accept(recursiveCreator);
@@ -1061,18 +933,11 @@ public class PactCompiler {
 				iterNode.setPartialSolution(solutionSetNode, worksetNode);
 				iterNode.setNextPartialSolution(solutionSetDeltaNode, nextWorksetNode);
 				
-				// account for the nested memory consumers
-				this.numMemoryConsumers += recursiveCreator.numMemoryConsumers;
-				
 				// go over the contained data flow and mark the dynamic path nodes
 				StaticDynamicPathIdentifier pathIdentifier = new StaticDynamicPathIdentifier(iterNode.getCostWeight());
 				nextWorksetNode.accept(pathIdentifier);
 				iterNode.getSolutionSetDelta().accept(pathIdentifier);
 			}
-		}
-		
-		int getMemoryConsumerCount() {
-			return this.numMemoryConsumers;
 		}
 	};
 	
@@ -1101,17 +966,14 @@ public class PactCompiler {
 	 * Simple visitor that sets the minimal guaranteed memory per task based on the amount of available memory,
 	 * the number of memory consumers, and on the task's degree of parallelism.
 	 */
-	private static final class IdAndMemoryAndEstimatesVisitor implements Visitor<OptimizerNode> {
+	private static final class IdAndEstimatesVisitor implements Visitor<OptimizerNode> {
 		
 		private final DataStatistics statistics;
-		
-		private final long memoryPerTaskPerInstance;
-		
+
 		private int id = 1;
 		
-		private IdAndMemoryAndEstimatesVisitor(DataStatistics statistics, long memoryPerTaskPerInstance) {
+		private IdAndEstimatesVisitor(DataStatistics statistics) {
 			this.statistics = statistics;
-			this.memoryPerTaskPerInstance = memoryPerTaskPerInstance;
 		}
 
 
@@ -1121,11 +983,6 @@ public class PactCompiler {
 				// been here before
 				return false;
 			}
-			
-			// assign minimum memory share, for lower bound estimates
-			final long mem = visitable.isMemoryConsumer() ? 
-					this.memoryPerTaskPerInstance / visitable.getSubtasksPerInstance() : 0;
-			visitable.setMinimalMemoryPerSubTask(mem);
 			
 			return true;
 		}
@@ -1267,7 +1124,7 @@ public class PactCompiler {
 					// assign memory to the driver strategy of the node
 					final int consumerWeight = node.getMemoryConsumerWeight();
 					if (consumerWeight > 0) {
-						final long mem = memoryPerInstanceAndWeight * consumerWeight / node.getSubtasksPerInstance();
+						final long mem = memoryPerInstanceAndWeight * consumerWeight;
 						node.setMemoryPerSubTask(mem);
 						if (LOG.isDebugEnabled()) {
 							final long mib = mem >> 20;
@@ -1281,7 +1138,7 @@ public class PactCompiler {
 					for (Iterator<Channel> channels = node.getInputs(); channels.hasNext();) {
 						final Channel c = channels.next();
 						if (c.getLocalStrategy().dams()) {
-							final long mem = memoryPerInstanceAndWeight / node.getSubtasksPerInstance();
+							final long mem = memoryPerInstanceAndWeight;
 							c.setMemoryLocalStrategy(mem);
 							if (LOG.isDebugEnabled()) {
 								final long mib = mem >> 20;
@@ -1290,7 +1147,7 @@ public class PactCompiler {
 							}
 						}
 						if (c.getTempMode() != TempMode.NONE) {
-							final long mem = memoryPerInstanceAndWeight / node.getSubtasksPerInstance();
+							final long mem = memoryPerInstanceAndWeight;
 							c.setTempMemory(mem);
 							if (LOG.isDebugEnabled()) {
 								final long mib = mem >> 20;

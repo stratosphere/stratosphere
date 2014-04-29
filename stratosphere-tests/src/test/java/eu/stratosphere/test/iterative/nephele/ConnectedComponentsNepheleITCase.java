@@ -167,7 +167,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 		@SuppressWarnings("unchecked")
 		CsvInputFormat verticesInFormat = new CsvInputFormat(' ', LongValue.class);
 		JobInputVertex verticesInput = JobGraphUtils.createInput(verticesInFormat, verticesPath, "VerticesInput",
-			jobGraph, numSubTasks, numSubTasks);
+			jobGraph, numSubTasks);
 		TaskConfig verticesInputConfig = new TaskConfig(verticesInput.getConfiguration());
 		{
 			verticesInputConfig.addOutputShipStrategy(ShipStrategyType.FORWARD);
@@ -199,7 +199,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 		@SuppressWarnings("unchecked")
 		CsvInputFormat edgesInFormat = new CsvInputFormat(' ', LongValue.class, LongValue.class);
 		JobInputVertex edgesInput = JobGraphUtils.createInput(edgesInFormat, edgesPath, "EdgesInput", jobGraph,
-			numSubTasks, numSubTasks);
+			numSubTasks);
 		TaskConfig edgesInputConfig = new TaskConfig(edgesInput.getConfiguration());
 		{
 			edgesInputConfig.setOutputSerializer(serializer);
@@ -216,7 +216,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			TypePairComparatorFactory<?, ?> pairComparator) {
 
 		JobTaskVertex head = JobGraphUtils.createTask(IterationHeadPactTask.class, "Join With Edges (Iteration Head)",
-			jobGraph, numSubTasks, numSubTasks);
+			jobGraph, numSubTasks);
 		TaskConfig headConfig = new TaskConfig(head.getConfiguration());
 		{
 			headConfig.setIterationId(ITERATION_ID);
@@ -288,7 +288,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// --------------- the intermediate (reduce to min id) ---------------
 		JobTaskVertex intermediate = JobGraphUtils.createTask(IterationIntermediatePactTask.class,
-			"Find Min Component-ID", jobGraph, numSubTasks, numSubTasks);
+			"Find Min Component-ID", jobGraph, numSubTasks);
 		TaskConfig intermediateConfig = new TaskConfig(intermediate.getConfiguration());
 		{
 			intermediateConfig.setIterationId(ITERATION_ID);
@@ -316,7 +316,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	private static JobOutputVertex createOutput(JobGraph jobGraph, String resultPath, int numSubTasks,
 			TypeSerializerFactory<?> serializer) {
-		JobOutputVertex output = JobGraphUtils.createFileOutput(jobGraph, "Final Output", numSubTasks, numSubTasks);
+		JobOutputVertex output = JobGraphUtils.createFileOutput(jobGraph, "Final Output", numSubTasks);
 		TaskConfig outputConfig = new TaskConfig(output.getConfiguration());
 		{
 
@@ -341,7 +341,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	private static JobOutputVertex createFakeTail(JobGraph jobGraph, int numSubTasks) {
 		JobOutputVertex fakeTailOutput =
-			JobGraphUtils.createFakeOutput(jobGraph, "FakeTailOutput", numSubTasks, numSubTasks);
+			JobGraphUtils.createFakeOutput(jobGraph, "FakeTailOutput", numSubTasks);
 		return fakeTailOutput;
 	}
 
@@ -389,7 +389,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// --------------- the tail (solution set join) ---------------
 		JobTaskVertex tail = JobGraphUtils.createTask(IterationTailPactTask.class, "IterationTail", jobGraph,
-			numSubTasks, numSubTasks);
+			numSubTasks);
 		TaskConfig tailConfig = new TaskConfig(tail.getConfiguration());
 		{
 			tailConfig.setIterationId(ITERATION_ID);
@@ -480,7 +480,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// ------------------ the intermediate (ss join) ----------------------
 		JobTaskVertex ssJoinIntermediate = JobGraphUtils.createTask(IterationIntermediatePactTask.class,
-			"Solution Set Join", jobGraph, numSubTasks, numSubTasks);
+			"Solution Set Join", jobGraph, numSubTasks);
 		TaskConfig ssJoinIntermediateConfig = new TaskConfig(ssJoinIntermediate.getConfiguration());
 		{
 			ssJoinIntermediateConfig.setIterationId(ITERATION_ID);
@@ -509,7 +509,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// -------------------------- ss tail --------------------------------
 		JobTaskVertex ssTail = JobGraphUtils.createTask(IterationTailPactTask.class, "IterationSolutionSetTail",
-			jobGraph, numSubTasks, numSubTasks);
+			jobGraph, numSubTasks);
 		TaskConfig ssTailConfig = new TaskConfig(ssTail.getConfiguration());
 		{
 			ssTailConfig.setIterationId(ITERATION_ID);
@@ -534,7 +534,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// -------------------------- ws tail --------------------------------
 		JobTaskVertex wsTail = JobGraphUtils.createTask(IterationTailPactTask.class, "IterationWorksetTail",
-			jobGraph, numSubTasks, numSubTasks);
+			jobGraph, numSubTasks);
 		TaskConfig wsTailConfig = new TaskConfig(wsTail.getConfiguration());
 		{
 			wsTailConfig.setIterationId(ITERATION_ID);
@@ -631,7 +631,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 		// ------------------ the intermediate (ws update) ----------------------
 		JobTaskVertex wsUpdateIntermediate =
 			JobGraphUtils.createTask(IterationIntermediatePactTask.class, "WorksetUpdate", jobGraph,
-				numSubTasks, numSubTasks);
+				numSubTasks);
 		TaskConfig wsUpdateConfig = new TaskConfig(wsUpdateIntermediate.getConfiguration());
 		{
 			wsUpdateConfig.setIterationId(ITERATION_ID);
@@ -661,7 +661,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 		// -------------------------- ss tail --------------------------------
 		JobTaskVertex ssTail =
 			JobGraphUtils.createTask(IterationTailPactTask.class, "IterationSolutionSetTail", jobGraph,
-				numSubTasks, numSubTasks);
+				numSubTasks);
 		TaskConfig ssTailConfig = new TaskConfig(ssTail.getConfiguration());
 		{
 			ssTailConfig.setIterationId(ITERATION_ID);
@@ -754,7 +754,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// ------------------ the intermediate (ss update) ----------------------
 		JobTaskVertex ssJoinIntermediate = JobGraphUtils.createTask(IterationIntermediatePactTask.class,
-			"Solution Set Update", jobGraph, numSubTasks, numSubTasks);
+			"Solution Set Update", jobGraph, numSubTasks);
 		TaskConfig ssJoinIntermediateConfig = new TaskConfig(ssJoinIntermediate.getConfiguration());
 		{
 			ssJoinIntermediateConfig.setIterationId(ITERATION_ID);
@@ -782,7 +782,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 		// -------------------------- ws tail --------------------------------
 		JobTaskVertex wsTail = JobGraphUtils.createTask(IterationTailPactTask.class, "IterationWorksetTail",
-			jobGraph, numSubTasks, numSubTasks);
+			jobGraph, numSubTasks);
 		TaskConfig wsTailConfig = new TaskConfig(wsTail.getConfiguration());
 		{
 			wsTailConfig.setIterationId(ITERATION_ID);

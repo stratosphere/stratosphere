@@ -75,9 +75,9 @@ public class ClusterManagerTest {
 			InstanceConnectionInfo ici3 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 30, dataPort + 30);
 			
 			// register three instances
-			cm.reportHeartBeat(ici1, hardwareDescription);
-			cm.reportHeartBeat(ici2, hardwareDescription);
-			cm.reportHeartBeat(ici3, hardwareDescription);
+			cm.registerTaskManager(ici1, hardwareDescription);
+			cm.registerTaskManager(ici2, hardwareDescription);
+			cm.registerTaskManager(ici3, hardwareDescription);
 			
 			
 			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
@@ -117,8 +117,8 @@ public class ClusterManagerTest {
 			InstanceConnectionInfo ici2 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 15, dataPort + 15);
 			
 			// register three instances
-			cm.reportHeartBeat(ici1, hardwareDescription);
-			cm.reportHeartBeat(ici2, hardwareDescription);
+			cm.registerTaskManager(ici1, hardwareDescription);
+			cm.registerTaskManager(ici2, hardwareDescription);
 			
 			
 			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
@@ -225,9 +225,9 @@ public class ClusterManagerTest {
 			InstanceConnectionInfo ici3 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 30, dataPort + 30);
 			
 			// register three instances
-			cm.reportHeartBeat(ici1, hardwareDescription);
-			cm.reportHeartBeat(ici2, hardwareDescription);
-			cm.reportHeartBeat(ici3, hardwareDescription);
+			cm.registerTaskManager(ici1, hardwareDescription);
+			cm.registerTaskManager(ici2, hardwareDescription);
+			cm.registerTaskManager(ici3, hardwareDescription);
 			
 			
 			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();

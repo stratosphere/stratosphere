@@ -124,7 +124,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 
 		// - input -----------------------------------------------------------------------------------------------------
 		JobInputVertex input = JobGraphUtils.createInput(
-			new PointInFormat(), inputPath, "Input", jobGraph, numSubTasks, numSubTasks);
+			new PointInFormat(), inputPath, "Input", jobGraph, numSubTasks);
 		TaskConfig inputConfig = new TaskConfig(input.getConfiguration());
 		{
 			inputConfig.setOutputSerializer(serializer);
@@ -133,7 +133,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 
 		// - head ------------------------------------------------------------------------------------------------------
 		JobTaskVertex head = JobGraphUtils.createTask(
-			IterationHeadPactTask.class, "Iteration Head", jobGraph, numSubTasks, numSubTasks);
+			IterationHeadPactTask.class, "Iteration Head", jobGraph, numSubTasks);
 		TaskConfig headConfig = new TaskConfig(head.getConfiguration());
 		{
 			headConfig.setIterationId(ITERATION_ID);
@@ -169,7 +169,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 
 		// - tail ------------------------------------------------------------------------------------------------------
 		JobTaskVertex tail = JobGraphUtils.createTask(
-			IterationTailPactTask.class, "Chained Iteration Tail", jobGraph, numSubTasks, numSubTasks);
+			IterationTailPactTask.class, "Chained Iteration Tail", jobGraph, numSubTasks);
 		TaskConfig tailConfig = new TaskConfig(tail.getConfiguration());
 		{
 			tailConfig.setIterationId(ITERATION_ID);
@@ -206,7 +206,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 		}
 
 		// - output ----------------------------------------------------------------------------------------------------
-		JobOutputVertex output = JobGraphUtils.createFileOutput(jobGraph, "Output", numSubTasks, numSubTasks);
+		JobOutputVertex output = JobGraphUtils.createFileOutput(jobGraph, "Output", numSubTasks);
 		TaskConfig outputConfig = new TaskConfig(output.getConfiguration());
 		{
 			outputConfig.addInputToGroup(0);
@@ -217,7 +217,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 		}
 
 		// - fake tail -------------------------------------------------------------------------------------------------
-		JobOutputVertex fakeTail = JobGraphUtils.createFakeOutput(jobGraph, "Fake Tail", numSubTasks, numSubTasks);
+		JobOutputVertex fakeTail = JobGraphUtils.createFakeOutput(jobGraph, "Fake Tail", numSubTasks);
 
 		// - sync ------------------------------------------------------------------------------------------------------
 		JobOutputVertex sync = JobGraphUtils.createSync(jobGraph, numSubTasks);
