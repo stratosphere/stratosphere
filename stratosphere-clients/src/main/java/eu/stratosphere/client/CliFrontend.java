@@ -14,6 +14,7 @@
 package eu.stratosphere.client;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
@@ -105,6 +106,7 @@ public class CliFrontend {
 	private static final String ENV_CONFIG_DIRECTORY = "STRATOSPHERE_CONF_DIR";
 	private static final String CONFIG_DIRECTORY_FALLBACK_1 = "../conf";
 	private static final String CONFIG_DIRECTORY_FALLBACK_2 = "conf";
+	public static final String JOBMANAGER_ADDRESS_FILE = ".yarn-jobmanager";
 	
 
 	private CommandLineParser parser;
@@ -294,11 +296,13 @@ public class CliFrontend {
 		
 		// see if there is a file containing the jobManager address.
 		String loc = getConfigurationDirectory();
-		File jmAddressFile = new File(loc+"/.yarn-jobmanager");
+		File jmAddressFile = new File(loc + "/" + JOBMANAGER_ADDRESS_FILE);
+		boolean yarnMode = false;
 		if (jmAddressFile.exists()) {
 			try {
 				address = FileUtils.readFileToString(jmAddressFile).trim();
-				System.out.println("Found a .yarn-jobmanager file, using \""+address+"\" to connect to the JobManager");
+				System.out.println("Found a " + JOBMANAGER_ADDRESS_FILE + " file, using \""+address+"\" to connect to the JobManager");
+				yarnMode = true;
 			} catch (IOException e) {}
 		}
 		
@@ -349,16 +353,20 @@ public class CliFrontend {
 			}
 		}
 		else {
-			if (address != null && !address.isEmpty()) {
-				System.out.println("Job successfully submitted. Use -w (or --wait) option to track the progress here.\n"
+			if(!yarnMode) {
+				if (address != null && !address.isEmpty()) {
+					System.out.println("Job successfully submitted. Use -w (or --wait) option to track the progress here.\n"
+							+ "JobManager web interface: http://"
+							+ socket.getHostName()
+							+ ":" + configuration.getInteger(ConfigConstants.JOB_MANAGER_WEB_PORT_KEY, ConfigConstants.DEFAULT_JOB_MANAGER_WEB_FRONTEND_PORT));
+				} else {
+					System.out.println("Job successfully submitted. Use -w (or --wait) option to track the progress here.\n"
 						+ "JobManager web interface: http://"
-						+ socket.getHostName()
+						+ configuration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null)
 						+ ":" + configuration.getInteger(ConfigConstants.JOB_MANAGER_WEB_PORT_KEY, ConfigConstants.DEFAULT_JOB_MANAGER_WEB_FRONTEND_PORT));
+				}
 			} else {
-				System.out.println("Job successfully submitted. Use -w (or --wait) option to track the progress here.\n"
-					+ "JobManager web interface: http://"
-					+ configuration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null)
-					+ ":" + configuration.getInteger(ConfigConstants.JOB_MANAGER_WEB_PORT_KEY, ConfigConstants.DEFAULT_JOB_MANAGER_WEB_FRONTEND_PORT));
+				System.out.println("Job successfully submitted. Use -w (or --wait) option to track the progress here.\n");
 			}
 		}
 		return 0;
