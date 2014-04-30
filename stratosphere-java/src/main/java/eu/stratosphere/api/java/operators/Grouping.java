@@ -97,7 +97,6 @@ public class Grouping<T> {
 	 */
 	public AggregateOperator<T> aggregate(Aggregations agg, int field) {
 		if(this.groupSortKeyPositions != null) {
-			// TODO
 			throw new UnsupportedOperationException("Sorted groups not supported for Aggregation operation at the moment.");
 		}
 		return new AggregateOperator<T>(this, agg, field);
@@ -117,6 +116,9 @@ public class Grouping<T> {
 	 * @see DataSet
 	 */
 	public ReduceOperator<T> reduce(ReduceFunction<T> reducer) {
+		if(this.groupSortKeyPositions != null) {
+			throw new UnsupportedOperationException("Sorted groups not supported for Aggregation operation at the moment.");
+		}
 		return new ReduceOperator<T>(this, reducer);
 	}
 	
@@ -157,6 +159,13 @@ public class Grouping<T> {
 		
 		int pos;
 		
+		if (!dataSet.getType().isTupleType()) {
+			throw new InvalidProgramException("Specifying order keys via field positions is only valid for tuple data types");
+		}
+		if (field >= dataSet.getType().getArity()) {
+			throw new IllegalArgumentException("Order key out of tuple bounds.");
+		}
+		
 		if(this.groupSortKeyPositions == null) {
 			this.groupSortKeyPositions = new int[1];
 			this.groupSortOrders = new Order[1];
@@ -177,8 +186,4 @@ public class Grouping<T> {
 //		throw new UnsupportedOperationException("Group sorting not supported for KeyExtractor functions.");
 //	}
 
-//	public Grouping<T> sortGroup(String fieldExpression, Order order) {
-//		throw new UnsupportedOperationException("Group sorting not supported for FieldExpression keys.");
-//	}
-	
 }

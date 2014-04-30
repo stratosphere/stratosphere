@@ -15,6 +15,8 @@ package eu.stratosphere.api.common.operators;
 
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 import eu.stratosphere.api.common.io.FileOutputFormat;
 
 /**
@@ -76,7 +78,9 @@ public class FileDataSink extends GenericDataSink {
 	 * @param f The {@link FileOutputFormat} implementation used to encode the data.
 	 * @param filePath The path to the file to write the contents to.
 	 * @param input The contracts to use as the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public FileDataSink(FileOutputFormat<?> f, String filePath, List<Operator> input) {
 		this(f, filePath, input, DEFAULT_NAME);
 	}
@@ -92,7 +96,7 @@ public class FileDataSink extends GenericDataSink {
 	 */
 	public FileDataSink(FileOutputFormat<?> f, String filePath, Operator input, String name) {
 		this(f, filePath, name);
-		addInput(input);
+		setInput(input);
 	}
 
 	/**
@@ -103,10 +107,13 @@ public class FileDataSink extends GenericDataSink {
 	 * @param filePath The path to the file to write the contents to.
 	 * @param input The contracts to use as the input.
 	 * @param name The given name for the sink, used in plans, logs and progress messages.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public FileDataSink(FileOutputFormat<?> f, String filePath, List<Operator> input, String name) {
 		this(f, filePath, name);
-		addInputs(input);
+		Validate.notNull(input, "The input must not be null.");
+		setInput(Operator.createUnionCascade(input));
 	}
 	
 	/**
@@ -153,7 +160,9 @@ public class FileDataSink extends GenericDataSink {
 	 * @param f The {@link FileOutputFormat} implementation used to encode the data.
 	 * @param filePath The path to the file to write the contents to.
 	 * @param input The contracts to use as the input.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public FileDataSink(Class<? extends FileOutputFormat<?>> f, String filePath, List<Operator> input) {
 		this(f, filePath, input, DEFAULT_NAME);
 	}
@@ -169,7 +178,7 @@ public class FileDataSink extends GenericDataSink {
 	 */
 	public FileDataSink(Class<? extends FileOutputFormat<?>> f, String filePath, Operator input, String name) {
 		this(f, filePath, name);
-		addInput(input);
+		setInput(input);
 	}
 
 	/**
@@ -180,10 +189,13 @@ public class FileDataSink extends GenericDataSink {
 	 * @param filePath The path to the file to write the contents to.
 	 * @param input The contracts to use as the input.
 	 * @param name The given name for the sink, used in plans, logs and progress messages.
+	 * @deprecated This method will be removed in future versions. Use the {@link Union} operator instead.
 	 */
+	@Deprecated
 	public FileDataSink(Class<? extends FileOutputFormat<?>> f, String filePath, List<Operator> input, String name) {
 		this(f, filePath, name);
-		addInputs(input);
+		Validate.notNull(input, "The inputs must not be null.");
+		setInput(Operator.createUnionCascade(input));
 	}
 
 	// --------------------------------------------------------------------------------------------

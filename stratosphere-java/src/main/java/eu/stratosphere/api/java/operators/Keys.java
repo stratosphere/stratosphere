@@ -90,7 +90,15 @@ public abstract class Keys<T> {
 				}
 				return true;
 				
-			} else {
+			} else if (other instanceof SelectorFunctionKeys) {
+				if(this.types.length != 1)
+					return false;
+				
+				SelectorFunctionKeys<?, ?> sfk = (SelectorFunctionKeys<?, ?>) other;
+				
+				return sfk.keyType.equals(this.types[0]);
+			}
+			else {
 				return false;
 			}
 		}
@@ -111,7 +119,7 @@ public abstract class Keys<T> {
 		
 		public SelectorFunctionKeys(KeySelector<T, K> keyExtractor, TypeInformation<T> type) {
 			this.keyExtractor = keyExtractor;
-			this.keyType = TypeExtractor.getKeyExtractorType(keyExtractor);
+			this.keyType = TypeExtractor.getKeyExtractorType(keyExtractor, type);
 		}
 
 		public TypeInformation<K> getKeyType() {
@@ -135,6 +143,14 @@ public abstract class Keys<T> {
 				SelectorFunctionKeys<?, K> sfk = (SelectorFunctionKeys<?, K>) other;
 				
 				return sfk.keyType.equals(this.keyType);
+			}
+			else if (other instanceof FieldPositionKeys) {
+				FieldPositionKeys<?> fpk = (FieldPositionKeys<?>) other;
+						
+				if(fpk.types.length != 1)
+					return false;
+				
+				return fpk.types[0].equals(this.keyType);
 			}
 			else {
 				return false;

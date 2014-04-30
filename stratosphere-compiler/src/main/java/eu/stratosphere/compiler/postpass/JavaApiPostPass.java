@@ -16,11 +16,13 @@ package eu.stratosphere.compiler.postpass;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.DeltaIteration;
 import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.api.common.operators.Union;
 import eu.stratosphere.api.common.operators.util.FieldList;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
@@ -38,7 +40,12 @@ import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.CompilerPostPassException;
 import eu.stratosphere.compiler.plan.*;
 import eu.stratosphere.compiler.util.NoOpUnaryUdfOp;
+import eu.stratosphere.pact.runtime.task.DriverStrategy;
 
+/**
+ * The post-optimizer plan traversal. This traversal fills in the API specific utilities (serializers and
+ * comparators).
+ */
 public class JavaApiPostPass implements OptimizerPostPass {
 	
 	private final Set<PlanNode> alreadyDone = new HashSet<PlanNode>();
@@ -177,6 +184,12 @@ public class JavaApiPostPass implements OptimizerPostPass {
 		{
 			// Do nothing :D
 		}
+		else if (node instanceof NAryUnionPlanNode){
+			// Traverse to all child channels
+			for (Iterator<Channel> channels = node.getInputs(); channels.hasNext(); ) {
+				traverseChannel(channels.next());
+			}
+		}
 		else {
 			throw new CompilerPostPassException("Unknown node type encountered: " + node.getClass().getName());
 		}
@@ -193,7 +206,15 @@ public class JavaApiPostPass implements OptimizerPostPass {
 
 		TypeInformation<?> type = null;
 
-		if (javaOp instanceof JavaPlanNode<?>) {
+		if(javaOp instanceof PlanGroupReduceOperator && source.getDriverStrategy().equals(DriverStrategy.PARTIAL_GROUP)) {
+			PlanGroupReduceOperator<?, ?> groupNode = (PlanGroupReduceOperator<?, ?>) javaOp;
+			type = groupNode.getInputType();
+		}
+		else if(javaOp instanceof PlanUnwrappingReduceGroupOperator && source.getDriverStrategy().equals(DriverStrategy.PARTIAL_GROUP)) {
+			PlanUnwrappingReduceGroupOperator<?, ?, ?> groupNode = (PlanUnwrappingReduceGroupOperator<?, ?, ?>) javaOp;
+			type = groupNode.getInputType();
+		}
+		else if (javaOp instanceof JavaPlanNode<?>) {
 			JavaPlanNode<?> javaNode = (JavaPlanNode<?>) javaOp;
 			type = javaNode.getReturnType();
 		} else if (javaOp instanceof BulkIteration.PartialSolutionPlaceHolder) {
@@ -210,8 +231,15 @@ public class JavaApiPostPass implements OptimizerPostPass {
 			type = ((PlanDeltaIterationOperator<?, ?>) worksetPlaceHolder.getContainingWorksetIteration()).getReturnType();
 		}  else if (javaOp instanceof NoOpUnaryUdfOp) {
 			NoOpUnaryUdfOp op = (NoOpUnaryUdfOp) javaOp;
-			if(op.getInputs().get(0) instanceof JavaPlanNode<?>) {
-				JavaPlanNode<?> javaNode = (JavaPlanNode<?>) op.getInputs().get(0);
+			if(op.getInput() instanceof JavaPlanNode<?>) { 
+				JavaPlanNode<?> javaNode = (JavaPlanNode<?>) op.getInput();
+				type = javaNode.getReturnType();
+			}
+		}else if(javaOp instanceof Union){
+			// Union
+			Operator op = channel.getSource().getInputs().next().getSource().getPactContract();
+			if(op instanceof JavaPlanNode<?>){
+				JavaPlanNode<?> javaNode = (JavaPlanNode<?>) op;
 				type = javaNode.getReturnType();
 			}
 		}

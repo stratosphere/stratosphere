@@ -24,16 +24,19 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -46,11 +49,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 
+import eu.stratosphere.api.common.cache.DistributedCache;
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.deployment.TaskDeploymentDescriptor;
-import eu.stratosphere.nephele.execution.Environment;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.execution.RuntimeEnvironment;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
@@ -82,6 +86,7 @@ import eu.stratosphere.nephele.taskmanager.bytebuffered.InsufficientResourcesExc
 import eu.stratosphere.nephele.taskmanager.runtime.ExecutorThreadFactory;
 import eu.stratosphere.nephele.taskmanager.runtime.RuntimeTask;
 import eu.stratosphere.nephele.util.SerializableArrayList;
+import eu.stratosphere.pact.runtime.cache.FileCache;
 import eu.stratosphere.util.StringUtils;
 
 /**
@@ -95,6 +100,12 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private static final Log LOG = LogFactory.getLog(TaskManager.class);
 
+	private final static int FAILURE_RETURN_CODE = -1;
+	
+	private static final int IPC_HANDLER_COUNT = 1;
+	
+	public final static String ARG_CONF_DIR = "tempDir";
+	
 	private final JobManagerProtocol jobManager;
 
 	private final InputSplitProviderProtocol globalInputSplitProvider;
@@ -102,12 +113,12 @@ public class TaskManager implements TaskOperationProtocol {
 	private final ChannelLookupProtocol lookupService;
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool(ExecutorThreadFactory.INSTANCE);
-	private AccumulatorProtocol accumulatorProtocolProxy;
-
-	private static final int handlerCount = 1;
+	
+	private final AccumulatorProtocol accumulatorProtocolProxy;
 
 	private final Server taskManagerServer;
 
+	private final FileCache fileCache = new FileCache();
 	/**
 	 * This map contains all the tasks whose threads are in a state other than TERMINATED. If any task
 	 * is stored inside this map and its thread status is TERMINATED, this indicates a virtual machine error.
@@ -116,10 +127,6 @@ public class TaskManager implements TaskOperationProtocol {
 	private final Map<ExecutionVertexID, Task> runningTasks = new ConcurrentHashMap<ExecutionVertexID, Task>();
 
 	private final InstanceConnectionInfo localInstanceConnectionInfo;
-
-	private final static int FAILURERETURNCODE = -1;
-
-	private final static int DEFAULTPERIODICTASKSINTERVAL = 2000;
 
 	/**
 	 * The instance of the {@link ByteBufferedChannelManager} which is responsible for
@@ -138,171 +145,193 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final HardwareDescription hardwareDescription;
 
-	/**
-	 * Stores whether the task manager has already been shut down.
-	 */
-	private boolean isShutDown = false;
+	private final Thread heartbeatThread;
+	
+	private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
+	
+	/** Stores whether the task manager has already been shut down. */
+	private volatile boolean shutdownComplete;
 	
 	/**
 	 * Constructs a new task manager, starts its IPC service and attempts to discover the job manager to
 	 * receive an initial configuration. All parameters are obtained from the 
 	 * {@link GlobalConfiguration}, which must be loaded prior to instantiating the task manager.
 	 */
-	public TaskManager(final int taskManagersPerJVM) throws Exception {
-		LOG.info("Current user "+UserGroupInformation.getCurrentUser().getShortUserName());
-		LOG.info("user property: "+System.getProperty("user.name"));
+	public TaskManager() throws Exception {
+		
+		LOG.info("TaskManager started as user " + UserGroupInformation.getCurrentUser().getShortUserName());
+		LOG.info("User system property: " + System.getProperty("user.name"));
+		
 		// IMPORTANT! At this point, the GlobalConfiguration must have been read!
-		final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
-		InetSocketAddress jobManagerAddress = null;
-		if (address == null) {
-            throw new Exception("Job manager address not configured");
+		
+		final InetSocketAddress jobManagerAddress;
+		{
+			LOG.info("Reading location of job manager from configuration");
+			
+			final String address = GlobalConfiguration.getString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, null);
+			final int port = GlobalConfiguration.getInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT);
+			
+			if (address == null) {
+				throw new Exception("Job manager address not configured in the GlobalConfiguration.");
+			}
+	
+			// Try to convert configured address to {@link InetAddress}
+			try {
+				final InetAddress tmpAddress = InetAddress.getByName(address);
+				jobManagerAddress = new InetSocketAddress(tmpAddress, port);
+			}
+			catch (UnknownHostException e) {
+				LOG.fatal("Could not resolve JobManager host name.");
+				throw new Exception("Could not resolve JobManager host name: " + e.getMessage(), e);
+			}
+			
+			LOG.info("Connecting to JobManager at: " + jobManagerAddress);
 		}
-		LOG.info("Reading location of job manager from configuration");
-
-		final int port = GlobalConfiguration.getInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY,
-			ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT);
-
-		// Try to convert configured address to {@link InetAddress}
+		
+		// Create RPC connection to the JobManager
 		try {
-			final InetAddress tmpAddress = InetAddress.getByName(address);
-			jobManagerAddress = new InetSocketAddress(tmpAddress, port);
-		} catch (UnknownHostException e) {
-			throw new Exception("Failed to locate job manager based on configuration: " + e.getMessage(), e);
-		}
-		LOG.info("Job manager address: " + jobManagerAddress);
-
-		InetAddress taskManagerAddress = null;
-
-		// Try to create local stub for the job manager
-		JobManagerProtocol jobManager = null;
-		try {
-			jobManager = RPC.getProxy(JobManagerProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
+			this.jobManager = RPC.getProxy(JobManagerProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.fatal("Could not connect to the JobManager: " + e.getMessage(), e);
 			throw new Exception("Failed to initialize connection to JobManager: " + e.getMessage(), e);
 		}
 		
-		this.jobManager = jobManager;
-		
-		try {
-			taskManagerAddress = getTaskManagerAddress(jobManagerAddress);
-		} catch(IOException ioe) {
-			throw new RuntimeException("The TaskManager failed to determine its own network address", ioe);
-		}
-
-		int ipcPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_IPC_PORT_KEY, 0);
-		int dataPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_DATA_PORT_KEY, 0);
-		if(ipcPort == 0) {
+		int ipcPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_IPC_PORT_KEY, -1);
+		int dataPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_DATA_PORT_KEY, -1);
+		if (ipcPort == -1) {
 			ipcPort = getAvailablePort();
 		}
-		if(dataPort == 0) {
+		if (dataPort == -1) {
 			dataPort = getAvailablePort();
 		}
-		this.localInstanceConnectionInfo = new InstanceConnectionInfo(taskManagerAddress, ipcPort, dataPort);
-		LOG.info("Announcing connection information " + this.localInstanceConnectionInfo + " to job manager");
+		
+		// Determine our own public facing address and start the server
+		{
+			final InetAddress taskManagerAddress;
+			try {
+				taskManagerAddress = getTaskManagerAddress(jobManagerAddress);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("The TaskManager failed to determine its own network address.", e);
+			}
+			
+			this.localInstanceConnectionInfo = new InstanceConnectionInfo(taskManagerAddress, ipcPort, dataPort);
+			LOG.info("TaskManager connection information:" + this.localInstanceConnectionInfo);
+
+			// Start local RPC server
+			try {
+				this.taskManagerServer = RPC.getServer(this, taskManagerAddress.getHostAddress(), ipcPort, IPC_HANDLER_COUNT);
+				this.taskManagerServer.start();
+			} catch (IOException e) {
+				LOG.fatal("Failed to start TaskManager server. " + e.getMessage(), e);
+				throw new Exception("Failed to start taskmanager server. " + e.getMessage(), e);
+			}
+		}
 		
 		// Try to create local stub of the global input split provider
-		InputSplitProviderProtocol globalInputSplitProvider = null;
 		try {
-			globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress, 
-				NetUtils.getSocketFactory());
+			this.globalInputSplitProvider = RPC.getProxy(InputSplitProviderProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.fatal(e.getMessage(), e);
 			throw new Exception("Failed to initialize connection to global input split provider: " + e.getMessage(), e);
 		}
-		this.globalInputSplitProvider = globalInputSplitProvider;
 
 		// Try to create local stub for the lookup service
-		ChannelLookupProtocol lookupService = null;
 		try {
-			lookupService = RPC.getProxy(ChannelLookupProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
+			this.lookupService = RPC.getProxy(ChannelLookupProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.fatal(e.getMessage(), e);
 			throw new Exception("Failed to initialize channel lookup protocol. " + e.getMessage(), e);
 		}
-		this.lookupService = lookupService;
 
-		// Try to create local stub for the job manager
-		AccumulatorProtocol accumulatorProtocolStub = null;
+		// Try to create local stub for the accumulators
 		try {
-			accumulatorProtocolStub = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress,
-					NetUtils.getSocketFactory());
+			this.accumulatorProtocolProxy = RPC.getProxy(AccumulatorProtocol.class, jobManagerAddress, NetUtils.getSocketFactory());
 		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
+			LOG.fatal("Failed to initialize accumulator protocol: " + e.getMessage(), e);
 			throw new Exception("Failed to initialize accumulator protocol: " + e.getMessage(), e);
 		}
-		this.accumulatorProtocolProxy = accumulatorProtocolStub;
-
-		
-		// Start local RPC server
-		Server taskManagerServer = null;
-		try {
-			taskManagerServer = RPC.getServer(this, taskManagerAddress.getHostName(), ipcPort, handlerCount);
-			taskManagerServer.start();
-		} catch (IOException e) {
-			LOG.error(StringUtils.stringifyException(e));
-			throw new Exception("Failed to taskmanager server. " + e.getMessage(), e);
-		}
-		this.taskManagerServer = taskManagerServer;
 
 		// Load profiler if it should be used
 		if (GlobalConfiguration.getBoolean(ProfilingUtils.ENABLE_PROFILING_KEY, false)) {
+			
 			final String profilerClassName = GlobalConfiguration.getString(ProfilingUtils.TASKMANAGER_CLASSNAME_KEY,
 				"eu.stratosphere.nephele.profiling.impl.TaskManagerProfilerImpl");
+			
 			this.profiler = ProfilingUtils.loadTaskManagerProfiler(profilerClassName, jobManagerAddress.getAddress(),
 				this.localInstanceConnectionInfo);
+			
 			if (this.profiler == null) {
 				LOG.error("Cannot find class name for the profiler.");
+			} else {
+				LOG.info("Profiling of jobs is enabled.");
 			}
 		} else {
 			this.profiler = null;
-			LOG.debug("Profiler disabled");
+			LOG.info("Profiling of jobs is disabled.");
 		}
 
 		// Get the directory for storing temporary files
 		final String[] tmpDirPaths = GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY,
-			ConfigConstants.DEFAULT_TASK_MANAGER_TMP_PATH).split(File.pathSeparator);
+			ConfigConstants.DEFAULT_TASK_MANAGER_TMP_PATH).split(",|"+File.pathSeparator);
 
 		checkTempDirs(tmpDirPaths);
+		
+		final int pageSize = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_NETWORK_BUFFER_SIZE_KEY,
+			ConfigConstants.DEFAULT_TASK_MANAGER_NETWORK_BUFFER_SIZE);
 
 		// Initialize the byte buffered channel manager
-		ByteBufferedChannelManager byteBufferedChannelManager = null;
 		try {
-			byteBufferedChannelManager = new ByteBufferedChannelManager(this.lookupService,
+			this.byteBufferedChannelManager = new ByteBufferedChannelManager(this.lookupService,
 				this.localInstanceConnectionInfo);
-		} catch (IOException ioe) {
-			LOG.error(StringUtils.stringifyException(ioe));
-			throw new Exception("Failed to instantiate Byte-buffered channel manager. " + ioe.getMessage(), ioe);
+		} catch (Exception e) {
+			LOG.fatal("Cannot create byte channel manager:" + e.getMessage(), e);
+			throw new Exception("Failed to instantiate Byte-buffered channel manager. " + e.getMessage(), e);
 		}
-		this.byteBufferedChannelManager = byteBufferedChannelManager;
+		
+		{
+			HardwareDescription resources = HardwareDescriptionFactory.extractFromSystem();
 
-		// Determine hardware description
-		HardwareDescription hardware = HardwareDescriptionFactory.extractFromSystem(taskManagersPerJVM);
-		if (hardware == null) {
-			LOG.warn("Cannot determine hardware description");
+			// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
+			// of taking as much as is mentioned in the hardware description
+			long memorySize = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, -1);
+
+			if (memorySize > 0) {
+				// manually configured memory size. override the value in the hardware config
+				resources = HardwareDescriptionFactory.construct(resources.getNumberOfCPUCores(),
+					resources.getSizeOfPhysicalMemory(), memorySize * 1024L * 1024L);
+			}
+			this.hardwareDescription = resources;
+
+			// Initialize the memory manager
+			LOG.info("Initializing memory manager with " + (resources.getSizeOfFreeMemory() >>> 20) + " megabytes of memory. " +
+					"Page size is " + pageSize + " bytes.");
+			
+			try {
+				@SuppressWarnings("unused")
+				final boolean lazyAllocation = GlobalConfiguration.getBoolean(ConfigConstants.TASK_MANAGER_MEMORY_LAZY_ALLOCATION_KEY,
+					ConfigConstants.DEFAULT_TASK_MANAGER_MEMORY_LAZY_ALLOCATION);
+				
+				this.memoryManager = new DefaultMemoryManager(resources.getSizeOfFreeMemory(), pageSize);
+			} catch (Throwable t) {
+				LOG.fatal("Unable to initialize memory manager with " + (resources.getSizeOfFreeMemory() >>> 20)
+					+ " megabytes of memory.", t);
+				throw new Exception("Unable to initialize memory manager.", t);
+			}
 		}
 
-		// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
-		// of taking as much as is mentioned in the hardware description
-		long memorySize = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, -1);
-
-		if (memorySize > 0) {
-			// manually configured memory size. override the value in the hardware config
-			hardware = HardwareDescriptionFactory.construct(hardware.getNumberOfCPUCores(),
-				hardware.getSizeOfPhysicalMemory(), memorySize * 1024L * 1024L);
-		}
-		this.hardwareDescription = hardware;
-
-		// Initialize the memory manager
-		LOG.info("Initializing memory manager with " + (hardware.getSizeOfFreeMemory() >>> 20) + " megabytes of memory");
-		try {
-			this.memoryManager = new DefaultMemoryManager(hardware.getSizeOfFreeMemory());
-		} catch (RuntimeException rte) {
-			LOG.fatal("Unable to initialize memory manager with " + (hardware.getSizeOfFreeMemory() >>> 20)
-				+ " megabytes of memory", rte);
-			throw rte;
-		}
 		this.ioManager = new IOManager(tmpDirPaths);
+		
+		this.heartbeatThread = new Thread() {
+			@Override
+			public void run() {
+				runHeartbeatLoop();
+			}
+		};
+		
+		this.heartbeatThread.setName("Heartbeat Thread");
+		this.heartbeatThread.start();
+		
 		// Add shutdown hook for clean up tasks
 		Runtime.getRuntime().addShutdownHook(new TaskManagerCleanUp(this));
 	}
@@ -310,19 +339,19 @@ public class TaskManager implements TaskOperationProtocol {
 	private int getAvailablePort() {
 		ServerSocket serverSocket = null;
 		int port = 0;
-		for(int i = 0; i < 50; i++){
+		for (int i = 0; i < 50; i++){
 			try {
-			serverSocket = new ServerSocket(0);
-			port = serverSocket.getLocalPort();
-			if(port != 0) {
-				serverSocket.close();
-				break;
-			}
+				serverSocket = new ServerSocket(0);
+				port = serverSocket.getLocalPort();
+				if (port != 0) {
+					serverSocket.close();
+					break;
+				}
 			} catch (IOException e) {
-				LOG.debug("Unable to allocate port "+e.getMessage(), e);
+				LOG.debug("Unable to allocate port " + e.getMessage(), e);
 			}
 		}
-		if(!serverSocket.isClosed()) {
+		if (!serverSocket.isClosed()) {
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
@@ -340,12 +369,19 @@ public class TaskManager implements TaskOperationProtocol {
 	 * @throws IOException 
 	 */
 	@SuppressWarnings("static-access")
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {		
 		Option configDirOpt = OptionBuilder.withArgName("config directory").hasArg().withDescription(
 			"Specify configuration directory.").create("configDir");
-		configDirOpt.setRequired(true);;
+		// tempDir option is used by the YARN client.
+		Option tempDir = OptionBuilder.withArgName("temporary directory (overwrites configured option)")
+				.hasArg().withDescription(
+				"Specify temporary directory.").create(ARG_CONF_DIR);
+		configDirOpt.setRequired(true);
+		tempDir.setRequired(false);
 		Options options = new Options();
 		options.addOption(configDirOpt);
+		options.addOption(tempDir);
+		
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine line = null;
@@ -353,71 +389,81 @@ public class TaskManager implements TaskOperationProtocol {
 			line = parser.parse(options, args);
 		} catch (ParseException e) {
 			System.err.println("CLI Parsing failed. Reason: " + e.getMessage());
-			System.exit(FAILURERETURNCODE);
+			System.exit(FAILURE_RETURN_CODE);
 		}
 
 		String configDir = line.getOptionValue(configDirOpt.getOpt(), null);
-		
+		String tempDirVal = line.getOptionValue(tempDir.getOpt(), null);
+
 		// First, try to load global configuration
 		GlobalConfiguration.loadConfiguration(configDir);
-
+		if(tempDirVal != null // the YARN TM runner has set a value for the temp dir
+				// the configuration does not contain a temp direcory
+				&& GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY, null) == null) {
+			Configuration c = GlobalConfiguration.getConfiguration();
+			c.setString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY, tempDirVal);
+			LOG.info("Setting temporary directory to "+tempDirVal);
+			GlobalConfiguration.includeConfiguration(c);
+		}
+		System.err.println("Configuration "+GlobalConfiguration.getConfiguration());
 		LOG.info("Current user "+UserGroupInformation.getCurrentUser().getShortUserName());
 		
 		// Create a new task manager object
-		TaskManager taskManager = null;
 		try {
-			taskManager = new TaskManager(1);
+			new TaskManager();
 		} catch (Exception e) {
-			LOG.fatal("Taskmanager startup failed:" + StringUtils.stringifyException(e));
-			System.exit(FAILURERETURNCODE);
+			LOG.fatal("Taskmanager startup failed: " + e.getMessage(), e);
+			System.exit(FAILURE_RETURN_CODE);
 		}
-		// Run the main I/O loop
-		taskManager.runIOLoop();
 		
-		// Shut down
-		taskManager.shutdown();
-				
+		// park the main thread to keep the JVM alive (all other threads may be daemon threads)
+		Object mon = new Object();
+		synchronized (mon) {
+			try {
+				mon.wait();
+			} catch (InterruptedException ex) {}
+		}
 	}
 
-	// This method is called by the TaskManagers main thread
-	public void runIOLoop() {
-		long interval = GlobalConfiguration.getInteger("taskmanager.setup.periodictaskinterval",
-			DEFAULTPERIODICTASKSINTERVAL);
+	/**
+	 * This method send the periodic heartbeats.
+	 */
+	private void runHeartbeatLoop() {
+		final long interval = GlobalConfiguration.getInteger(
+						ConfigConstants.TASK_MANAGER_HEARTBEAT_INTERVAL_KEY,
+						ConfigConstants.DEFAULT_TASK_MANAGER_HEARTBEAT_INTERVAL);
 
-		while (!Thread.interrupted()) {
-
-			// Send heartbeat
+		while (!shutdownStarted.get()) {
+			// send heart beat
 			try {
 				LOG.debug("heartbeat");
 				this.jobManager.sendHeartbeat(this.localInstanceConnectionInfo, this.hardwareDescription);
 			} catch (IOException e) {
-				e.printStackTrace();
-				LOG.info("sending the heart beat caused an IO Exception");
+				if (shutdownStarted.get()) {
+					break;
+				} else {
+					LOG.error("Sending the heart beat caused an exception: " + e.getMessage(), e);
+				}
 			}
 			
-			// Sleep
+			// sleep until the next heart beat
 			try {
 				Thread.sleep(interval);
-			} catch (InterruptedException e1) {
-				LOG.debug("Heartbeat thread was interrupted");
-				break;
 			}
-
-			// Check the status of the task threads to detect unexpected thread terminations
-			checkTaskExecution();
+			catch (InterruptedException e) {
+				if (!shutdownStarted.get()) {
+					LOG.error("TaskManager heart beat loop was interrupted without shutdown.");
+				}
+			}
 		}
-
-		// Shutdown the individual components of the task manager
-		shutdown();
 	}
 
 	
 	/**
 	 * The states of address detection mechanism.
-	 * There is only a state transition if the current
-	 * state failed to determine the address.
+	 * There is only a state transition if the current state failed to determine the address.
 	 */
-	enum AddressDetectionState {
+	private enum AddressDetectionState {
 		ADDRESS(50), 		//detect own IP based on the JobManagers IP address. Look for common prefix
 		FAST_CONNECT(50),	//try to connect to the JobManager on all Interfaces and all their addresses.
 							//this state uses a low timeout (say 50 ms) for fast detection.
@@ -438,49 +484,49 @@ public class TaskManager implements TaskOperationProtocol {
 	 */
 	private InetAddress getTaskManagerAddress(InetSocketAddress jobManagerAddress) throws IOException {
 		AddressDetectionState strategy = AddressDetectionState.ADDRESS;
-		
-		while(true) {
+
+		while (true) {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
-		    while (e.hasMoreElements())  {
-		        NetworkInterface n = e.nextElement();
-	        	Enumeration<InetAddress> ee = n.getInetAddresses();
-		        while (ee.hasMoreElements()) {
-		            InetAddress i = ee.nextElement();
-		            switch(strategy) {
-		            	case ADDRESS:
-		            		if(hasCommonPrefix(jobManagerAddress.getAddress().getAddress(),i.getAddress())) {
-		            			if(tryToConnect(i, jobManagerAddress, strategy.getTimeout())) {
-		            				LOG.info("Determined "+i+" as the TaskTracker's own IP address");
-		            				return i;
-		            			}
-		            		}
-		            		break;
-		            	case FAST_CONNECT:
-		            	case SLOW_CONNECT:
-				            boolean correct = tryToConnect(i, jobManagerAddress, strategy.getTimeout());
-				            if(correct) {
-				            	LOG.info("Determined "+i+" as the TaskTracker's own IP address");
-				            	return i;
-				            }
-				            break;
-				        default:
-				        	throw new RuntimeException("Unkown address detection strategy: "+strategy);
-		            }
-		        }
-		    }
-		    // state control
-		    switch(strategy) {
-			    case ADDRESS:
-			    	strategy = AddressDetectionState.FAST_CONNECT;
-			    	break;
-			    case FAST_CONNECT:
-			    	strategy = AddressDetectionState.SLOW_CONNECT;
-			    	break;
-			    case SLOW_CONNECT:
-			    	throw new RuntimeException("The TaskManager failed to detect its own IP address");
-		    }
-			if(LOG.isDebugEnabled()) {
-				LOG.debug("Defaulting to detection strategy "+strategy);
+			while (e.hasMoreElements()) {
+				NetworkInterface n = e.nextElement();
+				Enumeration<InetAddress> ee = n.getInetAddresses();
+				while (ee.hasMoreElements()) {
+					InetAddress i = ee.nextElement();
+					switch (strategy) {
+					case ADDRESS:
+						if (hasCommonPrefix(jobManagerAddress.getAddress().getAddress(), i.getAddress())) {
+							if (tryToConnect(i, jobManagerAddress, strategy.getTimeout())) {
+								LOG.info("Determined " + i + " as the TaskTracker's own IP address");
+								return i;
+							}
+						}
+						break;
+					case FAST_CONNECT:
+					case SLOW_CONNECT:
+						boolean correct = tryToConnect(i, jobManagerAddress, strategy.getTimeout());
+						if (correct) {
+							LOG.info("Determined " + i + " as the TaskTracker's own IP address");
+							return i;
+						}
+						break;
+					default:
+						throw new RuntimeException("Unkown address detection strategy: " + strategy);
+					}
+				}
+			}
+			// state control
+			switch (strategy) {
+			case ADDRESS:
+				strategy = AddressDetectionState.FAST_CONNECT;
+				break;
+			case FAST_CONNECT:
+				strategy = AddressDetectionState.SLOW_CONNECT;
+				break;
+			case SLOW_CONNECT:
+				throw new RuntimeException("The TaskManager failed to detect its own IP address");
+			}
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Defaulting to detection strategy " + strategy);
 			}
 		}
 	}
@@ -495,27 +541,29 @@ public class TaskManager implements TaskOperationProtocol {
 	}
 
 	public static boolean tryToConnect(InetAddress fromAddress, SocketAddress toSocket, int timeout) throws IOException {
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Trying to connect to JobManager ("+toSocket+") from local address "+fromAddress+" with timeout "+timeout);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Trying to connect to JobManager (" + toSocket + ") from local address " + fromAddress
+				+ " with timeout " + timeout);
 		}
 		boolean connectable = true;
-        Socket socket = null;
-        try {
-        	socket = new Socket(); 
-        	SocketAddress bindP = new InetSocketAddress(fromAddress, 0); // 0 = let the OS choose the port on this machine
+		Socket socket = null;
+		try {
+			socket = new Socket();
+			SocketAddress bindP = new InetSocketAddress(fromAddress, 0); // 0 = let the OS choose the port on this
+																			// machine
 			socket.bind(bindP);
-        	socket.connect(toSocket,timeout);
-        } catch(Exception ex) {
-        	if(LOG.isDebugEnabled()) {
-        		LOG.debug("Failed on this address: "+ex.getMessage());
-        	}
-        	connectable = false;
-        } finally {
-        	if(socket != null) {
-        		socket.close();
-        	}
-        }
-        return connectable;
+			socket.connect(toSocket, timeout);
+		} catch (Exception ex) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Failed on this address: " + ex.getMessage());
+			}
+			connectable = false;
+		} finally {
+			if (socket != null) {
+				socket.close();
+			}
+		}
+		return connectable;
 	}
 	
 
@@ -589,14 +637,22 @@ public class TaskManager implements TaskOperationProtocol {
 			final JobID jobID = tdd.getJobID();
 			final ExecutionVertexID vertexID = tdd.getVertexID();
 			RuntimeEnvironment re;
+
+			// retrieve the registered cache files from job configuration and create the local tmp file.
+			Map<String, FutureTask<Path>> cpTasks = new HashMap<String, FutureTask<Path>>();
+			for (Entry<String, String> e: DistributedCache.getCachedFile(tdd.getJobConfiguration())) {
+				FutureTask<Path> cp = this.fileCache.createTmpFile(e.getKey(), e.getValue(), jobID);
+				cpTasks.put(e.getKey(), cp);
+			}
+
 			try {
 				re = new RuntimeEnvironment(tdd, this.memoryManager, this.ioManager, new TaskInputSplitProvider(jobID,
-					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy);
+					vertexID, this.globalInputSplitProvider), this.accumulatorProtocolProxy, cpTasks);
 			} catch (Throwable t) {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.DEPLOYMENT_ERROR);
 				result.setDescription(StringUtils.stringifyException(t));
-				LOG.error(result.getDescription());
+				LOG.error(result.getDescription(), t);
 				submissionResultList.add(result);
 				continue;
 			}
@@ -613,7 +669,7 @@ public class TaskManager implements TaskOperationProtocol {
 				final TaskSubmissionResult result = new TaskSubmissionResult(vertexID,
 					AbstractTaskResult.ReturnCode.INSUFFICIENT_RESOURCES);
 				result.setDescription(e.getMessage());
-				LOG.error(result.getDescription());
+				LOG.error(result.getDescription(), e);
 				submissionResultList.add(result);
 				continue;
 			}
@@ -648,8 +704,6 @@ public class TaskManager implements TaskOperationProtocol {
 	 *        the job configuration that has been attached to the original job graph
 	 * @param environment
 	 *        the environment of the task to be registered
-	 * @param initialCheckpointState
-	 *        the task's initial checkpoint state
 	 * @param activeOutputChannels
 	 *        the set of initially active output channels
 	 * @return the task to be started or <code>null</code> if a task with the same ID was already running
@@ -667,7 +721,7 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 
 		// Task creation and registration must be atomic
-		Task task = null;
+		Task task;
 
 		synchronized (this) {
 			final Task runningTask = this.runningTasks.get(id);
@@ -687,7 +741,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 			}
 
-			final Environment ee = task.getEnvironment();
 			if (registerTask) {
 				// Register the task with the byte buffered channel manager
 				this.byteBufferedChannelManager.register(task, activeOutputChannels);
@@ -705,7 +758,6 @@ public class TaskManager implements TaskOperationProtocol {
 				this.runningTasks.put(id, task);
 			}
 		}
-
 		return task;
 	}
 
@@ -717,7 +769,7 @@ public class TaskManager implements TaskOperationProtocol {
 	 */
 	private void unregisterTask(final ExecutionVertexID id) {
 
-		// Task deregistration must be atomic
+		// Task de-registration must be atomic
 		synchronized (this) {
 
 			final Task task = this.runningTasks.remove(id);
@@ -726,6 +778,10 @@ public class TaskManager implements TaskOperationProtocol {
 				return;
 			}
 
+			// remove the local tmp file for unregistered tasks.
+			for (Entry<String, String> e: DistributedCache.getCachedFile(task.getEnvironment().getJobConfiguration())) {
+				this.fileCache.deleteTmpFile(e.getKey(), task.getJobID());
+			}
 			// Unregister task from the byte buffered channel manager
 			this.byteBufferedChannelManager.unregister(id, task);
 
@@ -766,7 +822,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 	@Override
 	public void updateLibraryCache(LibraryCacheUpdate update) throws IOException {
-
 		// Nothing to to here
 	}
 
@@ -790,7 +845,7 @@ public class TaskManager implements TaskOperationProtocol {
 				this.jobManager.updateTaskExecutionState(new TaskExecutionState(jobID, id, newExecutionState,
 					optionalDescription));
 			} catch (IOException e) {
-				LOG.error(StringUtils.stringifyException(e));
+				LOG.error(e);
 			}
 		}
 	}
@@ -798,13 +853,19 @@ public class TaskManager implements TaskOperationProtocol {
 	/**
 	 * Shuts the task manager down.
 	 */
-	public synchronized void shutdown() {
+	public void shutdown() {
 
-		if (this.isShutDown) {
+		if (!this.shutdownStarted.compareAndSet(false, true)) {
 			return;
 		}
 
 		LOG.info("Shutting down TaskManager");
+		
+		// first, stop the heartbeat thread and wait for it to terminate
+		this.heartbeatThread.interrupt();
+		try {
+			this.heartbeatThread.join(1000);
+		} catch (InterruptedException e) {}
 
 		// Stop RPC proxy for the task manager
 		RPC.stopProxy(this.jobManager);
@@ -838,6 +899,8 @@ public class TaskManager implements TaskOperationProtocol {
 			this.memoryManager.shutdown();
 		}
 
+		this.fileCache.shutdown();
+
 		// Shut down the executor service
 		if (this.executorService != null) {
 			this.executorService.shutdown();
@@ -845,12 +908,12 @@ public class TaskManager implements TaskOperationProtocol {
 				this.executorService.awaitTermination(5000L, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				if (LOG.isDebugEnabled()) {
-					LOG.debug(StringUtils.stringifyException(e));
+					LOG.debug(e);
 				}
 			}
 		}
 
-		this.isShutDown = true;
+		this.shutdownComplete = true;
 	}
 
 	/**
@@ -858,38 +921,14 @@ public class TaskManager implements TaskOperationProtocol {
 	 * 
 	 * @return <code>true</code> if the task manager has already been shut down, <code>false</code> otherwise
 	 */
-	public synchronized boolean isShutDown() {
-
-		return this.isShutDown;
+	public boolean isShutDown() {
+		return this.shutdownComplete;
 	}
-
-	/**
-	 * This method is periodically called by the framework to check
-	 * the state of the task threads. If any task thread has unexpectedly
-	 * switch to TERMINATED, this indicates that an {@link Error} has occurred
-	 * during its execution.
-	 */
-	private void checkTaskExecution() {
-
-		final Iterator<Map.Entry<ExecutionVertexID, Task>> it = this.runningTasks.entrySet().iterator();
-		while (it.hasNext()) {
-			final Map.Entry<ExecutionVertexID, Task> task = it.next();
-
-			if (task.getValue().isTerminated()) {
-				if (this.runningTasks.containsKey(task.getKey())) {
-					task.getValue().markAsFailed();
-				}
-			}
-		}
-	}
-
 
 	@Override
-	public void logBufferUtilization() throws IOException {
-
+	public void logBufferUtilization() {
 		this.byteBufferedChannelManager.logBufferUtilization();
 	}
-
 
 	@Override
 	public void killTaskManager() throws IOException {
@@ -909,7 +948,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 	@Override
 	public void invalidateLookupCacheEntries(final Set<ChannelID> channelIDs) throws IOException {
-
 		this.byteBufferedChannelManager.invalidateLookupCacheEntries(channelIDs);
 	}
 
@@ -934,17 +972,16 @@ public class TaskManager implements TaskOperationProtocol {
 			final File f = new File(dir);
 
 			if (!f.exists()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " does not exist.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' does not exist.");
 			}
 
 			if (!f.isDirectory()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " is not a directory.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' is not a directory.");
 			}
 
 			if (!f.canWrite()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " is not writable.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' is not writable.");
 			}
 		}
 	}
-  
 }

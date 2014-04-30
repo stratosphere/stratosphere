@@ -40,6 +40,7 @@ import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.instance.InstanceTypeDescriptionFactory;
 import eu.stratosphere.nephele.instance.InstanceTypeFactory;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.nephele.taskmanager.TaskManager;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.util.SerializableHashMap;
 
@@ -48,9 +49,6 @@ import eu.stratosphere.nephele.util.SerializableHashMap;
  * task manager which is executed within the same process as the job manager. Moreover, it determines the hardware
  * characteristics of the machine it runs on and generates a default instance type with the identifier "default". If
  * desired this default instance type can also be overwritten.
- * <p>
- * This class is thread-safe.
- * 
  */
 public class LocalInstanceManager implements InstanceManager {
 
@@ -86,17 +84,17 @@ public class LocalInstanceManager implements InstanceManager {
 	/**
 	 * Stores if the local task manager is currently by a job.
 	 */
-	private AllocatedResource allocatedResource = null;
+	private AllocatedResource allocatedResource;
 
 	/**
 	 * The local instance encapsulating the task manager
 	 */
-	private LocalInstance localInstance = null;
+	private LocalInstance localInstance;
 
 	/**
 	 * The thread running the local task manager.
 	 */
-	private final LocalTaskManagerThread localTaskManagerThread;
+	private final TaskManager taskManager;
 
 	/**
 	 * The network topology the local instance is part of.
@@ -114,7 +112,7 @@ public class LocalInstanceManager implements InstanceManager {
 	 * @param configDir
 	 *        the path to the configuration directory
 	 */
-	public LocalInstanceManager() {
+	public LocalInstanceManager() throws Exception {
 
 		final Configuration config = GlobalConfiguration.getConfiguration();
 
@@ -137,21 +135,18 @@ public class LocalInstanceManager implements InstanceManager {
 
 		this.instanceTypeDescriptionMap = new SerializableHashMap<InstanceType, InstanceTypeDescription>();
 
-		this.localTaskManagerThread = new LocalTaskManagerThread("Local Taskmanager IO Loop",1);
-		this.localTaskManagerThread.start();
+		this.taskManager = new TaskManager();
 	}
 
 
 	@Override
 	public InstanceType getDefaultInstanceType() {
-
 		return this.defaultInstanceType;
 	}
 
 
 	@Override
-	public InstanceType getInstanceTypeByName(final String instanceTypeName) {
-
+	public InstanceType getInstanceTypeByName(String instanceTypeName) {
 		if (this.defaultInstanceType.getIdentifier().equals(instanceTypeName)) {
 			return this.defaultInstanceType;
 		}
@@ -161,8 +156,8 @@ public class LocalInstanceManager implements InstanceManager {
 
 
 	@Override
-	public InstanceType getSuitableInstanceType(final int minNumComputeUnits, final int minNumCPUCores,
-			final int minMemorySize, final int minDiskCapacity, final int maxPricePerHour) {
+	public InstanceType getSuitableInstanceType(int minNumComputeUnits, int minNumCPUCores,
+			int minMemorySize, int minDiskCapacity, int maxPricePerHour) {
 
 		if (minNumComputeUnits > this.defaultInstanceType.getNumberOfComputeUnits()) {
 			return null;
@@ -189,10 +184,9 @@ public class LocalInstanceManager implements InstanceManager {
 
 
 	@Override
-	public void releaseAllocatedResource(final JobID jobID, final Configuration conf,
-			final AllocatedResource allocatedResource)
-			throws InstanceException {
-
+	public void releaseAllocatedResource(JobID jobID, Configuration conf, AllocatedResource allocatedResource)
+			throws InstanceException
+	{
 		synchronized (this.synchronizationObject) {
 
 			if (this.allocatedResource != null) {
@@ -229,21 +223,13 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public void shutdown() {
-
 		// Stop the internal instance of the task manager
-		if (this.localTaskManagerThread != null) {
-
-			while (!this.localTaskManagerThread.isShutDown()) {
-				try {
-					// Interrupt the thread running the task manager
-					this.localTaskManagerThread.interrupt();
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					break;
-				}
-			}
-
-			// Clear the instance type description list
+		if (this.taskManager != null) {
+			this.taskManager.shutdown();
+		}
+		
+		// Clear the instance type description list
+		if (this.instanceTypeDescriptionMap != null) {
 			this.instanceTypeDescriptionMap.clear();
 		}
 
@@ -259,14 +245,12 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public NetworkTopology getNetworkTopology(final JobID jobID) {
-
 		return this.networkTopology;
 	}
 
 
 	@Override
 	public void setInstanceListener(final InstanceListener instanceListener) {
-
 		this.instanceListener = instanceListener;
 	}
 
@@ -300,7 +284,6 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public Map<InstanceType, InstanceTypeDescription> getMapOfAvailableInstanceTypes() {
-
 		return this.instanceTypeDescriptionMap;
 	}
 
@@ -342,17 +325,12 @@ public class LocalInstanceManager implements InstanceManager {
 				} else {
 					throw new InstanceException("No instance of type " + entry.getKey() + " available");
 				}
-
 			}
-
 		}
-
 	}
-
 
 	@Override
 	public AbstractInstance getInstanceByName(final String name) {
-
 		if (name == null) {
 			throw new IllegalArgumentException("Argument name must not be null");
 		}
@@ -371,7 +349,6 @@ public class LocalInstanceManager implements InstanceManager {
 
 	@Override
 	public void cancelPendingRequests(final JobID jobID) {
-
 		// The local instance manager does not support pending requests, so nothing to do here
 	}
 

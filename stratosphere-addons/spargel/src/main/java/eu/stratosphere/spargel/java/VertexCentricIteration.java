@@ -12,7 +12,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.spargel.java;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -20,12 +19,12 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import eu.stratosphere.api.common.aggregators.Aggregator;
+import eu.stratosphere.api.common.operators.DualInputSemanticProperties;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
 import eu.stratosphere.api.java.operators.CustomUnaryOperation;
 import eu.stratosphere.api.java.operators.TwoInputOperator;
-import eu.stratosphere.api.java.operators.translation.BinaryNodeTranslation;
 import eu.stratosphere.api.java.operators.translation.PlanCogroupOperator;
 import eu.stratosphere.api.java.operators.translation.PlanDeltaIterationOperator;
 import eu.stratosphere.api.java.tuple.Tuple;
@@ -138,8 +137,7 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 	}
 	
 	private TypeInformation<Message> getMessageType(MessagingFunction<VertexKey, VertexValue, Message, EdgeValue> mf) {
-		Type returnType = TypeExtractor.getTemplateTypes (MessagingFunction.class, mf.getClass(), 2);
-		return TypeExtractor.createTypeInfo(returnType);
+		return TypeExtractor.createTypeInfo(MessagingFunction.class, mf.getClass(), 2, null, null);
 	}
 	
 	/**
@@ -324,12 +322,6 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 		public void close() throws Exception {
 			this.vertexUpdateFunction.postSuperstep();
 		}
-
-		@Override
-		public void combineFirst(Iterator<Tuple2<VertexKey, Message>> records, Collector<Tuple2<VertexKey, Message>> out) {}
-
-		@Override
-		public void combineSecond(Iterator<Tuple2<VertexKey, VertexValue>> records, Collector<Tuple2<VertexKey, VertexValue>> out) {}
 	}
 	
 	/*
@@ -372,12 +364,6 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 		public void close() throws Exception {
 			this.messagingFunction.postSuperstep();
 		}
-
-		@Override
-		public void combineFirst(Iterator<Tuple2<VertexKey, VertexKey>> records, Collector<Tuple2<VertexKey, VertexKey>> out) {}
-		
-		@Override
-		public void combineSecond(Iterator<Tuple2<VertexKey, VertexValue>> records, Collector<Tuple2<VertexKey, VertexValue>> out) {}
 	}
 	
 	/*
@@ -420,12 +406,6 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 		public void close() throws Exception {
 			this.messagingFunction.postSuperstep();
 		}
-
-		@Override
-		public void combineFirst(Iterator<Tuple3<VertexKey, VertexKey, EdgeValue>> records, Collector<Tuple3<VertexKey, VertexKey, EdgeValue>> out) {}
-		
-		@Override
-		public void combineSecond(Iterator<Tuple2<VertexKey, VertexValue>> records, Collector<Tuple2<VertexKey, VertexValue>> out) {}
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -476,7 +456,7 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 		}
 
 		@Override
-		protected BinaryNodeTranslation translateToDataFlow() {
+		protected Operator translateToDataFlow(Operator input1, Operator input2) {
 			
 			final String name = (getName() != null) ? getName() :
 					"Vertex-centric iteration (" + updateFunction + " | " + messagingFunction + ")";
@@ -506,24 +486,22 @@ public class VertexCentricIteration<VertexKey extends Comparable<VertexKey>, Ver
 			updater.setFirstInput(messenger);
 			updater.setSecondInput(iteration.getSolutionSet());
 			
+			// let the opertor know that we preserve the key field
+			DualInputSemanticProperties semanticProps = new DualInputSemanticProperties();
+			semanticProps.addForwardedField1(0, 0);
+			semanticProps.addForwardedField2(0, 0);
+			updater.setSemanticProperties(semanticProps);
+			
 			iteration.setSolutionSetDelta(updater);
 			iteration.setNextWorkset(updater);
 			
-			// return a translation node that will assign the first input to the iteration (both initial solution set and workset)
-			// and that assigns the second input to the messenger function (as the edge input)
-			return new BinaryNodeTranslation(iteration) {
-				
-				@Override
-				public void setInput1(Operator op) {
-					iteration.setFirstInput(op);
-					iteration.setSecondInput(op);
-				}
-				
-				@Override
-				public void setInput2(Operator op) {
-					messenger.setFirstInput(op);
-				}
-			};
+			// set inputs
+			iteration.setFirstInput(input1);
+			iteration.setSecondInput(input1);
+			messenger.setFirstInput(input2);
+			
+			return iteration;
+			
 		}
 	}
 }

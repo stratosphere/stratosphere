@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.KeySelector;
@@ -129,31 +128,8 @@ public class ReduceITCase extends JavaProgramTestBase {
 						"5,11,10,GHI,1\n" +
 						"5,29,0,P-),2\n" +
 						"5,25,0,P-),3\n";
-			}
+			} 
 			case 3: {
-				/*
-				 * Reduce on tuples with key field selector and ascending group sorting
-				 */
-				
-				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-				
-				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
-				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
-						groupBy(1).sortGroup(0,Order.ASCENDING).reduce(new Tuple3Reduce());
-				
-				reduceDs.writeAsCsv(resultPath);
-				env.execute();
-				
-				// return expected result
-				return "1,1,Hi\n" +
-						"5,2,Hello\n" +
-						"15,3,Hello world, how are you?\n" +
-						"34,4,Comment#1\n" +
-						"65,5,Comment#5\n" +
-						"111,6,Comment#10\n";
-				
-			}
-			case 4: {
 				/*
 				 * Reduce on tuples with key extractor
 				 */
@@ -182,7 +158,7 @@ public class ReduceITCase extends JavaProgramTestBase {
 						"111,6,B-)\n";
 				
 			}
-			case 5: {
+			case 4: {
 				/*
 				 * Reduce on custom type with key extractor
 				 */
@@ -210,7 +186,7 @@ public class ReduceITCase extends JavaProgramTestBase {
 						"5,60,Hello!\n" +
 						"6,105,Hello!\n";
 			}
-			case 6: {
+			case 5: {
 				/*
 				 * All-reduce for tuple
 				 */
@@ -227,7 +203,7 @@ public class ReduceITCase extends JavaProgramTestBase {
 				// return expected result
 				return "231,91,Hello World\n";
 			}
-			case 7: {
+			case 6: {
 				/*
 				 * All-reduce for custom types
 				 */
@@ -244,7 +220,7 @@ public class ReduceITCase extends JavaProgramTestBase {
 				// return expected result
 				return "91,210,Hello!";
 			}
-			case 8: {
+			case 7: {
 				
 				/*
 				 * Reduce with broadcast set
@@ -269,56 +245,28 @@ public class ReduceITCase extends JavaProgramTestBase {
 						"65,5,55\n" +
 						"111,6,55\n";
 			}
-//
-//			TODO: activate once sorting is fixed
-//			
-//			case 9: {
-//				/*
-//				 * Reduce on tuples with key field selector and descending group sorting
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
-//				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
-//						groupBy(1).sortGroup(0,Order.DESCENDING).reduce(new Tuple3Reduce());
-//				
-//				reduceDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "1,1,Hi\n" +
-//				"5,2,Hello world\n" +
-//				"15,3,Luke Skywalker\n" +
-//				"34,4,Comment#4\n" +
-//				"65,5,Comment#9\n" +
-//				"111,6,Comment#15\n";
-//			}
-//
-//			TODO: activate once mutable object returning is fixed
-//
-//			case 10: {
-//				/*
-//				 * Reduce if UDF returns (first) input object (check mutable object handling)
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
-//				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
-//						groupBy(1).reduce(new InputReturnTuple3Reduce());
-//				
-//				reduceDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "1,1,Hi\n" +
-//						"5,2,Hi again!\n" +
-//						"15,3,Hi again!\n" +
-//						"34,4,Hi again!\n" +
-//						"65,5,Hi again!\n" +
-//						"111,6,Hi again!\n";
-//			}
+			case 8: {
+				/*
+				 * Reduce with UDF that returns the second input object (check mutable object handling)
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
+				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
+						groupBy(1).reduce(new InputReturningTuple3Reduce());
+				
+				reduceDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "1,1,Hi\n" +
+						"5,2,Hi again!\n" +
+						"15,3,Hi again!\n" +
+						"34,4,Hi again!\n" +
+						"65,5,Hi again!\n" +
+						"111,6,Hi again!\n";
+			}
 			default: 
 				throw new IllegalArgumentException("Invalid program id");
 			}
@@ -385,7 +333,7 @@ public class ReduceITCase extends JavaProgramTestBase {
 		}
 	}
 	
-	public static class InputReturnTuple3Reduce extends ReduceFunction<Tuple3<Integer, Long, String>> {
+	public static class InputReturningTuple3Reduce extends ReduceFunction<Tuple3<Integer, Long, String>> {
 		private static final long serialVersionUID = 1L;
 
 		@Override
@@ -393,9 +341,9 @@ public class ReduceITCase extends JavaProgramTestBase {
 				Tuple3<Integer, Long, String> in1,
 				Tuple3<Integer, Long, String> in2) throws Exception {
 
-			in1.f0 = in1.f0 + in2.f0;
-			in1.f2 = "Hi again!";
-			return in1;
+			in2.f0 = in1.f0 + in2.f0;
+			in2.f2 = "Hi again!";
+			return in2;
 		}
 	}
 	

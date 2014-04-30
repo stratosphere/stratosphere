@@ -54,7 +54,7 @@ public class StringArraySerializer extends TypeSerializer<String[]>{
 	@Override
 	public void serialize(String[] record, DataOutputView target) throws IOException {
 		if (record == null) {
-			throw new IllegalArgumentException("The record must nor be null.");
+			throw new IllegalArgumentException("The record must not be null.");
 		}
 		
 		final int len = record.length;

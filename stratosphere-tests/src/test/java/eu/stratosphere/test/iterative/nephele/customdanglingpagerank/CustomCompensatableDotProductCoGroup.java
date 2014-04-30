@@ -66,7 +66,7 @@ public class CustomCompensatableDotProductCoGroup extends AbstractFunction imple
 		
 		dampingFactor = (1d - BETA) / (double) numVertices;
 
-		aggregator = (PageRankStatsAggregator) getIterationRuntimeContext().<PageRankStats>getIterationAggregator(AGGREGATOR_NAME);
+		aggregator = getIterationRuntimeContext().getIterationAggregator(AGGREGATOR_NAME);
 		
 		if (currentIteration == 1) {
 			danglingRankFactor = BETA * (double) numDanglingVertices / ((double) numVertices * (double) numVertices);
@@ -121,8 +121,8 @@ public class CustomCompensatableDotProductCoGroup extends AbstractFunction imple
 	}
 
 	@Override
-	public void combineFirst(Iterator<VertexWithRankAndDangling> records, Collector<VertexWithRankAndDangling> out) {}
+	public VertexWithRankAndDangling combineFirst(Iterator<VertexWithRankAndDangling> records) { throw new UnsupportedOperationException(); }
 
 	@Override
-	public void combineSecond(Iterator<VertexWithRank> records, Collector<VertexWithRank> out) {}
+	public VertexWithRank combineSecond(Iterator<VertexWithRank> records) { throw new UnsupportedOperationException(); }
 }

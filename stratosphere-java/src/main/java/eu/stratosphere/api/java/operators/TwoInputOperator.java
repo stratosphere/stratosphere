@@ -15,7 +15,6 @@
 package eu.stratosphere.api.java.operators;
 
 import eu.stratosphere.api.java.DataSet;
-import eu.stratosphere.api.java.operators.translation.BinaryNodeTranslation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 /**
@@ -54,8 +53,13 @@ public abstract class TwoInputOperator<IN1, IN2, OUT, O extends TwoInputOperator
 		return this.input2.getType();
 	}
 	
-	
-	protected BinaryNodeTranslation translateToDataFlow() {
-		return null;
-	}
+	/**
+	 * Translates this java API operator into a common API operator with two inputs.
+	 * 
+	 * @param input1 The first input of the operation, as a common API operator.
+	 * @param input2 The second input of the operation, as a common API operator.
+	 * @return The created common API operator.
+	 */
+	protected abstract eu.stratosphere.api.common.operators.Operator translateToDataFlow(
+			eu.stratosphere.api.common.operators.Operator input1, eu.stratosphere.api.common.operators.Operator input2);
 }

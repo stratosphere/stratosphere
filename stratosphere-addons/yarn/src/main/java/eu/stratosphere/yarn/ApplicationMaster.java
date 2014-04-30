@@ -63,30 +63,6 @@ public class ApplicationMaster {
 
 	private static final Log LOG = LogFactory.getLog(ApplicationMaster.class);
 	
-	public static class JobManagerRunner extends Thread {
-		private String pathToNepheleConfig = "";
-		private JobManager jm;
-		
-		public JobManagerRunner(String pathToNepheleConfig) {
-			super("Job manager runner");
-			this.pathToNepheleConfig = pathToNepheleConfig;
-		}
-
-		public void run() {
-			String[] args = {"-executionMode","cluster", "-configDir", pathToNepheleConfig};
-			this.jm = JobManager.initialize( args );
-			
-			// Start info server for jobmanager
-			this.jm.startInfoServer();
-
-			// Run the main task loop
-			this.jm.runTaskLoop();
-		}
-		public void shutdown() {
-			this.jm.shutdown();
-		}
-	}
-	
 	private void run() throws Exception  {
 		//Utils.logFilesInCurrentDirectory(LOG);
 		// Initialize clients to ResourceManager and NodeManagers
@@ -97,7 +73,6 @@ public class ApplicationMaster {
 		final String logDirs =  envs.get(Environment.LOG_DIRS.key());
 		final String ownHostname = envs.get(Environment.NM_HOST.key());
 		final String appId = envs.get(Client.ENV_APP_ID);
-		final String localDirs = envs.get(Environment.LOCAL_DIRS.key());
 		final String clientHomeDir = envs.get(Client.ENV_CLIENT_HOME_DIR);
 		final String applicationMasterHost = envs.get(Environment.NM_HOST.key());
 		final String remoteStratosphereJarPath = envs.get(Client.STRATOSPHERE_JAR_PATH);
@@ -132,8 +107,6 @@ public class ApplicationMaster {
 		    	output.append(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY+": "+ownHostname+"\n");
 		    } else if(line.contains(ConfigConstants.JOB_MANAGER_WEB_ROOT_PATH_KEY)) {
 		    	output.append(ConfigConstants.JOB_MANAGER_WEB_ROOT_PATH_KEY+": "+"\n");
-		    } else if(localDirs != null && line.contains(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY)) {
-		    	output.append(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY+": "+localDirs+"\n");
 		    } else {
 		    	output.append(line+"\n");
 		    }
@@ -142,9 +115,6 @@ public class ApplicationMaster {
 		output.append(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY+": "+ownHostname+"\n");
 		output.append(ConfigConstants.JOB_MANAGER_WEB_ROOT_PATH_KEY+": "+localWebInterfaceDir+"\n");
 		output.append(ConfigConstants.JOB_MANAGER_WEB_LOG_PATH_KEY+": "+logDirs+"\n");
-		if(localDirs != null) {
-			output.append(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY+": "+localDirs+"\n");
-		}
 		output.close();
 		br.close();
 		File newConf = new File(currDir+"/stratosphere-conf-modified.yaml");
@@ -155,9 +125,17 @@ public class ApplicationMaster {
 		Utils.copyJarContents("resources/"+ConfigConstants.DEFAULT_JOB_MANAGER_WEB_PATH_NAME, 
 				ApplicationMaster.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 		
-		JobManagerRunner jmr = new JobManagerRunner(currDir+"/stratosphere-conf-modified.yaml");
-		LOG.info("Starting JobManager");
-		jmr.start();
+		JobManager jm;
+		{
+			String pathToNepheleConfig = currDir+"/stratosphere-conf-modified.yaml";
+			String[] args = {"-executionMode","cluster", "-configDir", pathToNepheleConfig};
+			
+			// start the job manager
+			jm = JobManager.initialize( args );
+			
+			// Start info server for jobmanager
+			jm.startInfoServer();
+		}
 		
 		AMRMClient<ContainerRequest> rmClient = AMRMClient.createAMRMClient();
 		rmClient.init(conf);
@@ -310,8 +288,7 @@ public class ApplicationMaster {
 			Thread.sleep(5000);
 		}
 		LOG.info("Shutting down JobManager");
-		jmr.shutdown();
-		jmr.join(500);
+		jm.shutdown();
 		
 		// Un-register with ResourceManager
 		rmClient.unregisterApplicationMaster(FinalApplicationStatus.SUCCEEDED, "", "");
