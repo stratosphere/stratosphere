@@ -17,7 +17,6 @@ import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
 import eu.stratosphere.api.java.functions.FilterFunction;
-import eu.stratosphere.api.java.functions.JoinFunction;
 import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple3;
@@ -149,26 +148,6 @@ public class WebLogAnalysis {
 		}
 	}
 
-	/**
-	 * JoinFunction that joins the filtered entries from the documents and the
-	 * ranks relation.
-	 */
-	public static class JoinDocRanks extends JoinFunction<Tuple1<String>, Tuple3<Integer, String, Integer>, Tuple3<Integer, String, Integer>>{
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * Joins entries from the documents and ranks relation on their URL.
-		 *
-		 * Output Format:
-		 * 0: RANK
-		 * 1: URL
-		 * 2: AVG_DURATION
-		 */
-		@Override
-		public Tuple3<Integer, String, Integer> join(Tuple1<String> document, Tuple3<Integer, String, Integer> rank) throws Exception {
-			return rank;
-		}
-	}
 
 	/**
 	 * CoGroupFunction that realizes an anti-join.
@@ -196,14 +175,6 @@ public class WebLogAnalysis {
 					out.collect(ranks.next());
 				}
 			}
-		}
-
-		@Override
-		public void combineFirst(Iterator<Tuple3<Integer, String, Integer>> records, Collector<Tuple3<Integer, String, Integer>> out) throws Exception {
-		}
-
-		@Override
-		public void combineSecond(Iterator<Tuple1<String>> records, Collector<Tuple1<String>> out) throws Exception {
 		}
 	}
 
@@ -252,17 +223,17 @@ public class WebLogAnalysis {
 			.types(String.class, String.class);
 
 		// Create DataSet for filtering the entries from the documents relation
-		DataSet<Tuple1<String>> filterDocs = docs.filter(new FilterDocs()).project("TF").types(String.class);
+		DataSet<Tuple1<String>> filterDocs = docs.filter(new FilterDocs()).project(0).types(String.class);
 
 		// Create DataSet for filtering the entries from the ranks relation
 		DataSet<Tuple3<Integer, String, Integer>> filterRanks = ranks.filter(new FilterRanks());
 
 		// Create DataSet for filtering the entries from the visits relation
-		DataSet<Tuple1<String>> filterVisits = visits.filter(new FilterVisits()).project("TF").types(String.class);
+		DataSet<Tuple1<String>> filterVisits = visits.filter(new FilterVisits()).project(0).types(String.class);
 
 		// Create DataSet to join the filtered documents and ranks relation
 		DataSet<Tuple3<Integer, String, Integer>> joinDocsRanks = filterDocs.join(filterRanks)
-			.where(0).equalTo(1).with(new JoinDocRanks());
+			.where(0).equalTo(1).projectSecond(0,1,2).types(Integer.class, String.class, Integer.class);
 
 		// Create DataSet to realize a anti join between the joined
 		// documents and ranks relation and the filtered visits relation
