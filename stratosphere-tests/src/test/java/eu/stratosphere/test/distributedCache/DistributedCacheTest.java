@@ -34,6 +34,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -136,8 +138,8 @@ public class DistributedCacheTest extends TestBase2 {
 		try {
 			plan.registerCachedFile(cachePath, "cache_test");
 		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
+			throw new RuntimeException(ex);
+		}		
 		return plan;
 	}
 

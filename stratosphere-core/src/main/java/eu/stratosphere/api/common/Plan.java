@@ -316,10 +316,10 @@ public class Plan implements Visitable<Operator> {
 				if (fs.exists(new Path(u.getPath()))) {
 					this.cacheFile.put(name, u.toString());
 				} else {
-					throw new RuntimeException("File " + u.toString() + " oesn't exist.");
+					throw new RuntimeException("File " + u.toString() + " doesn't exist.");
 				}
 			} catch (URISyntaxException ex) {
-				throw new RuntimeException("Invalid path: " + filePath);
+				throw new RuntimeException("Invalid path: " + filePath, ex);
 			}
 		} else {
 			throw new RuntimeException("cache file " + name + "already exists!");
