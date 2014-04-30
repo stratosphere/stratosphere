@@ -552,9 +552,9 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 	 * This method is called at the end of a task, receiving the accumulators of
 	 * the task and the chained tasks. It merges them into a single map of
 	 * accumulators and sends them to the JobManager.
-	 * 
-	 * @param stub
-	 *          The task stub which usually holds several accumulators
+	 * @param env
+	 * 			environment
+	 * @param accumulators
 	 * @param chainedTasks
 	 *          Each chained task might have accumulators which will be merged
 	 *          with the accumulators of the stub.
@@ -839,7 +839,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			this.inputIsCached[i] = cached;
 			
 			if (async || cached) {
-				memoryPages = memMan.computeNumberOfPages(this.config.getInputMaterializationMemory(i));
+				memoryPages = memMan.computeNumberOfPages(this.config.getRelativeInputMaterializationMemory(i));
 				if (memoryPages <= 0) {
 					throw new Exception("Input marked as materialized/cached, but no memory for materialization provided.");
 				}
@@ -944,7 +944,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				@SuppressWarnings({ "rawtypes", "unchecked" })
 				UnilateralSortMerger<?> sorter = new UnilateralSortMerger(getMemoryManager(), getIOManager(),
 					this.inputIterators[inputNum], this, this.inputSerializers[inputNum], getLocalStrategyComparator(inputNum),
-					this.config.getMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
+					this.config.getRelativeMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
 					this.config.getSpillingThresholdInput(inputNum));
 				// set the input to null such that it will be lazily fetched from the input strategy
 				this.inputs[inputNum] = null;
@@ -978,7 +978,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				CombiningUnilateralSortMerger<?> cSorter = new CombiningUnilateralSortMerger(
 					(GenericGroupReduce) localStub, getMemoryManager(), getIOManager(), this.inputIterators[inputNum], 
 					this, this.inputSerializers[inputNum], getLocalStrategyComparator(inputNum),
-					this.config.getMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
+					this.config.getRelativeMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
 					this.config.getSpillingThresholdInput(inputNum));
 				cSorter.setUdfConfiguration(this.config.getStubParameters());
 				

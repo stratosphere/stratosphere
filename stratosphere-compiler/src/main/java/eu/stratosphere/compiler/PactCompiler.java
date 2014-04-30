@@ -533,10 +533,6 @@ public class PactCompiler {
 			LOG.debug("Beginning compilation of program '" + program.getJobName() + '\'');
 		}
 
-		//TODO relative memory
-		// we subtract some percentage of the memory to accommodate for rounding errors
-		final long memoryPerInstance = 64*1024*1024;
-
 		// set the default degree of parallelism
 		int defaultParallelism = program.getDefaultParallelism() > 0 ?
 			program.getDefaultParallelism() : this.defaultDegreeOfParallelism;
@@ -621,7 +617,7 @@ public class PactCompiler {
 		dp.resolveDeadlocks(bestPlanSinks);
 
 		// finalize the plan
-		OptimizedPlan plan = new PlanFinalizer().createFinalPlan(bestPlanSinks, program.getJobName(), program, memoryPerInstance);
+		OptimizedPlan plan = new PlanFinalizer().createFinalPlan(bestPlanSinks, program.getJobName(), program);
 
 		// swap the binary unions for n-ary unions. this changes no strategies or memory consumers whatsoever, so
 		// we can do this after the plan finalization
@@ -1078,8 +1074,6 @@ public class PactCompiler {
 		
 		private final Deque<IterationPlanNode> stackOfIterationNodes;
 
-		private long memoryPerInstance; // the amount of memory per instance
-		
 		private int memoryConsumerWeights; // a counter of all memory consumers
 
 		/**
@@ -1092,11 +1086,7 @@ public class PactCompiler {
 			this.stackOfIterationNodes = new ArrayDeque<IterationPlanNode>();
 		}
 
-		private OptimizedPlan createFinalPlan(List<SinkPlanNode> sinks, String jobName, Plan originalPlan, long memPerInstance) {
-			if (LOG.isDebugEnabled())
-				LOG.debug("Available memory per instance: " + memPerInstance);
-			
-			this.memoryPerInstance = memPerInstance;
+		private OptimizedPlan createFinalPlan(List<SinkPlanNode> sinks, String jobName, Plan originalPlan) {
 			this.memoryConsumerWeights = 0;
 			
 			// traverse the graph
@@ -1106,22 +1096,15 @@ public class PactCompiler {
 
 			// assign the memory to each node
 			if (this.memoryConsumerWeights > 0) {
-				final long memoryPerInstanceAndWeight = this.memoryPerInstance / this.memoryConsumerWeights;
-				
-				if (LOG.isDebugEnabled())
-					LOG.debug("Memory per consumer weight: " + memoryPerInstanceAndWeight);
-				
 				for (PlanNode node : this.allNodes) {
 					// assign memory to the driver strategy of the node
 					final int consumerWeight = node.getMemoryConsumerWeight();
 					if (consumerWeight > 0) {
-						final long mem = memoryPerInstanceAndWeight * consumerWeight;
-						node.setMemoryPerSubTask(mem);
+						final double relativeMem = (double)consumerWeight / this.memoryConsumerWeights;
+						node.setRelativeMemoryPerSubtask(relativeMem);
 						if (LOG.isDebugEnabled()) {
-							final long mib = mem >> 20;
-							LOG.debug("Assigned " + mib + " MiBytes memory to each subtask of " + 
-								node.getPactContract().getName() + " (" + mib * node.getDegreeOfParallelism() +
-								" MiBytes total.)"); 
+							LOG.debug("Assigned " + relativeMem + " of total memory to each subtask of " +
+								node.getPactContract().getName() + ".");
 						}
 					}
 					
@@ -1129,21 +1112,21 @@ public class PactCompiler {
 					for (Iterator<Channel> channels = node.getInputs(); channels.hasNext();) {
 						final Channel c = channels.next();
 						if (c.getLocalStrategy().dams()) {
-							final long mem = memoryPerInstanceAndWeight;
-							c.setMemoryLocalStrategy(mem);
+							final double relativeMem = 1.0 / this.memoryConsumerWeights;
+							c.setRelativeMemoryLocalStrategy(relativeMem);
 							if (LOG.isDebugEnabled()) {
-								final long mib = mem >> 20;
-								LOG.debug("Assigned " + mib + " MiBytes memory to each local strategy instance of " + 
-									c + " (" + mib * node.getDegreeOfParallelism() + " MiBytes total.)"); 
+								LOG.debug("Assigned " + relativeMem + " of total memory to each local strategy " +
+										"instance of " + c + ".");
 							}
 						}
 						if (c.getTempMode() != TempMode.NONE) {
-							final long mem = memoryPerInstanceAndWeight;
-							c.setTempMemory(mem);
+							final double relativeMem = 1.0/ this.memoryConsumerWeights;
+							c.setRelativeTempMemory(relativeMem);
 							if (LOG.isDebugEnabled()) {
-								final long mib = mem >> 20;
-								LOG.debug("Assigned " + mib + " MiBytes memory to each instance of the temp table for " + 
-									c + " (" + mib * node.getDegreeOfParallelism() + " MiBytes total.)"); 
+								LOG.debug("Assigned " + relativeMem + " of total memory to each instance of the temp " +
+										"table" +
+										" " +
+										"for " + c + ".");
 							}
 						}
 					}

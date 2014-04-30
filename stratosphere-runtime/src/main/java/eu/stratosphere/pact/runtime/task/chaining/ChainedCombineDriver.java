@@ -66,7 +66,6 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 		
 		// ----------------- Set up the asynchronous sorter -------------------------
 		
-		final long availableMemory = this.config.getMemoryDriver();
 		final DriverStrategy ds = this.config.getDriverStrategy();
 		
 		final MemoryManager memoryManager = this.parent.getEnvironment().getMemoryManager();
@@ -84,7 +83,7 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 			// An iterator on the sorted, grouped, and combined pairs is created and returned
 			case PARTIAL_GROUP:
 				this.sorter = new AsynchronousPartialSorterCollector<T>(memoryManager, this.parent,
-						serializer, comparator.duplicate(), availableMemory);
+						serializer, comparator.duplicate(), this.config.getRelativeMemoryDriver());
 				this.inputCollector = this.sorter.getInputCollector();
 				break;
 			default:

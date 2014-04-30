@@ -454,12 +454,12 @@ public class TaskConfig {
 		return this.config.getBoolean(INPUT_REPLAYABLE_PREFIX + inputNum, false);
 	}
 	
-	public void setInputMaterializationMemory(int inputNum, long memory) {
-		this.config.setLong(INPUT_DAM_MEMORY_PREFIX + inputNum, memory);
+	public void setRelativeInputMaterializationMemory(int inputNum, double relativeMemory) {
+		this.config.setDouble(INPUT_DAM_MEMORY_PREFIX + inputNum, relativeMemory);
 	}
 	
-	public long getInputMaterializationMemory(int inputNum) {
-		return this.config.getLong(INPUT_DAM_MEMORY_PREFIX + inputNum, -1);
+	public double getRelativeInputMaterializationMemory(int inputNum) {
+		return this.config.getDouble(INPUT_DAM_MEMORY_PREFIX + inputNum, 0);
 	}
 	
 	public void setBroadcastInputName(String name, int groupIndex) {
@@ -577,20 +577,20 @@ public class TaskConfig {
 	//                       Parameters to configure the memory and I/O behavior
 	// --------------------------------------------------------------------------------------------
 
-	public void setMemoryDriver(long memorySize) {
-		this.config.setLong(MEMORY_DRIVER, memorySize);
+	public void setRelativeMemoryDriver(double relativeMemorySize) {
+		this.config.setDouble(MEMORY_DRIVER, relativeMemorySize);
 	}
 
-	public long getMemoryDriver() {
-		return this.config.getLong(MEMORY_DRIVER, -1);
+	public double getRelativeMemoryDriver() {
+		return this.config.getDouble(MEMORY_DRIVER, 0);
 	}
 	
-	public void setMemoryInput(int inputNum, long memorySize) {
-		this.config.setLong(MEMORY_INPUT_PREFIX + inputNum, memorySize);
+	public void setRelativeMemoryInput(int inputNum, double relativeMemorySize) {
+		this.config.setDouble(MEMORY_INPUT_PREFIX + inputNum, relativeMemorySize);
 	}
 
-	public long getMemoryInput(int inputNum) {
-		return this.config.getLong(MEMORY_INPUT_PREFIX + inputNum, -1);
+	public double getRelativeMemoryInput(int inputNum) {
+		return this.config.getDouble(MEMORY_INPUT_PREFIX + inputNum, 0);
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -731,26 +731,26 @@ public class TaskConfig {
 		return index;
 	}
 	
-	public void setBackChannelMemory(long memory) {
-		if (memory < 0) {
+	public void setRelativeBackChannelMemory(double relativeMemory) {
+		if (relativeMemory < 0) {
 			throw new IllegalArgumentException();
 		}
-		this.config.setLong(ITERATION_HEAD_BACKCHANNEL_MEMORY, memory);
+		this.config.setDouble(ITERATION_HEAD_BACKCHANNEL_MEMORY, relativeMemory);
 	}
 
-	public long getBackChannelMemory() {
-		long backChannelMemory = this.config.getLong(ITERATION_HEAD_BACKCHANNEL_MEMORY, 0);
-		if (backChannelMemory <= 0) {
+	public double getRelativeBackChannelMemory() {
+		double relativeBackChannelMemory = this.config.getDouble(ITERATION_HEAD_BACKCHANNEL_MEMORY, 0);
+		if (relativeBackChannelMemory <= 0) {
 			throw new IllegalArgumentException();
 		}
-		return backChannelMemory;
+		return relativeBackChannelMemory;
 	}
 	
-	public void setSolutionSetMemory(long memory) {
-		if (memory < 0) {
+	public void setRelativeSolutionSetMemory(double relativeMemory) {
+		if (relativeMemory < 0) {
 			throw new IllegalArgumentException();
 		}
-		this.config.setLong(ITERATION_HEAD_SOLUTION_SET_MEMORY, memory);
+		this.config.setDouble(ITERATION_HEAD_SOLUTION_SET_MEMORY, relativeMemory);
 	}
 
 	public long getSolutionSetMemory() {

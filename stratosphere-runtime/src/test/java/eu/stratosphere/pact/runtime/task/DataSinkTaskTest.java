@@ -197,8 +197,10 @@ public class DataSinkTaskTest extends TaskTestBase
 
 		int keyCnt = 100;
 		int valCnt = 20;
+		long memorySize = 1024 * 1024 * 4;
+		double memoryFraction = 1.0;
 		
-		super.initEnvironment(1024 * 1024 * 4);
+		super.initEnvironment(memorySize);
 		super.addInput(new UniformRecordGenerator(keyCnt, valCnt, true), 0);
 		
 		DataSinkTask<Record> testTask = new DataSinkTask<Record>();
@@ -208,7 +210,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setInputComparator(
 				new RecordComparatorFactory(new int[]{1},((Class<? extends Key>[])new Class[]{IntValue.class})), 
 				0);
-		super.getTaskConfig().setMemoryInput(0, 4 * 1024 * 1024);
+		super.getTaskConfig().setRelativeMemoryInput(0, memoryFraction);
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
 
@@ -308,8 +310,10 @@ public class DataSinkTaskTest extends TaskTestBase
 
 		int keyCnt = 100;
 		int valCnt = 20;
+		long memorySize = 1024 * 1024 * 4;
+		double memoryFraction = 1.0;
 		
-		super.initEnvironment(4 * 1024 * 1024);
+		super.initEnvironment(memorySize);
 		super.addInput(new UniformRecordGenerator(keyCnt, valCnt, true), 0);
 
 		DataSinkTask<Record> testTask = new DataSinkTask<Record>();
@@ -321,7 +325,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setInputComparator(
 				new RecordComparatorFactory(new int[]{1},((Class<? extends Key>[])new Class[]{IntValue.class})), 
 				0);
-		super.getTaskConfig().setMemoryInput(0, 4 * 1024 * 1024);
+		super.getTaskConfig().setRelativeMemoryInput(0, memoryFraction);
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
 		
@@ -387,8 +391,11 @@ public class DataSinkTaskTest extends TaskTestBase
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testCancelSortingDataSinkTask() {
+
+		long memorySize = 1024 * 1024 * 4;
+		double memoryFraction = 1.0;
 		
-		super.initEnvironment(4 * 1024 * 1024);
+		super.initEnvironment(memorySize);
 		super.addInput(new InfiniteInputIterator(), 0);
 		
 		final DataSinkTask<Record> testTask = new DataSinkTask<Record>();
@@ -400,7 +407,7 @@ public class DataSinkTaskTest extends TaskTestBase
 		super.getTaskConfig().setInputComparator(
 				new RecordComparatorFactory(new int[]{1},((Class<? extends Key>[])new Class[]{IntValue.class})), 
 				0);
-		super.getTaskConfig().setMemoryInput(0, 4 * 1024 * 1024);
+		super.getTaskConfig().setRelativeMemoryInput(0, memoryFraction);
 		super.getTaskConfig().setFilehandlesInput(0, 8);
 		super.getTaskConfig().setSpillingThresholdInput(0, 0.8f);
 		

@@ -105,6 +105,8 @@ public class CompensatableDanglingPageRank {
 			messageLoss = Double.parseDouble(args[13]);
 		}
 
+		int totalMemoryConsumption = 3*minorConsumer + matchMemory + coGroupSortMemory;
+
 		JobGraph jobGraph = new JobGraph("CompensatableDanglingPageRank");
 		
 		// --------------- the inputs ---------------------
@@ -138,12 +140,12 @@ public class CompensatableDanglingPageRank {
 		headConfig.setInputSerializer(recSerializer, 0);
 		headConfig.setInputComparator(fieldZeroComparator, 0);
 		headConfig.setInputLocalStrategy(0, LocalStrategy.SORT);
-		headConfig.setMemoryInput(0, minorConsumer * JobGraphUtils.MEGABYTE);
+		headConfig.setRelativeMemoryInput(0, (double)minorConsumer/totalMemoryConsumption);
 		headConfig.setFilehandlesInput(0, NUM_FILE_HANDLES_PER_SORT);
 		headConfig.setSpillingThresholdInput(0, SORT_SPILL_THRESHOLD);
 		
 		// back channel / iterations
-		headConfig.setBackChannelMemory(minorConsumer * JobGraphUtils.MEGABYTE);
+		headConfig.setRelativeBackChannelMemory((double)minorConsumer/totalMemoryConsumption);
 		
 		// output into iteration
 		headConfig.setOutputSerializer(recSerializer);
@@ -179,7 +181,7 @@ public class CompensatableDanglingPageRank {
 //		intermediateConfig.setDriver(RepeatableHashjoinMatchDriverWithCachedBuildside.class);
 		intermediateConfig.setDriver(BuildSecondCachedMatchDriver.class);
 		intermediateConfig.setDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_SECOND);
-		intermediateConfig.setMemoryDriver(matchMemory * JobGraphUtils.MEGABYTE);
+		intermediateConfig.setRelativeMemoryDriver((double)matchMemory/totalMemoryConsumption);
 		intermediateConfig.addInputToGroup(0);
 		intermediateConfig.addInputToGroup(1);
 		intermediateConfig.setInputSerializer(recSerializer, 0);
@@ -218,10 +220,10 @@ public class CompensatableDanglingPageRank {
 		tailConfig.setDriverComparator(fieldZeroComparator, 1);
 		tailConfig.setDriverPairComparator(pairComparatorFactory);
 		tailConfig.setInputAsynchronouslyMaterialized(0, true);
-		tailConfig.setInputMaterializationMemory(0, minorConsumer * JobGraphUtils.MEGABYTE);
+		tailConfig.setRelativeInputMaterializationMemory(0, (double)minorConsumer/totalMemoryConsumption);
 		tailConfig.setInputLocalStrategy(1, LocalStrategy.SORT);
 		tailConfig.setInputComparator(fieldZeroComparator, 1);
-		tailConfig.setMemoryInput(1, coGroupSortMemory * JobGraphUtils.MEGABYTE);
+		tailConfig.setRelativeMemoryInput(1, (double)coGroupSortMemory/totalMemoryConsumption);
 		tailConfig.setFilehandlesInput(1, NUM_FILE_HANDLES_PER_SORT);
 		tailConfig.setSpillingThresholdInput(1, SORT_SPILL_THRESHOLD);
 		

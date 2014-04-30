@@ -971,17 +971,17 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 	}
 	
 	private void assignDriverResources(PlanNode node, TaskConfig config) {
-		final long mem = node.getMemoryPerSubTask();
-		if (mem > 0) {
-			config.setMemoryDriver(mem);
+		final double relativeMem = node.getRelativeMemoryPerSubTask();
+		if (relativeMem > 0) {
+			config.setRelativeMemoryDriver(relativeMem);
 			config.setFilehandlesDriver(this.defaultMaxFan);
 			config.setSpillingThresholdDriver(this.defaultSortSpillingThreshold);
 		}
 	}
 	
 	private void assignLocalStrategyResources(Channel c, TaskConfig config, int inputNum) {
-		if (c.getMemoryLocalStrategy() > 0) {
-			config.setMemoryInput(inputNum, c.getMemoryLocalStrategy());
+		if (c.getRelativeMemoryLocalStrategy() > 0) {
+			config.setRelativeMemoryInput(inputNum, c.getRelativeMemoryLocalStrategy());
 			config.setFilehandlesInput(inputNum, this.defaultMaxFan);
 			config.setSpillingThresholdInput(inputNum, this.defaultSortSpillingThreshold);
 		}
@@ -1109,10 +1109,10 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			
 			if (needsMemory) {
 				// sanity check
-				if (tm == null || tm == TempMode.NONE || channel.getTempMemory() < 1) {
+				if (tm == null || tm == TempMode.NONE || channel.getRelativeTempMemory() <= 0) {
 					throw new CompilerException("Bug in compiler: Inconsistent description of input materialization.");
 				}
-				config.setInputMaterializationMemory(inputNum, channel.getTempMemory());
+				config.setRelativeInputMaterializationMemory(inputNum, channel.getRelativeTempMemory());
 			}
 		}
 	}
@@ -1129,11 +1129,11 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		final int numFinalOuts = headFinalOutputConfig.getNumOutputs();
 		headConfig.setIterationHeadFinalOutputConfig(headFinalOutputConfig);
 		headConfig.setIterationHeadIndexOfSyncOutput(numStepFunctionOuts + numFinalOuts);
-		final long memForBackChannel = bulkNode.getMemoryPerSubTask();
-		if (memForBackChannel <= 0) {
+		final double relativeMemForBackChannel = bulkNode.getRelativeMemoryPerSubTask();
+		if (relativeMemForBackChannel <= 0) {
 			throw new CompilerException("Bug: No memory has been assigned to the iteration back channel.");
 		}
-		headConfig.setBackChannelMemory(memForBackChannel);
+		headConfig.setRelativeBackChannelMemory(relativeMemForBackChannel);
 		
 		// --------------------------- create the sync task ---------------------------
 		final JobOutputVertex sync = new JobOutputVertex("Sync(" +
@@ -1284,14 +1284,14 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			final int numFinalOuts = headFinalOutputConfig.getNumOutputs();
 			headConfig.setIterationHeadFinalOutputConfig(headFinalOutputConfig);
 			headConfig.setIterationHeadIndexOfSyncOutput(numStepFunctionOuts + numFinalOuts);
-			final long mem = iterNode.getMemoryPerSubTask();
-			if (mem <= 0) {
+			final double relativeMemory = iterNode.getRelativeMemoryPerSubTask();
+			if (relativeMemory <= 0) {
 				throw new CompilerException("Bug: No memory has been assigned to the workset iteration.");
 			}
 			
 			headConfig.setIsWorksetIteration();
-			headConfig.setBackChannelMemory(mem / 2);
-			headConfig.setSolutionSetMemory(mem / 2);
+			headConfig.setRelativeBackChannelMemory(relativeMemory / 2);
+			headConfig.setRelativeSolutionSetMemory(relativeMemory / 2);
 			
 			// set the solution set serializer and comparator
 			headConfig.setSolutionSetSerializer(iterNode.getSolutionSetSerializer());

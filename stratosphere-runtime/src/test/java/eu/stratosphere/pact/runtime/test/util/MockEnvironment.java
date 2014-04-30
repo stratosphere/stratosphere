@@ -68,7 +68,7 @@ public class MockEnvironment implements Environment {
 		this.inputs = new LinkedList<RuntimeInputGate<Record>>();
 		this.outputs = new LinkedList<RuntimeOutputGate<Record>>();
 
-		this.memManager = new DefaultMemoryManager(memorySize);
+		this.memManager = new DefaultMemoryManager(memorySize, 1);
 		this.ioManager = new IOManager(System.getProperty("java.io.tmpdir"));
 		this.inputSplitProvider = inputSplitProvider;
 	}

@@ -164,7 +164,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 			headConfig.setStubWrapper(new UserCodeClassWrapper<DummyMapper>(DummyMapper.class));
 
 			// back channel
-			headConfig.setBackChannelMemory(MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			headConfig.setRelativeBackChannelMemory(1.0);
 		}
 
 		// - tail ------------------------------------------------------------------------------------------------------

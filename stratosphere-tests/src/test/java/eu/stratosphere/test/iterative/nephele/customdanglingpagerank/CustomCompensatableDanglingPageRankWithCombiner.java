@@ -125,6 +125,8 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 			messageLoss = Double.parseDouble(args[13]);
 		}
 
+		int totalMemoryConsumption = 3*minorConsumer + 2*coGroupSortMemory + matchMemory;
+
 		JobGraph jobGraph = new JobGraph("CompensatableDanglingPageRank");
 		
 		// --------------- the inputs ---------------------
@@ -158,12 +160,12 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 		headConfig.setInputSerializer(vertexWithRankAndDanglingSerializer, 0);
 		headConfig.setInputComparator(vertexWithRankAndDanglingComparator, 0);
 		headConfig.setInputLocalStrategy(0, LocalStrategy.SORT);
-		headConfig.setMemoryInput(0, minorConsumer * JobGraphUtils.MEGABYTE);
+		headConfig.setRelativeMemoryInput(0, (double)minorConsumer/totalMemoryConsumption);
 		headConfig.setFilehandlesInput(0, NUM_FILE_HANDLES_PER_SORT);
 		headConfig.setSpillingThresholdInput(0, SORT_SPILL_THRESHOLD);
 		
 		// back channel / iterations
-		headConfig.setBackChannelMemory(minorConsumer * JobGraphUtils.MEGABYTE);
+		headConfig.setRelativeBackChannelMemory((double)minorConsumer/totalMemoryConsumption);
 		
 		// output into iteration
 		headConfig.setOutputSerializer(vertexWithRankAndDanglingSerializer);
@@ -199,7 +201,7 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 //		intermediateConfig.setDriver(RepeatableHashjoinMatchDriverWithCachedBuildside.class);
 		intermediateConfig.setDriver(BuildSecondCachedMatchDriver.class);
 		intermediateConfig.setDriverStrategy(DriverStrategy.HYBRIDHASH_BUILD_SECOND);
-		intermediateConfig.setMemoryDriver(matchMemory * JobGraphUtils.MEGABYTE);
+		intermediateConfig.setRelativeMemoryDriver((double)matchMemory/totalMemoryConsumption);
 		intermediateConfig.addInputToGroup(0);
 		intermediateConfig.addInputToGroup(1);
 		intermediateConfig.setInputSerializer(vertexWithRankAndDanglingSerializer, 0);
@@ -223,7 +225,7 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 		combinerConfig.setInputSerializer(vertexWithRankSerializer, 0);
 		combinerConfig.setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
 		combinerConfig.setDriverComparator(vertexWithRankComparator, 0);
-		combinerConfig.setMemoryDriver(coGroupSortMemory * JobGraphUtils.MEGABYTE);
+		combinerConfig.setRelativeMemoryDriver((double)coGroupSortMemory/totalMemoryConsumption);
 		combinerConfig.setOutputSerializer(vertexWithRankSerializer);
 		combinerConfig.addOutputShipStrategy(ShipStrategyType.PARTITION_HASH);
 		combinerConfig.setOutputComparator(vertexWithRankComparator, 0);
@@ -249,10 +251,10 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 		tailConfig.setDriverComparator(vertexWithRankComparator, 1);
 		tailConfig.setDriverPairComparator(coGroupComparator);
 		tailConfig.setInputAsynchronouslyMaterialized(0, true);
-		tailConfig.setInputMaterializationMemory(0, minorConsumer * JobGraphUtils.MEGABYTE);
+		tailConfig.setRelativeInputMaterializationMemory(0, (double)minorConsumer/totalMemoryConsumption);
 		tailConfig.setInputLocalStrategy(1, LocalStrategy.SORT);
 		tailConfig.setInputComparator(vertexWithRankComparator, 1);
-		tailConfig.setMemoryInput(1, coGroupSortMemory * JobGraphUtils.MEGABYTE);
+		tailConfig.setRelativeMemoryInput(1, (double)coGroupSortMemory/totalMemoryConsumption);
 		tailConfig.setFilehandlesInput(1, NUM_FILE_HANDLES_PER_SORT);
 		tailConfig.setSpillingThresholdInput(1, SORT_SPILL_THRESHOLD);
 		tailConfig.addIterationAggregator(CustomCompensatableDotProductCoGroup.AGGREGATOR_NAME, PageRankStatsAggregator.class);

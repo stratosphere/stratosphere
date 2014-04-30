@@ -46,7 +46,7 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	 * @param parentTask The parent task, which owns all resources used by this sorter.
 	 * @param serializer The type serializer.
 	 * @param comparator The type comparator establishing the order relation.
-	 * @param totalMemory The total amount of memory dedicated to sorting.
+	 * @param fractionMemory The fraction of memory dedicated to sorting.
 	 * 
 	 * @throws IOException Thrown, if an error occurs initializing the resources for external sorting.
 	 * @throws MemoryAllocationException Thrown, if not enough memory can be obtained from the memory manager to
@@ -55,10 +55,10 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	public AsynchronousPartialSorterCollector(MemoryManager memoryManager,
 			AbstractInvokable parentTask, 
 			TypeSerializer<E> serializer, TypeComparator<E> comparator,
-			long totalMemory)
+			double fractionMemory)
 	throws IOException, MemoryAllocationException
 	{
-		super(memoryManager, null, parentTask, serializer, comparator, totalMemory);
+		super(memoryManager, null, parentTask, serializer, comparator, fractionMemory);
 	}
 	
 	// ------------------------------------------------------------------------

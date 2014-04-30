@@ -72,7 +72,7 @@ public class AsynchonousPartialSorterITCase
 	@Before
 	public void beforeTest()
 	{
-		this.memoryManager = new DefaultMemoryManager(MEMORY_SIZE);
+		this.memoryManager = new DefaultMemoryManager(MEMORY_SIZE,1);
 		this.ioManager = new IOManager();
 		this.serializer = RecordSerializer.get();
 		this.comparator = new RecordComparator(new int[] {0}, new Class[] {TestData.Key.class});

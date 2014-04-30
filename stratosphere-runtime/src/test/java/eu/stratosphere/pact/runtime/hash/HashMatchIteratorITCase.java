@@ -98,7 +98,7 @@ public class HashMatchIteratorITCase {
 		this.pairRecordPairComparator = new IntPairRecordPairComparator();
 		this.recordPairPairComparator = new RecordIntPairPairComparator();
 		
-		this.memoryManager = new DefaultMemoryManager(MEMORY_SIZE);
+		this.memoryManager = new DefaultMemoryManager(MEMORY_SIZE, 1);
 		this.ioManager = new IOManager();
 	}
 
