@@ -92,38 +92,13 @@ public class QueueScheduler extends AbstractScheduler implements JobStatusListen
 
 
 	@Override
-	public void schedulJob(final ExecutionGraph executionGraph) throws SchedulingException {
+	public void scheduleJob(final ExecutionGraph executionGraph) throws SchedulingException {
 
-		// Get Map of all available Instance types
-		final Map<InstanceType, InstanceTypeDescription> availableInstances = getInstanceManager()
-				.getMapOfAvailableInstanceTypes();
+		final int requiredSlots = executionGraph.getMaxNumberSubtasks();
+		final int availableSlots = this.getInstanceManager().getNumberOfSlots();
 
-		final Iterator<ExecutionStage> stageIt = executionGraph.iterator();
-		while (stageIt.hasNext()) {
-
-			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
-			final ExecutionStage stage = stageIt.next();
-			stage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
-
-			// Iterator over required Instances
-			final Iterator<Map.Entry<InstanceType, Integer>> it = instanceRequestMap.getMinimumIterator();
-			while (it.hasNext()) {
-
-				final Map.Entry<InstanceType, Integer> entry = it.next();
-
-				final InstanceTypeDescription descr = availableInstances.get(entry.getKey());
-				if (descr == null) {
-					throw new SchedulingException("Unable to schedule job: No instance of type " + entry.getKey()
-							+ " available");
-				}
-
-				if (descr.getMaximumNumberOfAvailableInstances() != -1
-						&& descr.getMaximumNumberOfAvailableInstances() < entry.getValue().intValue()) {
-					throw new SchedulingException("Unable to schedule job: " + entry.getValue().intValue()
-							+ " instances of type " + entry.getKey() + " required, but only "
-							+ descr.getMaximumNumberOfAvailableInstances() + " are available");
-				}
-			}
+		if(requiredSlots > availableSlots){
+			throw new SchedulingException("Not enough slots to schedule job " + executionGraph.getJobID());
 		}
 
 		// Subscribe to job status notifications

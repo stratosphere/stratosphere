@@ -13,19 +13,10 @@
 
 package eu.stratosphere.nephele.instance.cluster;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.AllocationID;
 import eu.stratosphere.nephele.instance.HardwareDescription;
 import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeFactory;
-import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkNode;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 
@@ -36,17 +27,6 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
  * 
  */
 class ClusterInstance extends AbstractInstance {
-
-	/**
-	 * A map of slices allocated on this host.
-	 */
-	private final Map<AllocationID, AllocatedSlice> allocatedSlices = new HashMap<AllocationID, AllocatedSlice>();
-
-	/**
-	 * The remaining capacity of this host that can be used by instances.
-	 */
-	private InstanceType remainingCapacity;
-
 	/**
 	 * Time when last heat beat has been received from the task manager running on this instance.
 	 */
@@ -57,8 +37,6 @@ class ClusterInstance extends AbstractInstance {
 	 * 
 	 * @param instanceConnectionInfo
 	 *        the instance connection info identifying the host
-	 * @param capacity
-	 *        capacity of this host
 	 * @param parentNode
 	 *        the parent node of this node in the network topology
 	 * @param networkTopology
@@ -66,13 +44,11 @@ class ClusterInstance extends AbstractInstance {
 	 * @param hardwareDescription
 	 *        the hardware description reported by the instance itself
 	 */
-	public ClusterInstance(final InstanceConnectionInfo instanceConnectionInfo, final InstanceType capacity,
+	public ClusterInstance(final InstanceConnectionInfo instanceConnectionInfo,
 			final NetworkNode parentNode, final NetworkTopology networkTopology,
-			final HardwareDescription hardwareDescription) {
+			final HardwareDescription hardwareDescription, int numberOfSlots) {
 
-		super(capacity, instanceConnectionInfo, parentNode, networkTopology, hardwareDescription);
-
-		this.remainingCapacity = capacity;
+		super(instanceConnectionInfo, parentNode, networkTopology, hardwareDescription, numberOfSlots);
 	}
 
 	/**
@@ -97,85 +73,5 @@ class ClusterInstance extends AbstractInstance {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Tries to create a new slice on this instance.
-	 * 
-	 * @param reqType
-	 *        the type describing the hardware characteristics of the slice
-	 * @param jobID
-	 *        the ID of the job the new slice belongs to
-	 * @return a new {@AllocatedSlice} object if a slice with the given hardware characteristics could
-	 *         still be accommodated on this instance or <code>null</code> if the instance's remaining resources
-	 *         were insufficient to host the desired slice
-	 */
-	synchronized AllocatedSlice createSlice(final InstanceType reqType, final JobID jobID) {
-
-		// check whether we can accommodate the instance
-		if (remainingCapacity.getNumberOfComputeUnits() >= reqType.getNumberOfComputeUnits()
-			&& remainingCapacity.getNumberOfCores() >= reqType.getNumberOfCores()
-			&& remainingCapacity.getMemorySize() >= reqType.getMemorySize()
-			&& remainingCapacity.getDiskCapacity() >= reqType.getDiskCapacity()) {
-
-			// reduce available capacity by what has been requested
-			remainingCapacity = InstanceTypeFactory.construct(remainingCapacity.getIdentifier(), remainingCapacity
-				.getNumberOfComputeUnits()
-				- reqType.getNumberOfComputeUnits(), remainingCapacity.getNumberOfCores() - reqType.getNumberOfCores(),
-				remainingCapacity.getMemorySize() - reqType.getMemorySize(), remainingCapacity.getDiskCapacity()
-					- reqType.getDiskCapacity(), remainingCapacity.getPricePerHour());
-
-			final long allocationTime = System.currentTimeMillis();
-
-			final AllocatedSlice slice = new AllocatedSlice(this, reqType, jobID, allocationTime);
-			this.allocatedSlices.put(slice.getAllocationID(), slice);
-			return slice;
-		}
-
-		// we cannot accommodate the instance
-		return null;
-	}
-
-	/**
-	 * Removes the slice identified by the given allocation ID from
-	 * this instance and frees up the allocated resources.
-	 * 
-	 * @param allocationID
-	 *        the allocation ID of the slice to be removed
-	 * @return the slice with has been removed from the instance or <code>null</code> if no slice
-	 *         with the given allocation ID could be found
-	 */
-	synchronized AllocatedSlice removeAllocatedSlice(final AllocationID allocationID) {
-
-		final AllocatedSlice slice = this.allocatedSlices.remove(allocationID);
-		if (slice != null) {
-
-			this.remainingCapacity = InstanceTypeFactory.construct(this.remainingCapacity.getIdentifier(),
-				this.remainingCapacity
-					.getNumberOfComputeUnits()
-					+ slice.getType().getNumberOfComputeUnits(), this.remainingCapacity.getNumberOfCores()
-					+ slice.getType().getNumberOfCores(), this.remainingCapacity.getMemorySize()
-					+ slice.getType().getMemorySize(), this.remainingCapacity.getDiskCapacity()
-					+ slice.getType().getDiskCapacity(), this.remainingCapacity.getPricePerHour());
-		}
-
-		return slice;
-	}
-
-	/**
-	 * Removes all allocated slices on this instance and frees
-	 * up their allocated resources.
-	 * 
-	 * @return a list of all removed slices
-	 */
-	synchronized List<AllocatedSlice> removeAllAllocatedSlices() {
-
-		final List<AllocatedSlice> slices = new ArrayList<AllocatedSlice>(this.allocatedSlices.values());
-		final Iterator<AllocatedSlice> it = slices.iterator();
-		while (it.hasNext()) {
-			removeAllocatedSlice(it.next().getAllocationID());
-		}
-
-		return slices;
 	}
 }

@@ -15,8 +15,7 @@ package eu.stratosphere.nephele.instance;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import eu.stratosphere.nephele.deployment.TaskDeploymentDescriptor;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
@@ -40,12 +39,6 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
  * 
  */
 public abstract class AbstractInstance extends NetworkNode {
-
-	/**
-	 * The type of the instance.
-	 */
-	private final InstanceType instanceType;
-
 	/**
 	 * The connection info identifying the instance.
 	 */
@@ -57,6 +50,16 @@ public abstract class AbstractInstance extends NetworkNode {
 	private final HardwareDescription hardwareDescription;
 
 	/**
+	 * Number of slots available on the node
+	 */
+	private final int numberOfSlots;
+
+	/**
+	 * Allocated slots on this instance
+	 */
+	private final Map<AllocationID, AllocatedSlot> allocatedSlots = new HashMap<AllocationID, AllocatedSlot>();
+
+	/**
 	 * Stores the RPC stub object for the instance's task manager.
 	 */
 	private TaskOperationProtocol taskManager = null;
@@ -64,8 +67,6 @@ public abstract class AbstractInstance extends NetworkNode {
 	/**
 	 * Constructs an abstract instance object.
 	 * 
-	 * @param instanceType
-	 *        the type of the instance
 	 * @param instanceConnectionInfo
 	 *        the connection info identifying the instance
 	 * @param parentNode
@@ -75,13 +76,13 @@ public abstract class AbstractInstance extends NetworkNode {
 	 * @param hardwareDescription
 	 *        the hardware description provided by the instance itself
 	 */
-	public AbstractInstance(final InstanceType instanceType, final InstanceConnectionInfo instanceConnectionInfo,
+	public AbstractInstance(final InstanceConnectionInfo instanceConnectionInfo,
 			final NetworkNode parentNode, final NetworkTopology networkTopology,
-			final HardwareDescription hardwareDescription) {
+			final HardwareDescription hardwareDescription, int numberOfSlots) {
 		super((instanceConnectionInfo == null) ? null : instanceConnectionInfo.toString(), parentNode, networkTopology);
-		this.instanceType = instanceType;
 		this.instanceConnectionInfo = instanceConnectionInfo;
 		this.hardwareDescription = hardwareDescription;
+		this.numberOfSlots = numberOfSlots;
 	}
 
 	/**
@@ -112,15 +113,6 @@ public abstract class AbstractInstance extends NetworkNode {
 			RPC.stopProxy(this.taskManager);
 			this.taskManager = null;
 		}
-	}
-
-	/**
-	 * Returns the type of the instance.
-	 * 
-	 * @return the type of the instance
-	 */
-	public final InstanceType getType() {
-		return this.instanceType;
 	}
 
 	/**
@@ -293,5 +285,44 @@ public abstract class AbstractInstance extends NetworkNode {
 
 		destroyTaskManagerProxy();
 
+	}
+
+	public int getNumberOfSlots() {
+		return numberOfSlots;
+	}
+
+	public int getNumberOfAvailableSlots() { return numberOfSlots - allocatedSlots.size(); }
+
+	public synchronized AllocatedResource allocateSlot(JobID jobID) throws InstanceException{
+		if(allocatedSlots.size() < numberOfSlots){
+			AllocatedSlot slot = new AllocatedSlot(jobID);
+
+			allocatedSlots.put(slot.getAllocationID(), slot);
+			return new AllocatedResource(this,slot.getAllocationID());
+		}else{
+			throw new InstanceException("Overbooking instance " + instanceConnectionInfo + ".");
+		}
+	}
+
+	public synchronized void releaseSlot(AllocationID allocationID) {
+		if(allocatedSlots.containsKey(allocationID)){
+			allocatedSlots.remove(allocationID);
+		}else{
+			throw new RuntimeException("There is no slot registered with allocation ID " + allocationID + ".");
+		}
+	}
+
+	public Collection<AllocatedSlot> getAllocatedSlots() {
+		return allocatedSlots.values();
+	}
+
+	public Collection<AllocatedSlot> removeAllocatedSlots() {
+		Collection<AllocatedSlot> slots = new ArrayList<AllocatedSlot>(this.allocatedSlots.values());
+
+		for(AllocatedSlot slot : slots){
+			releaseSlot(slot.getAllocationID());
+		}
+
+		return slots;
 	}
 }

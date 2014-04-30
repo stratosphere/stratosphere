@@ -25,21 +25,19 @@ public class DummyInstance extends AbstractInstance {
 
 	private final String name;
 
-	public static synchronized DummyInstance createDummyInstance(InstanceType type) {
+	public static synchronized DummyInstance createDummyInstance() {
 
-		return new DummyInstance(type, nextID++);
+		return new DummyInstance(nextID++);
 	}
 
 	/**
 	 * Constructs a new dummy instance of the given instance type.
 	 * 
-	 * @param type
-	 *        the type of the new dummy instance
 	 * @param id
 	 *        the ID of the dummy instance
 	 */
-	private DummyInstance(InstanceType type, int id) {
-		super(type, null, null, null, null);
+	private DummyInstance(int id) {
+		super(null, null, null, null, 0);
 
 		this.name = "DummyInstance_" + Integer.toString(id);
 	}

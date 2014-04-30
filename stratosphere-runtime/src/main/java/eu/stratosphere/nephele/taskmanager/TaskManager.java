@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import eu.stratosphere.nephele.instance.Hardware;
+import eu.stratosphere.nephele.types.IntegerRecord;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -145,7 +146,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final HardwareDescription hardwareDescription;
 
-	private final int numTaskManagerSlots;
+	private final int numberOfSlots;
 
 	private final Thread heartbeatThread;
 	
@@ -293,7 +294,7 @@ public class TaskManager implements TaskOperationProtocol {
 		
 		{
 			HardwareDescription resources = HardwareDescriptionFactory.extractFromSystem();
-			numTaskManagerSlots = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS,
+			numberOfSlots = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS,
 					Hardware.getNumberCPUCores());
 
 			// Check whether the memory size has been explicitly configured. if so that overrides the default mechanism
@@ -419,7 +420,8 @@ public class TaskManager implements TaskOperationProtocol {
 						ConfigConstants.DEFAULT_TASK_MANAGER_HEARTBEAT_INTERVAL);
 
 		try {
-			this.jobManager.registerTaskManager(this.localInstanceConnectionInfo, this.hardwareDescription);
+			this.jobManager.registerTaskManager(this.localInstanceConnectionInfo, this.hardwareDescription,
+					new IntegerRecord(this.numberOfSlots));
 		} catch (IOException e) {
 			if(!shutdownStarted.get()){
 				LOG.error("Registering task manager caused an exception: " + e.getMessage(), e);

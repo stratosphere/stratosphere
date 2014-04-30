@@ -74,6 +74,11 @@ public final class TestInstanceManager implements InstanceManager {
 	private final List<AllocatedResource> allocatedResources;
 
 	/**
+	 * The test instance
+	 */
+	private final TestInstance testInstance;
+
+	/**
 	 * Test implementation of {@link AbstractInstance}.
 	 * 
 	 */
@@ -82,8 +87,6 @@ public final class TestInstanceManager implements InstanceManager {
 		/**
 		 * Constructs a new test instance.
 		 * 
-		 * @param instanceType
-		 *        the instance type
 		 * @param instanceConnectionInfo
 		 *        the instance connection information
 		 * @param parentNode
@@ -92,11 +95,13 @@ public final class TestInstanceManager implements InstanceManager {
 		 *        the network topology
 		 * @param hardwareDescription
 		 *        the hardware description
+		 * @param numberSlots
+		 * 		  the number of slots available on the instance
 		 */
-		public TestInstance(final InstanceType instanceType, final InstanceConnectionInfo instanceConnectionInfo,
+		public TestInstance(final InstanceConnectionInfo instanceConnectionInfo,
 				final NetworkNode parentNode, final NetworkTopology networkTopology,
-				final HardwareDescription hardwareDescription) {
-			super(instanceType, instanceConnectionInfo, parentNode, networkTopology, hardwareDescription);
+				final HardwareDescription hardwareDescription, int numberSlots) {
+			super(instanceConnectionInfo, parentNode, networkTopology, hardwareDescription, numberSlots);
 		}
 	}
 
@@ -113,8 +118,8 @@ public final class TestInstanceManager implements InstanceManager {
 		try {
 			final InstanceConnectionInfo ici = new InstanceConnectionInfo(Inet4Address.getLocalHost(), 1, 1);
 			final NetworkTopology nt = new NetworkTopology();
-			final TestInstance ti = new TestInstance(INSTANCE_TYPE, ici, nt.getRootNode(), nt, hd);
-			this.allocatedResources.add(new AllocatedResource(ti, INSTANCE_TYPE, new AllocationID()));
+			this.testInstance = new TestInstance(ici, nt.getRootNode(), nt, hd, 1);
+			this.allocatedResources.add(new AllocatedResource(testInstance, new AllocationID()));
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(StringUtils.stringifyException(e));
 		}
@@ -123,18 +128,7 @@ public final class TestInstanceManager implements InstanceManager {
 
 	@Override
 	public void requestInstance(final JobID jobID, final Configuration conf,
-			final InstanceRequestMap instanceRequestMap, final List<String> splitAffinityList) throws InstanceException {
-
-		if (instanceRequestMap.size() != 1) {
-			throw new InstanceException(
-				"requestInstance of TestInstanceManager expected to receive request for a single instance type");
-		}
-
-		if (instanceRequestMap.getMinimumNumberOfInstances(INSTANCE_TYPE) != 1) {
-			throw new InstanceException(
-				"requestInstance of TestInstanceManager expected to receive request for one instance of type "
-					+ INSTANCE_TYPE.getIdentifier());
-		}
+								int requiredSlots) throws InstanceException {
 
 		if (this.instanceListener == null) {
 			throw new InstanceException("instanceListener not registered with TestInstanceManager");
@@ -176,36 +170,15 @@ public final class TestInstanceManager implements InstanceManager {
 
 
 	@Override
-	public InstanceType getSuitableInstanceType(final int minNumComputeUnits, final int minNumCPUCores,
-			final int minMemorySize, final int minDiskCapacity, final int maxPricePerHour) {
-		throw new IllegalStateException("getSuitableInstanceType called on TestInstanceManager");
-	}
-
-
-	@Override
 	public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo) {
 		throw new IllegalStateException("reportHeartBeat called on TestInstanceManager");
 	}
 
 	@Override
 	public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
-									final HardwareDescription hardwareDescription){
+									final HardwareDescription hardwareDescription, int numberSlots){
 		throw new IllegalStateException("registerTaskManager called on TestInstanceManager.");
 	}
-
-
-	@Override
-	public InstanceType getInstanceTypeByName(final String instanceTypeName) {
-		throw new IllegalStateException("getInstanceTypeByName called on TestInstanceManager");
-	}
-
-
-	@Override
-	public InstanceType getDefaultInstanceType() {
-
-		return INSTANCE_TYPE;
-	}
-
 
 	@Override
 	public NetworkTopology getNetworkTopology(final JobID jobID) {
@@ -219,26 +192,10 @@ public final class TestInstanceManager implements InstanceManager {
 		this.instanceListener = instanceListener;
 	}
 
-
-	@Override
-	public Map<InstanceType, InstanceTypeDescription> getMapOfAvailableInstanceTypes() {
-
-		return this.instanceMap;
-	}
-
-
 	@Override
 	public AbstractInstance getInstanceByName(final String name) {
 		throw new IllegalStateException("getInstanceByName called on TestInstanceManager");
 	}
-
-
-	@Override
-	public void cancelPendingRequests(final JobID jobID) {
-		throw new IllegalStateException("cancelPendingRequests called on TestInstanceManager");
-
-	}
-
 
 	@Override
 	public void shutdown() {
@@ -248,5 +205,10 @@ public final class TestInstanceManager implements InstanceManager {
 	@Override
 	public int getNumberOfTaskTrackers() {
 		throw new IllegalStateException("getNumberOfTaskTrackers called on TestInstanceManager");
+	}
+
+	@Override
+	public int getNumberOfSlots() {
+		return this.testInstance.getNumberOfSlots();
 	}
 }

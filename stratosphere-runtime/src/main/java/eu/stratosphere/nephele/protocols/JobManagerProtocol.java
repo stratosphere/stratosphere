@@ -19,6 +19,7 @@ import eu.stratosphere.core.protocols.VersionedProtocol;
 import eu.stratosphere.nephele.instance.HardwareDescription;
 import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
 import eu.stratosphere.nephele.taskmanager.TaskExecutionState;
+import eu.stratosphere.nephele.types.IntegerRecord;
 
 /**
  * The job manager protocol is implemented by the job manager and offers functionality
@@ -46,7 +47,8 @@ public interface JobManagerProtocol extends VersionedProtocol {
 	 * @param hardwareDescription a hardware description with details on the instance's compute resources.
 	 * @throws IOException
 	 */
-	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription)
+	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription,
+							 IntegerRecord numberOfSlots)
 			throws IOException;
 
 	/**

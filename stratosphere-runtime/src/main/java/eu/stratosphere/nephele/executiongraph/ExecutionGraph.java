@@ -459,23 +459,6 @@ public class ExecutionGraph implements ExecutionListener {
 			final ExecutionStage initialExecutionStage, final Configuration jobConfiguration)
 			throws GraphConversionException {
 
-		// If the user has requested instance type, check if the type is known by the current instance manager
-		InstanceType instanceType = null;
-		boolean userDefinedInstanceType = false;
-		if (jobVertex.getInstanceType() != null) {
-
-			userDefinedInstanceType = true;
-			instanceType = instanceManager.getInstanceTypeByName(jobVertex.getInstanceType());
-			if (instanceType == null) {
-				throw new GraphConversionException("Requested instance type " + jobVertex.getInstanceType()
-					+ " is not known to the instance manager");
-			}
-		}
-
-		if (instanceType == null) {
-			instanceType = instanceManager.getDefaultInstanceType();
-		}
-
 		// Create an initial execution vertex for the job vertex
 		final Class<? extends AbstractInvokable> invokableClass = jobVertex.getInvokableClass();
 		if (invokableClass == null) {
@@ -492,8 +475,7 @@ public class ExecutionGraph implements ExecutionListener {
 		ExecutionGroupVertex groupVertex = null;
 		try {
 			groupVertex = new ExecutionGroupVertex(jobVertex.getName(), jobVertex.getID(), this,
-				jobVertex.getNumberOfSubtasks(), instanceType, userDefinedInstanceType,
-					jobVertex.getVertexToShareInstancesWith() != null ? true
+				jobVertex.getNumberOfSubtasks(), jobVertex.getVertexToShareInstancesWith() != null ? true
 					: false, jobVertex.getNumberOfExecutionRetries(), jobVertex.getConfiguration(), signature,
 				invokableClass);
 		} catch (Throwable t) {
@@ -506,33 +488,6 @@ public class ExecutionGraph implements ExecutionListener {
 		} catch (IllegalConfigurationException e) {
 			throw new GraphConversionException(StringUtils.stringifyException(e));
 		}
-
-		// Check if the user's specifications for the number of subtasks are valid
-		final int minimumNumberOfSubtasks = jobVertex.getMinimumNumberOfSubtasks(groupVertex.getEnvironment()
-			.getInvokable());
-		final int maximumNumberOfSubtasks = jobVertex.getMaximumNumberOfSubtasks(groupVertex.getEnvironment()
-			.getInvokable());
-		if (jobVertex.getNumberOfSubtasks() != -1) {
-			if (jobVertex.getNumberOfSubtasks() < 1) {
-				throw new GraphConversionException("Cannot split task " + jobVertex.getName() + " into "
-					+ jobVertex.getNumberOfSubtasks() + " subtasks");
-			}
-
-			if (jobVertex.getNumberOfSubtasks() < minimumNumberOfSubtasks) {
-				throw new GraphConversionException("Number of subtasks must be at least " + minimumNumberOfSubtasks);
-			}
-
-			if (maximumNumberOfSubtasks != -1) {
-				if (jobVertex.getNumberOfSubtasks() > maximumNumberOfSubtasks) {
-					throw new GraphConversionException("Number of subtasks for vertex " + jobVertex.getName()
-						+ " can be at most " + maximumNumberOfSubtasks);
-				}
-			}
-		}
-
-		// Assign min/max to the group vertex (settings are actually applied in applyUserDefinedSettings)
-		groupVertex.setMinMemberSize(minimumNumberOfSubtasks);
-		groupVertex.setMaxMemberSize(maximumNumberOfSubtasks);
 
 		// Register input and output vertices separately
 		if (jobVertex instanceof AbstractJobInputVertex) {
@@ -575,8 +530,7 @@ public class ExecutionGraph implements ExecutionListener {
 			jobVertex.getNumberOfBackwardConnections());
 
 		// Assign initial instance to vertex (may be overwritten later on when user settings are applied)
-		ev.setAllocatedResource(new AllocatedResource(DummyInstance.createDummyInstance(instanceType), instanceType,
-			null));
+		ev.setAllocatedResource(new AllocatedResource(DummyInstance.createDummyInstance(), null));
 
 		return ev;
 	}
@@ -846,6 +800,26 @@ public class ExecutionGraph implements ExecutionListener {
 	 */
 	public int getIndexOfCurrentExecutionStage() {
 		return this.indexToCurrentExecutionStage;
+	}
+
+	/**
+	 * Retrieves the maximum parallel degree of the job represented by this execution graph
+	 */
+	public int getMaxNumberSubtasks() {
+		int maxDegree = 0;
+		final Iterator<ExecutionStage> stageIterator = this.stages.iterator();
+
+		while(stageIterator.hasNext()){
+			final ExecutionStage stage = stageIterator.next();
+
+			int maxPerStageDegree = stage.getMaxNumberSubtasks();
+
+			if(maxPerStageDegree > maxDegree){
+				maxDegree = maxPerStageDegree;
+			}
+		}
+
+		return maxDegree;
 	}
 
 	/**

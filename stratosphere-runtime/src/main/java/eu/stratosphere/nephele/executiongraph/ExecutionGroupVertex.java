@@ -69,29 +69,9 @@ public final class ExecutionGroupVertex {
 	private final CopyOnWriteArrayList<ExecutionVertex> groupMembers = new CopyOnWriteArrayList<ExecutionVertex>();
 
 	/**
-	 * Maximum number of execution vertices this group vertex can manage.
-	 */
-	private volatile int maxMemberSize = 1;
-
-	/**
-	 * Minimum number of execution vertices this group vertex can manage.
-	 */
-	private volatile int minMemberSize = 1;
-
-	/**
 	 * The user defined number of execution vertices, -1 if the user has not specified it.
 	 */
 	private final int userDefinedNumberOfMembers;
-
-	/**
-	 * The instance type to be used for execution vertices this group vertex manages.
-	 */
-	private volatile InstanceType instanceType = null;
-
-	/**
-	 * Stores whether the instance type is user defined.
-	 */
-	private final boolean userDefinedInstanceType;
 
 	/**
 	 * Number of retries in case of an error before the task represented by this vertex is considered as failed.
@@ -165,10 +145,6 @@ public final class ExecutionGroupVertex {
 	 *        the execution graph is group vertex belongs to
 	 * @param userDefinedNumberOfMembers
 	 *        the user defined number of subtasks, -1 if the user did not specify the number
-	 * @param instanceType
-	 *        the instance type to be used for execution vertices this group vertex manages.
-	 * @param userDefinedInstanceType
-	 *        <code>true</code> if the instance type is user defined, <code>false</code> otherwise
 	 * @param userDefinedVertexToShareInstanceWith
 	 *        <code>true</code> if the user specified another vertex to share instances with, <code>false</code>
 	 *        otherwise
@@ -185,17 +161,13 @@ public final class ExecutionGroupVertex {
 	 *         throws if an error occurs while instantiating the {@link AbstractInvokable}
 	 */
 	public ExecutionGroupVertex(final String name, final JobVertexID jobVertexID, final ExecutionGraph executionGraph,
-			final int userDefinedNumberOfMembers, final InstanceType instanceType,
-			final boolean userDefinedInstanceType, final boolean userDefinedVertexToShareInstanceWith,
-			final int numberOfExecutionRetries,
-			final Configuration configuration, final ExecutionSignature signature,
+			final int userDefinedNumberOfMembers, final boolean userDefinedVertexToShareInstanceWith,
+			final int numberOfExecutionRetries, final Configuration configuration, final ExecutionSignature signature,
 			final Class<? extends AbstractInvokable> invokableClass) throws Exception {
 
 		this.name = (name != null) ? name : "";
 		this.jobVertexID = jobVertexID;
 		this.userDefinedNumberOfMembers = userDefinedNumberOfMembers;
-		this.instanceType = instanceType;
-		this.userDefinedInstanceType = userDefinedInstanceType;
 		if (numberOfExecutionRetries >= 0) {
 			this.numberOfExecutionRetries = numberOfExecutionRetries;
 		} else {
@@ -290,32 +262,6 @@ public final class ExecutionGroupVertex {
 	}
 
 	/**
-	 * Sets the maximum number of members this group vertex can have.
-	 * 
-	 * @param maxSize
-	 *        the maximum number of members this group vertex can have
-	 */
-	void setMaxMemberSize(final int maxSize) {
-
-		// TODO: Add checks here
-
-		this.maxMemberSize = maxSize;
-	}
-
-	/**
-	 * Sets the minimum number of members this group vertex must have.
-	 * 
-	 * @param minSize
-	 *        the minimum number of members this group vertex must have
-	 */
-	void setMinMemberSize(final int minSize) {
-
-		// TODO: Add checks here
-
-		this.minMemberSize = minSize;
-	}
-
-	/**
 	 * Returns the current number of members this group vertex has.
 	 * 
 	 * @return the current number of members this group vertex has
@@ -323,24 +269,6 @@ public final class ExecutionGroupVertex {
 	public int getCurrentNumberOfGroupMembers() {
 
 		return this.groupMembers.size();
-	}
-
-	/**
-	 * Returns the maximum number of members this group vertex can have.
-	 * 
-	 * @return the maximum number of members this group vertex can have
-	 */
-	public int getMaximumNumberOfGroupMembers() {
-		return this.maxMemberSize;
-	}
-
-	/**
-	 * Returns the minimum number of members this group vertex must have.
-	 * 
-	 * @return the minimum number of members this group vertex must have
-	 */
-	public int getMinimumNumberOfGroupMember() {
-		return this.minMemberSize;
 	}
 
 	/**
@@ -495,17 +423,6 @@ public final class ExecutionGroupVertex {
 		 * }
 		 */
 
-		if (initialNumberOfVertices < this.getMinimumNumberOfGroupMember()) {
-			throw new GraphConversionException("Number of members must be at least "
-				+ this.getMinimumNumberOfGroupMember());
-		}
-
-		if ((this.getMaximumNumberOfGroupMembers() != -1)
-			&& (initialNumberOfVertices > this.getMaximumNumberOfGroupMembers())) {
-			throw new GraphConversionException("Number of members cannot exceed "
-				+ this.getMaximumNumberOfGroupMembers());
-		}
-
 		final ExecutionVertex originalVertex = this.getGroupMember(0);
 		int currentNumberOfExecutionVertices = this.getCurrentNumberOfGroupMembers();
 
@@ -513,7 +430,7 @@ public final class ExecutionGroupVertex {
 
 			final ExecutionVertex vertex = originalVertex.splitVertex();
 			vertex.setAllocatedResource(new AllocatedResource(DummyInstance
-				.createDummyInstance(this.instanceType), this.instanceType, null));
+				.createDummyInstance(), null));
 			this.groupMembers.add(vertex);
 		}
 
@@ -623,34 +540,6 @@ public final class ExecutionGroupVertex {
 		return this.userDefinedNumberOfMembers;
 	}
 
-	boolean isInstanceTypeUserDefined() {
-
-		return this.userDefinedInstanceType;
-	}
-
-	void setInstanceType(final InstanceType instanceType) throws GraphConversionException {
-
-		if (instanceType == null) {
-			throw new IllegalArgumentException("Argument instanceType must not be null");
-		}
-
-		if (this.userDefinedInstanceType) {
-			throw new GraphConversionException("Cannot overwrite user defined instance type "
-				+ instanceType.getIdentifier());
-		}
-
-		this.instanceType = instanceType;
-
-		// Reset instance allocation of all members and let reassignInstances do the work
-		for (int i = 0; i < this.groupMembers.size(); i++) {
-			final ExecutionVertex vertex = this.groupMembers.get(i);
-			vertex.setAllocatedResource(null);
-		}
-	}
-
-	InstanceType getInstanceType() {
-		return this.instanceType;
-	}
 
 	/**
 	 * Returns the number of retries in case of an error before the task represented by this vertex is considered as

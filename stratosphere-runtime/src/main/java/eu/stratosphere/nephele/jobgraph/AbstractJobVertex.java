@@ -68,11 +68,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	private int numberOfSubtasks = -1;
 
 	/**
-	 * The type of instance to be assigned to this task at runtime.
-	 */
-	private String instanceType = null;
-
-	/**
 	 * Number of retries in case of an error before the task represented by this vertex is considered as failed.
 	 */
 	private int numberOfExecutionRetries = -1;
@@ -375,9 +370,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 			throw new IOException("jobGraph is null, cannot deserialize");
 		}
 
-		// Read instance type
-		this.instanceType = StringRecord.readString(in);
-
 		// Read number of subtasks
 		this.numberOfSubtasks = in.readInt();
 
@@ -453,9 +445,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 
 	@Override
 	public void write(final DataOutput out) throws IOException {
-
-		// Instance type
-		StringRecord.writeString(out, this.instanceType);
 
 		// Number of subtasks
 		out.writeInt(this.numberOfSubtasks);
@@ -554,25 +543,6 @@ public abstract class AbstractJobVertex implements IOReadableWritable {
 	 */
 	public int getNumberOfExecutionRetries() {
 		return this.numberOfExecutionRetries;
-	}
-
-	/**
-	 * Sets the instance type the task this vertex represents should run on.
-	 * 
-	 * @param instanceType
-	 *        the instance type the task this vertex represents should run on
-	 */
-	public void setInstanceType(final String instanceType) {
-		this.instanceType = instanceType;
-	}
-
-	/**
-	 * Returns the instance type the task this vertex represents should run on.
-	 * 
-	 * @return the instance type the task this vertex represents should run on, <code>null</code> if unspecified
-	 */
-	public String getInstanceType() {
-		return this.instanceType;
 	}
 
 	/**

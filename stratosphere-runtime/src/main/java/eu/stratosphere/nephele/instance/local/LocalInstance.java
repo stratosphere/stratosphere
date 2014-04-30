@@ -22,9 +22,10 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
 
 public class LocalInstance extends AbstractInstance {
 
-	public LocalInstance(InstanceType instanceType, InstanceConnectionInfo instanceConnectionInfo,
-			NetworkNode parentNode, NetworkTopology networkTopology, HardwareDescription hardwareDescription) {
-		super(instanceType, instanceConnectionInfo, parentNode, networkTopology, hardwareDescription);
+	public LocalInstance(InstanceConnectionInfo instanceConnectionInfo,
+			NetworkNode parentNode, NetworkTopology networkTopology, HardwareDescription hardwareDescription,
+			int numberOfSlots) {
+		super(instanceConnectionInfo, parentNode, networkTopology, hardwareDescription, numberOfSlots);
 	}
 
 

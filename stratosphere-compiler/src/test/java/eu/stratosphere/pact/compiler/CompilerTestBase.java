@@ -70,8 +70,6 @@ public abstract class CompilerTestBase {
 	
 	protected PactCompiler noStatsCompiler;
 	
-	protected InstanceTypeDescription instanceType;
-	
 	private int statCounter;
 	
 	// ------------------------------------------------------------------------	
@@ -95,17 +93,16 @@ public abstract class CompilerTestBase {
 		// create the instance type description
 		InstanceType iType = InstanceTypeFactory.construct("standard", 6, 2, 4096, 100, 0);
 		HardwareDescription hDesc = HardwareDescriptionFactory.construct(2, 4096 * 1024 * 1024, 2000 * 1024 * 1024);
-		this.instanceType = InstanceTypeDescriptionFactory.construct(iType, hDesc, DEFAULT_PARALLELISM * 2);
 	}
 	
 	// ------------------------------------------------------------------------
 	
 	public OptimizedPlan compileWithStats(Plan p) {
-		return this.withStatsCompiler.compile(p, this.instanceType);
+		return this.withStatsCompiler.compile(p);
 	}
 	
 	public OptimizedPlan compileNoStats(Plan p) {
-		return this.noStatsCompiler.compile(p, this.instanceType);
+		return this.noStatsCompiler.compile(p);
 	}
 	
 	public void setSourceStatistics(GenericDataSource<?> source, long size, float recordWidth) {

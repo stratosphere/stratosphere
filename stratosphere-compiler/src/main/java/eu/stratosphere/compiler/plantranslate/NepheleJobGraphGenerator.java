@@ -185,13 +185,6 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 			t.addChainedTask(tic.getChainedTask(), tic.getTaskConfig(), tic.getTaskName());
 		}
 
-		// now that all have been created, make sure that all share their instances with the one
-		// with the highest degree of parallelism
-		if (program.getInstanceTypeName() != null) {
-			this.maxDegreeVertex.setInstanceType(program.getInstanceTypeName());
-		} else {
-			LOG.warn("No instance type assigned to JobVertex.");
-		}
 		for (AbstractJobVertex vertex : this.vertices.values()) {
 			if (vertex != this.maxDegreeVertex) {
 				vertex.setVertexToShareInstancesWith(this.maxDegreeVertex);

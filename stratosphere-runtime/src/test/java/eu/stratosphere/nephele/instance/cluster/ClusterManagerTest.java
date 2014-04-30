@@ -75,18 +75,13 @@ public class ClusterManagerTest {
 			InstanceConnectionInfo ici3 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 30, dataPort + 30);
 			
 			// register three instances
-			cm.registerTaskManager(ici1, hardwareDescription);
-			cm.registerTaskManager(ici2, hardwareDescription);
-			cm.registerTaskManager(ici3, hardwareDescription);
+			cm.registerTaskManager(ici1, hardwareDescription, 1);
+			cm.registerTaskManager(ici2, hardwareDescription, 1);
+			cm.registerTaskManager(ici3, hardwareDescription, 1);
 			
-			
-			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
-			assertEquals(1, instanceTypeDescriptions.size());
-			
-			InstanceTypeDescription descr = instanceTypeDescriptions.entrySet().iterator().next().getValue();
-			
-			assertEquals(3, descr.getMaximumNumberOfAvailableInstances());
-			
+
+			assertEquals(3, cm.getNumberOfSlots());
+
 			cm.shutdown();
 		}
 		catch (Exception e) {
@@ -117,24 +112,16 @@ public class ClusterManagerTest {
 			InstanceConnectionInfo ici2 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 15, dataPort + 15);
 			
 			// register three instances
-			cm.registerTaskManager(ici1, hardwareDescription);
-			cm.registerTaskManager(ici2, hardwareDescription);
-			
-			
-			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
-			assertEquals(1, instanceTypeDescriptions.size());
-			
-			InstanceTypeDescription descr = instanceTypeDescriptions.entrySet().iterator().next().getValue();
-			
-			assertEquals(2, descr.getMaximumNumberOfAvailableInstances());
+			cm.registerTaskManager(ici1, hardwareDescription, 1);
+			cm.registerTaskManager(ici2, hardwareDescription, 1);
+
+			assertEquals(2, cm.getNumberOfSlots());
 			
 			
 			// allocate something
 			JobID jobID = new JobID();
 			Configuration conf = new Configuration();
-			InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
-			instanceRequestMap.setNumberOfInstances(cm.getDefaultInstanceType(), 2);
-			cm.requestInstance(jobID, conf, instanceRequestMap, null);
+			cm.requestInstance(jobID, conf, 2);
 			
 			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 3, 1000);
 			
@@ -145,10 +132,6 @@ public class ClusterManagerTest {
 			Set<AllocationID> allocationIDs = new HashSet<AllocationID>();
 			while (it.hasNext()) {
 				AllocatedResource allocatedResource = it.next();
-				if (ConfigConstants.DEFAULT_INSTANCE_TYPE.equals(allocatedResource.getInstance().getType().getIdentifier())) {
-					fail("Allocated unexpected instance of type "
-						+ allocatedResource.getInstance().getType().getIdentifier());
-				}
 
 				if (allocationIDs.contains(allocatedResource.getAllocationID())) {
 					fail("Discovered allocation ID " + allocatedResource.getAllocationID() + " at least twice");
@@ -159,9 +142,7 @@ public class ClusterManagerTest {
 
 			// Try to allocate more resources which must result in an error
 			try {
-				InstanceRequestMap instancem = new InstanceRequestMap();
-				instancem.setNumberOfInstances(cm.getDefaultInstanceType(), 1);
-				cm.requestInstance(jobID, conf, instancem, null);
+				cm.requestInstance(jobID, conf, 3);
 
 				fail("ClusterManager allowed to request more instances than actually available");
 
@@ -178,9 +159,7 @@ public class ClusterManagerTest {
 			
 			// Now further allocations should be possible
 			
-			InstanceRequestMap instancem = new InstanceRequestMap();
-			instancem.setNumberOfInstances(cm.getDefaultInstanceType(), 1);
-			cm.requestInstance(jobID, conf, instancem, null);
+			cm.requestInstance(jobID, conf, 1);
 			
 			
 			cm.shutdown();
@@ -200,17 +179,17 @@ public class ClusterManagerTest {
 		try {
 			
 			final int CLEANUP_INTERVAL = 2;
-			
+
 			// configure a short cleanup interval
 			Configuration config = new Configuration();
 			config.setInteger("instancemanager.cluster.cleanupinterval", CLEANUP_INTERVAL);
 			GlobalConfiguration.includeConfiguration(config);
-			
+
 			ClusterManager cm = new ClusterManager();
 			TestInstanceListener testInstanceListener = new TestInstanceListener();
 			cm.setInstanceListener(testInstanceListener);
-			
-			
+
+
 			int ipcPort = ConfigConstants.DEFAULT_TASK_MANAGER_IPC_PORT;
 			int dataPort = ConfigConstants.DEFAULT_TASK_MANAGER_DATA_PORT;
 
@@ -219,48 +198,37 @@ public class ClusterManagerTest {
 
 			String hostname = "192.168.198.1";
 			InetAddress address = InetAddress.getByName("192.168.198.1");
-			
+
 			InstanceConnectionInfo ici1 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 0, dataPort + 0);
 			InstanceConnectionInfo ici2 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 15, dataPort + 15);
 			InstanceConnectionInfo ici3 = new InstanceConnectionInfo(address, hostname, null, ipcPort + 30, dataPort + 30);
-			
+
 			// register three instances
-			cm.registerTaskManager(ici1, hardwareDescription);
-			cm.registerTaskManager(ici2, hardwareDescription);
-			cm.registerTaskManager(ici3, hardwareDescription);
-			
-			
-			Map<InstanceType, InstanceTypeDescription> instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
-			assertEquals(1, instanceTypeDescriptions.size());
-			
-			InstanceTypeDescription descr = instanceTypeDescriptions.entrySet().iterator().next().getValue();
-			assertEquals(3, descr.getMaximumNumberOfAvailableInstances());
-			
+			cm.registerTaskManager(ici1, hardwareDescription, 1);
+			cm.registerTaskManager(ici2, hardwareDescription, 1);
+			cm.registerTaskManager(ici3, hardwareDescription, 1);
+
+			assertEquals(3, cm.getNumberOfSlots());
+
 			// request some instances
 			JobID jobID = new JobID();
 			Configuration conf = new Configuration();
 
-			InstanceRequestMap instancem = new InstanceRequestMap();
-			instancem.setNumberOfInstances(cm.getDefaultInstanceType(), 1);
-			cm.requestInstance(jobID, conf, instancem, null);
-			
+			cm.requestInstance(jobID, conf, 1);
+
 			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 1, 1000);
 			assertEquals(1, testInstanceListener.getNumberOfAllocatedResourcesForJob(jobID));
-			
+
 			// wait for the cleanup to kick in
 			Thread.sleep(2000 * CLEANUP_INTERVAL);
-			
+
 			// check that the instances are gone
 			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 0, 1000);
 			assertEquals(0, testInstanceListener.getNumberOfAllocatedResourcesForJob(jobID));
-			
-			
-			instanceTypeDescriptions = cm.getMapOfAvailableInstanceTypes();
-			assertEquals(1, instanceTypeDescriptions.size());
-			
-			descr = instanceTypeDescriptions.entrySet().iterator().next().getValue();
-			assertEquals(0, descr.getMaximumNumberOfAvailableInstances());
-			
+
+
+			assertEquals(0, cm.getNumberOfSlots());
+
 			cm.shutdown();
 		}
 		catch (Exception e) {

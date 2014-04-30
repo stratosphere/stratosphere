@@ -502,14 +502,9 @@ public class PactCompiler {
 		// -------------------- try to get the connection to the job manager ----------------------
 		// --------------------------to obtain instance information --------------------------------
 		final OptimizerPostPass postPasser = getPostPassFromPlan(program);
-		return compile(program, getInstanceTypeInfo(), postPasser);
+		return compile(program, postPasser);
 	}
-	
-	public OptimizedPlan compile(Plan program, InstanceTypeDescription type) throws CompilerException {
-		final OptimizerPostPass postPasser = getPostPassFromPlan(program);
-		return compile(program, type, postPasser);
-	}
-	
+
 	/**
 	 * Translates the given pact plan in to an OptimizedPlan, where all nodes have their local strategy assigned
 	 * and all channels have a shipping strategy assigned. The process goes through several phases:
@@ -521,8 +516,6 @@ public class PactCompiler {
 	 * </ol>
 	 * 
 	 * @param program The program to be translated.
-	 * @param type The instance type to schedule the execution on. Used also to determine the amount of memory
-	 *             available to the tasks.
 	 * @param postPasser The function to be used for post passing the optimizer's plan and setting the
 	 *                   data type specific serialization routines.
 	 * @return The optimized plan.
@@ -531,19 +524,18 @@ public class PactCompiler {
 	 *         Thrown, if the plan is invalid or the optimizer encountered an inconsistent
 	 *         situation during the compilation process.
 	 */
-	private OptimizedPlan compile(Plan program, InstanceTypeDescription type, OptimizerPostPass postPasser) throws CompilerException {
-		if (program == null || type == null || postPasser == null)
+	private OptimizedPlan compile(Plan program, OptimizerPostPass postPasser) throws CompilerException {
+		if (program == null || postPasser == null)
 			throw new NullPointerException();
 		
 		
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Beginning compilation of program '" + program.getJobName() + '\'');
 		}
-		
-		final String instanceName = type.getInstanceType().getIdentifier();
-		
+
+		//TODO relative memory
 		// we subtract some percentage of the memory to accommodate for rounding errors
-		final long memoryPerInstance = (long) (type.getHardwareDescription().getSizeOfFreeMemory() * 0.96f);
+		final long memoryPerInstance = 64*1024*1024;
 
 		// set the default degree of parallelism
 		int defaultParallelism = program.getDefaultParallelism() > 0 ?
@@ -630,8 +622,7 @@ public class PactCompiler {
 
 		// finalize the plan
 		OptimizedPlan plan = new PlanFinalizer().createFinalPlan(bestPlanSinks, program.getJobName(), program, memoryPerInstance);
-		plan.setInstanceTypeName(instanceName);
-		
+
 		// swap the binary unions for n-ary unions. this changes no strategies or memory consumers whatsoever, so
 		// we can do this after the plan finalization
 		plan.accept(new BinaryUnionReplacer());
@@ -1377,184 +1368,6 @@ public class PactCompiler {
 			throw new CompilerException("Cannot load Optimizer post-pass class '" + className + "'.", cnfex);
 		} catch (ClassCastException ccex) {
 			throw new CompilerException("Class '" + className + "' is not an optimizer post passer.", ccex);
-		}
-	}
-
-	private InstanceTypeDescription getInstanceTypeInfo() {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Connecting compiler to JobManager to dertermine instance information.");
-		}
-		
-		// create the connection in a separate thread, such that this thread
-		// can abort, if an unsuccessful connection occurs.
-		Map<InstanceType, InstanceTypeDescription> instances = null;
-		
-		JobManagerConnector jmc = new JobManagerConnector(this.jobManagerAddress);
-		Thread connectorThread = new Thread(jmc, "Compiler - JobManager connector.");
-		connectorThread.setDaemon(true);
-		connectorThread.start();
-
-		// connect and get the result
-		try {
-			jmc.waitForCompletion();
-			instances = jmc.instances;
-			if (instances == null) {
-				throw new NullPointerException("Returned instance map is <null>");
-			}
-		}
-		catch (IOException e) {
-			throw new CompilerException(e.getMessage());
-		}
-		catch (Throwable t) {
-			throw new CompilerException("Cannot connect to the JobManager to determine the available TaskManagers. "
-					+ "Check if the JobManager is running (using the web interface or log files). Reason: " + 
-				t.getMessage(), t);
-		}
-
-		// determine which type to run on
-		return getType(instances);
-	}
-	
-	/**
-	 * This utility method picks the instance type to be used for executing programs.
-	 * <p>
-	 * 
-	 * @param types The available types.
-	 * @return The type to be used for scheduling.
-	 * 
-	 * @throws CompilerException
-	 * @throws IllegalArgumentException
-	 */
-	private InstanceTypeDescription getType(Map<InstanceType, InstanceTypeDescription> types)
-	throws CompilerException
-	{
-		if (types == null || types.size() < 1) {
-			throw new IllegalArgumentException("No instance type found.");
-		}
-		
-		InstanceTypeDescription retValue = null;
-		long totalMemory = 0;
-		int numInstances = 0;
-		
-		final Iterator<InstanceTypeDescription> it = types.values().iterator();
-		while(it.hasNext())
-		{
-			final InstanceTypeDescription descr = it.next();
-			
-			// skip instances for which no hardware description is available
-			// this means typically that no 
-			if (descr.getHardwareDescription() == null || descr.getInstanceType() == null) {
-				continue;
-			}
-			
-			final int curInstances = descr.getMaximumNumberOfAvailableInstances();
-			final long curMemory = curInstances * descr.getHardwareDescription().getSizeOfFreeMemory();
-			
-			// get, if first, or if it has more instances and not less memory, or if it has significantly more memory
-			// and the same number of cores still
-			if ( (retValue == null) ||
-				 (curInstances > numInstances && (int) (curMemory * 1.2f) > totalMemory) ||
-				 (curInstances * retValue.getInstanceType().getNumberOfCores() >= numInstances && 
-							(int) (curMemory * 1.5f) > totalMemory)
-				)
-			{
-				retValue = descr;
-				numInstances = curInstances;
-				totalMemory = curMemory;
-			}
-		}
-		
-		if (retValue == null) {
-			throw new CompilerException("No instance currently registered at the job-manager. Retry later.\n" +
-				"If the system has recently started, it may take a few seconds until the instances register.");
-		}
-		
-		return retValue;
-	}
-	
-	/**
-	 * Utility class for an asynchronous connection to the job manager to determine the available instances.
-	 */
-	private static final class JobManagerConnector implements Runnable {
-		
-		private static final long MAX_MILLIS_TO_WAIT = 10000;
-		
-		private final InetSocketAddress jobManagerAddress;
-		
-		private final Object lock = new Object();
-		
-		private volatile Map<InstanceType, InstanceTypeDescription> instances;
-		
-		private volatile Throwable error;
-		
-		
-		private JobManagerConnector(InetSocketAddress jobManagerAddress) {
-			this.jobManagerAddress = jobManagerAddress;
-		}
-		
-		
-		public Map<InstanceType, InstanceTypeDescription> waitForCompletion() throws Throwable {
-			long start = System.currentTimeMillis();
-			long remaining = MAX_MILLIS_TO_WAIT;
-			
-			if (this.error != null) {
-				throw this.error;
-			}
-			if (this.instances != null) {
-				return this.instances;
-			}
-			
-			do {
-				try {
-					synchronized (this.lock) {
-						this.lock.wait(remaining);
-					}
-				} catch (InterruptedException iex) {}
-			}
-			while (this.error == null && this.instances == null &&
-					(remaining = MAX_MILLIS_TO_WAIT + start - System.currentTimeMillis()) > 0);
-			
-			if (this.error != null) {
-				throw this.error;
-			}
-			if (this.instances != null) {
-				return this.instances;
-			}
-			
-			throw new IOException("Could not connect to the JobManager at " + jobManagerAddress + 
-				". Please make sure that the Job Manager is started properly.");
-		}
-		
-
-		@Override
-		public void run() {
-			ExtendedManagementProtocol jobManagerConnection = null;
-
-			try {
-				jobManagerConnection = RPC.getProxy(ExtendedManagementProtocol.class,
-					this.jobManagerAddress, NetUtils.getSocketFactory());
-
-				this.instances = jobManagerConnection.getMapOfAvailableInstanceTypes();
-				if (this.instances == null) {
-					throw new IOException("Returned instance map was <null>");
-				}
-			} catch (Throwable t) {
-				this.error = t;
-			} finally {
-				// first of all, signal completion
-				synchronized (this.lock) {
-					this.lock.notifyAll();
-				}
-				
-				if (jobManagerConnection != null) {
-					try {
-						RPC.stopProxy(jobManagerConnection);
-					} catch (Throwable t) {
-						LOG.error("Could not cleanly shut down connection from compiler to job manager,", t);
-					}
-				}
-				jobManagerConnection = null;
-			}
 		}
 	}
 }

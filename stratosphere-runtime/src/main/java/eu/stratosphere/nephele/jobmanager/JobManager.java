@@ -539,7 +539,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		}
 
 		try {
-			this.scheduler.schedulJob(eg);
+			this.scheduler.scheduleJob(eg);
 		} catch (SchedulingException e) {
 			unregisterJob(eg);
 			JobSubmissionResult result = new JobSubmissionResult(AbstractJobResult.ReturnCode.ERROR, e.getMessage());
@@ -574,10 +574,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				this.profiler.unregisterFromProfilingData(executionGraph.getJobID(), this.eventCollector);
 			}
 		}
-
-		// Cancel all pending requests for instances
-		this.instanceManager.cancelPendingRequests(executionGraph.getJobID()); // getJobID is final member, no
-																				// synchronization necessary
 
 		// Remove job from input split manager
 		if (this.inputSplitManager != null) {
@@ -615,12 +611,13 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 	@Override
 	public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
-									final HardwareDescription hardwareDescription){
+									final HardwareDescription hardwareDescription, final IntegerRecord numberOfSlots){
 		if(this.instanceManager != null) {
 			final Runnable registerTaskManagerRunnable = new Runnable() {
 				@Override
 				public void run(){
-					instanceManager.registerTaskManager(instanceConnectionInfo, hardwareDescription);
+					instanceManager.registerTaskManager(instanceConnectionInfo, hardwareDescription,
+							numberOfSlots.getValue());
 				}
 			};
 
@@ -993,16 +990,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	}
 
 
-	public Map<InstanceType, InstanceTypeDescription> getMapOfAvailableInstanceTypes() {
-
-		// Delegate call to the instance manager
-		if (this.instanceManager != null) {
-			return this.instanceManager.getMapOfAvailableInstanceTypes();
-		}
-
-		return null;
-	}
-
 
 	@Override
 	public void jobStatusHasChanged(final ExecutionGraph executionGraph, final InternalJobStatus newJobStatus,
@@ -1074,6 +1061,11 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		// Hand over to the executor service
 		this.executorService.execute(requestRunnable);
+	}
+
+	@Override
+	public int getAvailableSlots() {
+		return getInstanceManager().getNumberOfSlots();
 	}
 
 

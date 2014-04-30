@@ -13,9 +13,11 @@
 
 package eu.stratosphere.client.minicluster;
 
+import java.io.IOError;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import eu.stratosphere.nephele.instance.InstanceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -207,8 +209,7 @@ public class NepheleMiniCluster {
 	// ------------------------------------------------------------------------
 	
 	private void waitForJobManagerToBecomeReady() throws InterruptedException {
-		Map<InstanceType, InstanceTypeDescription> instanceMap;
-		while ((instanceMap = jobManager.getMapOfAvailableInstanceTypes()) == null || instanceMap.isEmpty()) {
+		while (jobManager.getAvailableSlots() == 0) {
 			Thread.sleep(50);
 		}
 	}

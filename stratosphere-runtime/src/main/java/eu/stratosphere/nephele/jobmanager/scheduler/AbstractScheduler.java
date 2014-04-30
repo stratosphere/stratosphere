@@ -105,7 +105,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 	 * @throws SchedulingException
 	 *         thrown if an error occurs and the scheduler does not accept the new job
 	 */
-	public abstract void schedulJob(ExecutionGraph executionGraph) throws SchedulingException;
+	public abstract void scheduleJob(ExecutionGraph executionGraph) throws SchedulingException;
 
 	/**
 	 * Returns the execution graph which is associated with the given job ID.
@@ -145,26 +145,15 @@ public abstract class AbstractScheduler implements InstanceListener {
 	protected void requestInstances(final ExecutionStage executionStage) throws InstanceException {
 
 		final ExecutionGraph executionGraph = executionStage.getExecutionGraph();
-		final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
 
 		synchronized (executionStage) {
 
-			executionStage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
+			final int requiredSlots = executionStage.getMaxNumberSubtasks();
 
-			final Iterator<Map.Entry<InstanceType, Integer>> it = instanceRequestMap.getMinimumIterator();
-			LOG.info("Requesting the following instances for job " + executionGraph.getJobID());
-			while (it.hasNext()) {
-				final Map.Entry<InstanceType, Integer> entry = it.next();
-				LOG.info(" " + entry.getKey() + " [" + entry.getValue().intValue() + ", "
-					+ instanceRequestMap.getMaximumNumberOfInstances(entry.getKey()) + "]");
-			}
-
-			if (instanceRequestMap.isEmpty()) {
-				return;
-			}
+			LOG.info("Requesting " + requiredSlots + " for job " + executionGraph.getJobID());
 
 			this.instanceManager.requestInstance(executionGraph.getJobID(), executionGraph.getJobConfiguration(),
-				instanceRequestMap, null);
+				requiredSlots);
 
 			// Switch vertex state to assigning
 			final ExecutionGraphIterator it2 = new ExecutionGraphIterator(executionGraph, executionGraph
@@ -430,12 +419,8 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 								if (vertex.getExecutionState() == ExecutionState.SCHEDULED
 									&& vertex.getAllocatedResource() != null) {
-									// In local mode, we do not consider any topology, only the instance type
-									if (vertex.getAllocatedResource().getInstanceType().equals(
-										allocatedResource.getInstanceType())) {
 										resourceToBeReplaced = vertex.getAllocatedResource();
 										break;
-									}
 								}
 							}
 
@@ -594,11 +579,9 @@ public abstract class AbstractScheduler implements InstanceListener {
 						Iterator<ExecutionVertex> vertexIter = allocatedResource.assignedVertices();
 
 						// Assign vertices back to a dummy resource.
-						final DummyInstance dummyInstance = DummyInstance.createDummyInstance(allocatedResource
-							.getInstance()
-							.getType());
+						final DummyInstance dummyInstance = DummyInstance.createDummyInstance();
 						final AllocatedResource dummyResource = new AllocatedResource(dummyInstance,
-							allocatedResource.getInstanceType(), new AllocationID());
+								new AllocationID());
 
 						while (vertexIter.hasNext()) {
 							final ExecutionVertex vertex = vertexIter.next();

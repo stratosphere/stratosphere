@@ -16,9 +16,7 @@ package eu.stratosphere.nephele.jobmanager.scheduler.local;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Map;
 
-import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
 import eu.stratosphere.nephele.executiongraph.ExecutionGraphIterator;
 import eu.stratosphere.nephele.executiongraph.ExecutionStage;
@@ -28,9 +26,6 @@ import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.executiongraph.JobStatusListener;
 import eu.stratosphere.nephele.instance.InstanceException;
 import eu.stratosphere.nephele.instance.InstanceManager;
-import eu.stratosphere.nephele.instance.InstanceRequestMap;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobmanager.DeploymentManager;
 import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
@@ -86,38 +81,14 @@ public class LocalScheduler extends AbstractScheduler implements JobStatusListen
 
 
 	@Override
-	public void schedulJob(final ExecutionGraph executionGraph) throws SchedulingException {
+	public void scheduleJob(final ExecutionGraph executionGraph) throws SchedulingException {
 
-		// Get Map of all available Instance types
-		final Map<InstanceType, InstanceTypeDescription> availableInstances = getInstanceManager()
-				.getMapOfAvailableInstanceTypes();
+		final int availableNumberOfSlots = getInstanceManager().getNumberOfSlots();
+		final int requiredNumberOfSlots = executionGraph.getMaxNumberSubtasks();
 
-		final Iterator<ExecutionStage> stageIt = executionGraph.iterator();
-		while (stageIt.hasNext()) {
-
-			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
-			final ExecutionStage stage = stageIt.next();
-			stage.collectRequiredInstanceTypes(instanceRequestMap, ExecutionState.CREATED);
-
-			// Iterator over required Instances
-			final Iterator<Map.Entry<InstanceType, Integer>> it = instanceRequestMap.getMinimumIterator();
-			while (it.hasNext()) {
-
-				final Map.Entry<InstanceType, Integer> entry = it.next();
-
-				final InstanceTypeDescription descr = availableInstances.get(entry.getKey());
-				if (descr == null) {
-					throw new SchedulingException("Unable to schedule job: No instance of type " + entry.getKey()
-							+ " available");
-				}
-
-				if (descr.getMaximumNumberOfAvailableInstances() != -1
-						&& descr.getMaximumNumberOfAvailableInstances() < entry.getValue().intValue()) {
-					throw new SchedulingException("Unable to schedule job: " + entry.getValue().intValue()
-							+ " instances of type " + entry.getKey() + " required, but only "
-							+ descr.getMaximumNumberOfAvailableInstances() + " are available");
-				}
-			}
+		if(availableNumberOfSlots < requiredNumberOfSlots){
+			throw new SchedulingException("Unable to schedule job: Required number of slots " + requiredNumberOfSlots
+					+ " exceeds available number of slots " + availableNumberOfSlots + ".");
 		}
 
 		// Subscribe to job status notifications

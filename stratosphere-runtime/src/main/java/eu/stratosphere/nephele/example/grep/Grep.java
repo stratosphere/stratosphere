@@ -39,17 +39,14 @@ public class Grep {
 		JobFileInputVertex input = new JobFileInputVertex("Input 1", jobGraph);
 		input.setFileInputClass(FileLineReader.class);
 		input.setFilePath(new Path("file:///home/ec2-user/test.txt"));
-		input.setInstanceType("t1.micro");
-		
+
 		JobTaskVertex task1 = new JobTaskVertex("Task 1", jobGraph);
 		task1.setTaskClass(GrepTask.class);
-		task1.setInstanceType("t1.micro");
 
 		
 		JobFileOutputVertex output = new JobFileOutputVertex("Output 1", jobGraph);
 		output.setFileOutputClass(FileLineWriter.class);
 		output.setFilePath(new Path("file:///tmp/"));
-		output.setInstanceType("t1.micro");
 
 		try {
 

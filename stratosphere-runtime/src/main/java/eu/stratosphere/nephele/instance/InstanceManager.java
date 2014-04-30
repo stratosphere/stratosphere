@@ -13,9 +13,6 @@
 
 package eu.stratosphere.nephele.instance;
 
-import java.util.List;
-import java.util.Map;
-
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkTopology;
@@ -37,15 +34,12 @@ public interface InstanceManager {
 	 *        the ID of the job this instance is requested for
 	 * @param conf
 	 *        a configuration object including additional request information (e.g. credentials)
-	 * @param instanceRequestMap
-	 *        a map specifying the instances requested by this call
-	 * @param count
-	 *        the number of instances
+	 * @param requiredSlots
+	 *        the number of required slots
 	 * @throws InstanceException
 	 *         thrown if an error occurs during the instance request
 	 */
-	void requestInstance(JobID jobID, Configuration conf, InstanceRequestMap instanceRequestMap,
-			List<String> splitAffinityList) throws InstanceException;
+	void requestInstance(JobID jobID, Configuration conf, int requiredSlots) throws InstanceException;
 
 	/**
 	 * Releases an allocated resource from a job.
@@ -63,25 +57,6 @@ public interface InstanceManager {
 			throws InstanceException;
 
 	/**
-	 * Suggests a suitable instance type according to the provided hardware characteristics.
-	 * 
-	 * @param minNumComputeUnits
-	 *        the minimum number of compute units
-	 * @param minNumCPUCores
-	 *        the minimum number of CPU cores
-	 * @param minMemorySize
-	 *        the minimum number of main memory (in MB)
-	 * @param minDiskCapacity
-	 *        the minimum hard disk capacity (in GB)
-	 * @param maxPricePerHour
-	 *        the maximum price per hour for the instance
-	 * @return the instance type matching the requested hardware profile best or <code>null</code> if no such instance
-	 *         type is available
-	 */
-	InstanceType getSuitableInstanceType(int minNumComputeUnits, int minNumCPUCores, int minMemorySize,
-			int minDiskCapacity, int maxPricePerHour);
-
-	/**
 	 * Reports a heart beat message of an instance.
 	 * 
 	 * @param instanceConnectionInfo
@@ -96,24 +71,10 @@ public interface InstanceManager {
 	 *                                  message
 	 * @param hardwareDescription the {@link eu.stratosphere.nephele.instance.HardwareDescription} object attached to
 	 *                               the register task manager message
+	 * @param numberOfSlots number of available slots on the instance
 	 */
-	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription);
-
-	/**
-	 * Translates the name of an instance type to the corresponding instance type object.
-	 * 
-	 * @param instanceTypeName
-	 *        the name of the instance type
-	 * @return the instance type object matching the name or <code>null</code> if no such instance type exists
-	 */
-	InstanceType getInstanceTypeByName(String instanceTypeName);
-
-	/**
-	 * Returns the default instance type used by the instance manager.
-	 * 
-	 * @return the default instance type
-	 */
-	InstanceType getDefaultInstanceType();
+	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo, HardwareDescription hardwareDescription,
+							 int numberOfSlots);
 
 	/**
 	 * Returns the network topology for the job with the given ID. The network topology
@@ -137,15 +98,10 @@ public interface InstanceManager {
 	void setInstanceListener(InstanceListener instanceListener);
 
 	/**
-	 * Returns a map of all instance types which are currently available to Nephele. The map contains a description of
-	 * the hardware characteristics for each instance type as provided in the configuration file. Moreover, it contains
-	 * the actual hardware description as reported by task managers running on the individual instances. If available,
-	 * the map also contains the maximum number instances Nephele can allocate of each instance type (i.e. if no other
-	 * job occupies instances).
-	 * 
-	 * @return a list of all instance types available to Nephele
+	 * Returns the number of task slots of all registered task managers
+	 * @return
 	 */
-	Map<InstanceType, InstanceTypeDescription> getMapOfAvailableInstanceTypes();
+	int getNumberOfSlots();
 
 	/**
 	 * Returns the {@link AbstractInstance} with the given name.
@@ -155,14 +111,6 @@ public interface InstanceManager {
 	 * @return the instance with the given name or <code>null</code> if no such instance could be found
 	 */
 	AbstractInstance getInstanceByName(String name);
-
-	/**
-	 * Cancels all pending instance requests that might still exist for the job with the given ID.
-	 * 
-	 * @param jobID
-	 *        the ID of the job to cancel the pending instance requests for
-	 */
-	void cancelPendingRequests(JobID jobID);
 
 	/**
 	 * Shuts the instance manager down and stops all its internal processes.
