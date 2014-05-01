@@ -86,6 +86,13 @@ public interface MemoryManager {
 	 * @return The number of pages to which 
 	 */
 	int computeNumberOfPages(double fraction);
+
+	/**
+	 * Computes the memory size of the fraction per slot.
+	 * @param fraction
+	 * @return
+	 */
+	long computeMemorySize(double fraction);
 	
 	/**
 	 * Rounds the given value down to a multiple of the memory manager's page size.

@@ -1168,6 +1168,16 @@ public class TaskConfig {
 		public void setFloat(String key, float value) {
 			this.backingConfig.setFloat(this.prefix + key, value);
 		}
+
+		@Override
+		public double getDouble(String key, double defaultValue) {
+			return this.backingConfig.getDouble(this.prefix + key, defaultValue);
+		}
+
+		@Override
+		public void setDouble(String key, double value) {
+			this.backingConfig.setDouble(this.prefix + key, value);
+		}
 		
 		@Override
 		public byte[] getBytes(final String key, final byte[] defaultValue) {

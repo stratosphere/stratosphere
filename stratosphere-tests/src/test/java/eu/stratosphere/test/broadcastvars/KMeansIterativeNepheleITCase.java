@@ -59,6 +59,8 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 	private static final int ITERATION_ID = 42;
 	
 	private static final int MEMORY_PER_CONSUMER = 2;
+
+	private static final double MEMORY_FRACTION_PER_CONSUMER = (double)MEMORY_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE;
 	
 	protected String dataPath;
 	protected String clusterPath;
@@ -163,7 +165,7 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 		headConfig.setInputSerializer(serializer, 0);
 		
 		// back channel / iterations
-		headConfig.setBackChannelMemory(MEMORY_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+		headConfig.setRelativeBackChannelMemory(MEMORY_FRACTION_PER_CONSUMER);
 		
 		// output into iteration. broadcasting the centers
 		headConfig.setOutputSerializer(serializer);
@@ -235,7 +237,7 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 
 		tailConfig.setInputLocalStrategy(0, LocalStrategy.SORT);
 		tailConfig.setInputComparator(inputComparator, 0);
-		tailConfig.setMemoryInput(0, MEMORY_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+		tailConfig.setRelativeMemoryInput(0, MEMORY_FRACTION_PER_CONSUMER);
 		tailConfig.setFilehandlesInput(0, 128);
 		tailConfig.setSpillingThresholdInput(0, 0.9f);
 		
@@ -293,7 +295,8 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 		JobGraphUtils.connect(head, mapper, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
 		new TaskConfig(mapper.getConfiguration()).setBroadcastGateIterativeWithNumberOfEventsUntilInterrupt(0, numSubTasks);
 		new TaskConfig(mapper.getConfiguration()).setInputCached(0, true);
-		new TaskConfig(mapper.getConfiguration()).setInputMaterializationMemory(0, MEMORY_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+		new TaskConfig(mapper.getConfiguration()).setRelativeInputMaterializationMemory(0,
+				MEMORY_FRACTION_PER_CONSUMER);
 
 		JobGraphUtils.connect(mapper, reducer, ChannelType.NETWORK, DistributionPattern.BIPARTITE);
 		new TaskConfig(reducer.getConfiguration()).setGateIterativeWithNumberOfEventsUntilInterrupt(0, numSubTasks);

@@ -82,6 +82,8 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	private static final long MEM_PER_CONSUMER = 3;
 
+	private static final double MEM_FRAC_PER_CONSUMER = (double)MEM_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE;
+
 	protected String verticesPath;
 
 	protected String edgesPath;
@@ -234,7 +236,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			headConfig.setInputComparator(comparator, 1);
 			headConfig.setInputLocalStrategy(1, LocalStrategy.NONE);
 			headConfig.setInputCached(1, true);
-			headConfig.setInputMaterializationMemory(1, MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			headConfig.setRelativeInputMaterializationMemory(1, MEM_FRAC_PER_CONSUMER);
 
 			// initial solution set input
 			headConfig.addInputToGroup(2);
@@ -248,8 +250,8 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 			// back channel / iterations
 			headConfig.setIsWorksetIteration();
-			headConfig.setBackChannelMemory(MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
-			headConfig.setSolutionSetMemory(MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			headConfig.setRelativeBackChannelMemory(MEM_FRAC_PER_CONSUMER);
+			headConfig.setRelativeSolutionSetMemory(MEM_FRAC_PER_CONSUMER );
 
 			// output into iteration
 			headConfig.setOutputSerializer(serializer);
@@ -273,7 +275,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			headConfig.setDriverComparator(comparator, 0);
 			headConfig.setDriverComparator(comparator, 1);
 			headConfig.setDriverPairComparator(pairComparator);
-			headConfig.setMemoryDriver(MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			headConfig.setRelativeMemoryDriver(MEM_FRAC_PER_CONSUMER);
 
 			headConfig.addIterationAggregator(
 				WorksetEmptyConvergenceCriterion.AGGREGATOR_NAME, LongSumAggregator.class);
@@ -297,7 +299,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			intermediateConfig.setInputSerializer(serializer, 0);
 			intermediateConfig.setInputComparator(comparator, 0);
 			intermediateConfig.setInputLocalStrategy(0, LocalStrategy.SORT);
-			intermediateConfig.setMemoryInput(0, MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			intermediateConfig.setRelativeMemoryInput(0, MEM_FRAC_PER_CONSUMER);
 			intermediateConfig.setFilehandlesInput(0, 64);
 			intermediateConfig.setSpillingThresholdInput(0, 0.85f);
 
@@ -520,7 +522,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			ssTailConfig.addInputToGroup(0);
 			ssTailConfig.setInputSerializer(serializer, 0);
 			ssTailConfig.setInputAsynchronouslyMaterialized(0, true);
-			ssTailConfig.setInputMaterializationMemory(0, MEM_PER_CONSUMER * JobGraphUtils.MEGABYTE);
+			ssTailConfig.setRelativeInputMaterializationMemory(0, MEM_FRAC_PER_CONSUMER);
 
 			// output
 			ssTailConfig.addOutputShipStrategy(ShipStrategyType.FORWARD);

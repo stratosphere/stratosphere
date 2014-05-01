@@ -64,8 +64,9 @@ public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
 	throws IOException, MemoryAllocationException
 	{
 		super(memoryManager, null, input, parentTask, serializer, comparator, fractionMemory,
-			fractionMemory < 2 * MIN_NUM_SORT_MEM_SEGMENTS * memoryManager.getPageSize() ? 1 :
-				Math.max((int) Math.ceil(((double) fractionMemory) / MAX_MEM_PER_PARTIAL_SORT), 2),
+			memoryManager.computeNumberOfPages(fractionMemory) < 2 * MIN_NUM_SORT_MEM_SEGMENTS ? 1 :
+				Math.max((int) Math.ceil(((double) memoryManager.computeMemorySize(fractionMemory)) /
+						MAX_MEM_PER_PARTIAL_SORT),	2),
 			2, 0.0f, true);
 	}
 	

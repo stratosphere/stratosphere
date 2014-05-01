@@ -46,9 +46,9 @@ import eu.stratosphere.util.LogUtils;
 
 public abstract class AbstractTestBase {
 	
-	private static final int MINIMUM_HEAP_SIZE_MB = 192;
+	protected static final int MINIMUM_HEAP_SIZE_MB = 192;
 	
-	private static final long TASK_MANAGER_MEMORY_SIZE = 80;
+	protected static final long TASK_MANAGER_MEMORY_SIZE = 80;
 
 	
 	protected final Configuration config;

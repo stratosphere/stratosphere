@@ -65,7 +65,6 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 		RegularPactTask.openUserCode(this.combiner, stubConfig);
 		
 		// ----------------- Set up the asynchronous sorter -------------------------
-		
 		final DriverStrategy ds = this.config.getDriverStrategy();
 		
 		final MemoryManager memoryManager = this.parent.getEnvironment().getMemoryManager();

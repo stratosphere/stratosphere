@@ -374,6 +374,11 @@ public class DefaultMemoryManager implements MemoryManager {
 	}
 
 	@Override
+	public long computeMemorySize(double fraction) {
+		return this.pageSize*computeNumberOfPages(fraction);
+	}
+
+	@Override
 	public long roundDownToPageSizeMultiple(long numBytes) {
 		return numBytes & this.roundingMask;
 	}
