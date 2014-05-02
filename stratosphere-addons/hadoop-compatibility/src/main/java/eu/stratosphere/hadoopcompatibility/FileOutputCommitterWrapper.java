@@ -33,6 +33,8 @@ import java.net.URI;
  */
 public class FileOutputCommitterWrapper extends FileOutputCommitter implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	static final String SUCCESSFUL_JOB_OUTPUT_DIR_MARKER =
 		"mapreduce.fileoutputcommitter.marksuccessfuljobs";
 

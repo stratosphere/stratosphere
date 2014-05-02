@@ -37,7 +37,7 @@ import org.apache.commons.lang3.Validate;
  * @see java.lang.String
  * @see java.lang.CharSequence
  */
-public class StringValue implements Key, NormalizableKey, CharSequence, ResettableValue<StringValue>, 
+public class StringValue implements NormalizableKey<StringValue>, CharSequence, ResettableValue<StringValue>, 
         CopyableValue<StringValue>, Appendable {
 	private static final long serialVersionUID = 1L;
 	
@@ -529,7 +529,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	}
 
 	@Override
-	public int compareTo(final Key o) {
+	public int compareTo(StringValue o) {
 		if (o instanceof StringValue) {
 			StringValue other = (StringValue) o;
 
