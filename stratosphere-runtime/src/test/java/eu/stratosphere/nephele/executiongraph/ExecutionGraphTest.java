@@ -66,11 +66,6 @@ import eu.stratosphere.util.LogUtils;
 public class ExecutionGraphTest {
 
 	/**
-	 * The name of the default instance type used during these tests.
-	 */
-	private static final String DEFAULT_INSTANCE_TYPE_NAME = "test";
-
-	/**
 	 * A test implementation of an {@link InstanceManager} which is used as a stub in these tests.
 	 * 
 	 */
@@ -156,8 +151,6 @@ public class ExecutionGraphTest {
 
 	}
 
-	private static final InstanceManager INSTANCE_MANAGER = new TestInstanceManager();
-
 	@BeforeClass
 	public static void reduceLogLevel() {
 		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
@@ -207,7 +200,7 @@ public class ExecutionGraphTest {
 
 			LibraryCacheManager.register(jobID, new String[0]);
 
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, -1);
 
 			// test all methods of ExecutionGraph
 			final ExecutionStage executionStage = eg.getCurrentExecutionStage();
@@ -407,7 +400,7 @@ public class ExecutionGraphTest {
 			LibraryCacheManager.register(jobID, new String[0]);
 
 			// now convert job graph to execution graph
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			// test instance types in ExecutionGraph
 			final ExecutionStage executionStage = eg.getCurrentExecutionStage();
@@ -531,7 +524,7 @@ public class ExecutionGraphTest {
 
 			LibraryCacheManager.register(jobID, new String[0]);
 
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			// test instance types in ExecutionGraph
 			final ExecutionStage executionStage = eg.getCurrentExecutionStage();
@@ -777,7 +770,7 @@ public class ExecutionGraphTest {
 			LibraryCacheManager.register(jobID, new String[0]);
 
 			// now convert job graph to execution graph
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			// test instance types in ExecutionGraph
 			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
@@ -880,7 +873,7 @@ public class ExecutionGraphTest {
 			LibraryCacheManager.register(jobID, new String[0]);
 
 			// now convert job graph to execution graph
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			assertEquals(1, eg.getNumberOfStages());
 
@@ -1027,7 +1020,7 @@ public class ExecutionGraphTest {
 			LibraryCacheManager.register(jobID, new String[0]);
 
 			// now convert job graph to execution graph
-			final ExecutionGraph eg = new ExecutionGraph(jg, INSTANCE_MANAGER);
+			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			// Check number of stages
 			assertEquals(1, eg.getNumberOfStages());

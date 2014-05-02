@@ -16,6 +16,7 @@ package eu.stratosphere.test.iterative.nephele;
 import java.io.BufferedReader;
 import java.util.Collection;
 
+import eu.stratosphere.configuration.ConfigConstants;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -82,7 +83,9 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	private static final long MEM_PER_CONSUMER = 3;
 
-	private static final double MEM_FRAC_PER_CONSUMER = (double)MEM_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE;
+	private static final int DOP = 4;
+
+	private static final double MEM_FRAC_PER_CONSUMER = (double)MEM_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE*DOP;
 
 	protected String verticesPath;
 
@@ -92,6 +95,8 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	public ConnectedComponentsNepheleITCase(Configuration config) {
 		super(config);
+
+		this.config.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, DOP);
 	}
 
 	@Parameters
@@ -120,20 +125,19 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	@Override
 	protected JobGraph getJobGraph() throws Exception {
-		int dop = 4;
 		int maxIterations = 100;
 
 		int type = config.getInteger("testcase", 0);
 		switch (type) {
 		case 1:
-			return createJobGraphUnifiedTails(verticesPath, edgesPath, resultPath, dop, maxIterations);
+			return createJobGraphUnifiedTails(verticesPath, edgesPath, resultPath, DOP, maxIterations);
 		case 2:
-			return createJobGraphSeparateTails(verticesPath, edgesPath, resultPath, dop, maxIterations);
+			return createJobGraphSeparateTails(verticesPath, edgesPath, resultPath, DOP, maxIterations);
 		case 3:
-			return createJobGraphIntermediateWorksetUpdateAndSolutionSetTail(verticesPath, edgesPath, resultPath, dop,
+			return createJobGraphIntermediateWorksetUpdateAndSolutionSetTail(verticesPath, edgesPath, resultPath, DOP,
 				maxIterations);
 		case 4:
-			return createJobGraphSolutionSetUpdateAndWorksetTail(verticesPath, edgesPath, resultPath, dop,
+			return createJobGraphSolutionSetUpdateAndWorksetTail(verticesPath, edgesPath, resultPath, DOP,
 				maxIterations);
 		default:
 			throw new RuntimeException("Broken test configuration");

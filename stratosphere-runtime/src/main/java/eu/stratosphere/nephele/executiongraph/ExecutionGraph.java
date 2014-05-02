@@ -160,18 +160,18 @@ public class ExecutionGraph implements ExecutionListener {
 	 * 
 	 * @param job
 	 *        the user's job graph
-	 * @param instanceManager
-	 *        the instance manager
+	 * @param defaultParallelism
+	 *        defaultParallelism in case that nodes have no parallelism set
 	 * @throws GraphConversionException
 	 *         thrown if the job graph is not valid and no execution graph can be constructed from it
 	 */
-	public ExecutionGraph(final JobGraph job, final InstanceManager instanceManager)
+	public ExecutionGraph(final JobGraph job, final int defaultParallelism)
 																					throws GraphConversionException {
 		this(job.getJobID(), job.getName(), job.getJobConfiguration());
 
 		// Start constructing the new execution graph from given job graph
 		try {
-			constructExecutionGraph(job, instanceManager);
+			constructExecutionGraph(job, defaultParallelism);
 		} catch (Exception e) {
 			throw new GraphConversionException(StringUtils.stringifyException(e));
 		}
@@ -250,12 +250,12 @@ public class ExecutionGraph implements ExecutionListener {
 	 * 
 	 * @param jobGraph
 	 *        the job graph to create the execution graph from
-	 * @param instanceManager
-	 *        the instance manager
+	 * @param defaultParallelism
+	 *        defaultParallelism in case that nodes have no parallelism set
 	 * @throws GraphConversionException
 	 *         thrown if the job graph is not valid and no execution graph can be constructed from it
 	 */
-	private void constructExecutionGraph(final JobGraph jobGraph, final InstanceManager instanceManager)
+	private void constructExecutionGraph(final JobGraph jobGraph, final int defaultParallelism)
 			throws GraphConversionException {
 
 		// Clean up temporary data structures
@@ -269,8 +269,11 @@ public class ExecutionGraph implements ExecutionListener {
 		// Convert job vertices to execution vertices and initialize them
 		final AbstractJobVertex[] all = jobGraph.getAllJobVertices();
 		for (int i = 0; i < all.length; i++) {
-			final ExecutionVertex createdVertex = createVertex(all[i], instanceManager, initialExecutionStage,
-				jobGraph.getJobConfiguration());
+			if(all[i].getNumberOfSubtasks() == -1){
+				all[i].setNumberOfSubtasks(defaultParallelism);
+			}
+
+			final ExecutionVertex createdVertex = createVertex(all[i], initialExecutionStage);
 			temporaryVertexMap.put(all[i], createdVertex);
 			temporaryGroupVertexMap.put(all[i], createdVertex.getGroupVertex());
 		}
@@ -445,18 +448,13 @@ public class ExecutionGraph implements ExecutionListener {
 	 * 
 	 * @param jobVertex
 	 *        the job vertex to create the execution vertex from
-	 * @param instanceManager
-	 *        the instanceManager
 	 * @param initialExecutionStage
 	 *        the initial execution stage all group vertices are added to
-	 * @param jobConfiguration
-	 *        the configuration object originally attached to the {@link JobGraph}
 	 * @return the new execution vertex
 	 * @throws GraphConversionException
 	 *         thrown if the job vertex is of an unknown subclass
 	 */
-	private ExecutionVertex createVertex(final AbstractJobVertex jobVertex, final InstanceManager instanceManager,
-			final ExecutionStage initialExecutionStage, final Configuration jobConfiguration)
+	private ExecutionVertex createVertex(final AbstractJobVertex jobVertex, final ExecutionStage initialExecutionStage)
 			throws GraphConversionException {
 
 		// Create an initial execution vertex for the job vertex
@@ -820,6 +818,28 @@ public class ExecutionGraph implements ExecutionListener {
 		}
 
 		return maxDegree;
+	}
+
+	/**
+	 * Retrieves the number of required slots to run this execution graph
+	 * @return
+	 */
+	public int getRequiredSlots(){
+		int maxRequiredSlots = 0;
+
+		final Iterator<ExecutionStage> stageIterator = this.stages.iterator();
+
+		while(stageIterator.hasNext()){
+			final ExecutionStage stage = stageIterator.next();
+
+			int requiredSlots = stage.getRequiredSlots();
+
+			if(requiredSlots > maxRequiredSlots){
+				maxRequiredSlots = requiredSlots;
+			}
+		}
+
+		return maxRequiredSlots;
 	}
 
 	/**

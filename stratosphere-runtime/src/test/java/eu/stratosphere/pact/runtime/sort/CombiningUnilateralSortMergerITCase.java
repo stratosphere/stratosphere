@@ -121,7 +121,7 @@ public class CombiningUnilateralSortMergerITCase {
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
 				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
-				64 * 1024 * 1024, 64, 0.7f);
+				0.25, 64, 0.7f);
 
 		final Record rec = new Record();
 		rec.setField(1, new IntValue(1));
@@ -162,7 +162,7 @@ public class CombiningUnilateralSortMergerITCase {
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
 				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
-				3 * 1024 * 1024, 64, 0.005f);
+				0.01, 64, 0.005f);
 
 		final Record rec = new Record();
 		rec.setField(1, new IntValue(1));
@@ -211,7 +211,7 @@ public class CombiningUnilateralSortMergerITCase {
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
 				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
-				64 * 1024 * 1024, 2, 0.7f);
+				0.25, 2, 0.7f);
 
 		// emit data
 		LOG.debug("emitting data");

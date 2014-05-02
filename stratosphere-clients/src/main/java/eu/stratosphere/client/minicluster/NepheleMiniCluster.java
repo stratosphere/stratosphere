@@ -13,11 +13,8 @@
 
 package eu.stratosphere.client.minicluster;
 
-import java.io.IOError;
 import java.lang.reflect.Method;
-import java.util.Map;
 
-import eu.stratosphere.nephele.instance.InstanceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -27,8 +24,6 @@ import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.client.JobClient;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.jobmanager.JobManager.ExecutionMode;
@@ -160,8 +155,12 @@ public class NepheleMiniCluster {
 		configuration.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, jobManagerRpcPort);
 		return new JobClient(jobGraph, configuration);
 	}
-	
+
 	public void start() throws Exception {
+		start(null);
+	}
+	
+	public void start(Configuration config) throws Exception {
 		synchronized (startStopLock) {
 			// set up the global configuration
 			if (this.configDir != null) {
@@ -170,6 +169,10 @@ public class NepheleMiniCluster {
 				Configuration conf = getMiniclusterDefaultConfig(jobManagerRpcPort, taskManagerRpcPort,
 					taskManagerDataPort, memorySize, hdfsConfigFile, lazyMemoryAllocation, defaultOverwriteFiles, defaultAlwaysCreateDirectory);
 				GlobalConfiguration.includeConfiguration(conf);
+			}
+
+			if(config != null){
+				GlobalConfiguration.includeConfiguration(config);
 			}
 			
 			// force the input/output format classes to load the default values from the configuration.

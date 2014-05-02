@@ -270,7 +270,7 @@ public final class ConfigConstants {
 	/**
 	 * The default degree of parallelism for operations.
 	 */
-	public static final int DEFAULT_PARALLELIZATION_DEGREE = -1;
+	public static final int DEFAULT_PARALLELIZATION_DEGREE = 1;
 
 	// ------------------------------ Runtime ---------------------------------
 	

@@ -165,19 +165,23 @@ public class JobManagerITCase {
 			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
 			i1.setFileInputClass(FileLineReader.class);
 			i1.setFilePath(new Path(new File(testDirectory).toURI()));
+			i1.setNumberOfSubtasks(1);
 
 			// task vertex 1
 			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
 			t1.setTaskClass(ForwardTask.class);
+			t1.setNumberOfSubtasks(1);
 
 			// task vertex 2
 			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
 			t2.setTaskClass(ForwardTask.class);
+			t2.setNumberOfSubtasks(1);
 
 			// output vertex
 			JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
 			o1.setFileOutputClass(FileLineWriter.class);
 			o1.setFilePath(new Path(outputFile.toURI()));
+			o1.setNumberOfSubtasks(1);
 
 			t1.setVertexToShareInstancesWith(i1);
 			t2.setVertexToShareInstancesWith(i1);
@@ -472,19 +476,23 @@ public class JobManagerITCase {
 			final JobFileInputVertex i1 = new JobFileInputVertex("Input 1", jg);
 			i1.setFileInputClass(FileLineReader.class);
 			i1.setFilePath(new Path(inputFile.toURI()));
+			i1.setNumberOfSubtasks(1);
 
 			// task vertex 1
 			final JobTaskVertex t1 = new JobTaskVertex("Task 1", jg);
 			t1.setTaskClass(ForwardTask.class);
+			t1.setNumberOfSubtasks(1);
 
 			// task vertex 2
 			final JobTaskVertex t2 = new JobTaskVertex("Task 2", jg);
 			t2.setTaskClass(ForwardTask.class);
+			t2.setNumberOfSubtasks(1);
 
 			// output vertex
 			JobFileOutputVertex o1 = new JobFileOutputVertex("Output 1", jg);
 			o1.setFileOutputClass(FileLineWriter.class);
 			o1.setFilePath(new Path(outputFile.toURI()));
+			o1.setNumberOfSubtasks(1);
 
 			t1.setVertexToShareInstancesWith(i1);
 			t2.setVertexToShareInstancesWith(i1);
@@ -746,6 +754,7 @@ public class JobManagerITCase {
 			JobFileOutputVertex o1 = new JobFileOutputVertex("Output", jg);
 			o1.setFileOutputClass(FileLineWriter.class);
 			o1.setFilePath(new Path(outputFile.toURI()));
+			o1.setNumberOfSubtasks(1);
 
 			i1.setVertexToShareInstancesWith(o1);
 			i2.setVertexToShareInstancesWith(o1);

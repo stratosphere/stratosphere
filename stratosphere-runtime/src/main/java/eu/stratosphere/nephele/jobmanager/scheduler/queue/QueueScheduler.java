@@ -94,7 +94,7 @@ public class QueueScheduler extends AbstractScheduler implements JobStatusListen
 	@Override
 	public void scheduleJob(final ExecutionGraph executionGraph) throws SchedulingException {
 
-		final int requiredSlots = executionGraph.getMaxNumberSubtasks();
+		final int requiredSlots = executionGraph.getRequiredSlots();
 		final int availableSlots = this.getInstanceManager().getNumberOfSlots();
 
 		if(requiredSlots > availableSlots){

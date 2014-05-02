@@ -46,7 +46,6 @@ public class DanglingPageRankNepheleITCase extends TestBase2 {
 	protected JobGraph getJobGraph() throws Exception {
 		String[] parameters = new String[] {
 			"4",
-			"4",
 			pagesWithRankPath,
 			edgesPath,
 			resultPath,

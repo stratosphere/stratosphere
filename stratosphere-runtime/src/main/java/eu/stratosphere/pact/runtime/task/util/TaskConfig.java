@@ -753,8 +753,8 @@ public class TaskConfig {
 		this.config.setDouble(ITERATION_HEAD_SOLUTION_SET_MEMORY, relativeMemory);
 	}
 
-	public long getSolutionSetMemory() {
-		long backChannelMemory = this.config.getLong(ITERATION_HEAD_SOLUTION_SET_MEMORY, 0);
+	public double getRelativeSolutionSetMemory() {
+		double backChannelMemory = this.config.getDouble(ITERATION_HEAD_SOLUTION_SET_MEMORY, 0);
 		if (backChannelMemory <= 0) {
 			throw new IllegalArgumentException();
 		}

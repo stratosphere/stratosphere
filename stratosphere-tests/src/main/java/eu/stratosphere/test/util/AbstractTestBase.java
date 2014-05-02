@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import eu.stratosphere.configuration.ConfigConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Level;
@@ -62,7 +63,7 @@ public abstract class AbstractTestBase {
 		verifyJvmOptions();
 		this.config = config;
 		this.tempFiles = new ArrayList<File>();
-		
+
 		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
 	}
 
@@ -83,7 +84,7 @@ public abstract class AbstractTestBase {
 		this.executor.setDefaultOverwriteFiles(true);
 		this.executor.setLazyMemoryAllocation(true);
 		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
-		this.executor.start();
+		this.executor.start(config);
 	}
 
 	@After

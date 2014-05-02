@@ -130,7 +130,8 @@ public class ReduceTaskExternalITCase extends DriverTestBase<GenericGroupReduce<
 		try {
 			sorter = new CombiningUnilateralSortMerger<Record>(new MockCombiningReduceStub(), 
 				getMemoryManager(), getIOManager(), new UniformRecordGenerator(keyCnt, valCnt, false), 
-				getOwningNepheleTask(), RecordSerializer.get(), this.comparator.duplicate(), this.perSortMem, 2, 0.8f);
+				getOwningNepheleTask(), RecordSerializer.get(), this.comparator.duplicate(), this.perSortFractionMem,
+					2, 0.8f);
 			addInput(sorter.getIterator());
 			
 			ReduceDriver<Record, Record> testTask = new ReduceDriver<Record, Record>();
@@ -174,7 +175,8 @@ public class ReduceTaskExternalITCase extends DriverTestBase<GenericGroupReduce<
 		try {
 			sorter = new CombiningUnilateralSortMerger<Record>(new MockCombiningReduceStub(), 
 				getMemoryManager(), getIOManager(), new UniformRecordGenerator(keyCnt, valCnt, false), 
-				getOwningNepheleTask(), RecordSerializer.get(), this.comparator.duplicate(), this.perSortMem, 2, 0.8f);
+				getOwningNepheleTask(), RecordSerializer.get(), this.comparator.duplicate(), this.perSortFractionMem,
+					2, 0.8f);
 			addInput(sorter.getIterator());
 			
 			ReduceDriver<Record, Record> testTask = new ReduceDriver<Record, Record>();

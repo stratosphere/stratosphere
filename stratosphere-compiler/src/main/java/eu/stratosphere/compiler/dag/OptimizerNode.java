@@ -397,7 +397,7 @@ public abstract class OptimizerNode implements Visitable<OptimizerNode>, Estimat
 	 * @param degreeOfParallelism
 	 *        The degree of parallelism to set.
 	 * @throws IllegalArgumentException
-	 *         If the degree of parallelism is smaller than one.
+	 *         If the degree of parallelism is smaller than one and not -1.
 	 */
 	public void setDegreeOfParallelism(int degreeOfParallelism) {
 		if (degreeOfParallelism < 1) {

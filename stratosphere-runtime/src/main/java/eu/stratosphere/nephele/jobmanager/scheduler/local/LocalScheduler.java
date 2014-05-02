@@ -84,7 +84,7 @@ public class LocalScheduler extends AbstractScheduler implements JobStatusListen
 	public void scheduleJob(final ExecutionGraph executionGraph) throws SchedulingException {
 
 		final int availableNumberOfSlots = getInstanceManager().getNumberOfSlots();
-		final int requiredNumberOfSlots = executionGraph.getMaxNumberSubtasks();
+		final int requiredNumberOfSlots = executionGraph.getRequiredSlots();
 
 		if(availableNumberOfSlots < requiredNumberOfSlots){
 			throw new SchedulingException("Unable to schedule job: Required number of slots " + requiredNumberOfSlots

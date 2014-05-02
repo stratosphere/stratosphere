@@ -506,7 +506,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		ExecutionGraph eg;
 
 		try {
-			eg = new ExecutionGraph(job, this.instanceManager);
+			eg = new ExecutionGraph(job, this.getAvailableSlots());
 		} catch (GraphConversionException gce) {
 			JobSubmissionResult result = new JobSubmissionResult(AbstractJobResult.ReturnCode.ERROR, gce.getMessage());
 			return result;

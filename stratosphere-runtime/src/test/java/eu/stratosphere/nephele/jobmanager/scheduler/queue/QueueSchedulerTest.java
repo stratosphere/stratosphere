@@ -99,11 +99,9 @@ public class QueueSchedulerTest {
 	 * 
 	 * @param channelType
 	 *        the channel type to connect the vertices with
-	 * @param instanceManager
-	 *        the instance manager that shall be used during the creation of the execution graph
 	 * @return a sample execution graph
 	 */
-	private ExecutionGraph createExecutionGraph(final ChannelType channelType, final InstanceManager instanceManager) {
+	private ExecutionGraph createExecutionGraph(final ChannelType channelType) {
 
 		final JobGraph jobGraph = new JobGraph("Job Graph");
 
@@ -123,7 +121,7 @@ public class QueueSchedulerTest {
 
 		try {
 			LibraryCacheManager.register(jobGraph.getJobID(), new String[0]);
-			return new ExecutionGraph(jobGraph, instanceManager);
+			return new ExecutionGraph(jobGraph, 1);
 
 		} catch (GraphConversionException e) {
 			fail(StringUtils.stringifyException(e));
@@ -145,7 +143,7 @@ public class QueueSchedulerTest {
 		final TestDeploymentManager tdm = new TestDeploymentManager();
 		final QueueScheduler scheduler = new QueueScheduler(tdm, tim);
 
-		final ExecutionGraph executionGraph = createExecutionGraph(ChannelType.INMEMORY, tim);
+		final ExecutionGraph executionGraph = createExecutionGraph(ChannelType.INMEMORY);
 
 		try {
 			try {

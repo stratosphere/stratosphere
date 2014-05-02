@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.test.broadcastvars;
 
+import eu.stratosphere.configuration.ConfigConstants;
 import org.apache.log4j.Level;
 
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
@@ -60,8 +61,10 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 	
 	private static final int MEMORY_PER_CONSUMER = 2;
 
-	private static final double MEMORY_FRACTION_PER_CONSUMER = (double)MEMORY_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE;
-	
+	private static final int DOP = 4;
+
+	private static final double MEMORY_FRACTION_PER_CONSUMER = (double)MEMORY_PER_CONSUMER/TASK_MANAGER_MEMORY_SIZE*DOP;
+
 	protected String dataPath;
 	protected String clusterPath;
 	protected String resultPath;
@@ -69,6 +72,7 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 	
 	public KMeansIterativeNepheleITCase() {
 		LogUtils.initializeDefaultConsoleLogger(Level.ERROR);
+		this.config.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, DOP);
 	}
 	
 	@Override
@@ -85,7 +89,7 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 
 	@Override
 	protected JobGraph getJobGraph() throws Exception {
-		return createJobGraph(dataPath, clusterPath, this.resultPath, 4, 20);
+		return createJobGraph(dataPath, clusterPath, this.resultPath, DOP, 20);
 	}
 
 	// -------------------------------------------------------------------------------------------------------------

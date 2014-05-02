@@ -148,7 +148,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		synchronized (executionStage) {
 
-			final int requiredSlots = executionStage.getMaxNumberSubtasks();
+			final int requiredSlots = executionStage.getRequiredSlots();
 
 			LOG.info("Requesting " + requiredSlots + " for job " + executionGraph.getJobID());
 
