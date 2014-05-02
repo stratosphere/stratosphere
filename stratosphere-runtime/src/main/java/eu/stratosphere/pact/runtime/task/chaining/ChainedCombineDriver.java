@@ -123,8 +123,9 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 		
 		this.sorter.close();
 		
-		if (this.canceled)
+		if (this.canceled) {
 			return;
+		}
 		
 		RegularPactTask.closeUserCode(this.combiner);
 	}
@@ -163,9 +164,10 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 
 	@Override
 	public void collect(T record) {
-		if (this.exception != null)
+		if (this.exception != null) {
 			throw new RuntimeException("The combiner failed due to an exception.", 
 				this.exception.getCause() == null ? this.exception : this.exception.getCause());
+		}
 		
 		this.inputCollector.collect(record);
 	}
@@ -174,9 +176,10 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 	public void close() {
 		this.inputCollector.close();
 		
-		if (this.exception != null)
+		if (this.exception != null) {
 			throw new RuntimeException("The combiner failed due to an exception.", 
 				this.exception.getCause() == null ? this.exception : this.exception.getCause());
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -219,8 +222,9 @@ public class ChainedCombineDriver<T> extends ChainedDriver<T, T> {
 						iterator = this.sorter.getIterator();
 					}
 					catch (InterruptedException iex) {
-						if (!this.running)
+						if (!this.running) {
 							return;
+						}
 					}
 				}
 				

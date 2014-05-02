@@ -13,6 +13,11 @@
 
 package eu.stratosphere.pact.runtime.iterative.task;
 
+import java.io.IOException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import eu.stratosphere.api.common.aggregators.Aggregator;
 import eu.stratosphere.api.common.aggregators.LongSumAggregator;
 import eu.stratosphere.api.common.functions.Function;
@@ -23,9 +28,12 @@ import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.nephele.execution.Environment;
 import eu.stratosphere.nephele.io.MutableReader;
 import eu.stratosphere.pact.runtime.hash.CompactingHashTable;
-import eu.stratosphere.pact.runtime.iterative.concurrent.*;
+import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannel;
+import eu.stratosphere.pact.runtime.iterative.concurrent.BlockingBackChannelBroker;
+import eu.stratosphere.pact.runtime.iterative.concurrent.Broker;
+import eu.stratosphere.pact.runtime.iterative.concurrent.IterationAggregatorBroker;
+import eu.stratosphere.pact.runtime.iterative.concurrent.SolutionSetBroker;
 import eu.stratosphere.pact.runtime.iterative.convergence.WorksetEmptyConvergenceCriterion;
-import eu.stratosphere.pact.runtime.iterative.io.SolutionSetFastUpdateOutputCollector;
 import eu.stratosphere.pact.runtime.iterative.io.SolutionSetUpdateOutputCollector;
 import eu.stratosphere.pact.runtime.iterative.io.WorksetUpdateOutputCollector;
 import eu.stratosphere.pact.runtime.task.PactDriver;
@@ -37,11 +45,6 @@ import eu.stratosphere.types.Value;
 import eu.stratosphere.util.Collector;
 import eu.stratosphere.util.InstantiationUtil;
 import eu.stratosphere.util.MutableObjectIterator;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.IOException;
 
 /**
  * The base class for all tasks able to participate in an iteration.
@@ -204,8 +207,9 @@ public abstract class AbstractIterativePactTask<S extends Function, OT> extends 
 
 	protected void checkForTerminationAndResetEndOfSuperstepState() throws IOException {
 		// sanity check that there is at least one iterative input reader
-		if (this.iterativeInputs.length == 0 && this.iterativeBroadcastInputs.length == 0)
+		if (this.iterativeInputs.length == 0 && this.iterativeBroadcastInputs.length == 0) {
 			throw new IllegalStateException();
+		}
 
 		// check whether this step ended due to end-of-superstep, or proper close
 		boolean anyClosed = false;
@@ -230,7 +234,9 @@ public abstract class AbstractIterativePactTask<S extends Function, OT> extends 
 					@SuppressWarnings("unchecked")
 					MutableObjectIterator<Object> inIter = (MutableObjectIterator<Object>) this.inputIterators[inputNum];
 					Object o = this.inputSerializers[inputNum].createInstance();
-					while ((o = inIter.next(o)) != null);
+					while ((o = inIter.next(o)) != null) {
+						;
+					}
 					
 					if (reader.isInputClosed()) {
 						anyClosed = true;
