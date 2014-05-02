@@ -17,7 +17,6 @@ import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.runtime.task.util.CorruptConfigurationException;
 import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 
 /**

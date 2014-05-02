@@ -15,12 +15,10 @@ package eu.stratosphere.pact.runtime.plugable.arrayrecord;
 
 import java.util.Arrays;
 
-import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.runtime.task.util.CorruptConfigurationException;
 import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 
 /**
@@ -57,10 +55,12 @@ public class ArrayRecordComparatorFactory implements TypeComparatorFactory<Value
 	}
 	
 	public ArrayRecordComparatorFactory(int[] positions, Class<? extends Key>[] types, boolean[] sortDirections) {
-		if (positions == null || types == null)
+		if (positions == null || types == null) {
 			throw new NullPointerException();
-		if (positions.length != types.length)
+		}
+		if (positions.length != types.length) {
 			throw new IllegalArgumentException();
+		}
 		
 		this.positions = positions;
 		this.types = types;

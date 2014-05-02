@@ -20,7 +20,6 @@ import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
-
 import eu.stratosphere.pact.runtime.sort.AsynchronousPartialSorter;
 import eu.stratosphere.pact.runtime.task.util.CloseableInputProvider;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
@@ -134,8 +133,9 @@ public class CombineDriver<T> implements PactDriver<GenericGroupReduce<T, ?>, T>
 	 */
 	@Override
 	public void run() throws Exception {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.taskContext.formatLogString("Preprocessing done, iterator obtained."));
+		}
 
 		final KeyGroupedIterator<T> iter = new KeyGroupedIterator<T>(this.input.getIterator(),
 				this.serializer, this.comparator);

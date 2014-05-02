@@ -95,8 +95,9 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 		this.memorySegments = memory;
 		this.releaseMemoryOnClose = releaseMemOnClose;
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating spilling resettable iterator with " + memory.size() + " pages of memory.");
+		}
 		
 		this.buffer = new SpillingBuffer(ioManager, new ListMemorySegmentSource(memory), memoryManager.getPageSize());
 	}
@@ -104,8 +105,9 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 	
 	public void open() throws IOException
 	{
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Spilling Resettable Iterator opened.");
+		}
 	}
 
 	public void reset() throws IOException
@@ -170,8 +172,9 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 
 	public List<MemorySegment> close() throws IOException
 	{
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Spilling Resettable Iterator closing. Stored " + this.elementCount + " records.");
+		}
 
 		this.inView = null;
 		

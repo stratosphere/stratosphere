@@ -16,6 +16,8 @@ package eu.stratosphere.pact.runtime.resettable;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +33,6 @@ import eu.stratosphere.pact.runtime.test.util.MutableObjectIteratorWrapper;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.MutableObjectIterator;
-import junit.framework.Assert;
 
 public class SpillingResettableMutableObjectIteratorTest
 {
@@ -101,9 +102,10 @@ public class SpillingResettableMutableObjectIteratorTest
 			// now test walking through the iterator
 			int count = 0;
 			Record target = new Record();
-			while ((target = iterator.next(target)) != null)
+			while ((target = iterator.next(target)) != null) {
 				Assert.assertEquals("In initial run, element " + count + " does not match expected value!", count++,
 					target.getField(0, IntValue.class).getValue());
+			}
 			Assert.assertEquals("Too few elements were deserialzied in initial run!", NUM_TESTRECORDS, count);
 			// test resetting the iterator a few times
 			for (int j = 0; j < 10; ++j) {
@@ -111,9 +113,10 @@ public class SpillingResettableMutableObjectIteratorTest
 				iterator.reset();
 				target = new Record();
 				// now we should get the same results
-				while ((target = iterator.next(target)) != null)
+				while ((target = iterator.next(target)) != null) {
 					Assert.assertEquals("After reset nr. " + j + 1 + " element " + count
 						+ " does not match expected value!", count++, target.getField(0, IntValue.class).getValue());
+				}
 				Assert.assertEquals("Too few elements were deserialzied after reset nr. " + j + 1 + "!", NUM_TESTRECORDS,
 					count);
 			}
@@ -145,9 +148,10 @@ public class SpillingResettableMutableObjectIteratorTest
 			// now test walking through the iterator
 			int count = 0;
 			Record target = new Record();
-			while ((target = iterator.next(target)) != null)
+			while ((target = iterator.next(target)) != null) {
 				Assert.assertEquals("In initial run, element " + count + " does not match expected value!", count++,
 					target.getField(0, IntValue.class).getValue());
+			}
 			Assert.assertEquals("Too few elements were deserialzied in initial run!", NUM_TESTRECORDS, count);
 			// test resetting the iterator a few times
 			for (int j = 0; j < 10; ++j) {
@@ -155,9 +159,10 @@ public class SpillingResettableMutableObjectIteratorTest
 				iterator.reset();
 				target = new Record();
 				// now we should get the same results
-				while ((target = iterator.next(target)) != null)
+				while ((target = iterator.next(target)) != null) {
 					Assert.assertEquals("After reset nr. " + j + 1 + " element " + count
 						+ " does not match expected value!", count++, target.getField(0, IntValue.class).getValue());
+				}
 				Assert.assertEquals("Too few elements were deserialzied after reset nr. " + j + 1 + "!", NUM_TESTRECORDS,
 					count);
 			}
