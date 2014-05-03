@@ -127,8 +127,9 @@ public final class ArrayRecordComparator extends TypeComparator<Value[]> {
 					nKeyLen = Integer.MAX_VALUE;
 					break;
 				}
+			} else {
+				break;
 			}
-			else break;
 		}
 		this.numLeadingNormalizableKeys = nKeys;
 		this.normalizableKeyPrefixLen = nKeyLen;
@@ -214,10 +215,11 @@ public final class ArrayRecordComparator extends TypeComparator<Value[]> {
 	public boolean equalToReference(Value[] candidate) {
 		for (int i = 0; i < this.keyFields.length; i++) {
 			final Value k = candidate[this.keyFields[i]];
-			if (k == null)
+			if (k == null) {
 				throw new NullKeyFieldException(this.keyFields[i]);
-			else if (!k.equals(this.keyHolders[i]))
+			} else if (!k.equals(this.keyHolders[i])) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -229,8 +231,9 @@ public final class ArrayRecordComparator extends TypeComparator<Value[]> {
 		
 		for (int i = 0; i < this.keyFields.length; i++) {
 			final int comp = pra.keyHolders[i].compareTo(this.keyHolders[i]);
-			if (comp != 0)
+			if (comp != 0) {
 				return this.ascending[i] ? comp : -comp;
+			}
 		}
 		return 0;
 	}
@@ -247,12 +250,14 @@ public final class ArrayRecordComparator extends TypeComparator<Value[]> {
 			final Key k1 = (Key) this.temp1[this.keyFields[i]];
 			final Key k2 = (Key) this.temp2[this.keyFields[i]];
 			
-			if (k1 == null || k2 == null)
+			if (k1 == null || k2 == null) {
 				throw new NullKeyFieldException(this.keyFields[i]);
+			}
 			
 			final int comp = k1.compareTo(k2);
-			if (comp != 0)
+			if (comp != 0) {
 				return this.ascending[i] ? comp : -comp;
+			}
 		}
 		return 0;
 	}

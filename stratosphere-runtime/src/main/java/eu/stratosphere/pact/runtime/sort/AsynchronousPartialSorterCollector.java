@@ -88,8 +88,9 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	public void close()
 	{
 		try {
-			if (this.collector != null)
+			if (this.collector != null) {
 				this.collector.close();
+			}
 		}
 		finally {
 			super.close();
