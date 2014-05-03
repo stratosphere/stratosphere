@@ -25,6 +25,7 @@ import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.functions.JoinFunction;
 import eu.stratosphere.api.java.functions.KeySelector;
 import eu.stratosphere.api.java.tuple.Tuple2;
+import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.test.util.JavaProgramTestBase;
 import eu.stratosphere.util.Collector;
 
@@ -46,6 +47,10 @@ public class DependencyConnectedComponentsITCase extends JavaProgramTestBase {
 	protected static List<Tuple2<Long, Long>> edgesInput = new ArrayList<Tuple2<Long, Long>>();
 	private String resultPath;
 	private String expectedResult;
+
+	public DependencyConnectedComponentsITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 	
 	@Override

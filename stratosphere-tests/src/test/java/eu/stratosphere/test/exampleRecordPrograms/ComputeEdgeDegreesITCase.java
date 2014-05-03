@@ -26,6 +26,8 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class ComputeEdgeDegreesITCase extends TestBase2 {
+
+	protected static final int DOP = 4;
 	
 	protected String edgesPath = null;
 	protected String resultPath = null; 
@@ -35,6 +37,7 @@ public class ComputeEdgeDegreesITCase extends TestBase2 {
 	
 	public ComputeEdgeDegreesITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Override
@@ -58,7 +61,7 @@ public class ComputeEdgeDegreesITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config = new Configuration();
-		config.setInteger("ComputeEdgeDegreesTest#NumSubtasks", 4);
+		config.setInteger("ComputeEdgeDegreesTest#NumSubtasks", DOP);
 		return toParameterList(config);
 	}
 }

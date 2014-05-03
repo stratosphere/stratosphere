@@ -108,7 +108,7 @@ public class CustomCompensatableDanglingPageRankWithCombiner {
 		int failingIteration = 2;
 		double messageLoss = 0.75;
 
-		if (args.length >= 15) {
+		if (args.length >= 14) {
 			degreeOfParallelism = Integer.parseInt(args[0]);
 			pageWithRankInputPath = args[1];
 			adjacencyListInputPath = args[2];

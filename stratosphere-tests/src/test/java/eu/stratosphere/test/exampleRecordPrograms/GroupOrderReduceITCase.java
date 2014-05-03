@@ -38,6 +38,7 @@ import eu.stratosphere.util.Collector;
 
 @RunWith(Parameterized.class)
 public class GroupOrderReduceITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	private static final String INPUT = "1,3\n" + "2,1\n" + "5,1\n" + "3,1\n" + "1,8\n" + "1,9\n" + 
 										"1,2\n" + "2,3\n" + "7,1\n" + "4,2\n" + "2,7\n" + "2,8\n" +
@@ -60,6 +61,7 @@ public class GroupOrderReduceITCase extends TestBase2 {
 	
 	public GroupOrderReduceITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	
@@ -104,7 +106,7 @@ public class GroupOrderReduceITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config = new Configuration();
-		config.setInteger("GroupOrderTest#NumSubtasks", 4);
+		config.setInteger("GroupOrderTest#NumSubtasks", DOP);
 		return toParameterList(config);
 	}
 	

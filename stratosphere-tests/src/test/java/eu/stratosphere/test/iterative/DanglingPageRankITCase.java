@@ -27,6 +27,7 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class DanglingPageRankITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	protected String pagesPath;
 	protected String edgesPath;
@@ -35,6 +36,7 @@ public class DanglingPageRankITCase extends TestBase2 {
 	
 	public DanglingPageRankITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 	
 	
@@ -63,7 +65,7 @@ public class DanglingPageRankITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config1 = new Configuration();
-		config1.setInteger("PageRankITCase#NoSubtasks", 4);
+		config1.setInteger("PageRankITCase#NoSubtasks", DOP);
 		config1.setString("PageRankITCase#NumIterations", "25");
 		return toParameterList(config1);
 	}

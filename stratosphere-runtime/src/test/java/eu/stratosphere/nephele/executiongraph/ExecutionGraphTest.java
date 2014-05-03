@@ -41,10 +41,6 @@ import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
 import eu.stratosphere.nephele.instance.InstanceException;
 import eu.stratosphere.nephele.instance.InstanceListener;
 import eu.stratosphere.nephele.instance.InstanceManager;
-import eu.stratosphere.nephele.instance.InstanceRequestMap;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeDescription;
-import eu.stratosphere.nephele.instance.InstanceTypeFactory;
 import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.library.FileLineReader;
@@ -773,7 +769,6 @@ public class ExecutionGraphTest {
 			final ExecutionGraph eg = new ExecutionGraph(jg, 1);
 
 			// test instance types in ExecutionGraph
-			final InstanceRequestMap instanceRequestMap = new InstanceRequestMap();
 			ExecutionStage executionStage = eg.getCurrentExecutionStage();
 			assertNotNull(executionStage);
 			assertEquals(0, executionStage.getStageNumber());
@@ -793,7 +788,6 @@ public class ExecutionGraphTest {
 				ev.updateExecutionState(ExecutionState.FINISHING);
 				ev.updateExecutionState(ExecutionState.FINISHED);
 			}
-			instanceRequestMap.clear();
 		} catch (GraphConversionException e) {
 			fail(e.getMessage());
 		} catch (JobGraphDefinitionException e) {

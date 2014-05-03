@@ -62,13 +62,17 @@ public class BroadcastVarsNepheleITCase extends TestBase2 {
 
 	private static final int NUM_FEATURES = 3;
 
+	private static final int DOP = 4;
+
 	protected String pointsPath;
 
 	protected String modelsPath;
 
 	protected String resultPath;
 
-
+	public BroadcastVarsNepheleITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 
 	public static final String getInputPoints(int numPoints, int numDimensions, long seed) {
@@ -122,7 +126,7 @@ public class BroadcastVarsNepheleITCase extends TestBase2 {
 
 	@Override
 	protected JobGraph getJobGraph() throws Exception {
-		return createJobGraphV1(this.pointsPath, this.modelsPath, this.resultPath, 4);
+		return createJobGraphV1(this.pointsPath, this.modelsPath, this.resultPath, DOP);
 	}
 
 	@Override

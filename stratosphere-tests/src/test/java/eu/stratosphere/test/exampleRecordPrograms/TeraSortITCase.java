@@ -25,11 +25,15 @@ import eu.stratosphere.test.util.TestBase2;
 
 
 public class TeraSortITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private static final String INPUT_DATA_FILE = "/testdata/terainput.txt";
 	
 	private String resultPath;
-	
+
+	public TeraSortITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 
 	@Override
 	protected void preSubmit() throws Exception {
@@ -41,7 +45,7 @@ public class TeraSortITCase extends TestBase2 {
 		String testDataPath = getClass().getResource(INPUT_DATA_FILE).toString();
 		
 		TeraSort ts = new TeraSort();
-		return ts.getPlan("4", testDataPath, resultPath);
+		return ts.getPlan(new Integer(DOP).toString(), testDataPath, resultPath);
 	}
 
 	@Override

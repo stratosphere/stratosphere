@@ -18,6 +18,8 @@ import eu.stratosphere.test.iterative.nephele.customdanglingpagerank.CustomCompe
 import eu.stratosphere.test.util.TestBase2;
 
 public class DanglingPageRankNepheleITCase extends TestBase2 {
+
+	private static final int DOP = 4;
 	
 	public static final String TEST_VERTICES = "1\n" +
 	                                           "2\n" +
@@ -34,6 +36,10 @@ public class DanglingPageRankNepheleITCase extends TestBase2 {
 	protected String edgesPath;
 	protected String resultPath;
 
+	public DanglingPageRankNepheleITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
+
 	
 	@Override
 	protected void preSubmit() throws Exception {
@@ -45,7 +51,7 @@ public class DanglingPageRankNepheleITCase extends TestBase2 {
 	@Override
 	protected JobGraph getJobGraph() throws Exception {
 		String[] parameters = new String[] {
-			"4",
+			new Integer(DOP).toString(),
 			pagesWithRankPath,
 			edgesPath,
 			resultPath,

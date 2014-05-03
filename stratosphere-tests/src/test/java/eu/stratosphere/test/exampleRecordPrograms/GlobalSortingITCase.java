@@ -30,6 +30,8 @@ import eu.stratosphere.test.util.TestBase2;
 import eu.stratosphere.types.IntValue;
 
 public class GlobalSortingITCase extends TestBase2 {
+
+	private static final int DOP = 4;
 	
 	private static final int NUM_RECORDS = 100000;
 	
@@ -38,6 +40,9 @@ public class GlobalSortingITCase extends TestBase2 {
 
 	private String sortedRecords;
 
+	public GlobalSortingITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 
 	@Override
 	protected void preSubmit() throws Exception {
@@ -77,7 +82,7 @@ public class GlobalSortingITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		GlobalSort globalSort = new GlobalSort();
-		return globalSort.getPlan("4", recordsPath, resultPath);
+		return globalSort.getPlan(new Integer(DOP).toString(), recordsPath, resultPath);
 	}
 
 	@Override

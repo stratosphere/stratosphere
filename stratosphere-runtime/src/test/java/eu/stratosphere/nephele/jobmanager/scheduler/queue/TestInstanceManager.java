@@ -30,11 +30,6 @@ import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
 import eu.stratosphere.nephele.instance.InstanceException;
 import eu.stratosphere.nephele.instance.InstanceListener;
 import eu.stratosphere.nephele.instance.InstanceManager;
-import eu.stratosphere.nephele.instance.InstanceRequestMap;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeDescription;
-import eu.stratosphere.nephele.instance.InstanceTypeDescriptionFactory;
-import eu.stratosphere.nephele.instance.InstanceTypeFactory;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkNode;
 import eu.stratosphere.nephele.topology.NetworkTopology;
@@ -47,16 +42,6 @@ import eu.stratosphere.util.StringUtils;
  * 
  */
 public final class TestInstanceManager implements InstanceManager {
-
-	/**
-	 * The default instance type to be used during the tests.
-	 */
-	private static final InstanceType INSTANCE_TYPE = InstanceTypeFactory.construct("test", 1, 1, 1024, 1024, 10);
-
-	/**
-	 * The instances this instance manager is responsible of.
-	 */
-	private final Map<InstanceType, InstanceTypeDescription> instanceMap = new HashMap<InstanceType, InstanceTypeDescription>();
 
 	/**
 	 * Counts the number of times the method releaseAllocatedResource is called.
@@ -111,8 +96,6 @@ public final class TestInstanceManager implements InstanceManager {
 	public TestInstanceManager() {
 
 		final HardwareDescription hd = HardwareDescriptionFactory.construct(1, 1L, 1L);
-		final InstanceTypeDescription itd = InstanceTypeDescriptionFactory.construct(INSTANCE_TYPE, hd, 1);
-		instanceMap.put(INSTANCE_TYPE, itd);
 
 		this.allocatedResources = new ArrayList<AllocatedResource>();
 		try {

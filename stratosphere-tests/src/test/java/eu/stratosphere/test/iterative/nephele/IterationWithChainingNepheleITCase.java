@@ -62,6 +62,7 @@ import java.util.Iterator;
  */
 @RunWith(Parameterized.class)
 public class IterationWithChainingNepheleITCase extends TestBase2 {
+	private static final int DOP = 2;
 
 	private static final String INPUT_STRING = "0|%d.25|\n" + "1|%d.25|\n";
 
@@ -71,6 +72,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 
 	public IterationWithChainingNepheleITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 	@Parameterized.Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config = new Configuration();
-		config.setInteger("ChainedMapperNepheleITCase#NoSubtasks", 2);
+		config.setInteger("ChainedMapperNepheleITCase#NoSubtasks", DOP);
 		config.setInteger("ChainedMapperNepheleITCase#MaxIterations", 2);
 		return toParameterList(config);
 	}

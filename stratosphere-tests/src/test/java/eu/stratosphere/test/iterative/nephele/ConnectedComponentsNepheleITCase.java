@@ -95,8 +95,7 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 
 	public ConnectedComponentsNepheleITCase(Configuration config) {
 		super(config);
-
-		this.config.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, DOP);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Parameters

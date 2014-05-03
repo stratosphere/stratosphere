@@ -26,6 +26,7 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class PageRankITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private static final String VERTICES = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n";
 	
@@ -38,6 +39,7 @@ public class PageRankITCase extends TestBase2 {
 	
 	public PageRankITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 	
 	@Override
@@ -64,7 +66,7 @@ public class PageRankITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config1 = new Configuration();
-		config1.setInteger("NumSubtasks", 4);
+		config1.setInteger("NumSubtasks", DOP);
 		config1.setString("NumIterations", "5");
 		return toParameterList(config1);
 	}

@@ -35,12 +35,17 @@ import eu.stratosphere.util.Collector;
 
 
 public class IterationTerminationWithTwoTails extends TestBase2 {
+	private static final int DOP = 4;
 
 	private static final String INPUT = "1\n" + "2\n" + "3\n" + "4\n" + "5\n";
 	private static final String EXPECTED = "22\n";
 
 	protected String dataPath;
 	protected String resultPath;
+
+	public IterationTerminationWithTwoTails(){
+		setTaskManagerNumSlots(DOP);
+	}
 
 	@Override
 	protected void preSubmit() throws Exception {
@@ -55,7 +60,7 @@ public class IterationTerminationWithTwoTails extends TestBase2 {
 
 	@Override
 	protected Plan getTestJob() {
-		return getTestPlanPlan(4, dataPath, resultPath);
+		return getTestPlanPlan(DOP, dataPath, resultPath);
 	}
 	
 	private static Plan getTestPlanPlan(int numSubTasks, String input, String output) {

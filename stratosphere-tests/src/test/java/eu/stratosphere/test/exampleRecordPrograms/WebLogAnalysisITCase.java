@@ -18,6 +18,7 @@ import eu.stratosphere.example.java.record.relational.WebLogAnalysis;
 import eu.stratosphere.test.util.TestBase2;
 
 public class WebLogAnalysisITCase extends TestBase2 {
+	protected static final int DOP = 4;
 
 	protected String docsPath;
 	protected String ranksPath;
@@ -148,6 +149,10 @@ public class WebLogAnalysisITCase extends TestBase2 {
 
 	private static final String expected = "87|url_24|39\n" + "59|url_28|41\n";
 
+	public WebLogAnalysisITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
+
 	@Override
 	protected void preSubmit() throws Exception {
 		docsPath   = createTempFile("docs", docs);
@@ -159,7 +164,7 @@ public class WebLogAnalysisITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		WebLogAnalysis relOLAP = new WebLogAnalysis();
-		return relOLAP.getPlan("4", docsPath, ranksPath, visitsPath, resultPath);
+		return relOLAP.getPlan(new Integer(DOP).toString(), docsPath, ranksPath, visitsPath, resultPath);
 	}
 
 	@Override

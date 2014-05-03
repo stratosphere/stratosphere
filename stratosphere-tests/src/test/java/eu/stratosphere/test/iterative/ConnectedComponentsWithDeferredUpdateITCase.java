@@ -44,6 +44,7 @@ import eu.stratosphere.util.Collector;
 
 @RunWith(Parameterized.class)
 public class ConnectedComponentsWithDeferredUpdateITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 	
@@ -59,6 +60,7 @@ public class ConnectedComponentsWithDeferredUpdateITCase extends TestBase2 {
 	
 	public ConnectedComponentsWithDeferredUpdateITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 	
 	@Override
@@ -71,7 +73,7 @@ public class ConnectedComponentsWithDeferredUpdateITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		boolean extraMapper = config.getBoolean("ExtraMapper", false);
-		return getPlan(4, verticesPath, edgesPath, resultPath, 100, extraMapper);
+		return getPlan(DOP, verticesPath, edgesPath, resultPath, 100, extraMapper);
 	}
 
 	@Override

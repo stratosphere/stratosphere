@@ -40,6 +40,7 @@ import eu.stratosphere.util.Collector;
 
 
 public class CoGroupConnectedComponentsITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 	
@@ -51,6 +52,10 @@ public class CoGroupConnectedComponentsITCase extends TestBase2 {
 	protected String verticesPath;
 	protected String edgesPath;
 	protected String resultPath;
+
+	public CoGroupConnectedComponentsITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 	
 	@Override
@@ -62,7 +67,7 @@ public class CoGroupConnectedComponentsITCase extends TestBase2 {
 	
 	@Override
 	protected Plan getTestJob() {
-		return getPlan(4, verticesPath, edgesPath, resultPath, 100);
+		return getPlan(DOP, verticesPath, edgesPath, resultPath, 100);
 	}
 
 	@Override

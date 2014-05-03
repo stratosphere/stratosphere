@@ -22,6 +22,7 @@ import eu.stratosphere.test.util.TestBase2;
 
 
 public class ConnectedComponentsITCase extends TestBase2 {
+	protected static final int DOP = 4;
 	
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 	
@@ -33,6 +34,10 @@ public class ConnectedComponentsITCase extends TestBase2 {
 	protected String verticesPath;
 	protected String edgesPath;
 	protected String resultPath;
+
+	public ConnectedComponentsITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 	
 	@Override
@@ -45,7 +50,7 @@ public class ConnectedComponentsITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		WorksetConnectedComponents cc = new WorksetConnectedComponents();
-		return cc.getPlan("4",  verticesPath, edgesPath, resultPath, "100");
+		return cc.getPlan(new Integer(DOP).toString(),  verticesPath, edgesPath, resultPath, "100");
 	}
 
 	@Override

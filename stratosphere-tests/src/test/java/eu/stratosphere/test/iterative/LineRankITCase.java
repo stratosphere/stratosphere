@@ -15,6 +15,7 @@ package eu.stratosphere.test.iterative;
 
 import java.util.Collection;
 
+import eu.stratosphere.configuration.ConfigConstants;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -26,6 +27,8 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class LineRankITCase extends TestBase2 {
+
+	private static final int DOP = 4;
 	
 	private static final String SOURCE_INCIDENCE = "1,1,1\n" +
 	                                               "2,1,1\n" +
@@ -54,6 +57,7 @@ public class LineRankITCase extends TestBase2 {
 	
 	public LineRankITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 	
 	@Override
@@ -68,7 +72,7 @@ public class LineRankITCase extends TestBase2 {
 		LineRank lr = new LineRank();
 		
 		Plan plan = lr.getScalaPlan(
-			config.getInteger("NumSubtasks", 1), 
+			config.getInteger("NumSubtasks", 1),
 			sourcesPath,
 			targetsPath,
 			9,
@@ -79,7 +83,7 @@ public class LineRankITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config1 = new Configuration();
-		config1.setInteger("NumSubtasks", 4);
+		config1.setInteger("NumSubtasks", DOP);
 		config1.setInteger("NumIterations", 5);
 		return toParameterList(config1);
 	}

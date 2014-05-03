@@ -72,7 +72,7 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 	
 	public KMeansIterativeNepheleITCase() {
 		LogUtils.initializeDefaultConsoleLogger(Level.ERROR);
-		this.config.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, DOP);
+		setTaskManagerNumSlots(DOP);
 	}
 	
 	@Override

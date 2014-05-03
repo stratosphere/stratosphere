@@ -51,18 +51,26 @@ public abstract class AbstractTestBase {
 	
 	protected static final long TASK_MANAGER_MEMORY_SIZE = 80;
 
-	
+	protected static final int DEFAULT_TASK_MANAGER_NUM_SLOTS = 1;
+
+	protected static final int DEFAULT_NUM_TASK_TRACKER = 1;
+
 	protected final Configuration config;
 	
 	protected NepheleMiniCluster executor;
 	
 	private final List<File> tempFiles;
-	
-		
+
+	protected int taskManagerNumSlots;
+
+	protected int numTaskTracker;
+
 	public AbstractTestBase(Configuration config) {
 		verifyJvmOptions();
 		this.config = config;
 		this.tempFiles = new ArrayList<File>();
+		taskManagerNumSlots = DEFAULT_TASK_MANAGER_NUM_SLOTS;
+		numTaskTracker = DEFAULT_NUM_TASK_TRACKER;
 
 		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
 	}
@@ -84,6 +92,9 @@ public abstract class AbstractTestBase {
 		this.executor.setDefaultOverwriteFiles(true);
 		this.executor.setLazyMemoryAllocation(true);
 		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
+
+		config.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, getTaskManagerNumSlots());
+		config.setInteger(ConfigConstants.LOCAL_INSTANCE_MANAGER_NUMBER_TASK_TRACKER, getNumTaskTracker());
 		this.executor.start(config);
 	}
 
@@ -100,6 +111,19 @@ public abstract class AbstractTestBase {
 			deleteAllTempFiles();
 		}
 	}
+
+	//------------------
+	// Accessors
+	//------------------
+
+	public int getTaskManagerNumSlots() { return taskManagerNumSlots; }
+
+	public void setTaskManagerNumSlots(int taskManagerNumSlots) { this.taskManagerNumSlots = taskManagerNumSlots; }
+
+	public int getNumTaskTracker() { return numTaskTracker; }
+
+	public void setNumTaskTracker(int numTaskTracker) { this.numTaskTracker = numTaskTracker; }
+
 	
 	// --------------------------------------------------------------------------------------------
 	//  Temporary File Utilities

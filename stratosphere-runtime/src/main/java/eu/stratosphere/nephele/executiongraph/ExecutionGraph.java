@@ -38,8 +38,6 @@ import eu.stratosphere.nephele.execution.ExecutionListener;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.instance.AllocatedResource;
 import eu.stratosphere.nephele.instance.DummyInstance;
-import eu.stratosphere.nephele.instance.InstanceManager;
-import eu.stratosphere.nephele.instance.InstanceType;
 import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.io.channels.ChannelID;

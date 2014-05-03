@@ -23,10 +23,15 @@ import eu.stratosphere.test.util.TestBase2;
 
 
 public class IterativeKMeansITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	protected String dataPath;
 	protected String clusterPath;
 	protected String resultPath;
+
+	public IterativeKMeansITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 	@Override
 	protected void preSubmit() throws Exception {
@@ -38,7 +43,7 @@ public class IterativeKMeansITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		KMeans kmi = new KMeans();
-		return kmi.getPlan("4", dataPath, clusterPath, resultPath, "20");
+		return kmi.getPlan(new Integer(DOP).toString(), dataPath, clusterPath, resultPath, "20");
 	}
 
 

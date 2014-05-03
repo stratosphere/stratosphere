@@ -38,6 +38,7 @@ import java.util.Iterator;
 
 @RunWith(Parameterized.class)
 public class IterationWithChainingITCase extends TestBase2 {
+	private static final int DOP = 4;
 
     private static final String DATA_POINTS = "0|50.90|16.20|72.08|\n" + "1|73.65|61.76|62.89|\n" + "2|61.73|49.95|92.74|\n";
 
@@ -46,6 +47,7 @@ public class IterationWithChainingITCase extends TestBase2 {
 
     public IterationWithChainingITCase(Configuration config) {
         super(config);
+		setTaskManagerNumSlots(DOP);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class IterationWithChainingITCase extends TestBase2 {
     @Parameters
     public static Collection<Object[]> getConfigurations() {
         Configuration config1 = new Configuration();
-        config1.setInteger("ChainedMapperITCase#NoSubtasks", 4);
+        config1.setInteger("ChainedMapperITCase#NoSubtasks", DOP);
         return toParameterList(config1);
     }
 

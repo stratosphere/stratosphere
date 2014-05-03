@@ -18,6 +18,7 @@ import eu.stratosphere.test.testPrograms.tpch9.TPCHQuery9;
 import eu.stratosphere.test.util.TestBase2;
 
 public class TPCHQuery9ITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private String partInputPath;
 	private String partSuppInputPath;
@@ -335,6 +336,10 @@ public class TPCHQuery9ITCase extends TestBase2 {
 		+ "IRAN|1992|37970.953\n"
 		+ "IRAN|1993|83140.0\n"
 		+ "IRAN|1996|9672.556\n";
+
+	public TPCHQuery9ITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 		
 
 	@Override
@@ -352,7 +357,7 @@ public class TPCHQuery9ITCase extends TestBase2 {
 	protected Plan getTestJob() {
 		TPCHQuery9 tpch9 = new TPCHQuery9();
 		return tpch9.getPlan(
-				"4",
+				new Integer(DOP).toString(),
 				partInputPath,
 				partSuppInputPath,
 				ordersInputPath,

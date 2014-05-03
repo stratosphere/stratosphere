@@ -26,6 +26,7 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class TPCHQuery3ITCase extends TestBase2 {
+	protected static final int DOP = 4;
 	
 	protected String ordersPath = null;
 	protected String lineitemsPath = null;
@@ -122,6 +123,7 @@ public class TPCHQuery3ITCase extends TestBase2 {
 
 	public TPCHQuery3ITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Override
@@ -150,7 +152,7 @@ public class TPCHQuery3ITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config = new Configuration();
-		config.setInteger("dop", 4);
+		config.setInteger("dop", DOP);
 		return toParameterList(config);
 	}
 }

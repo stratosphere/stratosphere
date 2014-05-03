@@ -43,12 +43,17 @@ import eu.stratosphere.types.StringValue;
  * @see {@link MutableUnionRecordReader}
  */
 public class WordCountUnionReduceITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	private static final int MULTIPLY = 1000;
 	
 	private String inputPath;
 
 	private String outputPath;
+
+	public WordCountUnionReduceITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 
 
 	@Override
@@ -65,7 +70,7 @@ public class WordCountUnionReduceITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		WordCountUnionReduce wc = new WordCountUnionReduce();
-		return wc.getPlan(this.inputPath, this.outputPath, 4);
+		return wc.getPlan(this.inputPath, this.outputPath, DOP);
 	}
 
 	@Override

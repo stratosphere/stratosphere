@@ -26,6 +26,7 @@ import eu.stratosphere.test.util.TestBase2;
 
 @RunWith(Parameterized.class)
 public class EnumTrianglesOnEdgesWithDegreesITCase extends TestBase2 {
+	protected static final int DOP = 4;
 	
 	private static final String EDGES_WITH_DEGREES = "1,4|2,3\n1,4|3,5\n1,4|4,2\n1,4|5,3\n2,3|3,5\n2,3|5,3\n3,5|4,2\n3,5|7,2\n5,3|6,1\n3,5|8,2\n7,2|8,2\n";
 	private static final String EXPECTED = "2,1,3\n4,1,3\n2,1,5\n7,3,8\n";
@@ -35,6 +36,7 @@ public class EnumTrianglesOnEdgesWithDegreesITCase extends TestBase2 {
 	
 	public EnumTrianglesOnEdgesWithDegreesITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Override
@@ -60,7 +62,7 @@ public class EnumTrianglesOnEdgesWithDegreesITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config = new Configuration();
-		config.setInteger("EnumTrianglesTest#NumSubtasks", 4);
+		config.setInteger("EnumTrianglesTest#NumSubtasks", DOP);
 		return toParameterList(config);
 	}
 }

@@ -40,6 +40,7 @@ import eu.stratosphere.util.Collector;
  * Tests a bug that prevented that the solution set can be on both sides of the match/cogroup function.
  */
 public class ConnectedComponentsWithSolutionSetFirstITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 	
@@ -51,6 +52,10 @@ public class ConnectedComponentsWithSolutionSetFirstITCase extends TestBase2 {
 	protected String verticesPath;
 	protected String edgesPath;
 	protected String resultPath;
+
+	public ConnectedComponentsWithSolutionSetFirstITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 	
 	
 	@Override
@@ -62,7 +67,8 @@ public class ConnectedComponentsWithSolutionSetFirstITCase extends TestBase2 {
 	
 	@Override
 	protected Plan getTestJob() {
-		return getPlanForWorksetConnectedComponentsWithSolutionSetAsFirstInput(4, verticesPath, edgesPath, resultPath, 100);
+		return getPlanForWorksetConnectedComponentsWithSolutionSetAsFirstInput(DOP, verticesPath, edgesPath,
+				resultPath, 100);
 	}
 
 	@Override

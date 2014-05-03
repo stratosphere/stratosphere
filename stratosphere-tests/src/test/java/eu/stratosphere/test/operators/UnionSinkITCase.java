@@ -41,9 +41,11 @@ import eu.stratosphere.util.Collector;
 
 @RunWith(Parameterized.class)
 public class UnionSinkITCase extends TestBase2 {
+	private static final int DOP = 4;
 	
 	public UnionSinkITCase(Configuration testConfig) {
 		super(testConfig);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	private static final String MAP_IN = "1 1\n2 2\n2 8\n4 4\n4 4\n6 6\n7 7\n8 8\n" +
@@ -115,7 +117,7 @@ public class UnionSinkITCase extends TestBase2 {
 		output.addInput(testMapper2);
 		
 		Plan plan = new Plan(output);
-		plan.setDefaultParallelism(4);
+		plan.setDefaultParallelism(DOP);
 
 		PactCompiler pc = new PactCompiler(new DataStatistics());
 		OptimizedPlan op = pc.compile(plan);

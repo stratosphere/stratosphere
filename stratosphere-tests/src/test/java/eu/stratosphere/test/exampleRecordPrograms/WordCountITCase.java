@@ -19,9 +19,14 @@ import eu.stratosphere.test.testdata.WordCountData;
 import eu.stratosphere.test.util.TestBase2;
 
 public class WordCountITCase extends TestBase2 {
+	protected static final int DOP = 4;
 
 	protected String textPath;
 	protected String resultPath;
+
+	public WordCountITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
 
 	
 	@Override
@@ -33,7 +38,7 @@ public class WordCountITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		WordCount wc = new WordCount();
-		return wc.getPlan("4", textPath, resultPath);
+		return wc.getPlan(new Integer(DOP).toString(), textPath, resultPath);
 	}
 
 	@Override

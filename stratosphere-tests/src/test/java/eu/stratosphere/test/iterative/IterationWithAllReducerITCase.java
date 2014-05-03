@@ -33,6 +33,7 @@ import eu.stratosphere.util.Collector;
 
 
 public class IterationWithAllReducerITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	private static final String INPUT = "1\n" + "1\n" + "1\n" + "1\n" + "1\n" + "1\n" + "1\n" + "1\n";
 	private static final String EXPECTED = "1\n";
@@ -40,7 +41,9 @@ public class IterationWithAllReducerITCase extends TestBase2 {
 	protected String dataPath;
 	protected String resultPath;
 
-	
+	public IterationWithAllReducerITCase(){
+		setTaskManagerNumSlots(4);
+	}
 
 	@Override
 	protected void preSubmit() throws Exception {
@@ -55,7 +58,7 @@ public class IterationWithAllReducerITCase extends TestBase2 {
 
 	@Override
 	protected Plan getTestJob() {
-		Plan plan = getTestPlanPlan(4, dataPath, resultPath);
+		Plan plan = getTestPlanPlan(DOP, dataPath, resultPath);
 		return plan;
 	}
 

@@ -18,6 +18,7 @@ import eu.stratosphere.test.testPrograms.TPCHQueryAsterix;
 import eu.stratosphere.test.util.TestBase2;
 
 public class TPCHQueryAsterixITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	private String ordersPath;
 	private String custPath;
@@ -62,6 +63,10 @@ public class TPCHQueryAsterixITCase extends TestBase2 {
 		"2|MACHINERY\n" +
 		"2|FURNITURE\n";
 
+	public TPCHQueryAsterixITCase(){
+		setTaskManagerNumSlots(DOP);
+	}
+
 
 	@Override
 	protected void preSubmit() throws Exception {
@@ -73,7 +78,7 @@ public class TPCHQueryAsterixITCase extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		TPCHQueryAsterix tpchBench = new TPCHQueryAsterix();
-		return tpchBench.getPlan("4", ordersPath, custPath, resultPath);
+		return tpchBench.getPlan(new Integer(DOP).toString(), ordersPath, custPath, resultPath);
 	}
 
 	@Override

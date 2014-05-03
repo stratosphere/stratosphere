@@ -37,6 +37,7 @@ import eu.stratosphere.util.Collector;
 
 @RunWith(Parameterized.class)
 public class IterationWithUnionITCase extends TestBase2 {
+	private static final int DOP = 4;
 
 	private static final String DATAPOINTS = "0|50.90|16.20|72.08|\n" + "1|73.65|61.76|62.89|\n" + "2|61.73|49.95|92.74|\n";
 
@@ -46,6 +47,7 @@ public class IterationWithUnionITCase extends TestBase2 {
 	
 	public IterationWithUnionITCase(Configuration config) {
 		super(config);
+		setTaskManagerNumSlots(DOP);
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class IterationWithUnionITCase extends TestBase2 {
 	@Parameters
 	public static Collection<Object[]> getConfigurations() {
 		Configuration config1 = new Configuration();
-		config1.setInteger("IterationWithUnionITCase#NumSubtasks", 4);
+		config1.setInteger("IterationWithUnionITCase#NumSubtasks", DOP);
 
 		return toParameterList(config1);
 	}

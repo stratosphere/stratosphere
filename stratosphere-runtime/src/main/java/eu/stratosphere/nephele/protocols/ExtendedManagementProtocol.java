@@ -15,13 +15,10 @@ package eu.stratosphere.nephele.protocols;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import eu.stratosphere.core.io.StringRecord;
 import eu.stratosphere.nephele.event.job.AbstractEvent;
 import eu.stratosphere.nephele.event.job.RecentJobEvent;
-import eu.stratosphere.nephele.instance.InstanceType;
-import eu.stratosphere.nephele.instance.InstanceTypeDescription;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
