@@ -16,27 +16,18 @@ package eu.stratosphere.nephele.jobmanager.scheduler.queue;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.AllocatedResource;
-import eu.stratosphere.nephele.instance.AllocationID;
-import eu.stratosphere.nephele.instance.HardwareDescription;
-import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
-import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.instance.InstanceException;
-import eu.stratosphere.nephele.instance.InstanceListener;
-import eu.stratosphere.nephele.instance.InstanceManager;
+import eu.stratosphere.nephele.instance.*;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkNode;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.util.StringUtils;
 
 /**
- * A dummy implementation of an {@link InstanceManager} used for the {@link QueueScheduler} unit tests.
+ * A dummy implementation of an {@link eu.stratosphere.nephele.instance.InstanceManager} used for the {@link QueueScheduler} unit tests.
  * <p>
  * This class is thread-safe.
  * 
@@ -64,10 +55,10 @@ public final class TestInstanceManager implements InstanceManager {
 	private final TestInstance testInstance;
 
 	/**
-	 * Test implementation of {@link AbstractInstance}.
+	 * Test implementation of {@link eu.stratosphere.nephele.instance.Instance}.
 	 * 
 	 */
-	private static final class TestInstance extends AbstractInstance {
+	private static final class TestInstance extends Instance {
 
 		/**
 		 * Constructs a new test instance.
@@ -135,8 +126,7 @@ public final class TestInstanceManager implements InstanceManager {
 
 
 	@Override
-	public void releaseAllocatedResource(final JobID jobID, final Configuration conf,
-			final AllocatedResource allocatedResource) throws InstanceException {
+	public void releaseAllocatedResource(final AllocatedResource allocatedResource) throws InstanceException {
 
 		++this.numberOfReleaseCalls;
 	}
@@ -176,7 +166,7 @@ public final class TestInstanceManager implements InstanceManager {
 	}
 
 	@Override
-	public AbstractInstance getInstanceByName(final String name) {
+	public Instance getInstanceByName(final String name) {
 		throw new IllegalStateException("getInstanceByName called on TestInstanceManager");
 	}
 

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 
+import eu.stratosphere.nephele.instance.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,13 +39,7 @@ import eu.stratosphere.nephele.executiongraph.ExecutionStage;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.AllocatedResource;
-import eu.stratosphere.nephele.instance.AllocationID;
-import eu.stratosphere.nephele.instance.DummyInstance;
-import eu.stratosphere.nephele.instance.InstanceException;
-import eu.stratosphere.nephele.instance.InstanceListener;
-import eu.stratosphere.nephele.instance.InstanceManager;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobmanager.DeploymentManager;
 import eu.stratosphere.util.StringUtils;
@@ -116,9 +111,9 @@ public abstract class AbstractScheduler implements InstanceListener {
 	public abstract ExecutionGraph getExecutionGraphByID(JobID jobID);
 
 	/**
-	 * Returns the {@link InstanceManager} object which is used by the current scheduler.
+	 * Returns the {@link eu.stratosphere.nephele.instance.InstanceManager} object which is used by the current scheduler.
 	 * 
-	 * @return the {@link InstanceManager} object which is used by the current scheduler
+	 * @return the {@link eu.stratosphere.nephele.instance.InstanceManager} object which is used by the current scheduler
 	 */
 	public InstanceManager getInstanceManager() {
 		return this.instanceManager;
@@ -164,7 +159,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 	}
 
 	void findVerticesToBeDeployed(final ExecutionVertex vertex,
-			final Map<AbstractInstance, List<ExecutionVertex>> verticesToBeDeployed,
+			final Map<Instance, List<ExecutionVertex>> verticesToBeDeployed,
 			final Set<ExecutionVertex> alreadyVisited) {
 
 		if (!alreadyVisited.add(vertex)) {
@@ -172,7 +167,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 		}
 
 		if (vertex.compareAndUpdateExecutionState(ExecutionState.ASSIGNED, ExecutionState.READY)) {
-			final AbstractInstance instance = vertex.getAllocatedResource().getInstance();
+			final Instance instance = vertex.getAllocatedResource().getInstance();
 
 			if (instance instanceof DummyInstance) {
 				LOG.error("Inconsistency: Vertex " + vertex + " is about to be deployed on a DummyInstance");
@@ -227,20 +222,20 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		final JobID jobID = startVertex.getExecutionGraph().getJobID();
 
-		final Map<AbstractInstance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<AbstractInstance, List<ExecutionVertex>>();
+		final Map<Instance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<Instance, List<ExecutionVertex>>();
 		final Set<ExecutionVertex> alreadyVisited = new HashSet<ExecutionVertex>();
 
 		findVerticesToBeDeployed(startVertex, verticesToBeDeployed, alreadyVisited);
 
 		if (!verticesToBeDeployed.isEmpty()) {
 
-			final Iterator<Map.Entry<AbstractInstance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
+			final Iterator<Map.Entry<Instance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
 				.entrySet()
 				.iterator();
 
 			while (it2.hasNext()) {
 
-				final Map.Entry<AbstractInstance, List<ExecutionVertex>> entry = it2.next();
+				final Map.Entry<Instance, List<ExecutionVertex>> entry = it2.next();
 				this.deploymentManager.deploy(jobID, entry.getKey(), entry.getValue());
 			}
 		}
@@ -257,7 +252,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		final JobID jobID = null;
 
-		final Map<AbstractInstance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<AbstractInstance, List<ExecutionVertex>>();
+		final Map<Instance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<Instance, List<ExecutionVertex>>();
 		final Set<ExecutionVertex> alreadyVisited = new HashSet<ExecutionVertex>();
 
 		final Iterator<ExecutionVertex> it = pipeline.iterator();
@@ -267,13 +262,13 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		if (!verticesToBeDeployed.isEmpty()) {
 
-			final Iterator<Map.Entry<AbstractInstance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
+			final Iterator<Map.Entry<Instance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
 				.entrySet()
 				.iterator();
 
 			while (it2.hasNext()) {
 
-				final Map.Entry<AbstractInstance, List<ExecutionVertex>> entry = it2.next();
+				final Map.Entry<Instance, List<ExecutionVertex>> entry = it2.next();
 				this.deploymentManager.deploy(jobID, entry.getKey(), entry.getValue());
 			}
 		}
@@ -290,7 +285,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		JobID jobID = null;
 
-		final Map<AbstractInstance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<AbstractInstance, List<ExecutionVertex>>();
+		final Map<Instance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<Instance, List<ExecutionVertex>>();
 		final Set<ExecutionVertex> alreadyVisited = new HashSet<ExecutionVertex>();
 
 		for (final ExecutionVertex startVertex : startVertices) {
@@ -304,13 +299,13 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		if (!verticesToBeDeployed.isEmpty()) {
 
-			final Iterator<Map.Entry<AbstractInstance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
+			final Iterator<Map.Entry<Instance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
 				.entrySet()
 				.iterator();
 
 			while (it2.hasNext()) {
 
-				final Map.Entry<AbstractInstance, List<ExecutionVertex>> entry = it2.next();
+				final Map.Entry<Instance, List<ExecutionVertex>> entry = it2.next();
 				this.deploymentManager.deploy(jobID, entry.getKey(), entry.getValue());
 			}
 		}
@@ -325,7 +320,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 	 */
 	public void deployAssignedInputVertices(final ExecutionGraph executionGraph) {
 
-		final Map<AbstractInstance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<AbstractInstance, List<ExecutionVertex>>();
+		final Map<Instance, List<ExecutionVertex>> verticesToBeDeployed = new HashMap<Instance, List<ExecutionVertex>>();
 		final ExecutionStage executionStage = executionGraph.getCurrentExecutionStage();
 
 		final Set<ExecutionVertex> alreadyVisited = new HashSet<ExecutionVertex>();
@@ -345,13 +340,13 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 		if (!verticesToBeDeployed.isEmpty()) {
 
-			final Iterator<Map.Entry<AbstractInstance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
+			final Iterator<Map.Entry<Instance, List<ExecutionVertex>>> it2 = verticesToBeDeployed
 				.entrySet()
 				.iterator();
 
 			while (it2.hasNext()) {
 
-				final Map.Entry<AbstractInstance, List<ExecutionVertex>> entry = it2.next();
+				final Map.Entry<Instance, List<ExecutionVertex>> entry = it2.next();
 				this.deploymentManager.deploy(executionGraph.getJobID(), entry.getKey(), entry.getValue());
 			}
 		}
@@ -382,7 +377,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 			 */
 			try {
 				for (final AllocatedResource allocatedResource : allocatedResources) {
-					getInstanceManager().releaseAllocatedResource(jobID, null, allocatedResource);
+					getInstanceManager().releaseAllocatedResource(allocatedResource);
 				}
 			} catch (InstanceException e) {
 				LOG.error(e);
@@ -432,8 +427,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 							LOG.error("Instance " + allocatedResource.getInstance() + " is not required for job"
 								+ eg.getJobID());
 							try {
-								getInstanceManager().releaseAllocatedResource(jobID, eg.getJobConfiguration(),
-									allocatedResource);
+								getInstanceManager().releaseAllocatedResource(allocatedResource);
 							} catch (InstanceException e) {
 								LOG.error(e);
 							}
@@ -502,8 +496,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 
 			LOG.info("Releasing instance " + allocatedResource.getInstance());
 			try {
-				getInstanceManager().releaseAllocatedResource(executionGraph.getJobID(), executionGraph
-					.getJobConfiguration(), allocatedResource);
+				getInstanceManager().releaseAllocatedResource(allocatedResource);
 			} catch (InstanceException e) {
 				LOG.error(StringUtils.stringifyException(e));
 			}

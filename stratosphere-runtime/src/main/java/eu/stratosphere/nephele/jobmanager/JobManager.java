@@ -23,7 +23,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eu.stratosphere.nephele.instance.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -67,12 +67,7 @@ import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.executiongraph.GraphConversionException;
 import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.executiongraph.JobStatusListener;
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.DummyInstance;
-import eu.stratosphere.nephele.instance.HardwareDescription;
-import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.instance.InstanceManager;
-import eu.stratosphere.nephele.instance.local.LocalInstanceManager;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.ipc.Server;
@@ -218,21 +213,13 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 		LOG.info("Starting job manager in " + executionMode + " mode");
 
 		// Try to load the instance manager for the given execution mode
-		// Try to load the scheduler for the given execution mode
-		if (executionMode == ExecutionMode.LOCAL) {
-			try {
-				this.instanceManager = new LocalInstanceManager();
-			} catch (Throwable t) {
-				throw new Exception("Cannot instantiate local instance manager: " + t.getMessage(), t);
-			}
-		} else {
-			final String instanceManagerClassName = JobManagerUtils.getInstanceManagerClassName(executionMode);
-			LOG.info("Trying to load " + instanceManagerClassName + " as instance manager");
-			this.instanceManager = JobManagerUtils.loadInstanceManager(instanceManagerClassName);
-			if (this.instanceManager == null) {
-				throw new Exception("Unable to load instance manager " + instanceManagerClassName);
-			}
+		final String instanceManagerClassName = JobManagerUtils.getInstanceManagerClassName(executionMode);
+		LOG.info("Trying to load " + instanceManagerClassName + " as instance manager");
+		this.instanceManager = JobManagerUtils.loadInstanceManager(instanceManagerClassName);
+		if (this.instanceManager == null) {
+			throw new Exception("Unable to load instance manager " + instanceManagerClassName);
 		}
+
 
 		// Try to load the scheduler for the given execution mode
 		final String schedulerClassName = JobManagerUtils.getSchedulerClassName(executionMode);
@@ -753,7 +740,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 			final ExecutionVertex connectedVertex = edge.getOutputGate().getVertex();
 
-			final AbstractInstance assignedInstance = connectedVertex.getAllocatedResource().getInstance();
+			final Instance assignedInstance = connectedVertex.getAllocatedResource().getInstance();
 			if (assignedInstance == null) {
 				LOG.error("Cannot resolve lookup: vertex found for channel ID " + edge.getOutputGateIndex()
 					+ " but no instance assigned");
@@ -820,7 +807,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				return ConnectionInfoLookupResponse.createReceiverNotReady();
 			}
 
-			final AbstractInstance assignedInstance = targetVertex.getAllocatedResource().getInstance();
+			final Instance assignedInstance = targetVertex.getAllocatedResource().getInstance();
 			if (assignedInstance == null) {
 				LOG.error("Cannot resolve lookup: vertex found for channel ID " + edge.getInputChannelID()
 					+ " but no instance assigned");
@@ -951,7 +938,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	@Override
 	public void killInstance(final StringRecord instanceName) throws IOException {
 
-		final AbstractInstance instance = this.instanceManager.getInstanceByName(instanceName.toString());
+		final Instance instance = this.instanceManager.getInstanceByName(instanceName.toString());
 		if (instance == null) {
 			LOG.error("Cannot find instance with name " + instanceName + " to kill it");
 			return;
@@ -1016,7 +1003,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			return;
 		}
 
-		final Set<AbstractInstance> allocatedInstance = new HashSet<AbstractInstance>();
+		final Set<Instance> allocatedInstance = new HashSet<Instance>();
 
 		final Iterator<ExecutionVertex> it = new ExecutionGraphIterator(eg, true);
 		while (it.hasNext()) {
@@ -1024,7 +1011,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			final ExecutionVertex vertex = it.next();
 			final ExecutionState state = vertex.getExecutionState();
 			if (state == ExecutionState.RUNNING || state == ExecutionState.FINISHING) {
-				final AbstractInstance instance = vertex.getAllocatedResource().getInstance();
+				final Instance instance = vertex.getAllocatedResource().getInstance();
 
 				if (instance instanceof DummyInstance) {
 					LOG.error("Found instance of type DummyInstance for vertex " + vertex.getName() + " (state "
@@ -1042,7 +1029,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			@Override
 			public void run() {
 
-				final Iterator<AbstractInstance> it2 = allocatedInstance.iterator();
+				final Iterator<Instance> it2 = allocatedInstance.iterator();
 
 				try {
 					while (it2.hasNext()) {
@@ -1066,7 +1053,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 
 	@Override
-	public void deploy(final JobID jobID, final AbstractInstance instance,
+	public void deploy(final JobID jobID, final Instance instance,
 			final List<ExecutionVertex> verticesToBeDeployed) {
 
 		if (verticesToBeDeployed.isEmpty()) {

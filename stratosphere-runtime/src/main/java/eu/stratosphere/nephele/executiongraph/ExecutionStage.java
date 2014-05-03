@@ -18,10 +18,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import eu.stratosphere.nephele.instance.Instance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.nephele.instance.AbstractInstance;
 import eu.stratosphere.nephele.io.channels.ChannelType;
 
 /**
@@ -394,7 +394,7 @@ public final class ExecutionStage {
 	}
 
 	public int getRequiredSlots(){
-		Set<AbstractInstance> instanceSet = new HashSet<AbstractInstance>();
+		Set<Instance> instanceSet = new HashSet<Instance>();
 
 		for(int i=0; i< this.getNumberOfStageMembers(); i++){
 			final ExecutionGroupVertex groupVertex = this.getStageMember(i);

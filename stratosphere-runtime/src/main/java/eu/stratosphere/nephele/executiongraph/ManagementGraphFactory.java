@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import eu.stratosphere.nephele.instance.AbstractInstance;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.managementgraph.ManagementEdge;
 import eu.stratosphere.nephele.managementgraph.ManagementEdgeID;
@@ -120,7 +120,7 @@ public class ManagementGraphFactory {
 			final ExecutionVertex ev = iterator.next();
 			final ManagementGroupVertex parent = groupMap.get(ev.getGroupVertex());
 
-			final AbstractInstance instance = ev.getAllocatedResource().getInstance();
+			final Instance instance = ev.getAllocatedResource().getInstance();
 			final ManagementVertex managementVertex = new ManagementVertex(
 						parent, 
 						ev.getID().toManagementVertexID(),

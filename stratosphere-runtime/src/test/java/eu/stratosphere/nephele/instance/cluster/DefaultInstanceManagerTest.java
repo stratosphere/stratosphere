@@ -20,9 +20,9 @@ import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import eu.stratosphere.nephele.instance.*;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,19 +30,13 @@ import org.junit.Test;
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
-import eu.stratosphere.nephele.instance.AllocatedResource;
-import eu.stratosphere.nephele.instance.AllocationID;
-import eu.stratosphere.nephele.instance.HardwareDescription;
-import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
-import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.instance.InstanceException;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.util.LogUtils;
 
 /**
- * Tests for {@link ClusterManager}.
+ * Tests for {@link eu.stratosphere.nephele.instance.DefaultInstanceManager}.
  */
-public class ClusterManagerTest {
+public class DefaultInstanceManagerTest {
 
 	@BeforeClass
 	public static void initLogging() {
@@ -53,7 +47,7 @@ public class ClusterManagerTest {
 	@Test
 	public void testInstanceRegistering() {
 		try {
-			ClusterManager cm = new ClusterManager();
+			DefaultInstanceManager cm = new DefaultInstanceManager();
 			TestInstanceListener testInstanceListener = new TestInstanceListener();
 			cm.setInstanceListener(testInstanceListener);
 			
@@ -91,7 +85,7 @@ public class ClusterManagerTest {
 	@Test
 	public void testAllocationDeallocation() {
 		try {
-			ClusterManager cm = new ClusterManager();
+			DefaultInstanceManager cm = new DefaultInstanceManager();
 			TestInstanceListener testInstanceListener = new TestInstanceListener();
 			cm.setInstanceListener(testInstanceListener);
 			
@@ -120,7 +114,7 @@ public class ClusterManagerTest {
 			Configuration conf = new Configuration();
 			cm.requestInstance(jobID, conf, 2);
 			
-			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 3, 1000);
+			DefaultInstanceManagerTestUtils.waitForInstances(jobID, testInstanceListener, 3, 1000);
 			
 			List<AllocatedResource> allocatedResources = testInstanceListener.getAllocatedResourcesForJob(jobID);
 			assertEquals(2, allocatedResources.size());
@@ -151,7 +145,7 @@ public class ClusterManagerTest {
 			it = allocatedResources.iterator();
 			while (it.hasNext()) {
 				final AllocatedResource allocatedResource = it.next();
-				cm.releaseAllocatedResource(jobID, conf, allocatedResource);
+				cm.releaseAllocatedResource(allocatedResource);
 			}
 			
 			// Now further allocations should be possible
@@ -182,7 +176,7 @@ public class ClusterManagerTest {
 			config.setInteger("instancemanager.cluster.cleanupinterval", CLEANUP_INTERVAL);
 			GlobalConfiguration.includeConfiguration(config);
 
-			ClusterManager cm = new ClusterManager();
+			DefaultInstanceManager cm = new DefaultInstanceManager();
 			TestInstanceListener testInstanceListener = new TestInstanceListener();
 			cm.setInstanceListener(testInstanceListener);
 
@@ -213,14 +207,14 @@ public class ClusterManagerTest {
 
 			cm.requestInstance(jobID, conf, 1);
 
-			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 1, 1000);
+			DefaultInstanceManagerTestUtils.waitForInstances(jobID, testInstanceListener, 1, 1000);
 			assertEquals(1, testInstanceListener.getNumberOfAllocatedResourcesForJob(jobID));
 
 			// wait for the cleanup to kick in
 			Thread.sleep(2000 * CLEANUP_INTERVAL);
 
 			// check that the instances are gone
-			ClusterManagerTestUtils.waitForInstances(jobID, testInstanceListener, 0, 1000);
+			DefaultInstanceManagerTestUtils.waitForInstances(jobID, testInstanceListener, 0, 1000);
 			assertEquals(0, testInstanceListener.getNumberOfAllocatedResourcesForJob(jobID));
 
 

@@ -19,13 +19,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.AllocationID;
 
 /**
  * An allocated resource object unambiguously defines the
  * hardware resources which have been assigned to an {@link eu.stratosphere.nephele.executiongraph.ExecutionVertex} for
- * executing a task. The allocated resource is comprised of an {@link eu.stratosphere.nephele.instance.AbstractInstance}
+ * executing a task. The allocated resource is comprised of an {@link Instance}
  * which identifies the node the task is scheduled to run on as well as an
  * {@link eu.stratosphere.nephele.instance.AllocationID} which determines the resources the task is scheduled to
  * allocate within the node.
@@ -38,7 +36,7 @@ public final class AllocatedResource {
 	/**
 	 * The instance a task is scheduled to run on.
 	 */
-	private final AbstractInstance instance;
+	private final Instance instance;
 
 	/**
 	 * The allocation ID identifying the resources within the instance
@@ -60,7 +58,7 @@ public final class AllocatedResource {
 	 * @param allocationID
 	 *        the allocation ID identifying the allocated resources within the instance
 	 */
-	public AllocatedResource(final AbstractInstance instance, final AllocationID allocationID) {
+	public AllocatedResource(final Instance instance, final AllocationID allocationID) {
 		this.instance = instance;
 		this.allocationID = allocationID;
 	}
@@ -70,7 +68,7 @@ public final class AllocatedResource {
 	 *
 	 * @return the instance a task is scheduled to run on
 	 */
-	public AbstractInstance getInstance() {
+	public Instance getInstance() {
 		return this.instance;
 	}
 

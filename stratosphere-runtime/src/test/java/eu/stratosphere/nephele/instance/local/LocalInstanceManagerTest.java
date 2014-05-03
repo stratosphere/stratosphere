@@ -14,6 +14,8 @@
 package eu.stratosphere.nephele.instance.local;
 
 import static org.junit.Assert.fail;
+
+import eu.stratosphere.nephele.instance.InstanceManager;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -50,9 +52,9 @@ public class LocalInstanceManagerTest {
 
 			final TestInstanceListener testInstanceListener = new TestInstanceListener();
 	
-			LocalInstanceManager lm = (LocalInstanceManager) jm.getInstanceManager(); // this is for sure, because I chose the local strategy
+			InstanceManager im = jm.getInstanceManager();
 			try {
-				lm.setInstanceListener(testInstanceListener);
+				im.setInstanceListener(testInstanceListener);
 	
 			} catch (Exception e) {
 				e.printStackTrace();

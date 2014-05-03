@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import eu.stratosphere.nephele.instance.Instance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,7 +31,6 @@ import eu.stratosphere.nephele.executiongraph.ExecutionGate;
 import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
-import eu.stratosphere.nephele.instance.AbstractInstance;
 import eu.stratosphere.nephele.instance.DummyInstance;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.taskmanager.TaskCancelResult;
@@ -160,19 +160,19 @@ public final class RecoveryLogic {
 	private static final boolean invalidateReceiverLookupCaches(final ExecutionVertex failedVertex,
 			final Set<ExecutionVertex> verticesToBeCanceled) {
 
-		final Map<AbstractInstance, Set<ChannelID>> entriesToInvalidate = new HashMap<AbstractInstance, Set<ChannelID>>();
+		final Map<Instance, Set<ChannelID>> entriesToInvalidate = new HashMap<Instance, Set<ChannelID>>();
 
 		collectCacheEntriesToInvalidate(failedVertex, entriesToInvalidate);
 		for (final Iterator<ExecutionVertex> it = verticesToBeCanceled.iterator(); it.hasNext();) {
 			collectCacheEntriesToInvalidate(it.next(), entriesToInvalidate);
 		}
 
-		final Iterator<Map.Entry<AbstractInstance, Set<ChannelID>>> it = entriesToInvalidate.entrySet().iterator();
+		final Iterator<Map.Entry<Instance, Set<ChannelID>>> it = entriesToInvalidate.entrySet().iterator();
 
 		while (it.hasNext()) {
 
-			final Map.Entry<AbstractInstance, Set<ChannelID>> entry = it.next();
-			final AbstractInstance instance = entry.getKey();
+			final Map.Entry<Instance, Set<ChannelID>> entry = it.next();
+			final Instance instance = entry.getKey();
 
 			try {
 				instance.invalidateLookupCacheEntries(entry.getValue());
@@ -186,7 +186,7 @@ public final class RecoveryLogic {
 	}
 
 	private static void collectCacheEntriesToInvalidate(final ExecutionVertex vertex,
-			final Map<AbstractInstance, Set<ChannelID>> entriesToInvalidate) {
+			final Map<Instance, Set<ChannelID>> entriesToInvalidate) {
 
 		final int numberOfOutputGates = vertex.getNumberOfOutputGates();
 		for (int i = 0; i < numberOfOutputGates; ++i) {
@@ -202,7 +202,7 @@ public final class RecoveryLogic {
 					continue;
 				}
 
-				final AbstractInstance instance = connectedVertex.getAllocatedResource().getInstance();
+				final Instance instance = connectedVertex.getAllocatedResource().getInstance();
 				if (instance instanceof DummyInstance) {
 					continue;
 				}
@@ -230,7 +230,7 @@ public final class RecoveryLogic {
 					continue;
 				}
 
-				final AbstractInstance instance = connectedVertex.getAllocatedResource().getInstance();
+				final Instance instance = connectedVertex.getAllocatedResource().getInstance();
 				if (instance instanceof DummyInstance) {
 					continue;
 				}

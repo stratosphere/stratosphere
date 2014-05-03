@@ -38,7 +38,7 @@ import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.executiongraph.JobStatusListener;
 import eu.stratosphere.nephele.executiongraph.ManagementGraphFactory;
 import eu.stratosphere.nephele.executiongraph.VertexAssignmentListener;
-import eu.stratosphere.nephele.instance.AbstractInstance;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.instance.AllocatedResource;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobStatus;
@@ -266,7 +266,7 @@ public final class EventCollector extends TimerTask implements ProfilingListener
 			final ManagementVertexID managementVertexID = id.toManagementVertexID();
 			final long timestamp = System.currentTimeMillis();
 
-			final AbstractInstance instance = newAllocatedResource.getInstance();
+			final Instance instance = newAllocatedResource.getInstance();
 			VertexAssignmentEvent event;
 			if (instance == null) {
 				event = new VertexAssignmentEvent(timestamp, managementVertexID, "null");

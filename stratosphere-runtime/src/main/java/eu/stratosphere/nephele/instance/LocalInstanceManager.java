@@ -11,27 +11,24 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.nephele.instance.local;
+package eu.stratosphere.nephele.instance;
 
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.HardwareDescription;
-import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.topology.NetworkNode;
-import eu.stratosphere.nephele.topology.NetworkTopology;
 
-public class LocalInstance extends AbstractInstance {
+import eu.stratosphere.nephele.taskmanager.TaskManager;
 
-	public LocalInstance(InstanceConnectionInfo instanceConnectionInfo,
-			NetworkNode parentNode, NetworkTopology networkTopology, HardwareDescription hardwareDescription,
-			int numberOfSlots) {
-		super(instanceConnectionInfo, parentNode, networkTopology, hardwareDescription, numberOfSlots);
+public class LocalInstanceManager extends DefaultInstanceManager{
+	private TaskManager taskManager;
+
+	public LocalInstanceManager() throws Exception{
+		taskManager = new TaskManager();
 	}
-
 
 	@Override
-	public String toString() {
+	public void shutdown(){
+		if(this.taskManager != null){
+			taskManager.shutdown();
+		}
 
-		return this.getInstanceConnectionInfo().toString();
+		super.shutdown();
 	}
-
 }

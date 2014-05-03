@@ -27,7 +27,7 @@ import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 
 /**
- * Tests for {@link ClusterInstance}.
+ * Tests for {@link eu.stratosphere.nephele.instance.Instance}.
  * 
  */
 public class HostInClusterTest {
@@ -37,7 +37,7 @@ public class HostInClusterTest {
 	 * 
 	 * @return a cluster instance of a special test type
 	 */
-	private ClusterInstance createTestClusterInstance() {
+	private Instance createTestClusterInstance() {
 
 		final int ipcPort = ConfigConstants.DEFAULT_TASK_MANAGER_IPC_PORT;
 		final int dataPort = ConfigConstants.DEFAULT_TASK_MANAGER_DATA_PORT;
@@ -57,7 +57,7 @@ public class HostInClusterTest {
 			memorySize * 1024L * 1024L, memorySize * 1024L * 1024L);
 
 		final NetworkTopology topology = NetworkTopology.createEmptyTopology();
-		ClusterInstance host = new ClusterInstance(instanceConnectionInfo, topology.getRootNode(), topology,
+		Instance host = new Instance(instanceConnectionInfo, topology.getRootNode(), topology,
 			hardwareDescription, 8);
 
 		return host;
@@ -70,7 +70,7 @@ public class HostInClusterTest {
 	public void testHeartBeat() {
 		// check that heart beat is triggered correctly.
 
-		ClusterInstance host = createTestClusterInstance();
+		Instance host = createTestClusterInstance();
 
 		host.reportHeartBeat();
 
@@ -91,7 +91,7 @@ public class HostInClusterTest {
 	@Test
 	public void testAccounting() {
 		// check whether the accounting of capacity works correctly
-		final ClusterInstance host = createTestClusterInstance();
+		final Instance host = createTestClusterInstance();
 		final JobID jobID = new JobID();
 		for (int run = 0; run < 2; ++run) {
 			// do this twice to check that everything is correctly freed
@@ -129,7 +129,7 @@ public class HostInClusterTest {
 	public void testTermination() {
 		
 		// check whether the accounting of capacity works correctly if terminateAllInstances is called
-		final ClusterInstance host = createTestClusterInstance();
+		final Instance host = createTestClusterInstance();
 		final JobID jobID = new JobID();
 		for (int run = 0; run < 2; ++run) {
 			// do this twice to check that everything is correctly freed

@@ -23,9 +23,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
+import eu.stratosphere.nephele.instance.*;
 import org.apache.log4j.Level;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,13 +33,7 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.execution.ExecutionState;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
-import eu.stratosphere.nephele.instance.AbstractInstance;
-import eu.stratosphere.nephele.instance.AllocatedResource;
-import eu.stratosphere.nephele.instance.HardwareDescription;
-import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
-import eu.stratosphere.nephele.instance.InstanceException;
-import eu.stratosphere.nephele.instance.InstanceListener;
-import eu.stratosphere.nephele.instance.InstanceManager;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.io.DistributionPattern;
 import eu.stratosphere.nephele.io.channels.ChannelType;
 import eu.stratosphere.nephele.io.library.FileLineReader;
@@ -51,7 +44,6 @@ import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobGraphDefinitionException;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobTaskVertex;
-import eu.stratosphere.nephele.topology.NetworkTopology;
 import eu.stratosphere.nephele.util.ServerTestUtils;
 import eu.stratosphere.util.LogUtils;
 
@@ -60,93 +52,6 @@ import eu.stratosphere.util.LogUtils;
  * 
  */
 public class ExecutionGraphTest {
-
-	/**
-	 * A test implementation of an {@link InstanceManager} which is used as a stub in these tests.
-	 * 
-	 */
-	private static final class TestInstanceManager implements InstanceManager {
-
-		@Override
-		public int getNumberOfSlots() {
-			throw new IllegalStateException("getNumberOfSlots called on TestInstanceManager.");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void requestInstance(final JobID jobID, final Configuration conf,
-				final int requiredSlots) throws InstanceException {
-
-			throw new IllegalStateException("requestInstance called on TestInstanceManager");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void releaseAllocatedResource(final JobID jobID, final Configuration conf,
-				final AllocatedResource allocatedResource)
-				throws InstanceException {
-
-			throw new IllegalStateException("releaseAllocatedResource called on TestInstanceManager");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void reportHeartBeat(final InstanceConnectionInfo instanceConnectionInfo) {
-
-			throw new IllegalStateException("reportHeartBeat called on TestInstanceManager");
-		}
-
-		@Override
-		public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
-										final HardwareDescription hardwareDescription, int numberSlots){
-			throw new IllegalStateException("registerTaskManager called on TestInstanceManager");
-		}
-
-		@Override
-		public NetworkTopology getNetworkTopology(final JobID jobID) {
-
-			throw new IllegalStateException("getNetworkTopology called on TestInstanceManager");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void setInstanceListener(final InstanceListener instanceListener) {
-
-			throw new IllegalStateException("setInstanceListener called on TestInstanceManager");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void shutdown() {
-
-			throw new IllegalStateException("shutdown called on TestInstanceManager");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public AbstractInstance getInstanceByName(final String name) {
-			throw new IllegalStateException("getInstanceByName called on TestInstanceManager");
-		}
-
-		@Override
-		public int getNumberOfTaskTrackers() {
-			return 0;
-		}
-
-	}
-
 	@BeforeClass
 	public static void reduceLogLevel() {
 		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
@@ -1000,9 +905,9 @@ public class ExecutionGraphTest {
 			input1.connectTo(forward1, ChannelType.INMEMORY,
 				DistributionPattern.POINTWISE);
 			forward1.connectTo(forward2, ChannelType.INMEMORY,
-				DistributionPattern.POINTWISE);
+					DistributionPattern.POINTWISE);
 			forward2.connectTo(forward3, ChannelType.NETWORK,
-				DistributionPattern.POINTWISE);
+					DistributionPattern.POINTWISE);
 			forward3.connectTo(output1, ChannelType.INMEMORY);
 
 			// setup instance sharing

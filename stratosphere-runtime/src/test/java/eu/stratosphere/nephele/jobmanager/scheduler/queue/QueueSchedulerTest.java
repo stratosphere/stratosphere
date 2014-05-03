@@ -28,7 +28,6 @@ import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.executiongraph.GraphConversionException;
-import eu.stratosphere.nephele.instance.InstanceManager;
 import eu.stratosphere.nephele.io.RecordReader;
 import eu.stratosphere.nephele.io.RecordWriter;
 import eu.stratosphere.nephele.io.channels.ChannelType;

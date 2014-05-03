@@ -11,45 +11,27 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.nephele.instance.cluster;
-
-import java.util.*;
-
-import eu.stratosphere.nephele.instance.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+package eu.stratosphere.nephele.instance;
 
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.topology.NetworkNode;
 import eu.stratosphere.nephele.topology.NetworkTopology;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.*;
 
 /**
- * Instance Manager for a static cluster.
- * <p>
- * The cluster manager can handle heterogeneous instances (compute nodes). Each instance type used in the cluster must
- * be described in the configuration.
- * <p>
- * This is a sample configuration: <code>
- * # definition of instances in format
- * # instancename,numComputeUnits,numCores,memorySize,diskCapacity,pricePerHour
- * instancemanager.cluster.type.1 = m1.small,2,1,2048,10,10
- * instancemanager.cluster.type. = c1.medium,2,1,2048,10,10
- * instancemanager.cluster.type. = m1.large,4,2,2048,10,10
- * instancemanager.cluster.type. = m1.xlarge,8,4,8192,20,20
- * instancemanager.cluster.type. = c1.xlarge,8,4,16384,20,40
+ * In Nephele an instance manager maintains the set of available compute resources. It is responsible for allocating new
+ * compute resources,
+ * provisioning available compute resources to the JobManager and keeping track of the availability of the utilized
+ * compute resources in order
+ * to report unexpected resource outages.
  * 
- * # default instance type
- * instancemanager.cluster.defaulttype = 1 (pointing to m1.small)
- * </code> Each instance is expected to run exactly one {@link eu.stratosphere.nephele.taskmanager.TaskManager}. When
- * the {@link eu.stratosphere.nephele.taskmanager.TaskManager} registers with the
- * {@link eu.stratosphere.nephele.jobmanager.JobManager} it sends a {@link HardwareDescription} which describes the
- * actual hardware characteristics of the instance (compute node). The cluster manage will attempt to match the report
- * hardware characteristics with one of the configured instance types. Moreover, the cluster manager is capable of
- * partitioning larger instances (compute nodes) into smaller, less powerful instances.
  */
-public class ClusterManager implements InstanceManager {
+public class DefaultInstanceManager implements InstanceManager {
 
 	// ------------------------------------------------------------------------
 	// Internal Constants
@@ -58,7 +40,7 @@ public class ClusterManager implements InstanceManager {
 	/**
 	 * The log object used to report debugging and error information.
 	 */
-	private static final Log LOG = LogFactory.getLog(ClusterManager.class);
+	private static final Log LOG = LogFactory.getLog(DefaultInstanceManager.class);
 
 	/**
 	 * Default duration after which a host is purged in case it did not send
@@ -76,7 +58,7 @@ public class ClusterManager implements InstanceManager {
 	// ------------------------------------------------------------------------
 
 	private final Object lock = new Object();
-	
+
 	/**
 	 * Duration after which a host is purged in case it did not send a
 	 * heart-beat message.
@@ -87,7 +69,7 @@ public class ClusterManager implements InstanceManager {
 	 * Set of hosts known to run a task manager that are thus able to execute
 	 * tasks.
 	 */
-	private final Map<InstanceConnectionInfo, ClusterInstance> registeredHosts;
+	private final Map<InstanceConnectionInfo, Instance> registeredHosts;
 
 	/**
 	 * The network topology of the cluster.
@@ -101,7 +83,7 @@ public class ClusterManager implements InstanceManager {
 
 
 	private boolean shutdown;
-	
+
 	/**
 	 * Periodic task that checks whether hosts have not sent their heart-beat
 	 * messages and purges the hosts in this case.
@@ -111,17 +93,17 @@ public class ClusterManager implements InstanceManager {
 		@Override
 		public void run() {
 
-			synchronized (ClusterManager.this.lock) {
+			synchronized (DefaultInstanceManager.this.lock) {
 
-				final List<Map.Entry<InstanceConnectionInfo, ClusterInstance>> hostsToRemove =
-					new ArrayList<Map.Entry<InstanceConnectionInfo, ClusterInstance>>();
+				final List<Map.Entry<InstanceConnectionInfo, Instance>> hostsToRemove =
+						new ArrayList<Map.Entry<InstanceConnectionInfo, Instance>>();
 
 				final Map<JobID, List<AllocatedResource>> staleResources = new HashMap<JobID, List<AllocatedResource>>();
 
 				// check all hosts whether they did not send heart-beat messages.
-				for (Map.Entry<InstanceConnectionInfo, ClusterInstance> entry : registeredHosts.entrySet()) {
+				for (Map.Entry<InstanceConnectionInfo, Instance> entry : registeredHosts.entrySet()) {
 
-					final ClusterInstance host = entry.getValue();
+					final Instance host = entry.getValue();
 					if (!host.isStillAlive(cleanUpInterval)) {
 
 						// this host has not sent the heart-beat messages
@@ -164,9 +146,9 @@ public class ClusterManager implements InstanceManager {
 	/**
 	 * Constructor.
 	 */
-	public ClusterManager() {
+	public DefaultInstanceManager() {
 
-		this.registeredHosts = new HashMap<InstanceConnectionInfo, ClusterInstance>();
+		this.registeredHosts = new HashMap<InstanceConnectionInfo, Instance>();
 
 		long tmpCleanUpInterval = (long) GlobalConfiguration.getInteger(CLEANUP_INTERVAL_KEY, DEFAULT_CLEANUP_INTERVAL) * 1000;
 
@@ -185,51 +167,49 @@ public class ClusterManager implements InstanceManager {
 		new Timer(runTimerAsDaemon).schedule(cleanupStaleMachines, 1000, 1000);
 	}
 
-
 	@Override
 	public void shutdown() {
 		synchronized (this.lock) {
 			if (this.shutdown) {
 				return;
 			}
-			
+
 			this.cleanupStaleMachines.cancel();
-			
-			Iterator<ClusterInstance> it = this.registeredHosts.values().iterator();
+
+			Iterator<Instance> it = this.registeredHosts.values().iterator();
 			while (it.hasNext()) {
 				it.next().destroyProxies();
 			}
 			this.registeredHosts.clear();
-			
+
 			this.shutdown = true;
 		}
 	}
 
 	@Override
-	public void releaseAllocatedResource(JobID jobID, Configuration conf,
-			AllocatedResource allocatedResource) throws InstanceException
+	public void releaseAllocatedResource(AllocatedResource allocatedResource) throws InstanceException
 	{
 		synchronized (this.lock) {
 			// release the instance from the host
-			final ClusterInstance clusterInstance = (ClusterInstance) allocatedResource.getInstance();
+			final Instance clusterInstance = allocatedResource.getInstance();
 			clusterInstance.releaseSlot(allocatedResource.getAllocationID());
 		}
 	}
 
 	/**
-	 * Creates a new {@link ClusterInstance} object to manage instances that can
+	 * Creates a new {@link Instance} object to manage instances that can
 	 * be executed on that host.
-	 * 
+	 *
 	 * @param instanceConnectionInfo
 	 *        the connection information for the instance
 	 * @param hardwareDescription
 	 *        the hardware description provided by the new instance
 	 * @param numberOfSlots
 	 * 		  number of slots available on the instance
-	 * @return a new {@link ClusterInstance} object or <code>null</code> if the cluster instance could not be created
+	 * @return a new {@link Instance} object or <code>null</code> if the cluster instance could not be created
 	 */
-	private ClusterInstance createNewHost(final InstanceConnectionInfo instanceConnectionInfo,
-			final HardwareDescription hardwareDescription, int numberOfSlots) {
+	private Instance createNewHost(final InstanceConnectionInfo instanceConnectionInfo,
+										  final HardwareDescription hardwareDescription, int numberOfSlots) {
 
 		// Try to match new host with a stub host from the existing topology
 		String instanceName = instanceConnectionInfo.getHostName();
@@ -278,25 +258,24 @@ public class ClusterManager implements InstanceManager {
 		}
 
 		LOG.info("Creating instance for " + instanceConnectionInfo + ", parent is "
-			+ parentNode.getName());
-		final ClusterInstance host = new ClusterInstance(instanceConnectionInfo, parentNode,
-			this.networkTopology, hardwareDescription, numberOfSlots);
+				+ parentNode.getName());
+		final Instance host = new Instance(instanceConnectionInfo, parentNode,
+				this.networkTopology, hardwareDescription, numberOfSlots);
 
 		return host;
 	}
-
 
 	@Override
 	public void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo) {
 
 		synchronized (this.lock) {
-			ClusterInstance host = registeredHosts.get(instanceConnectionInfo);
-	
+			Instance host = registeredHosts.get(instanceConnectionInfo);
+
 			if(host == null){
 				LOG.error("Task manager with connection info " + instanceConnectionInfo + " has not been registered.");
 				return;
 			}
-			
+
 			host.reportHeartBeat();
 		}
 	}
@@ -311,7 +290,7 @@ public class ClusterManager implements InstanceManager {
 				return;
 			}
 
-			ClusterInstance host = createNewHost(instanceConnectionInfo, hardwareDescription, numberOfSlots);
+			Instance host = createNewHost(instanceConnectionInfo, hardwareDescription, numberOfSlots);
 
 			if(host == null){
 				LOG.error("Could not create a new host object for register task manager for connection info " +
@@ -328,42 +307,40 @@ public class ClusterManager implements InstanceManager {
 
 	@Override
 	public void requestInstance(JobID jobID, Configuration conf,  int requiredSlots)
-		throws InstanceException
+			throws InstanceException
 	{
 
 		synchronized(this.lock) {
-			Iterator<ClusterInstance> clusterIterator = this.registeredHosts.values().iterator();
-			ClusterInstance instance = null;
+			Iterator<Instance> clusterIterator = this.registeredHosts.values().iterator();
+			Instance instance = null;
 			List<AllocatedResource> allocatedResources = new ArrayList<AllocatedResource>();
 			int allocatedSlots = 0;
 
 			while(clusterIterator.hasNext()) {
 				instance = clusterIterator.next();
-				for(int i= 0; i < instance.getNumberOfAvailableSlots() && allocatedSlots < requiredSlots; i++,
-						allocatedSlots++) {
+				while(instance.getNumberOfAvailableSlots() >0  && allocatedSlots < requiredSlots){
 					AllocatedResource resource = instance.allocateSlot(jobID);
 					allocatedResources.add(resource);
+					allocatedSlots++;
 				}
 			}
 
 			if(allocatedSlots < requiredSlots){
 				throw new InstanceException("Cannot allocate the required number of slots: " + requiredSlots + ".");
 			}
-	
+
 			if (this.instanceListener != null) {
-				final ClusterInstanceNotifier clusterInstanceNotifier = new ClusterInstanceNotifier(
-					this.instanceListener, jobID, allocatedResources);
+				final InstanceNotifier clusterInstanceNotifier = new InstanceNotifier(
+						this.instanceListener, jobID, allocatedResources);
 				clusterInstanceNotifier.start();
 			}
 		}
 	}
 
-
 	@Override
 	public NetworkTopology getNetworkTopology(JobID jobID) {
 		return this.networkTopology;
 	}
-
 
 	@Override
 	public void setInstanceListener(InstanceListener instanceListener) {
@@ -373,15 +350,15 @@ public class ClusterManager implements InstanceManager {
 	}
 
 	@Override
-	public AbstractInstance getInstanceByName(String name) {
+	public Instance getInstanceByName(String name) {
 		if (name == null) {
 			throw new IllegalArgumentException("Argument name must not be null");
 		}
 
 		synchronized (this.lock) {
-			final Iterator<ClusterInstance> it = this.registeredHosts.values().iterator();
+			final Iterator<Instance> it = this.registeredHosts.values().iterator();
 			while (it.hasNext()) {
-				final AbstractInstance instance = it.next();
+				final Instance instance = it.next();
 				if (name.equals(instance.getName())) {
 					return instance;
 				}
@@ -400,7 +377,7 @@ public class ClusterManager implements InstanceManager {
 	public int getNumberOfSlots() {
 		int slots = 0;
 
-		for(AbstractInstance instance: registeredHosts.values()){
+		for(Instance instance: registeredHosts.values()){
 			slots += instance.getNumberOfSlots();
 		}
 

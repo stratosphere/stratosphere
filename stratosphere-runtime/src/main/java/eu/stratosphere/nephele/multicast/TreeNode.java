@@ -16,7 +16,7 @@ package eu.stratosphere.nephele.multicast;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 
-import eu.stratosphere.nephele.instance.AbstractInstance;
+import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ConnectionInfoLookupResponse;
@@ -32,7 +32,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
 	private TreeNode parentnode = null;
 
-	private final AbstractInstance instance;
+	private final Instance instance;
 
 	private final InstanceConnectionInfo nodeConnectionInfo;
 
@@ -44,7 +44,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
 	private int penalty = 0;
 
-	public TreeNode(AbstractInstance instance, InstanceConnectionInfo nodeConnectionInfo,
+	public TreeNode(Instance instance, InstanceConnectionInfo nodeConnectionInfo,
 			LinkedList<ChannelID> localTargets) {
 		this.instance = instance;
 		this.nodeConnectionInfo = nodeConnectionInfo;

@@ -35,10 +35,10 @@ import eu.stratosphere.nephele.topology.NetworkNode;
 import eu.stratosphere.nephele.topology.NetworkTopology;
 
 /**
- * An abstract instance represents a resource a {@link eu.stratosphere.nephele.taskmanager.TaskManager} runs on.
+ * An instance represents a resource a {@link eu.stratosphere.nephele.taskmanager.TaskManager} runs on.
  * 
  */
-public abstract class AbstractInstance extends NetworkNode {
+public class Instance extends NetworkNode {
 	/**
 	 * The connection info identifying the instance.
 	 */
@@ -65,6 +65,11 @@ public abstract class AbstractInstance extends NetworkNode {
 	private TaskOperationProtocol taskManager = null;
 
 	/**
+	 * Time when last heat beat has been received from the task manager running on this instance.
+	 */
+	private long lastReceivedHeartBeat = System.currentTimeMillis();
+
+	/**
 	 * Constructs an abstract instance object.
 	 * 
 	 * @param instanceConnectionInfo
@@ -76,9 +81,9 @@ public abstract class AbstractInstance extends NetworkNode {
 	 * @param hardwareDescription
 	 *        the hardware description provided by the instance itself
 	 */
-	public AbstractInstance(final InstanceConnectionInfo instanceConnectionInfo,
-			final NetworkNode parentNode, final NetworkTopology networkTopology,
-			final HardwareDescription hardwareDescription, int numberOfSlots) {
+	public Instance(final InstanceConnectionInfo instanceConnectionInfo,
+					final NetworkNode parentNode, final NetworkTopology networkTopology,
+					final HardwareDescription hardwareDescription, int numberOfSlots) {
 		super((instanceConnectionInfo == null) ? null : instanceConnectionInfo.toString(), parentNode, networkTopology);
 		this.instanceConnectionInfo = instanceConnectionInfo;
 		this.hardwareDescription = hardwareDescription;
@@ -212,6 +217,30 @@ public abstract class AbstractInstance extends NetworkNode {
 		return getTaskManagerProxy().killTask(id);
 	}
 
+	/**
+	 * Updates the time of last received heart beat to the current system time.
+	 */
+	public synchronized void reportHeartBeat() {
+		this.lastReceivedHeartBeat = System.currentTimeMillis();
+	}
+
+	/**
+	 * Returns whether the host is still alive.
+	 *
+	 * @param cleanUpInterval
+	 *        duration (in milliseconds) after which a host is
+	 *        considered dead if it has no received heat-beats.
+	 * @return <code>true</code> if the host has received a heat-beat before the <code>cleanUpInterval</code> duration
+	 *         has expired, <code>false</code> otherwise
+	 */
+	public synchronized boolean isStillAlive(final long cleanUpInterval) {
+
+		if (this.lastReceivedHeartBeat + cleanUpInterval < System.currentTimeMillis()) {
+			return false;
+		}
+		return true;
+	}
+
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -221,11 +250,11 @@ public abstract class AbstractInstance extends NetworkNode {
 			return super.equals(obj);
 		}
 
-		if (!(obj instanceof AbstractInstance)) {
+		if (!(obj instanceof Instance)) {
 			return false;
 		}
 
-		final AbstractInstance abstractInstance = (AbstractInstance) obj;
+		final Instance abstractInstance = (Instance) obj;
 
 		return this.instanceConnectionInfo.equals(abstractInstance.getInstanceConnectionInfo());
 	}
