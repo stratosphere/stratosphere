@@ -13,51 +13,33 @@
 
 package eu.stratosphere.nephele.jobmanager.scheduler;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Set;
 
+import eu.stratosphere.nephele.executiongraph.*;
 import eu.stratosphere.nephele.instance.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.execution.ExecutionState;
-import eu.stratosphere.nephele.executiongraph.ExecutionEdge;
-import eu.stratosphere.nephele.executiongraph.ExecutionGate;
-import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
-import eu.stratosphere.nephele.executiongraph.ExecutionGraphIterator;
-import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertex;
-import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertexIterator;
-import eu.stratosphere.nephele.executiongraph.ExecutionPipeline;
-import eu.stratosphere.nephele.executiongraph.ExecutionStage;
-import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
-import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
-import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobmanager.DeploymentManager;
 import eu.stratosphere.util.StringUtils;
 
 /**
- * This abstract scheduler must be extended by a scheduler implementations for Nephele. The abstract class defines the
- * fundamental methods for scheduling and removing jobs. While Nephele's
+ * The default scheduler for Nephele. While Nephele's
  * {@link eu.stratosphere.nephele.jobmanager.JobManager} is responsible for requesting the required instances for the
  * job at the {@link eu.stratosphere.nephele.instance.InstanceManager}, the scheduler is in charge of assigning the
  * individual tasks to the instances.
  * 
  */
-public abstract class AbstractScheduler implements InstanceListener {
+public class DefaultScheduler implements InstanceListener, JobStatusListener, ExecutionStageListener {
 
 	/**
 	 * The LOG object to report events within the scheduler.
 	 */
-	protected static final Log LOG = LogFactory.getLog(AbstractScheduler.class);
+	protected static final Log LOG = LogFactory.getLog(DefaultScheduler.class);
 
 	/**
 	 * The instance manager assigned to this scheduler.
@@ -75,6 +57,11 @@ public abstract class AbstractScheduler implements InstanceListener {
 	private final Map<ExecutionVertexID, ExecutionVertex> verticesToBeRestarted = new ConcurrentHashMap<ExecutionVertexID, ExecutionVertex>();
 
 	/**
+	 * The job queue where all submitted jobs go to.
+	 */
+	private Deque<ExecutionGraph> jobQueue = new ArrayDeque<ExecutionGraph>();
+
+	/**
 	 * Constructs a new abstract scheduler.
 	 * 
 	 * @param deploymentManager
@@ -82,7 +69,7 @@ public abstract class AbstractScheduler implements InstanceListener {
 	 * @param instanceManager
 	 *        the instance manager to be used with this scheduler
 	 */
-	protected AbstractScheduler(final DeploymentManager deploymentManager, final InstanceManager instanceManager) {
+	public DefaultScheduler(final DeploymentManager deploymentManager, final InstanceManager instanceManager) {
 
 		this.deploymentManager = deploymentManager;
 		this.instanceManager = instanceManager;
@@ -90,25 +77,144 @@ public abstract class AbstractScheduler implements InstanceListener {
 	}
 
 	/**
+	 * Removes the job represented by the given {@link ExecutionGraph} from the scheduler.
+	 *
+	 * @param executionGraphToRemove
+	 *        the job to be removed
+	 */
+	void removeJobFromSchedule(final ExecutionGraph executionGraphToRemove) {
+
+		boolean removedFromQueue = false;
+
+		synchronized (this.jobQueue) {
+
+			final Iterator<ExecutionGraph> it = this.jobQueue.iterator();
+			while (it.hasNext()) {
+
+				final ExecutionGraph executionGraph = it.next();
+				if (executionGraph.getJobID().equals(executionGraphToRemove.getJobID())) {
+					removedFromQueue = true;
+					it.remove();
+					break;
+				}
+			}
+		}
+
+		if (!removedFromQueue) {
+			LOG.error("Cannot find job " + executionGraphToRemove.getJobName() + " ("
+					+ executionGraphToRemove.getJobID() + ") to remove");
+		}
+	}
+
+	/**
 	 * Adds a job represented by an {@link ExecutionGraph} object to the scheduler. The job is then executed according
 	 * to the strategies of the concrete scheduler implementation.
-	 * 
+	 *
 	 * @param executionGraph
 	 *        the job to be added to the scheduler
 	 * @throws SchedulingException
 	 *         thrown if an error occurs and the scheduler does not accept the new job
 	 */
-	public abstract void scheduleJob(ExecutionGraph executionGraph) throws SchedulingException;
+	public void scheduleJob(final ExecutionGraph executionGraph) throws SchedulingException {
+
+		final int requiredSlots = executionGraph.getRequiredSlots();
+		final int availableSlots = this.getInstanceManager().getNumberOfSlots();
+
+		if(requiredSlots > availableSlots){
+			throw new SchedulingException("Not enough slots to schedule job " + executionGraph.getJobID());
+		}
+
+		// Subscribe to job status notifications
+		executionGraph.registerJobStatusListener(this);
+
+		// Register execution listener for each vertex
+		final ExecutionGraphIterator it2 = new ExecutionGraphIterator(executionGraph, true);
+		while (it2.hasNext()) {
+
+			final ExecutionVertex vertex = it2.next();
+			vertex.registerExecutionListener(new DefaultExecutionListener(this, vertex));
+		}
+
+		// Register the scheduler as an execution stage listener
+		executionGraph.registerExecutionStageListener(this);
+
+		// Add job to the job queue (important to add job to queue before requesting instances)
+		synchronized (this.jobQueue) {
+			this.jobQueue.add(executionGraph);
+		}
+
+		// Request resources for the first stage of the job
+
+		final ExecutionStage executionStage = executionGraph.getCurrentExecutionStage();
+		try {
+			requestInstances(executionStage);
+		} catch (InstanceException e) {
+			final String exceptionMessage = StringUtils.stringifyException(e);
+			LOG.error(exceptionMessage);
+			this.jobQueue.remove(executionGraph);
+			throw new SchedulingException(exceptionMessage);
+		}
+	}
 
 	/**
 	 * Returns the execution graph which is associated with the given job ID.
-	 * 
+	 *
 	 * @param jobID
 	 *        the job ID to search the execution graph for
 	 * @return the execution graph which belongs to the given job ID or <code>null</code if no such execution graph
 	 *         exists
 	 */
-	public abstract ExecutionGraph getExecutionGraphByID(JobID jobID);
+	public ExecutionGraph getExecutionGraphByID(final JobID jobID) {
+
+		synchronized (this.jobQueue) {
+
+			final Iterator<ExecutionGraph> it = this.jobQueue.iterator();
+			while (it.hasNext()) {
+
+				final ExecutionGraph executionGraph = it.next();
+				if (executionGraph.getJobID().equals(jobID)) {
+					return executionGraph;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Shuts the scheduler down. After shut down no jobs can be added to the scheduler.
+	 */
+	public void shutdown() {
+
+		synchronized (this.jobQueue) {
+			this.jobQueue.clear();
+		}
+
+	}
+
+	public void jobStatusHasChanged(final ExecutionGraph executionGraph, final InternalJobStatus newJobStatus,
+									final String optionalMessage) {
+
+		if (newJobStatus == InternalJobStatus.FAILED || newJobStatus == InternalJobStatus.FINISHED
+				|| newJobStatus == InternalJobStatus.CANCELED) {
+			removeJobFromSchedule(executionGraph);
+		}
+	}
+
+	public void nextExecutionStageEntered(final JobID jobID, final ExecutionStage executionStage) {
+
+		// Request new instances if necessary
+		try {
+			requestInstances(executionStage);
+		} catch (InstanceException e) {
+			// TODO: Handle error correctly
+			LOG.error(StringUtils.stringifyException(e));
+		}
+
+		// Deploy the assigned vertices
+		deployAssignedInputVertices(executionStage.getExecutionGraph());
+	}
+
 
 	/**
 	 * Returns the {@link eu.stratosphere.nephele.instance.InstanceManager} object which is used by the current scheduler.
@@ -119,12 +225,6 @@ public abstract class AbstractScheduler implements InstanceListener {
 		return this.instanceManager;
 	}
 
-	// void removeJob(JobID jobID);
-
-	/**
-	 * Shuts the scheduler down. After shut down no jobs can be added to the scheduler.
-	 */
-	public abstract void shutdown();
 
 	/**
 	 * Collects the instances required to run the job from the given {@link ExecutionStage} and requests them at the

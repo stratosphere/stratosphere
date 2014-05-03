@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,7 +39,6 @@ import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobmanager.JobManager;
-import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 import eu.stratosphere.nephele.protocols.ChannelLookupProtocol;
 import eu.stratosphere.nephele.taskmanager.bytebuffered.ConnectionInfoLookupResponse;
 
@@ -83,7 +83,7 @@ public final class MulticastManager implements ChannelLookupProtocol {
 	/**
 	 * Reference to the scheduler.
 	 */
-	private final AbstractScheduler scheduler;
+	private final DefaultScheduler scheduler;
 
 	/**
 	 * Map caching already computed multicast forwarding tables.
@@ -96,7 +96,7 @@ public final class MulticastManager implements ChannelLookupProtocol {
 	 * @param scheduler
 	 *        reference to the scheduler
 	 */
-	public MulticastManager(final AbstractScheduler scheduler) {
+	public MulticastManager(final DefaultScheduler scheduler) {
 
 		this.scheduler = scheduler;
 

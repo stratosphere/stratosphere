@@ -26,14 +26,13 @@ import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
 import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.scheduler.local.LocalScheduler;
 
-public abstract class AbstractExecutionListener implements ExecutionListener {
+public class DefaultExecutionListener implements ExecutionListener {
 
 	/**
-	 * The instance of the {@link LocalScheduler}.
+	 * The instance of the {@link eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler}.
 	 */
-	private final AbstractScheduler scheduler;
+	private final DefaultScheduler scheduler;
 
 	/**
 	 * The {@link ExecutionVertex} this wrapper object belongs to.
@@ -43,12 +42,12 @@ public abstract class AbstractExecutionListener implements ExecutionListener {
 	/**
 	 * Constructs a new wrapper object for the given {@link ExecutionVertex}.
 	 * 
-	 * @param AbstractScheduler
-	 *        the instance of the {@link AbstractScheduler}
+	 * @param scheduler
+	 *        the instance of the {@link DefaultScheduler}
 	 * @param executionVertex
 	 *        the {@link ExecutionVertex} the received notification refer to
 	 */
-	public AbstractExecutionListener(final AbstractScheduler scheduler, final ExecutionVertex executionVertex) {
+	public DefaultExecutionListener(final DefaultScheduler scheduler, final ExecutionVertex executionVertex) {
 		this.scheduler = scheduler;
 		this.executionVertex = executionVertex;
 	}

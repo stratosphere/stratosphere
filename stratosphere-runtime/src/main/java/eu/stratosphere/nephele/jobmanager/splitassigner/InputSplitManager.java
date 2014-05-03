@@ -30,7 +30,6 @@ import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertex;
 import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertexIterator;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 import eu.stratosphere.nephele.jobmanager.splitassigner.file.FileInputSplitAssigner;
 import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
@@ -38,7 +37,7 @@ import eu.stratosphere.util.StringUtils;
 
 /**
  * The input split manager is responsible for serving input splits to {@link AbstractInputTask} objects at runtime.
- * Before passed on to the {@link AbstractScheduler}, an {@link ExecutionGraph} is registered with the input split
+ * Before passed on to the {@link eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler}, an {@link ExecutionGraph} is registered with the input split
  * manager and all included input vertices of the graph register their generated input splits with the manager. Each
  * type of input split can be assigned to a specific {@link InputSplitAssigner} which is loaded by the input split
  * manager at runtime.

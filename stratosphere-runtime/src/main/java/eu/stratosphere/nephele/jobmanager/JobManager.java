@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import eu.stratosphere.nephele.instance.*;
+import eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -77,7 +78,6 @@ import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobmanager.accumulators.AccumulatorManager;
 import eu.stratosphere.nephele.jobmanager.archive.ArchiveListener;
 import eu.stratosphere.nephele.jobmanager.archive.MemoryArchivist;
-import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 import eu.stratosphere.nephele.jobmanager.scheduler.SchedulingException;
 import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitManager;
 import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitWrapper;
@@ -133,7 +133,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 	private final InputSplitManager inputSplitManager;
 
-	private final AbstractScheduler scheduler;
+	private final DefaultScheduler scheduler;
 
 	private final MulticastManager multicastManager;
 	

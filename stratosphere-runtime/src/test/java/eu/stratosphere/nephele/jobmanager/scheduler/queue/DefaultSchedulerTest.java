@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
+import eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler;
 import org.junit.Test;
 
 import eu.stratosphere.core.io.StringRecord;
@@ -41,9 +42,9 @@ import eu.stratosphere.nephele.template.AbstractOutputTask;
 import eu.stratosphere.util.StringUtils;
 
 /**
- *         This class checks the functionality of the {@link QueueScheduler} class
+ *         This class checks the functionality of the {@link eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler} class
  */
-public class QueueSchedulerTest {
+public class DefaultSchedulerTest {
 
 	/**
 	 * Test input task.
@@ -136,11 +137,11 @@ public class QueueSchedulerTest {
 	 * channel.
 	 */
 	@Test
-	public void testSchedulJobWithInMemoryChannel() {
+	public void testScheduleJobWithInMemoryChannel() {
 
 		final TestInstanceManager tim = new TestInstanceManager();
 		final TestDeploymentManager tdm = new TestDeploymentManager();
-		final QueueScheduler scheduler = new QueueScheduler(tdm, tim);
+		final DefaultScheduler scheduler = new DefaultScheduler(tdm, tim);
 
 		final ExecutionGraph executionGraph = createExecutionGraph(ChannelType.INMEMORY);
 

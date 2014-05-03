@@ -18,11 +18,10 @@ import java.util.List;
 import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
 import eu.stratosphere.nephele.instance.Instance;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.scheduler.AbstractScheduler;
 
 /**
  * A deployment manager is responsible for deploying a list of {@link ExecutionVertex} objects the given
- * {@link eu.stratosphere.nephele.instance.Instance}. It is called by a {@link AbstractScheduler} implementation whenever at least one
+ * {@link eu.stratosphere.nephele.instance.Instance}. It is called by a {@link eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler} implementation whenever at least one
  * {@link ExecutionVertex} has become ready to be executed.
  * 
  */
