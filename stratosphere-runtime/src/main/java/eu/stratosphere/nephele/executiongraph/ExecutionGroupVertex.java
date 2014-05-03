@@ -741,35 +741,6 @@ public final class ExecutionGroupVertex {
 	}
 
 	/**
-	 * Recursive method to calculate the connection IDs of the {@link ExecutionGraph}.
-	 * 
-	 * @param currentConnectionID
-	 *        the current connection ID
-	 * @param alreadyVisited
-	 *        the set of already visited group vertices
-	 * @return maximum assigned connectionID
-	 */
-	int calculateConnectionID(int currentConnectionID, final Set<ExecutionGroupVertex> alreadyVisited) {
-
-		if (!alreadyVisited.add(this)) {
-			return currentConnectionID;
-		}
-		
-		for (final ExecutionGroupEdge backwardLink : this.backwardLinks) {
-		  
-			backwardLink.setConnectionID(currentConnectionID);
-			
-			++currentConnectionID;
-			
-			currentConnectionID = backwardLink.getSourceVertex()
-			    .calculateConnectionID(currentConnectionID, alreadyVisited);
-		}
-		
-		return currentConnectionID;
-	}
-
-
-	/**
 	 * Returns the task class that is assigned to execution vertices of this group.
 	 * 
 	 * @return the task class that is assigned to execution vertices of this group

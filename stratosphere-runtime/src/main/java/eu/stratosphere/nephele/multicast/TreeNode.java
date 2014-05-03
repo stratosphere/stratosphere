@@ -36,8 +36,6 @@ public class TreeNode implements Comparable<TreeNode> {
 
 	private final InstanceConnectionInfo nodeConnectionInfo;
 
-	private final int connectionID;
-
 	private final LinkedList<ChannelID> localTargets;
 
 	private final LinkedList<TreeNode> children = new LinkedList<TreeNode>();
@@ -46,10 +44,9 @@ public class TreeNode implements Comparable<TreeNode> {
 
 	private int penalty = 0;
 
-	public TreeNode(AbstractInstance instance, InstanceConnectionInfo nodeConnectionInfo, int connectionID,
+	public TreeNode(AbstractInstance instance, InstanceConnectionInfo nodeConnectionInfo,
 			LinkedList<ChannelID> localTargets) {
 		this.instance = instance;
-		this.connectionID = connectionID;
 		this.nodeConnectionInfo = nodeConnectionInfo;
 		this.localTargets = localTargets;
 	}
@@ -99,10 +96,6 @@ public class TreeNode implements Comparable<TreeNode> {
 
 	private InstanceConnectionInfo getConnectionInfo() {
 		return this.nodeConnectionInfo;
-	}
-
-	private int getConnectionID() {
-		return this.connectionID;
 	}
 
 	private void setParent(TreeNode parent) {
@@ -172,12 +165,9 @@ public class TreeNode implements Comparable<TreeNode> {
 			// Instance Connection info associated with the remote target
 			final InstanceConnectionInfo ici = n.getConnectionInfo();
 
-			// get the connection ID associated with the remote target endpoint
-			final int icid = n.getConnectionID();
-
 			final InetSocketAddress isa = new InetSocketAddress(ici.getAddress(), ici.getDataPort());
 
-			lookupResponse.addRemoteTarget(new RemoteReceiver(isa, icid));
+			lookupResponse.addRemoteTarget(new RemoteReceiver(isa));
 		}
 
 		table.addConnectionInfo(this.nodeConnectionInfo, lookupResponse);

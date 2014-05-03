@@ -35,12 +35,6 @@ public class ExecutionGroupEdge {
 	private volatile ChannelType channelType;
 
 	/**
-	 * The edge's connection ID. The connection ID determines to which physical TCP connection channels represented by
-	 * this edge will be mapped in case the edge's channel type is NETWORK.
-	 */
-	private volatile int connectionID;
-
-	/**
 	 * The group vertex connected to this edge.
 	 */
 	private final ExecutionGroupVertex targetVertex;
@@ -141,25 +135,6 @@ public class ExecutionGroupEdge {
 	 */
 	public ExecutionGroupVertex getTargetVertex() {
 		return this.targetVertex;
-	}
-
-	/**
-	 * Sets the edge's connection ID.
-	 * 
-	 * @param connectionID
-	 *        the edge's connection ID
-	 */
-	void setConnectionID(final int connectionID) {
-		this.connectionID = connectionID;
-	}
-
-	/**
-	 * Returns the edge's connection ID.
-	 * 
-	 * @return the edge's connection ID
-	 */
-	public int getConnectionID() {
-		return this.connectionID;
 	}
 
 	/**

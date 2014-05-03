@@ -339,8 +339,7 @@ public final class MulticastManager implements ChannelLookupProtocol {
 
 	/**
 	 * Returns a list of (physical) Nodes (=hosts) within the multicast tree. Each node contains the local ChannelIDs,
-	 * records
-	 * must be forwarded to. The first node in the List is the only multicast sender.
+	 * records must be forwarded to. The first node in the List is the only multicast sender.
 	 * 
 	 * @param sourceChannelID
 	 * @return
@@ -376,10 +375,6 @@ public final class MulticastManager implements ChannelLookupProtocol {
 
 			final ExecutionEdge actualOutputChannel = iter.next();
 
-			// the connection ID should not be needed for the root node (as it is not set as remote receiver)
-			// but in order to maintain consistency, it also gets the connectionID of the first channel pointing to it
-			firstConnectionID = actualOutputChannel.getConnectionID();
-
 			final ExecutionVertex targetVertex = actualOutputChannel.getInputGate().getVertex();
 
 			// is the target vertex running on the same instance?
@@ -393,7 +388,7 @@ public final class MulticastManager implements ChannelLookupProtocol {
 
 		// create sender node (root) with source instance
 		TreeNode actualNode = new TreeNode(eg.getVertexByChannelID(sourceChannelID).getAllocatedResource()
-			.getInstance(), source, firstConnectionID, actualLocalTargets);
+			.getInstance(), source, actualLocalTargets);
 
 		treeNodes.add(actualNode);
 
@@ -404,10 +399,6 @@ public final class MulticastManager implements ChannelLookupProtocol {
 		while (outputChannels.size() > 0) {
 
 			final ExecutionEdge firstChannel = outputChannels.pollFirst();
-
-			// each receiver nodes' endpoint is associated with the connection ID
-			// of the first channel pointing to this node.
-			final int connectionID = firstChannel.getConnectionID();
 
 			final ExecutionVertex firstTarget = firstChannel.getInputGate().getVertex();
 
@@ -438,7 +429,7 @@ public final class MulticastManager implements ChannelLookupProtocol {
 			}// end for
 
 			// create tree node for current instance
-			actualNode = new TreeNode(firstTarget.getAllocatedResource().getInstance(), actualInstance, connectionID,
+			actualNode = new TreeNode(firstTarget.getAllocatedResource().getInstance(), actualInstance,
 				actualLocalTargets);
 
 			receiverNodes.add(actualNode);

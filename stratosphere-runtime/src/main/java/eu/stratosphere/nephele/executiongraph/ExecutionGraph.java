@@ -282,9 +282,6 @@ public class ExecutionGraph implements ExecutionListener {
 		// Now that an initial graph is built, apply the user settings
 		applyUserDefinedSettings(temporaryGroupVertexMap);
 
-		// Calculate the connection IDs
-		calculateConnectionIDs();
-
 		// Finally, construct the execution pipelines
 		reconstructExecutionPipelines();
 	}
@@ -1329,26 +1326,6 @@ public class ExecutionGraph implements ExecutionListener {
 		while (it.hasNext()) {
 
 			it.next().reconstructExecutionPipelines();
-		}
-	}
-
-	/**
-	 * Calculates the connection IDs of the graph to avoid deadlocks in the data flow at runtime.
-	 */
-	private void calculateConnectionIDs() {
-
-		final Set<ExecutionGroupVertex> alreadyVisited = new HashSet<ExecutionGroupVertex>();
-		final ExecutionStage lastStage = getStage(getNumberOfStages() - 1);
-
-		for (int i = 0; i < lastStage.getNumberOfStageMembers(); ++i) {
-
-			final ExecutionGroupVertex groupVertex = lastStage.getStageMember(i);
-			
-			int currentConnectionID = 0;
-			
-			if (groupVertex.isOutputVertex()) {
-			  currentConnectionID = groupVertex.calculateConnectionID(currentConnectionID, alreadyVisited);
-			}
 		}
 	}
 

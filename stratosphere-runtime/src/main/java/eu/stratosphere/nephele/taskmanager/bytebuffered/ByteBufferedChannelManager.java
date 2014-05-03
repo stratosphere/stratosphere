@@ -114,7 +114,7 @@ public final class ByteBufferedChannelManager implements TransferEnvelopeDispatc
 	 * 
 	 * @param task
 	 *        the task to be registered
-	 * @param the
+	 * @param activeOutputChannels
 	 *        set of output channels which are initially active
 	 * @throws InsufficientResourcesException
 	 *         thrown if the channel manager does not have enough memory buffers to safely run this task
@@ -497,11 +497,10 @@ public final class ByteBufferedChannelManager implements TransferEnvelopeDispatc
 		}
 
 		final ChannelID remoteSourceID = channelContext.getConnectedChannelID();
-		final int connectionIndex = remoteReceivers.get(0).getConnectionIndex();
 		final InetSocketAddress isa = new InetSocketAddress(this.localConnectionInfo.getAddress(),
 			this.localConnectionInfo.getDataPort());
 
-		final RemoteReceiver remoteReceiver = new RemoteReceiver(isa, connectionIndex);
+		final RemoteReceiver remoteReceiver = new RemoteReceiver(isa);
 		final TransferEnvelope senderHint = SenderHintEvent.createEnvelopeWithEvent(transferEnvelope, remoteSourceID,
 			remoteReceiver);
 
@@ -523,7 +522,7 @@ public final class ByteBufferedChannelManager implements TransferEnvelopeDispatc
 	 *        the source channel ID for which the receiver list shall be retrieved
 	 * @return the list of receivers or <code>null</code> if the receiver could not be determined
 	 * @throws IOException
-	 * @throws InterruptedExcption
+	 * @throws InterruptedException
 	 */
 	private TransferEnvelopeReceiverList getReceiverList(final JobID jobID, final ChannelID sourceChannelID)
 			throws IOException, InterruptedException {

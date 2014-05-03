@@ -24,41 +24,29 @@ import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.util.StringUtils;
 
 /**
- * Objects of this class uniquely identify a connection to a remote {@link TaskManager}.
+ * Objects of this class uniquely identify a connection to a remote {@link eu.stratosphere.nephele.taskmanager.TaskManager}.
  * 
  */
 public final class RemoteReceiver implements IOReadableWritable {
 
 	/**
-	 * The address of the connection to the remote {@link TaskManager}.
+	 * The address of the connection to the remote {@link eu.stratosphere.nephele.taskmanager.TaskManager}.
 	 */
 	private InetSocketAddress connectionAddress;
-
-	/**
-	 * The index of the connection to the remote {@link TaskManager}.
-	 */
-	private int connectionIndex;
 
 	/**
 	 * Constructs a new remote receiver object.
 	 * 
 	 * @param connectionAddress
-	 *        the address of the connection to the remote {@link TaskManager}
-	 * @param connectionIndex
-	 *        the index of the connection to the remote {@link TaskManager}
+	 *        the address of the connection to the remote {@link eu.stratosphere.nephele.taskmanager.TaskManager}
 	 */
-	public RemoteReceiver(final InetSocketAddress connectionAddress, final int connectionIndex) {
+	public RemoteReceiver(final InetSocketAddress connectionAddress) {
 
 		if (connectionAddress == null) {
 			throw new IllegalArgumentException("Argument connectionAddress must not be null");
 		}
 
-		if (connectionIndex < 0) {
-			throw new IllegalArgumentException("Argument connectionIndex must be a non-negative integer number");
-		}
-
 		this.connectionAddress = connectionAddress;
-		this.connectionIndex = connectionIndex;
 	}
 
 	/**
@@ -66,34 +54,22 @@ public final class RemoteReceiver implements IOReadableWritable {
 	 */
 	public RemoteReceiver() {
 		this.connectionAddress = null;
-		this.connectionIndex = -1;
 	}
 
 	/**
-	 * Returns the address of the connection to the remote {@link TaskManager}.
+	 * Returns the address of the connection to the remote {@link eu.stratosphere.nephele.taskmanager.TaskManager}.
 	 * 
-	 * @return the address of the connection to the remote {@link TaskManager}
+	 * @return the address of the connection to the remote {@link eu.stratosphere.nephele.taskmanager.TaskManager}
 	 */
 	public InetSocketAddress getConnectionAddress() {
 
 		return this.connectionAddress;
 	}
 
-	/**
-	 * Returns the index of the connection to the remote {@link TaskManager}.
-	 * 
-	 * @return the index of the connection to the remote {@link TaskManager}
-	 */
-	public int getConnectionIndex() {
-
-		return this.connectionIndex;
-	}
-
-
 	@Override
 	public int hashCode() {
 
-		return this.connectionAddress.hashCode() + (31 * this.connectionIndex);
+		return this.connectionAddress.hashCode();
 	}
 
 
@@ -109,10 +85,6 @@ public final class RemoteReceiver implements IOReadableWritable {
 			return false;
 		}
 
-		if (this.connectionIndex != rr.connectionIndex) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -124,8 +96,6 @@ public final class RemoteReceiver implements IOReadableWritable {
 		out.writeInt(ia.getAddress().length);
 		out.write(ia.getAddress());
 		out.writeInt(this.connectionAddress.getPort());
-
-		out.writeInt(this.connectionIndex);
 	}
 
 
@@ -144,14 +114,12 @@ public final class RemoteReceiver implements IOReadableWritable {
 		}
 		final int port = in.readInt();
 		this.connectionAddress = new InetSocketAddress(ia, port);
-
-		this.connectionIndex = in.readInt();
 	}
 
 
 	@Override
 	public String toString() {
 
-		return this.connectionAddress + " (" + this.connectionIndex + ")";
+		return this.connectionAddress.toString();
 	}
 }

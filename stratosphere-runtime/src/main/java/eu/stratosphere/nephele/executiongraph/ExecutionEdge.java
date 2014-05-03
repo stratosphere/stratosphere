@@ -90,9 +90,4 @@ public final class ExecutionEdge {
 		
 		return this.groupEdge.isBroadcast();
 	}
-	
-	public int getConnectionID() {
-		
-		return this.groupEdge.getConnectionID();
-	}
 }

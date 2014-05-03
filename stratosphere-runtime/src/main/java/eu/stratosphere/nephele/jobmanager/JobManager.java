@@ -781,8 +781,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				final InstanceConnectionInfo ici = assignedInstance.getInstanceConnectionInfo();
 				final InetSocketAddress isa = new InetSocketAddress(ici.getAddress(), ici.getDataPort());
 
-				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa, edge
-					.getConnectionID()));
+				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa));
 			}
 		}
 
@@ -837,8 +836,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 				final InstanceConnectionInfo ici = assignedInstance.getInstanceConnectionInfo();
 				final InetSocketAddress isa = new InetSocketAddress(ici.getAddress(), ici.getDataPort());
 
-				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa, edge
-					.getConnectionID()));
+				return ConnectionInfoLookupResponse.createReceiverFoundAndReady(new RemoteReceiver(isa));
 			}
 		}
 
