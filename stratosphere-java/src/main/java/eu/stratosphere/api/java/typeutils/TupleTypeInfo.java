@@ -90,7 +90,7 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 		
 		Class<T> tupleClass = getTypeClass();
 		
-		return new TupleSerializer<T>(tupleClass, fieldSerializers);
+		return new TupleSerializer<T>(tupleClass, fieldSerializers, keyPositions);
 	}
 	
 	@Override

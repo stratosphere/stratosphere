@@ -16,6 +16,10 @@ package eu.stratosphere.api.java.typeutils.runtime;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.java.tuple.Tuple;
@@ -32,13 +36,14 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 	
 	private final TypeSerializer<Object>[] fieldSerializers;
 	
+	private final int[] serializedFieldPos;
+	
 	private final int arity;
 	
 	private final boolean stateful;
 	
-	
 	@SuppressWarnings("unchecked")
-	public TupleSerializer(Class<T> tupleClass, TypeSerializer<?>[] fieldSerializers) {
+	public TupleSerializer(Class<T> tupleClass, TypeSerializer<?>[] fieldSerializers, int[] keyPositions) {
 		this.tupleClass = tupleClass;
 		this.fieldSerializers = (TypeSerializer<Object>[]) fieldSerializers;
 		this.arity = fieldSerializers.length;
@@ -48,6 +53,27 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 			if (ser.isStateful()) {
 				stateful = true;
 				break;
+			}
+		}
+		
+		// Setup the serialized field positions. They are a mapping from the field number -> serialized field number
+		// And shall assure that the serialized fields are ordered as given in the keyPositions
+		// if keyPositions are f.e. [ 3, 5, 2 ], serializedFieldPos will be [ 3, 5, 2, 0, 1, 4, ... ]
+		List<Integer> keyPositionList;
+		serializedFieldPos = new int[arity];
+		int currSerPos = 0;
+		if(keyPositions != null){
+			keyPositionList = Arrays.asList(ArrayUtils.toObject(keyPositions));
+			for(; currSerPos < keyPositions.length; currSerPos++){
+				serializedFieldPos[currSerPos] = keyPositions[currSerPos];
+			}
+		}else{
+			keyPositionList = Collections.EMPTY_LIST;
+		}
+		
+		for(int i = 0; i < arity; i++){
+			if(!keyPositionList.contains(i)){
+				serializedFieldPos[currSerPos++] = i;
 			}
 		}
 		this.stateful = stateful;
@@ -100,16 +126,16 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 	@Override
 	public void serialize(T value, DataOutputView target) throws IOException {
 		for (int i = 0; i < arity; i++) {
-			Object o = value.getField(i);
-			fieldSerializers[i].serialize(o, target);
+			Object o = value.getField(serializedFieldPos[i]);
+			fieldSerializers[serializedFieldPos[i]].serialize(o, target);
 		}
 	}
 
 	@Override
 	public T deserialize(T reuse, DataInputView source) throws IOException {
 		for (int i = 0; i < arity; i++) {
-			Object field = fieldSerializers[i].deserialize(reuse.getField(i), source);
-			reuse.setField(field, i);
+			Object field = fieldSerializers[serializedFieldPos[i]].deserialize(reuse.getField(serializedFieldPos[i]), source);
+			reuse.setField(field, serializedFieldPos[i]);
 		}
 		return reuse;
 	}
@@ -117,7 +143,7 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException {
 		for (int i = 0; i < arity; i++) {
-			fieldSerializers[i].copy(source, target);
+			fieldSerializers[serializedFieldPos[i]].copy(source, target);
 		}
 	}
 	

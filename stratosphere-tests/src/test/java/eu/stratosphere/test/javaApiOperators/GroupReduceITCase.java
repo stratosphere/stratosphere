@@ -41,7 +41,7 @@ import eu.stratosphere.util.Collector;
 @RunWith(Parameterized.class)
 public class GroupReduceITCase extends JavaProgramTestBase {
 	
-	private static int NUM_PROGRAMS = 11;
+	private static int NUM_PROGRAMS = 12;
 	
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
@@ -370,32 +370,31 @@ public class GroupReduceITCase extends JavaProgramTestBase {
 //				// return expected result
 //				return "231,91,Hello World\n";
 //			}
-			// TODO: descending sort not working
-//			case 10: {
-//				
-//				/*
-//				 * check correctness of groupReduce on tuples with key field selector and group sorting
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				env.setDegreeOfParallelism(1);
-//				
-//				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
-//				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
-//						groupBy(1).sortGroup(2,Order.DESCENDING).reduceGroup(new Tuple3SortedGroupReduce());
-//				
-//				reduceDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "1,1,Hi\n" +
-//						"5,2,Hello world-Hello\n" +
-//						"15,3,Luke Skywalker-I am fine.-Hello world, how are you?\n" +
-//						"34,4,Comment#4-Comment#3-Comment#2-Comment#1\n" +
-//						"65,5,Comment#9-Comment#8-Comment#7-Comment#6-Comment#5\n" +
-//						"111,6,Comment#15-Comment#14-Comment#13-Comment#12-Comment#11-Comment#10\n";
-//				
-//			}
+			case 12: {
+				
+				/*
+				 * check correctness of groupReduce on tuples with key field selector and group sorting
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				env.setDegreeOfParallelism(1);
+				
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.get3TupleDataSet(env);
+				DataSet<Tuple3<Integer, Long, String>> reduceDs = ds.
+						groupBy(1).sortGroup(2,Order.DESCENDING).reduceGroup(new Tuple3SortedGroupReduce());
+				
+				reduceDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "1,1,Hi\n" +
+						"5,2,Hello world-Hello\n" +
+						"15,3,Luke Skywalker-I am fine.-Hello world, how are you?\n" +
+						"34,4,Comment#4-Comment#3-Comment#2-Comment#1\n" +
+						"65,5,Comment#9-Comment#8-Comment#7-Comment#6-Comment#5\n" +
+						"111,6,Comment#15-Comment#14-Comment#13-Comment#12-Comment#11-Comment#10\n";
+				
+			}
 			default: 
 			throw new IllegalArgumentException("Invalid program id");
 			}

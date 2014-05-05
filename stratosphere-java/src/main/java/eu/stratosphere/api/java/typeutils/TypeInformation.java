@@ -17,6 +17,7 @@ package eu.stratosphere.api.java.typeutils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import eu.stratosphere.api.common.operators.util.FieldList;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.types.Value;
 
@@ -33,6 +34,14 @@ public abstract class TypeInformation<T> {
 	public abstract boolean isKeyType();
 	
 	public abstract TypeSerializer<T> createSerializer();
+	
+	public void setKeyPositions(FieldList keyPositions){
+		if(keyPositions!= null){
+			this.keyPositions = keyPositions.toArray();
+		}
+	}
+	
+	protected int[] keyPositions = null;
 	
 	// -------------------------------------------------------------------------
 	
