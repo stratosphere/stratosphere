@@ -330,9 +330,9 @@ public class DefaultInstanceManager implements InstanceManager {
 			}
 
 			if (this.instanceListener != null) {
-				final InstanceNotifier clusterInstanceNotifier = new InstanceNotifier(
+				final InstanceNotifier instanceNotifier = new InstanceNotifier(
 						this.instanceListener, jobID, allocatedResources);
-				clusterInstanceNotifier.start();
+				instanceNotifier.start();
 			}
 		}
 	}
