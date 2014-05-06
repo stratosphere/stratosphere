@@ -124,6 +124,8 @@ public class JavaApiPostPass implements OptimizerPostPass {
 			
 			PlanDeltaIterationOperator<?, ?> operator = (PlanDeltaIterationOperator<?, ?>) iterationNode.getPactContract();
 			
+			operator.getSolutionsetType().setKeyPositions(iterationNode.getSolutionSetKeyFields());
+			
 			// set the serializers and comparators for the workset iteration
 			iterationNode.setSolutionSetSerializer(createSerializer(operator.getSolutionsetType()));
 			iterationNode.setWorksetSerializer(createSerializer(operator.getWorksetType()));
@@ -153,7 +155,7 @@ public class JavaApiPostPass implements OptimizerPostPass {
 			}
 			
 			UnaryJavaPlanNode<?, ?> javaNode = (UnaryJavaPlanNode<?, ?>) sn.getOptimizerNode().getPactContract();
-			
+
 			// parameterize the node's driver strategy
 			if (sn.getDriverStrategy().requiresComparator()) {
 				sn.setComparator(createComparator(javaNode.getInputType(), sn.getKeys(), 
@@ -263,6 +265,8 @@ public class JavaApiPostPass implements OptimizerPostPass {
 				type = javaNode.getReturnType();
 			}
 		}
+		
+		type.setKeyPositions(channel.getLocalStrategyKeys());
 		
 		// the serializer always exists
 		channel.setSerializer(createSerializer(type));
