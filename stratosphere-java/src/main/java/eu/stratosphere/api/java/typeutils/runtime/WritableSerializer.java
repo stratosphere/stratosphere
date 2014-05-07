@@ -18,6 +18,8 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
+import com.esotericsoftware.kryo.Kryo;
+
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
@@ -29,52 +31,72 @@ public class WritableSerializer<T extends Writable> extends TypeSerializer<T> {
 	
 	private final Class<T> typeClass;
 	
+	private transient Kryo kryo;
+	
+	private transient T copyInstance;
+	
 	public WritableSerializer(Class<T> typeClass) {
 		this.typeClass = typeClass;
 	}
-
+	
 	@Override
 	public T createInstance() {
-		return InstantiationUtil.instantiate(typeClass, Writable.class);
+		return InstantiationUtil.instantiate(typeClass);
 	}
-
+	
 	@Override
 	public T copy(T from, T reuse) {
-		throw new UnsupportedOperationException();
+		checkKryoInitialized();
+		reuse = this.kryo.copy(from);
+		return reuse;
 	}
-
+	
 	@Override
 	public int getLength() {
 		return -1;
 	}
-
+	
 	@Override
 	public void serialize(T record, DataOutputView target) throws IOException {
-		Writable w = (Writable) record;
-		w.write(target);		
+		record.write(target);
 	}
-
+	
 	@Override
 	public T deserialize(T reuse, DataInputView source) throws IOException {
-		Writable w = (Writable) reuse;
-		w.readFields(source);
+		reuse.readFields(source);
 		return reuse;
 	}
-
+	
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException {
-		Writable w = createInstance();
-		w.readFields(source);
-		w.write(target);
+		ensureInstanceInstantiated();
+		copyInstance.readFields(source);
+		copyInstance.write(target);
 	}
-
+	
 	@Override
 	public boolean isImmutableType() {
-		return true;
+		return false;
 	}
-
+	
 	@Override
 	public boolean isStateful() {
-		return false;
+		return true;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	private final void ensureInstanceInstantiated() {
+		if (copyInstance == null) {
+			copyInstance = createInstance();
+		}
+	}
+	
+	private final void checkKryoInitialized() {
+		if (this.kryo == null) {
+			this.kryo = new Kryo();
+			this.kryo.setAsmEnabled(true);
+			this.kryo.register(typeClass);
+		}
 	}
 }

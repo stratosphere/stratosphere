@@ -4,10 +4,13 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
+import com.esotericsoftware.kryo.Kryo;
+
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
+import eu.stratosphere.types.NormalizableKey;
 import eu.stratosphere.util.InstantiationUtil;
 
 /***********************************************************************************************************************
@@ -28,15 +31,19 @@ public class WritableComparator<T extends Writable & Comparable<T>> extends Type
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Class<T> typeClass;
-	
-	private transient T reference;
+	private Class<T> type;
 	
 	private final boolean ascendingComparison;
 	
-	public WritableComparator(Class<T> typeClass, boolean ascending) {
+	private transient T reference;
+	
+	private transient T tempReference;
+	
+	private transient Kryo kryo;
+	
+	public WritableComparator(boolean ascending, Class<T> type) {
+		this.type = type;
 		this.ascendingComparison = ascending;
-		this.typeClass = typeClass;
 	}
 	
 	@Override
@@ -46,7 +53,8 @@ public class WritableComparator<T extends Writable & Comparable<T>> extends Type
 	
 	@Override
 	public void setReference(T toCompare) {
-		this.reference = toCompare;
+		checkKryoInitialized();
+		reference = this.kryo.copy(toCompare);
 	}
 	
 	@Override
@@ -56,45 +64,70 @@ public class WritableComparator<T extends Writable & Comparable<T>> extends Type
 	
 	@Override
 	public int compareToReference(TypeComparator<T> referencedComparator) {
-		int comp = ((WritableComparator<T>) referencedComparator).reference.compareTo(reference);
+		T otherRef = ((WritableComparator<T>) referencedComparator).reference;
+		int comp = otherRef.compareTo(reference);
+		return ascendingComparison ? comp : -comp;
+	}
+	
+	@Override
+	public int compare(T first, T second) {
+		int comp = first.compareTo(second);
 		return ascendingComparison ? comp : -comp;
 	}
 	
 	@Override
 	public int compare(DataInputView firstSource, DataInputView secondSource) throws IOException {
-		T wc1 = InstantiationUtil.instantiate(typeClass, Writable.class);
-		T wc2 = InstantiationUtil.instantiate(typeClass, Writable.class);
+		ensureReferenceInstantiated();
+		ensureTempReferenceInstantiated();
 		
-		wc1.readFields(firstSource);
-		wc2.readFields(firstSource);
+		reference.readFields(firstSource);
+		tempReference.readFields(secondSource);
 		
-		int comp = wc1.compareTo(wc2);
+		int comp = reference.compareTo(tempReference);
 		return ascendingComparison ? comp : -comp;
 	}
 	
 	@Override
 	public boolean supportsNormalizedKey() {
-		return false;
-	}
-	
-	@Override
-	public boolean supportsSerializationWithKeyNormalization() {
-		return false;
+		return NormalizableKey.class.isAssignableFrom(type);
 	}
 	
 	@Override
 	public int getNormalizeKeyLen() {
-		return 0;
+		ensureReferenceInstantiated();
+		
+		NormalizableKey<?> key = (NormalizableKey<?>) reference;
+		return key.getMaxNormalizedKeyLen();
 	}
 	
 	@Override
 	public boolean isNormalizedKeyPrefixOnly(int keyBytes) {
-		return true;
+		return keyBytes < getNormalizeKeyLen();
 	}
 	
 	@Override
 	public void putNormalizedKey(T record, MemorySegment target, int offset, int numBytes) {
-		throw new UnsupportedOperationException();
+		NormalizableKey<?> key = (NormalizableKey<?>) record;
+		key.copyNormalizedKey(target, offset, numBytes);
+	}
+	
+	@Override
+	public boolean invertNormalizedKey() {
+		return !ascendingComparison;
+	}
+	
+	@Override
+	public TypeComparator<T> duplicate() {
+		return new WritableComparator<T>(ascendingComparison, type);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	// unsupported normalization
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public boolean supportsSerializationWithKeyNormalization() {
+		return false;
 	}
 	
 	@Override
@@ -107,14 +140,25 @@ public class WritableComparator<T extends Writable & Comparable<T>> extends Type
 		throw new UnsupportedOperationException();
 	}
 	
-	@Override
-	public boolean invertNormalizedKey() {
-		return !ascendingComparison;
+	// --------------------------------------------------------------------------------------------
+	
+	private final void checkKryoInitialized() {
+		if (this.kryo == null) {
+			this.kryo = new Kryo();
+			this.kryo.setAsmEnabled(true);
+			this.kryo.register(type);
+		}
 	}
 	
-	@Override
-	public TypeComparator<T> duplicate() {
-		throw new UnsupportedOperationException();
+	private final void ensureReferenceInstantiated() {
+		if (reference == null) {
+			reference = InstantiationUtil.instantiate(type, Writable.class);
+		}
 	}
 	
+	private final void ensureTempReferenceInstantiated() {
+		if (tempReference == null) {
+			tempReference = InstantiationUtil.instantiate(type, Writable.class);
+		}
+	}
 }

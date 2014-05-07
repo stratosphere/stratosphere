@@ -40,7 +40,7 @@ public class WritableTypeInfo<T extends Writable> extends TypeInformation<T> imp
 	@Override
 	public TypeComparator<T> createComparator(boolean sortOrderAscending) {
 		if(Comparable.class.isAssignableFrom(typeClass)) {
-			return new WritableComparator(typeClass, sortOrderAscending);
+			return new WritableComparator(sortOrderAscending, typeClass);
 		}
 		else {
 			throw new UnsupportedOperationException("Writable does not implement Comparable interface.");
@@ -84,13 +84,13 @@ public class WritableTypeInfo<T extends Writable> extends TypeInformation<T> imp
 	
 	// --------------------------------------------------------------------------------------------
 	
-		static final <T extends Writable> TypeInformation<T> getWritableTypeInfo(Class<T> typeClass) {
-			if (Writable.class.isAssignableFrom(typeClass) && !typeClass.equals(Writable.class)) {
-				return new WritableTypeInfo<T>(typeClass);
-			}
-			else {
-				throw new InvalidTypesException("The given class is no subclass of " + Writable.class.getName());
-			}
+	static final <T extends Writable> TypeInformation<T> getWritableTypeInfo(Class<T> typeClass) {
+		if (Writable.class.isAssignableFrom(typeClass) && !typeClass.equals(Writable.class)) {
+			return new WritableTypeInfo<T>(typeClass);
 		}
+		else {
+			throw new InvalidTypesException("The given class is no subclass of " + Writable.class.getName());
+		}
+	}
 	
 }
