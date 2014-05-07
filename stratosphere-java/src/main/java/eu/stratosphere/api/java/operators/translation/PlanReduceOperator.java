@@ -15,9 +15,15 @@
 package eu.stratosphere.api.java.operators.translation;
 
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
+import eu.stratosphere.api.common.operators.SingleInputSemanticProperties;
 import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
+import eu.stratosphere.api.java.functions.FunctionAnnotation;
 import eu.stratosphere.api.java.functions.ReduceFunction;
+import eu.stratosphere.api.java.functions.SemanticPropUtil;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
 
 /**
  *
@@ -27,14 +33,18 @@ public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupR
 {
 
 	private final TypeInformation<T> type;
-	
-	
+
+
 	public PlanReduceOperator(ReduceFunction<T> udf, int[] logicalGroupingFields, String name, TypeInformation<T> type) {
 		super(udf, logicalGroupingFields, name);
 		this.type = type;
+
+		Set<Annotation> annotations = FunctionAnnotation.readSingleConstantAnnotations(this.getUserCodeWrapper());
+		SingleInputSemanticProperties sp = SemanticPropUtil.getSemanticPropsSingle(annotations, this.getInputType(), this.getReturnType());
+		setSemanticProperties(sp);
 	}
-	
-	
+
+
 	@Override
 	public TypeInformation<T> getReturnType() {
 		return this.type;
@@ -44,5 +54,5 @@ public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupR
 	public TypeInformation<T> getInputType() {
 		return this.type;
 	}
-	
+
 }
