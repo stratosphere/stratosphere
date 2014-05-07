@@ -18,8 +18,7 @@ import eu.stratosphere.api.common.typeutils.ComparatorTestBase;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 
-@SuppressWarnings("rawtypes")
-public class WritableComparatorTest extends ComparatorTestBase {	
+public class WritableComparatorTest extends ComparatorTestBase<StringArrayWritable> {	
 	
 	StringArrayWritable[] data = new StringArrayWritable[]{
 			new StringArrayWritable(new String[]{}),
