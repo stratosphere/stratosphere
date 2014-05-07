@@ -11,17 +11,17 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.test.hadoopcompatibility;
+package eu.stratosphere.test.hadoopcompatibility.record;
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.hadoopcompatibility.example.WordCountWithHadoopOutputFormat;
+import eu.stratosphere.hadoopcompatibility.record.example.WordCountWithOutputFormat;
 import eu.stratosphere.test.testdata.WordCountData;
 import eu.stratosphere.test.util.RecordAPITestBase;
 
 /**
  * test the hadoop inputformat and outputformat for stratosphere
  */
-public class HadoopInputOutputTest extends RecordAPITestBase {
+public class HadoopRecordInputOutputITCase extends RecordAPITestBase {
 	protected String textPath;
 	protected String resultPath;
 	protected String counts;
@@ -36,7 +36,7 @@ public class HadoopInputOutputTest extends RecordAPITestBase {
 	@Override
 	protected Plan getTestJob() {
 		//WordCountWithHadoopOutputFormat takes hadoop TextInputFormat as input and output file in hadoop TextOutputFormat
-		WordCountWithHadoopOutputFormat wc = new WordCountWithHadoopOutputFormat();
+		WordCountWithOutputFormat wc = new WordCountWithOutputFormat();
 		return wc.getPlan("1", textPath, resultPath);
 	}
 

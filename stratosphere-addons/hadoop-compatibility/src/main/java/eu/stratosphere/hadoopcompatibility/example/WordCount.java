@@ -10,163 +10,106 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
-
 package eu.stratosphere.hadoopcompatibility.example;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 
-import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.api.common.Program;
-import eu.stratosphere.api.common.ProgramDescription;
-import eu.stratosphere.api.java.record.operators.FileDataSink;
-import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
-import eu.stratosphere.api.java.record.functions.MapFunction;
-import eu.stratosphere.api.java.record.functions.ReduceFunction;
-import eu.stratosphere.api.java.record.io.CsvOutputFormat;
-import eu.stratosphere.api.java.record.operators.MapOperator;
-import eu.stratosphere.api.java.record.operators.ReduceOperator;
-import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
-import eu.stratosphere.client.LocalExecutor;
-import eu.stratosphere.hadoopcompatibility.HadoopDataSource;
-import eu.stratosphere.hadoopcompatibility.datatypes.WritableWrapperConverter;
-import eu.stratosphere.types.IntValue;
-import eu.stratosphere.types.Record;
-import eu.stratosphere.types.StringValue;
+import eu.stratosphere.api.java.DataSet;
+import eu.stratosphere.api.java.ExecutionEnvironment;
+import eu.stratosphere.api.java.aggregation.Aggregations;
+import eu.stratosphere.api.java.functions.FlatMapFunction;
+import eu.stratosphere.api.java.functions.MapFunction;
+import eu.stratosphere.api.java.tuple.Tuple2;
+import eu.stratosphere.hadoopcompatibility.HadoopInputFormat;
+import eu.stratosphere.hadoopcompatibility.HadoopOutputFormat;
 import eu.stratosphere.util.Collector;
+
+
 
 /**
  * Implements a word count which takes the input file and counts the number of
- * the occurrences of each word in the file.
+ * occurrences of each word in the file and writes the result back to disk.
+ * 
+ * This example shows how to use Hadoop Input Formats, how to convert Hadoop Writables to 
+ * common Java types for better usage in a Stratosphere job and how to use Hadoop Output Formats.
  */
-public class WordCount implements Program, ProgramDescription {
-	
-	private static final long serialVersionUID = 1L;
-
-
-	/**
-	 * Converts a Record containing one string in to multiple string/integer pairs.
-	 * The string is tokenized by whitespaces. For each token a new record is emitted,
-	 * where the token is the first field and an Integer(1) is the second field.
-	 */
-	public static class TokenizeLine extends MapFunction implements Serializable {
-		private static final long serialVersionUID = 1L;
-		
-		@Override
-		public void map(Record record, Collector<Record> collector) {
-			// get the first field (as type StringValue) from the record
-			String line = record.getField(1, StringValue.class).getValue();
-			// normalize the line
-			line = line.replaceAll("\\W+", " ").toLowerCase();
-			
-			// tokenize the line
-			StringTokenizer tokenizer = new StringTokenizer(line);
-			while (tokenizer.hasMoreTokens()) {
-				String word = tokenizer.nextToken();
-				
-				// we emit a (word, 1) pair 
-				collector.collect(new Record(new StringValue(word), new IntValue(1)));
-			}
-		}
-	}
-
-	/**
-	 * Sums up the counts for a certain given key. The counts are assumed to be at position <code>1</code>
-	 * in the record. The other fields are not modified.
-	 */
-	@Combinable
-	@ConstantFields(0)
-	public static class CountWords extends ReduceFunction implements Serializable {
-		
-		private static final long serialVersionUID = 1L;
-		
-		@Override
-		public void reduce(Iterator<Record> records, Collector<Record> out) throws Exception {
-			Record element = null;
-			int sum = 0;
-			while (records.hasNext()) {
-				element = records.next();
-				int cnt = element.getField(1, IntValue.class).getValue();
-				sum += cnt;
-			}
-
-			element.setField(1, new IntValue(sum));
-			out.collect(element);
-		}
-		
-		@Override
-		public void combine(Iterator<Record> records, Collector<Record> out) throws Exception {
-			// the logic is the same as in the reduce function, so simply call the reduce method
-			reduce(records, out);
-		}
-	}
-
-
-	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
-	@Override
-	public Plan getPlan(String... args) {
-		// parse job parameters
-		int numSubTasks   = (args.length > 0 ? Integer.parseInt(args[0]) : 1);
-		String dataInput = (args.length > 1 ? args[1] : "");
-		String output    = (args.length > 2 ? args[2] : "");
-		
-		
-		HadoopDataSource source = new HadoopDataSource(new TextInputFormat(), new JobConf(), "Input Lines");
-		TextInputFormat.addInputPath(source.getJobConf(), new Path(dataInput));
-		
-		// Example with Wrapper Converter
-		HadoopDataSource<LongWritable,Text> sourceHadoopType = new HadoopDataSource<LongWritable, Text>(
-				new TextInputFormat(), new JobConf(), "Input Lines", new WritableWrapperConverter<LongWritable, Text>());
-		TextInputFormat.addInputPath(source.getJobConf(), new Path(dataInput));
-		
-		MapOperator mapper = MapOperator.builder(new TokenizeLine())
-			.input(source)
-			.name("Tokenize Lines")
-			.build();
-		ReduceOperator reducer = ReduceOperator.builder(CountWords.class, StringValue.class, 0)
-			.input(mapper)
-			.name("Count Words")
-			.build();
-		FileDataSink out = new FileDataSink(new CsvOutputFormat(), output, reducer, "Word Counts");
-		CsvOutputFormat.configureRecordFormat(out)
-			.recordDelimiter('\n')
-			.fieldDelimiter(' ')
-			.field(StringValue.class, 0)
-			.field(IntValue.class, 1);
-		
-		Plan plan = new Plan(out, "WordCount Example");
-		plan.setDefaultParallelism(numSubTasks);
-		return plan;
-	}
-
-
-	@Override
-	public String getDescription() {
-		return "Parameters: [numSubStasks] [input] [output]";
-	}
-
+@SuppressWarnings("serial")
+public class WordCount {
 	
 	public static void main(String[] args) throws Exception {
-		WordCount wc = new WordCount();
-		
-		if (args.length < 3) {
-			System.err.println(wc.getDescription());
-			System.exit(1);
+		if (args.length < 2) {
+			System.err.println("Usage: WordCount <input path> <result path>");
+			return;
 		}
 		
-		Plan plan = wc.getPlan(args);
+		final String inputPath = args[0];
+		final String outputPath = args[1];
 		
-		// This will execute the word-count embedded in a local context. replace this line by the commented
-		// succeeding line to send the job to a local installation or to a cluster for execution
-		LocalExecutor.execute(plan);
-//		PlanExecutor ex = new RemoteExecutor("localhost", 6123, "target/pact-examples-0.4-SNAPSHOT-WordCount.jar");
-//		ex.executePlan(plan);
+		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+		env.setDegreeOfParallelism(1);
+		
+		// Set up the Hadoop Input Format
+		HadoopInputFormat<LongWritable, Text> hadoopInputFormat = new HadoopInputFormat<LongWritable, Text>(new TextInputFormat(), LongWritable.class, Text.class, new JobConf());
+		TextInputFormat.addInputPath(hadoopInputFormat.getJobConf(), new Path(inputPath));
+		
+		// Create a Stratosphere job with it
+		DataSet<Tuple2<LongWritable, Text>> text = env.createInput(hadoopInputFormat);
+		
+		// Tokenize the line and convert from Writable "Text" to String for better handling
+		DataSet<Tuple2<String, Integer>> words = text.flatMap(new Tokenizer());
+		
+		// Sum up the words
+		DataSet<Tuple2<String, Integer>> result = words.groupBy(0).aggregate(Aggregations.SUM, 1);
+		
+		// Convert String back to Writable "Text" for use with Hadoop Output Format
+		DataSet<Tuple2<Text, IntWritable>> hadoopResult = result.map(new HadoopDatatypeMapper());
+		
+		// Set up Hadoop Output Format
+		HadoopOutputFormat<Text, IntWritable> hadoopOutputFormat = new HadoopOutputFormat<Text, IntWritable>(new TextOutputFormat<Text, IntWritable>(), new JobConf());
+		hadoopOutputFormat.getJobConf().set("mapred.textoutputformat.separator", " ");
+		TextOutputFormat.setOutputPath(hadoopOutputFormat.getJobConf(), new Path(outputPath));
+		
+		// Output & Execute
+		hadoopResult.output(hadoopOutputFormat);
+		env.execute("Word Count");
 	}
+	
+	/**
+	 * Splits a line into words and converts Hadoop Writables into normal Java data types.
+	 */
+	public static final class Tokenizer extends FlatMapFunction<Tuple2<LongWritable, Text>, Tuple2<String, Integer>> {
+		
+		@Override
+		public void flatMap(Tuple2<LongWritable, Text> value, Collector<Tuple2<String, Integer>> out) {
+			// normalize and split the line
+			String line = value.f1.toString();
+			String[] tokens = line.toLowerCase().split("\\W+");
+			
+			// emit the pairs
+			for (String token : tokens) {
+				if (token.length() > 0) {
+					out.collect(new Tuple2<String, Integer>(token, 1));
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Converts Java data types to Hadoop Writables.
+	 */
+	public static final class HadoopDatatypeMapper extends MapFunction<Tuple2<String, Integer>, Tuple2<Text, IntWritable>> {
+		
+		@Override
+		public Tuple2<Text, IntWritable> map(Tuple2<String, Integer> value) throws Exception {
+			return new Tuple2<Text, IntWritable>(new Text(value.f0), new IntWritable(value.f1));
+		}
+		
+	}
+	
 }

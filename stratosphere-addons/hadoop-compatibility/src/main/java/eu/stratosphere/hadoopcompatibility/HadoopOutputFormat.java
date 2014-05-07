@@ -17,18 +17,22 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import eu.stratosphere.api.common.io.OutputFormat;
+import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.hadoopcompatibility.datatypes.StratosphereTypeConverter;
-import eu.stratosphere.types.Record;
+import eu.stratosphere.hadoopcompatibility.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.wrapper.HadoopDummyProgressable;
+import eu.stratosphere.hadoopcompatibility.wrapper.HadoopDummyReporter;
+import eu.stratosphere.hadoopcompatibility.wrapper.HadoopFileOutputCommitter;
 
 
-public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
+public class HadoopOutputFormat<K extends Writable,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -40,16 +44,13 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 
 	public RecordWriter<K,V> recordWriter;
 
-	public StratosphereTypeConverter<K,V> converter;
+	public HadoopFileOutputCommitter fileOutputCommitterWrapper;
 
-	public FileOutputCommitterWrapper fileOutputCommitterWrapper;
-
-	public HadoopOutputFormatWrapper(org.apache.hadoop.mapred.OutputFormat<K,V> hadoopFormat, JobConf job, StratosphereTypeConverter<K,V> conv) {
+	public HadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> hadoopFormat, JobConf job) {
 		super();
 		this.hadoopOutputFormat = hadoopFormat;
 		this.hadoopOutputFormatName = hadoopFormat.getClass().getName();
-		this.converter = conv;
-		this.fileOutputCommitterWrapper = new FileOutputCommitterWrapper();
+		this.fileOutputCommitterWrapper = new HadoopFileOutputCommitter();
 		HadoopConfiguration.mergeHadoopConf(job);
 		this.jobConf = job;
 	}
@@ -74,15 +75,13 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 		} else {
 			throw new IOException("task id too large");
 		}
-		this.recordWriter = this.hadoopOutputFormat.getRecordWriter(null, this.jobConf, Integer.toString(taskNumber + 1), new DummyHadoopProgressable());
+		this.recordWriter = this.hadoopOutputFormat.getRecordWriter(null, this.jobConf, Integer.toString(taskNumber + 1), new HadoopDummyProgressable());
 	}
 
 
 	@Override
-	public void writeRecord(Record record) throws IOException {
-		K key = this.converter.convertKey(record);
-		V value = this.converter.convertValue(record);
-		this.recordWriter.write(key, value);
+	public void writeRecord(Tuple2<K, V> record) throws IOException {
+		this.recordWriter.write(record.f0, record.f1);
 	}
 
 	/**
@@ -91,7 +90,7 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 	 */
 	@Override
 	public void close() throws IOException {
-		this.recordWriter.close(new DummyHadoopReporter());
+		this.recordWriter.close(new HadoopDummyReporter());
 		if (this.fileOutputCommitterWrapper.needsTaskCommit(this.jobConf, TaskAttemptID.forName(this.jobConf.get("mapred.task.id")))) {
 			this.fileOutputCommitterWrapper.commitTask(this.jobConf, TaskAttemptID.forName(this.jobConf.get("mapred.task.id")));
 		}
@@ -106,7 +105,6 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeUTF(hadoopOutputFormatName);
 		jobConf.write(out);
-		out.writeObject(converter);
 		out.writeObject(fileOutputCommitterWrapper);
 	}
 
@@ -123,8 +121,7 @@ public class HadoopOutputFormatWrapper<K,V> implements OutputFormat<Record> {
 			throw new RuntimeException("Unable to instantiate the hadoop output format", e);
 		}
 		ReflectionUtils.setConf(hadoopOutputFormat, jobConf);
-		converter = (StratosphereTypeConverter<K,V>) in.readObject();
-		fileOutputCommitterWrapper = (FileOutputCommitterWrapper) in.readObject();
+		fileOutputCommitterWrapper = (HadoopFileOutputCommitter) in.readObject();
 	}
 
 

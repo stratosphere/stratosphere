@@ -11,25 +11,24 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility.datatypes;
+package eu.stratosphere.hadoopcompatibility.utils;
 
-import org.apache.hadoop.io.WritableComparable;
+import java.util.Map;
 
-import eu.stratosphere.types.Key;
+import org.apache.hadoop.mapred.JobConf;
 
-public class WritableComparableWrapper<T extends WritableComparable<T>> extends WritableWrapper<T> implements Key<WritableComparableWrapper<T>> {
-	private static final long serialVersionUID = 1L;
-	
-	public WritableComparableWrapper() {
-		super();
-	}
-	
-	public WritableComparableWrapper(T toWrap) {
-		super(toWrap);
-	}
+import eu.stratosphere.runtime.fs.hdfs.DistributedFileSystem;
 
-	@Override
-	public int compareTo(WritableComparableWrapper<T> o) {
-		return super.value().compareTo(o.value());
+/**
+ * merge hadoopConf into jobConf. This is necessary for the hdfs configuration
+
+ */
+
+public class HadoopConfiguration {
+	public static void mergeHadoopConf(JobConf jobConf) {
+		org.apache.hadoop.conf.Configuration hadoopConf = DistributedFileSystem.getHadoopConfiguration();
+		for (Map.Entry<String, String> e : hadoopConf) {
+			jobConf.set(e.getKey(), e.getValue());
+		}
 	}
 }
