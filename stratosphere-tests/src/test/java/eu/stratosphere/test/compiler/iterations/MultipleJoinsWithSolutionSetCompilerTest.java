@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.java.DataSet;
-import eu.stratosphere.api.java.DeltaIterativeDataSet;
+import eu.stratosphere.api.java.DeltaIteration;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.aggregation.Aggregations;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
@@ -87,10 +87,10 @@ public class MultipleJoinsWithSolutionSetCompilerTest extends CompilerTestBase {
 	
 	public static DataSet<Tuple2<Long, Double>> constructPlan(DataSet<Tuple2<Long, Double>> initialData, int numIterations) {
 
-		DeltaIterativeDataSet<Tuple2<Long, Double>, Tuple2<Long, Double>> iteration = initialData.iterateDelta(initialData, numIterations, 0);
+		DeltaIteration<Tuple2<Long, Double>, Tuple2<Long, Double>> iteration = initialData.iterateDelta(initialData, numIterations, 0);
 		
 		DataSet<Tuple2<Long, Double>> delta = iteration.getSolutionSet()
-				.join(iteration.flatMap(new Duplicator())).where(0).equalTo(0).with(new SummingJoin()).name(JOIN_1)
+				.join(iteration.getWorkset().flatMap(new Duplicator())).where(0).equalTo(0).with(new SummingJoin()).name(JOIN_1)
 				.groupBy(0).aggregate(Aggregations.MIN, 1).map(new Expander())
 				.join(iteration.getSolutionSet()).where(0).equalTo(0).with(new SummingJoinProject()).name(JOIN_2);
 		
