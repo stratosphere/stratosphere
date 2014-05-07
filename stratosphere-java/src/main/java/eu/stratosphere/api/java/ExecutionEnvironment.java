@@ -39,6 +39,7 @@ import eu.stratosphere.api.java.operators.DataSink;
 import eu.stratosphere.api.java.operators.DataSource;
 import eu.stratosphere.api.java.operators.OperatorTranslation;
 import eu.stratosphere.api.java.operators.translation.JavaPlan;
+import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.typeutils.BasicTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -64,7 +65,7 @@ public abstract class ExecutionEnvironment {
 	
 	private int degreeOfParallelism = -1;
 	
-	protected List<String> cacheFile = new ArrayList<String>();
+	protected List<Tuple2<String, String>> cacheFile = new ArrayList<Tuple2<String, String>>();
 	
 	
 	// --------------------------------------------------------------------------------------------
@@ -251,13 +252,12 @@ public abstract class ExecutionEnvironment {
 	public abstract String getExecutionPlan() throws Exception;
 	
 	public void registerCachedFile(String filePath, String name){
-		this.cacheFile.add(filePath);
-		this.cacheFile.add(name);
+		this.cacheFile.add(new Tuple2<String, String>(filePath, name));
 	}
 	
-	protected void registerCachedFiles(Plan p){
-		for(int x=0;x<cacheFile.size();x+=2){
-			p.registerCachedFile(cacheFile.get(x), cacheFile.get(x+1));
+	protected void registerCachedFiles(Plan p) {
+		for (Tuple2<String, String> entry : cacheFile) {
+			p.registerCachedFile((String) entry.getField(0), (String) entry.getField(1));
 		}
 	}
 	
