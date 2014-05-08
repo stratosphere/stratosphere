@@ -105,7 +105,7 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 		if (logicalKeyFields.length == 1) {
 			return createSinglefieldComparator(logicalKeyFields[0], orders[0], types[logicalKeyFields[0]]);
 		}
-		
+				
 		int maxKey = logicalKeyFields[0];
 		for(int key : logicalKeyFields){
 			if (key > maxKey){
@@ -113,21 +113,21 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 			}
 		}
 		
-		boolean[] isKey = new boolean[maxKey];
+		boolean[] isKey = new boolean[maxKey + 1];
 		for(int key:logicalKeyFields){
 			isKey[key]=true;
 		}
 		
 		// create the comparators for the individual fields
 		TypeComparator<?>[] fieldComparators = new TypeComparator<?>[logicalKeyFields.length];
-		TypeSerializer<?>[] fieldSerializers = new TypeSerializer<?>[maxKey-logicalKeyFields.length];
+		TypeSerializer<?>[] fieldSerializers = new TypeSerializer<?>[maxKey + 1 -logicalKeyFields.length];
 		
 		int cIndex=0;
 		int sIndex=0;
-		for (int i = 0; i < maxKey; i++) {
+		for (int i = 0; i < maxKey + 1; i++) {
 			if(isKey[i]){
 				if (types[i].isKeyType() && types[i] instanceof AtomicType) {
-				fieldComparators[cIndex] = ((AtomicType<?>) types[i]).createComparator(orders[i]);
+				fieldComparators[cIndex] = ((AtomicType<?>) types[i]).createComparator(orders[cIndex]);
 				cIndex++;
 			} else {
 				throw new IllegalArgumentException("The field at position " + i + " (" + types[i] + ") is no atomic key type.");
