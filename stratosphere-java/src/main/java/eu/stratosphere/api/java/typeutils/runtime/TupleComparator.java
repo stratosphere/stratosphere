@@ -133,7 +133,7 @@ public final class TupleComparator<T extends Tuple> extends TypeComparator<T> im
 		try {
 			int code = 0;
 			for (; i < this.keyPositions.length; i++) {
-				code ^= this.comparators[i].hash(value.getField(i));
+				code ^= this.comparators[i].hash(value.getField(keyPositions[i]));
 				code *= HASH_SALT[i & 0x1F]; // salt code with (i % HASH_SALT.length)-th salt component
 			}
 			return code;
@@ -256,9 +256,9 @@ public final class TupleComparator<T extends Tuple> extends TypeComparator<T> im
 			}
 			return 0;
 		} catch (NullPointerException npex) {
-			throw new NullKeyFieldException(this.keyPositions[fieldIndex]);
+			throw new NullKeyFieldException(fieldIndex);
 		} catch (IndexOutOfBoundsException iobex) {
-			throw new KeyFieldOutOfBoundsException(this.keyPositions[fieldIndex]);
+			throw new KeyFieldOutOfBoundsException(fieldIndex);
 		}
 	}
 	
