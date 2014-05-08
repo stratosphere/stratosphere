@@ -15,11 +15,8 @@ package eu.stratosphere.test.localDistributed;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URL;
-import java.util.Collections;
 
 import eu.stratosphere.client.minicluster.NepheleMiniCluster;
-import eu.stratosphere.configuration.ConfigConstants;
-import eu.stratosphere.configuration.Configuration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -63,7 +60,7 @@ public class PackagedProgramEndToEndITCase {
 			// run KMeans
 			cluster.setNumTaskManager(2);
 			cluster.start();
-			RemoteExecutor ex = new RemoteExecutor("localhost", 6498, new LinkedList<String>());
+			RemoteExecutor ex = new RemoteExecutor("localhost", 6498);
 
 			ex.executeJar(jarPath,
 					"eu.stratosphere.examples.scala.testing.KMeansForTest",

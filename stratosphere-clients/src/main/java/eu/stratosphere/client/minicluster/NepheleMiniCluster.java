@@ -15,6 +15,7 @@ package eu.stratosphere.client.minicluster;
 
 import java.lang.reflect.Method;
 
+import eu.stratosphere.nephele.instance.HardwareDescriptionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,6 +41,8 @@ public class NepheleMiniCluster {
 	private static final int DEFAULT_TM_DATA_PORT = 7501;
 	
 	private static final long DEFAULT_MEMORY_SIZE = -1;
+
+	private static final int DEFAULT_NUM_TASK_MANAGER = 1;
 
 	private static final boolean DEFAULT_LAZY_MEMORY_ALLOCATION = true;
 
@@ -168,7 +171,7 @@ public class NepheleMiniCluster {
 				GlobalConfiguration.loadConfiguration(configDir);
 			} else {
 				Configuration conf = getMiniclusterDefaultConfig(jobManagerRpcPort, taskManagerRpcPort,
-					taskManagerDataPort, hdfsConfigFile, visualizerEnabled, defaultOverwriteFiles,
+					taskManagerDataPort, memorySize, hdfsConfigFile, lazyMemoryAllocation, defaultOverwriteFiles,
 						defaultAlwaysCreateDirectory, numTaskManager);
 				GlobalConfiguration.includeConfiguration(conf);
 			}
@@ -192,15 +195,6 @@ public class NepheleMiniCluster {
 
 			// start the job manager
 			jobManager = new JobManager(ExecutionMode.LOCAL);
-			runner = new Thread("JobManager Task Loop") {
-				@Override
-				public void run() {
-					// run the main task loop
-					jobManager.runTaskLoop();
-				}
-			};
-			runner.setDaemon(true);
-			runner.start();
 	
 			waitForJobManagerToBecomeReady(numTaskManager);
 		}
@@ -221,7 +215,7 @@ public class NepheleMiniCluster {
 	
 	private void waitForJobManagerToBecomeReady(int numTaskManagers) throws InterruptedException {
 		while (jobManager.getNumberOfTaskTrackers() < numTaskManagers) {
-			Thread.sleep(100);
+			Thread.sleep(50);
 		}
 	}
 	
@@ -241,7 +235,7 @@ public class NepheleMiniCluster {
 	}
 	
 	public static Configuration getMiniclusterDefaultConfig(int jobManagerRpcPort, int taskManagerRpcPort,
-			int taskManagerDataPort, String hdfsConfigFile, boolean visualization,
+			int taskManagerDataPort, long memorySize, String hdfsConfigFile, boolean lazyMemory,
 			boolean defaultOverwriteFiles, boolean defaultAlwaysCreateDirectory, int numTaskManager)
 	{
 		final Configuration config = new Configuration();
@@ -269,9 +263,27 @@ public class NepheleMiniCluster {
 		config.setBoolean(ConfigConstants.FILESYSTEM_DEFAULT_OVERWRITE_KEY, defaultOverwriteFiles);
 		config.setBoolean(ConfigConstants.FILESYSTEM_OUTPUT_ALWAYS_CREATE_DIRECTORY_KEY, defaultAlwaysCreateDirectory);
 
-		if (memorySize > 0) {
-			config.setLong(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, memorySize);
+		if(memorySize < 0){
+			memorySize = HardwareDescriptionFactory.extractFromSystem().getSizeOfFreeMemory();
+
+			// at this time, we need to scale down the memory, because we cannot dedicate all free memory to the
+			// memory manager. we have to account for the buffer pools as well, and the job manager#s data structures
+			long bufferMem = GlobalConfiguration.getLong(ConfigConstants.TASK_MANAGER_NETWORK_NUM_BUFFERS_KEY,
+					ConfigConstants.DEFAULT_TASK_MANAGER_NETWORK_NUM_BUFFERS) *
+					GlobalConfiguration.getLong(ConfigConstants.TASK_MANAGER_NETWORK_BUFFER_SIZE_KEY,
+							ConfigConstants.DEFAULT_TASK_MANAGER_NETWORK_BUFFER_SIZE);
+
+			memorySize = (long) (0.8 * (memorySize - bufferMem));
+
+			//convert from bytes to mega bytes
+			memorySize >>>= 20;
 		}
+
+		memorySize /= numTaskManager;
+
+		config.setLong(ConfigConstants.TASK_MANAGER_MEMORY_SIZE_KEY, memorySize/numTaskManager);
+
+		config.setInteger(ConfigConstants.LOCAL_INSTANCE_MANAGER_NUMBER_TASK_MANAGER, numTaskManager);
 		
 		return config;
 	}

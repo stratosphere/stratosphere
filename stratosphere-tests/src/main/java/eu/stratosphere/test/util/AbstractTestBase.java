@@ -30,8 +30,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import eu.stratosphere.api.java.ExecutionEnvironment;
-import eu.stratosphere.configuration.ConfigConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Level;
@@ -51,7 +49,7 @@ public abstract class AbstractTestBase {
 	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
 	
-	private static final long TASK_MANAGER_MEMORY_SIZE = 80;
+	private static final long MEMORY_SIZE = 80;
 
 	private int numTaskManager = DEFAULT_NUM_TASK_MANAGER;
 	
@@ -93,7 +91,8 @@ public abstract class AbstractTestBase {
 		this.executor = new NepheleMiniCluster();
 		this.executor.setDefaultOverwriteFiles(true);
 		this.executor.setLazyMemoryAllocation(true);
-		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
+		this.executor.setMemorySize(MEMORY_SIZE);
+		this.executor.setNumTaskManager(this.numTaskManager);
 		this.executor.start();
 	}
 
