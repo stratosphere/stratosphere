@@ -60,10 +60,9 @@ public class PackagedProgramEndToEndITCase {
 			URL jarFileURL = getClass().getResource("/KMeansForTest.jar");
 			String jarPath = jarFileURL.getFile();
 
-			// run WordCount
-			Configuration config = new Configuration();
-			config.setInteger(ConfigConstants.LOCAL_INSTANCE_MANAGER_NUMBER_TASK_MANAGER, 2);
-			cluster.start(config);
+			// run KMeans
+			cluster.setNumTaskManager(2);
+			cluster.start();
 			RemoteExecutor ex = new RemoteExecutor("localhost", 6498, new LinkedList<String>());
 
 			ex.executeJar(jarPath,

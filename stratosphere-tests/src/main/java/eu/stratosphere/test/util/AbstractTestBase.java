@@ -47,11 +47,13 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.util.LogUtils;
 
 public abstract class AbstractTestBase {
+	private static final int DEFAULT_NUM_TASK_MANAGER = 1;
 	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
 	
 	private static final long TASK_MANAGER_MEMORY_SIZE = 80;
 
+	private int numTaskManager = DEFAULT_NUM_TASK_MANAGER;
 	
 	protected final Configuration config;
 	
@@ -73,7 +75,14 @@ public abstract class AbstractTestBase {
 		Assert.assertTrue("Insufficient java heap space " + heap + "mb - set JVM option: -Xmx" + MINIMUM_HEAP_SIZE_MB
 				+ "m", heap > MINIMUM_HEAP_SIZE_MB - 50);
 	}
-	
+
+	// --------------------------------------------------------------------------------------------
+	//  Getter/Setter
+	// --------------------------------------------------------------------------------------------
+
+	public int getNumTaskManager() { return numTaskManager; }
+
+	public void setNumTaskManager(int numTaskManager) { this.numTaskManager = numTaskManager; }
 
 	// --------------------------------------------------------------------------------------------
 	//  Local Test Cluster Life Cycle
