@@ -14,6 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java;
 
+import eu.stratosphere.api.common.aggregators.Aggregator;
+import eu.stratosphere.api.common.aggregators.AggregatorRegistry;
 import eu.stratosphere.api.java.operators.Keys;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
@@ -38,6 +40,8 @@ public class DeltaIteration<ST, WT> {
 	private final Keys<ST> keys;
 	
 	private final int maxIterations;
+	
+	private final AggregatorRegistry aggregators = new AggregatorRegistry();
 
 	DeltaIteration(ExecutionEnvironment context, TypeInformation<ST> type, DataSet<ST> solutionSet, DataSet<WT> workset, Keys<ST> keys, int maxIterations) {
 		initialSolutionSet = solutionSet;
@@ -101,5 +105,34 @@ public class DeltaIteration<ST, WT> {
 		private WorksetPlaceHolder(ExecutionEnvironment context, TypeInformation<WT> type) {
 			super(context, type);
 		}
+	}
+	
+	/**
+	 * Registers an {@link Aggregator} for the iteration. Aggregators can be used to maintain simple statistics during the
+	 * iteration, such as number of elements processed. The aggregators compute global aggregates: After each iteration step,
+	 * the values are globally aggregated to produce one aggregate that represents statistics across all parallel instances.
+	 * The value of an aggregator can be accessed in the next iteration.
+	 * <p>
+	 * Aggregators can be accessed inside a function via the {@link AbstractFunction#getIterationRuntimeContext()} method.
+	 * 
+	 * @param name The name under which the aggregator is registered.
+	 * @param aggregator The aggregator class.
+	 * 
+	 * @return The IterativeDataSet itself, to allow chaining function calls.
+	 */
+	public <X> DeltaIteration<ST, WT> registerAggregator(String name, Aggregator<?> aggregator) {
+		this.aggregators.registerAggregator(name, aggregator);
+		return this;
+	}
+
+	/**
+	 * Gets the registry for aggregators. On the registry, one can add {@link Aggregator}s and an aggregator-based 
+	 * {@link ConvergenceCriterion}. This method offers an alternative way to registering the aggregators via
+	 * {@link #registerAggregator(String, Class)} and {@link #registerAggregationConvergenceCriterion(String, Class, Class)}.
+	 * 
+	 * @return The registry for aggregators.
+	 */
+	public AggregatorRegistry getAggregators() {
+		return aggregators;
 	}
 }
