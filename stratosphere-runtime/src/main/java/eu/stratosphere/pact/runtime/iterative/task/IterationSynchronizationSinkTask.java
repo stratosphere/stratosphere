@@ -80,17 +80,15 @@ public class IterationSynchronizationSinkTask extends AbstractOutputTask impleme
 		userCodeClassLoader = LibraryCacheManager.getClassLoader(getEnvironment().getJobID());
 		TaskConfig taskConfig = new TaskConfig(getTaskConfiguration());
 		
-		// instantiate all aggregators
+		// store all aggregators
 		this.aggregators = new HashMap<String, Aggregator<?>>();
 		for (AggregatorWithName<?> aggWithName : taskConfig.getIterationAggregators()) {
-			Aggregator<?> agg = InstantiationUtil.instantiate(aggWithName.getAggregator(), Aggregator.class);
-			aggregators.put(aggWithName.getName(), agg);
+			aggregators.put(aggWithName.getName(), aggWithName.getAggregator());
 		}
 		
-		// instantiate the aggregator convergence criterion
+		// store the aggregator convergence criterion
 		if (taskConfig.usesConvergenceCriterion()) {
-			Class<? extends ConvergenceCriterion<Value>> convClass = taskConfig.getConvergenceCriterion();
-			convergenceCriterion = InstantiationUtil.instantiate(convClass, ConvergenceCriterion.class);
+			convergenceCriterion = taskConfig.getConvergenceCriterion();
 			convergenceAggregatorName = taskConfig.getConvergenceCriterionAggregatorName();
 			Preconditions.checkNotNull(convergenceAggregatorName);
 		}
