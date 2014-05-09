@@ -20,7 +20,13 @@ import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.util.Collector;
 
-
+/**
+ * Base class for a user-defined reduce function.
+ * 
+ * (For a MapReduce/Hadoop-style reduce, see {@link DataSet#reduceGroup(GroupReduceFunction)). 
+ * 
+ * @param <T> Object type to perform the reduction on.
+ */
 public abstract class ReduceFunction<T> extends AbstractFunction implements GenericGroupReduce<T, T> {
 	
 	private static final long serialVersionUID = 1L;
