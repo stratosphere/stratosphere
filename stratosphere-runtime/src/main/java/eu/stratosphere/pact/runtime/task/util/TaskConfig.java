@@ -901,16 +901,16 @@ public class TaskConfig {
 		List<AggregatorWithName<?>> list = new ArrayList<AggregatorWithName<?>>(numAggs);
 		for (int i = 0; i < numAggs; i++) {
 			Aggregator<Value> aggObj;
-			 try {
-				 aggObj = (Aggregator<Value>) InstantiationUtil.readObjectFromConfig(
-						 this.config, ITERATION_AGGREGATOR_PREFIX + i, getConfiguration().getClassLoader());
-			 } catch (IOException e) {
-				 throw new RuntimeException("Error while reading the aggregator object from the task configuration.");
-			 } catch (ClassNotFoundException e) {
-				 throw new RuntimeException("Error while reading the aggregator object from the task configuration. " +
-						 "Aggregator class not found.");
-			 } 
-			 if (aggObj == null) {
+			try {
+				aggObj = (Aggregator<Value>) InstantiationUtil.readObjectFromConfig(
+						this.config, ITERATION_AGGREGATOR_PREFIX + i, getConfiguration().getClassLoader());
+			} catch (IOException e) {
+					throw new RuntimeException("Error while reading the aggregator object from the task configuration.");
+			} catch (ClassNotFoundException e) {
+					throw new RuntimeException("Error while reading the aggregator object from the task configuration. " +
+				"Aggregator class not found.");
+			}
+			if (aggObj == null) {
 				throw new RuntimeException("Missing config entry for aggregator.");
 			}
 			String name = this.config.getString(ITERATION_AGGREGATOR_NAME_PREFIX + i, null);
@@ -932,19 +932,18 @@ public class TaskConfig {
 	}
 
 	@SuppressWarnings("unchecked")
-	 public <T extends Value> ConvergenceCriterion<T> getConvergenceCriterion() {
+	public <T extends Value> ConvergenceCriterion<T> getConvergenceCriterion() {
 		ConvergenceCriterion<T> convCriterionObj = null;
 		try {
 			convCriterionObj = (ConvergenceCriterion<T>) InstantiationUtil.readObjectFromConfig(
 			this.config, ITERATION_CONVERGENCE_CRITERION, getConfiguration().getClassLoader());
-	 } catch (IOException e) {
-		 throw new RuntimeException("Error while reading the covergence criterion object from the task configuration.");
-	 } catch (ClassNotFoundException e) {
-		 throw new RuntimeException("Error while reading the covergence criterion object from the task configuration. " +
-				 "ConvergenceCriterion class not found.");
-	 }
-	 		
-	 if (convCriterionObj == null) {
+		} catch (IOException e) {
+			throw new RuntimeException("Error while reading the covergence criterion object from the task configuration.");
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Error while reading the covergence criterion object from the task configuration. " +
+					"ConvergenceCriterion class not found.");
+		}
+		if (convCriterionObj == null) {
 			throw new NullPointerException();
 		}
 		return convCriterionObj;

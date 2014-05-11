@@ -38,7 +38,7 @@ import eu.stratosphere.util.Collector;
  *
  */
 public class ConnectedComponentsWithParametrizableConvergenceITCase extends JavaProgramTestBase {
-	
+
 	private static final int MAX_ITERATIONS = 10;
 	private static final int DOP = 1;
 
@@ -46,7 +46,7 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 	protected static List<Tuple2<Long, Long>> edgesInput = new ArrayList<Tuple2<Long, Long>>();
 	private String resultPath;
 	private String expectedResult;
-	
+
 	@Override
 	protected void preSubmit() throws Exception {
 		// vertices input
@@ -59,7 +59,7 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 		verticesInput.add(new Tuple2<Long, Long>(7l,7l));
 		verticesInput.add(new Tuple2<Long, Long>(8l,8l));
 		verticesInput.add(new Tuple2<Long, Long>(9l,9l));
-		
+
 		// vertices input
 		edgesInput.add(new Tuple2<Long, Long>(1l,2l));
 		edgesInput.add(new Tuple2<Long, Long>(1l,3l));
@@ -79,9 +79,9 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 		edgesInput.add(new Tuple2<Long, Long>(8l,9l));
 		edgesInput.add(new Tuple2<Long, Long>(9l,7l));
 		edgesInput.add(new Tuple2<Long, Long>(9l,8l));
-		
+
 		resultPath = getTempDirPath("result");
-		
+
 		expectedResult = "(1, 1)\n" + "(2, 1)\n" + "(3, 1)\n" + "(4, 1)\n" +
 						"(5, 2)\n" + "(6, 1)\n" + "(7, 7)\n" + "(8, 7)\n" + "(9, 7)\n";
 	}
@@ -90,69 +90,69 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 	protected void testProgram() throws Exception {
 		ConnectedComponentsWithConvergenceProgram.runProgram(resultPath);
 	}
-	
+
 	@Override
 	protected void postSubmit() throws Exception {
 		compareResultsByLinesInMemory(expectedResult, resultPath);
 	}
 
-	
+
 	private static class ConnectedComponentsWithConvergenceProgram {
-		
+
 		private static final String UPDATED_ELEMENTS = "updated.elements.aggr";
 		private static final long convergence_threshold = 3; // the iteration stops if less than this number os elements change value
-		
+
 		public static String runProgram(String resultPath) throws Exception {
-			
+
 			final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 			env.setDegreeOfParallelism(DOP);
-			
+
 			DataSet<Tuple2<Long, Long>> initialSolutionSet = env.fromCollection(verticesInput);
 			DataSet<Tuple2<Long, Long>> edges = env.fromCollection(edgesInput);
-			
-			IterativeDataSet<Tuple2<Long, Long>> iteration = 
+
+			IterativeDataSet<Tuple2<Long, Long>> iteration =
 					initialSolutionSet.iterate(MAX_ITERATIONS);
-			
+
 			// register the convergence criterion
-			iteration.registerAggregationConvergenceCriterion(UPDATED_ELEMENTS, 
+			iteration.registerAggregationConvergenceCriterion(UPDATED_ELEMENTS,
 					new LongSumAggregator(), new UpdatedElementsConvergenceCriterion(convergence_threshold));
-						
+
 			DataSet<Tuple2<Long, Long>> verticesWithNewComponents = iteration.join(edges).where(0).equalTo(0)
 					.with(new NeighborWithComponentIDJoin())
 					.groupBy(0).reduceGroup(new MinimumReduce());
-					
+
 			DataSet<Tuple2<Long, Long>> updatedComponentId = 
 					verticesWithNewComponents.join(iteration).where(0).equalTo(0)
 					.flatMap(new MinimumIdFilter());
-			
+
 			iteration.closeWith(updatedComponentId).writeAsText(resultPath);
-			
+
 			env.execute();
-			
+
 			return resultPath;
 		}
 	}
-	
+
 	public static final class NeighborWithComponentIDJoin extends JoinFunction
 		<Tuple2<Long, Long>, Tuple2<Long, Long>, Tuple2<Long, Long>> {
-	
+
 		private static final long serialVersionUID = 1L;
-		
+
 		@Override
 		public Tuple2<Long, Long> join(Tuple2<Long, Long> vertexWithCompId,
 				Tuple2<Long, Long> edge) throws Exception {
-			
+
 			vertexWithCompId.setField(edge.f1, 0);
 			return vertexWithCompId;
 		}
 	}
-	
+
 	public static final class MinimumReduce extends GroupReduceFunction
 		<Tuple2<Long, Long>, Tuple2<Long, Long>> {
-		
+
 		private static final long serialVersionUID = 1L;
 		final Tuple2<Long, Long> resultVertex = new Tuple2<Long, Long>();
-		
+
 		@Override
 		public void reduce(Iterator<Tuple2<Long, Long>> values,
 				Collector<Tuple2<Long, Long>> out) throws Exception {
@@ -160,10 +160,10 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 			final Tuple2<Long, Long> first = values.next();		
 			final Long vertexId = first.f0;
 			Long minimumCompId = first.f1;
-			
-			while ( values.hasNext() ) {
+
+			while (values.hasNext()) {
 				Long candidateCompId = values.next().f1;
-				if ( candidateCompId < minimumCompId ) {
+				if (candidateCompId < minimumCompId) {
 					minimumCompId = candidateCompId;
 				}
 			}
@@ -177,53 +177,47 @@ public class ConnectedComponentsWithParametrizableConvergenceITCase extends Java
 	@SuppressWarnings("serial")
 	public static final class MinimumIdFilter extends FlatMapFunction
 		<Tuple2<Tuple2<Long, Long>, Tuple2<Long, Long>>, Tuple2<Long, Long>> {
-		
+
 		private static LongSumAggregator aggr;
-		
+
 		@Override
 		public void open(Configuration conf) {
 			aggr = getIterationRuntimeContext().getIterationAggregator(
 					ConnectedComponentsWithConvergenceProgram.UPDATED_ELEMENTS);
 		}
-		
+
 		@Override
 		public void flatMap(
 				Tuple2<Tuple2<Long, Long>, Tuple2<Long, Long>> vertexWithNewAndOldId,
 				Collector<Tuple2<Long, Long>> out) throws Exception {
-			
-			if ( vertexWithNewAndOldId.f0.f1 < vertexWithNewAndOldId.f1.f1 ) {
+
+			if (vertexWithNewAndOldId.f0.f1 < vertexWithNewAndOldId.f1.f1) {
 				out.collect(vertexWithNewAndOldId.f0);
 				aggr.aggregate(1l);
-			}
-			else {
+			} else {
 				out.collect(vertexWithNewAndOldId.f1);
 			}
 		}
 	}
-	
+
 	// A Convergence Criterion with one parameter
 	@SuppressWarnings("serial")
 	public static final class UpdatedElementsConvergenceCriterion implements ConvergenceCriterion<LongValue> {
 
 		private long threshold;
-		
+
 		public UpdatedElementsConvergenceCriterion(long u_threshold) {
 			this.threshold = u_threshold;
 		}
-		
+
 		public long getThreshold() {
 			return this.threshold;
 		}
-		
+
 		@Override
 		public boolean isConverged(int iteration, LongValue value) {
-			if ( value.getValue() < this.threshold ) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}		
+			return value.getValue() < this.threshold;
+		}
 	}
-		
+
 }

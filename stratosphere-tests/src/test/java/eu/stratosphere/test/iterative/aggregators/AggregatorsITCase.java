@@ -47,19 +47,19 @@ import eu.stratosphere.util.Collector;
  */
 @RunWith(Parameterized.class)
 public class AggregatorsITCase extends JavaProgramTestBase {
-	
+
 	private static final int NUM_PROGRAMS = 5;
 	private static final int MAX_ITERATIONS = 20;	
 	private static final int DOP = 2;
-		
+
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
 	private String expectedResult;
-	
+
 	public AggregatorsITCase(Configuration config) {
-		super(config);	
+		super(config);
 	}
-	
+
 	@Override
 	protected void preSubmit() throws Exception {
 		resultPath = getTempDirPath("result");
@@ -69,13 +69,13 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 	protected void testProgram() throws Exception {
 		expectedResult = AggregatorProgs.runProgram(curProgId, resultPath);
 	}
-	
+
 	@Override
 	protected void postSubmit() throws Exception {
 
 		compareResultsByLinesInMemory(expectedResult, resultPath);
 	}
-	
+
 	@Parameters
 	public static Collection<Object[]> getConfigurations() throws FileNotFoundException, IOException {
 
@@ -86,22 +86,22 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 			config.setInteger("ProgramId", i);
 			tConfigs.add(config);
 		}
-		
+
 		return toParameterList(tConfigs);
 	}
-	
+
 	private static class AggregatorProgs {
-		
+
 		private static final String NEGATIVE_ELEMENTS_AGGR = "count.negative.elements";
-		
+
 		public static String runProgram(int progId, String resultPath) throws Exception {
-			
+
 			switch(progId) {
 			case 1: {
 				/*
 				 * Test aggregator without parameter for iterate
 				 */
-	
+
 				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 				env.setDegreeOfParallelism(DOP);
 
@@ -119,7 +119,7 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 				DataSet<Integer> updatedDs = iteration.map(new SubtractOneMap());
 				iteration.closeWith(updatedDs).writeAsText(resultPath);
 				env.execute();
-				
+
 				// return expected result
 				return "-3\n" + "-2\n" + "-2\n" + "-1\n" + "-1\n"
 				 		+ "-1\n" + "0\n" + "0\n" + "0\n" + "0\n"
@@ -246,86 +246,76 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 				// return expected result
 				return "1\n" + "2\n" + "2\n" + "3\n" + "3\n"
 				 		+ "3\n" + "4\n" + "4\n" + "4\n" + "4\n"
-				 		+ "5\n" + "5\n" + "5\n" + "5\n" + "5\n";				
+				 		+ "5\n" + "5\n" + "5\n" + "5\n" + "5\n";
 			}
-			default: 
+			default:
 				throw new IllegalArgumentException("Invalid program id");
 			}
-			
+
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class NegativeElementsConvergenceCriterion implements ConvergenceCriterion<LongValue> {
 
 		@Override
 		public boolean isConverged(int iteration, LongValue value) {
-			if ( value.getValue() > 3 ) {
-				return true; 
-			}
-			else
-				return false;
+			return value.getValue() > 3;
 		}
-		
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class NegativeElementsConvergenceCriterionWithParam implements ConvergenceCriterion<LongValue> {
 
 		private int value;
-		
+
 		public NegativeElementsConvergenceCriterionWithParam(int val) {
 			this.value = val;
 		}
-		
+
 		public int getValue() {
 			return this.value;
 		}
-		
+
 		@Override
 		public boolean isConverged(int iteration, LongValue value) {
-			if ( value.getValue() > this.value ) {
-				return true; 
-			}
-			else
-				return false;
+			return value.getValue() > this.value;
 		}
-		
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class SubtractOneMap extends MapFunction<Integer, Integer> {
-		
+
 		private LongSumAggregator aggr;
-		
+
 		@Override
-		public void open(Configuration conf) { 
-			
-			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);		
+		public void open(Configuration conf) {
+
+			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
 		}
-		
+
 		@Override
 		public Integer map(Integer value) {
 			Integer newValue = new Integer(value.intValue() - 1);
 			// count negative numbers
-			if ( newValue.intValue() < 0 ) {
+			if (newValue.intValue() < 0) {
 				aggr.aggregate(1l);
 			}
 			return newValue;
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class SubtractOneMapWithParam extends MapFunction<Integer, Integer> {
-		
+
 		private LongSumAggregatorWithParameter aggr;
-		
+
 		@Override
-		public void open(Configuration conf) { 
-			
-			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);		
+		public void open(Configuration conf) {
+
+			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
 		}
-		
+
 		@Override
 		public Integer map(Integer value) {
 			Integer newValue = new Integer(value.intValue() - 1);
@@ -336,112 +326,112 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 			return newValue;
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static class LongSumAggregatorWithParameter extends LongSumAggregator {
-		
+
 		private int value;
-		
+
 		public LongSumAggregatorWithParameter(int val) {
 			this.value = val;
 		}
-		
+
 		public int getValue() {
 			return this.value;
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class TupleMakerMap extends MapFunction<Integer, Tuple2<Integer, Integer>> {
-		
+
 		@Override
 		public Tuple2<Integer, Integer> map(Integer value) throws Exception {
 			Random ran = new Random();
-			Integer nodeId = new Integer (ran.nextInt(100000));
+			Integer nodeId = new Integer(ran.nextInt(100000));
 			return new Tuple2<Integer, Integer>(nodeId, value);
 		}
-		
+
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class AggregateMapDelta extends MapFunction<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>> {
-		
+
 		private LongSumAggregator aggr;
 		private LongValue previousAggr;
 		private int superstep;
-		
+
 		@Override
-		public void open(Configuration conf) { 
-			
+		public void open(Configuration conf) {
+
 			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
 			superstep = getIterationRuntimeContext().getSuperstepNumber();
-					
-			if ( superstep > 1 ) {
+
+			if (superstep > 1) {
 				previousAggr = getIterationRuntimeContext().getPreviousIterationAggregate(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
 				// check previous aggregator value
-				Assert.assertEquals(superstep-1, previousAggr.getValue());
+				Assert.assertEquals(superstep - 1, previousAggr.getValue());
 			}
 
 		}
-		
+
 		@Override
 		public Tuple2<Integer, Integer> map(Tuple2<Integer, Integer> value) {
 			// count the elements that are equal to the superstep number
-			if ( value.f1.intValue() == superstep ) {
+			if (value.f1.intValue() == superstep) {
 				aggr.aggregate(1l);
 			}
 			return value;
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class UpdateFilter extends FlatMapFunction<Tuple2<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>>, 
 		Tuple2<Integer, Integer>> {
 
 		private int superstep;
-		
+
 		@Override
 		public void open(Configuration conf) { 
-			
+
 			superstep = getIterationRuntimeContext().getSuperstepNumber();
 
 		}
 
 		@Override
-		public void flatMap(Tuple2<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>> value,	
+		public void flatMap(Tuple2<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>> value,
 				Collector<Tuple2<Integer, Integer>> out) throws Exception {
-			
-			if ( value.f0.f1  > superstep ) {
+
+			if (value.f0.f1  > superstep) {
 				out.collect(value.f0);
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class ProjectSecondMapper extends MapFunction<Tuple2<Integer, Integer>, Integer> {
-		
+
 		@Override
 		public Integer map(Tuple2<Integer, Integer> value) {
 			return value.f1;
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static final class AggregateMapDeltaWithParam extends MapFunction<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>> {
-		
+
 		private LongSumAggregatorWithParameter aggr;
 		private LongValue previousAggr;
 		private int superstep;
-		
+
 		@Override
-		public void open(Configuration conf) { 
-			
+		public void open(Configuration conf) {
+
 			aggr = getIterationRuntimeContext().getIterationAggregator(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
 			superstep = getIterationRuntimeContext().getSuperstepNumber();
-					
-			if ( superstep > 1 ) {
+
+			if (superstep > 1) {
 				previousAggr = getIterationRuntimeContext().getPreviousIterationAggregate(AggregatorProgs.NEGATIVE_ELEMENTS_AGGR);
-				
+
 				// check previous aggregator value
 				switch(superstep) {
 					case 2: {
@@ -462,11 +452,11 @@ public class AggregatorsITCase extends JavaProgramTestBase {
 			}
 
 		}
-		
+
 		@Override
 		public Tuple2<Integer, Integer> map(Tuple2<Integer, Integer> value) {
 			// count the elements that are equal to the superstep number
-			if ( value.f1.intValue() < aggr.getValue() ) {
+			if (value.f1.intValue() < aggr.getValue()) {
 				aggr.aggregate(1l);
 			}
 			return value;
