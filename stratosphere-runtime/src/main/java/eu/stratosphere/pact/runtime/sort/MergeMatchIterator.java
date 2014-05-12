@@ -41,8 +41,8 @@ import eu.stratosphere.util.MutableObjectIterator;
  * An implementation of the {@link JoinTaskIterator} that realizes the
  * matching through a sort-merge join strategy.
  */
-public class MergeMatchIterator<T1, T2, O> implements JoinTaskIterator<T1, T2, O>
-{
+public class MergeMatchIterator<T1, T2, O> implements JoinTaskIterator<T1, T2, O> {
+	
 	/**
 	 * The log used by this iterator to log messages.
 	 */
@@ -153,6 +153,7 @@ public class MergeMatchIterator<T1, T2, O> implements JoinTaskIterator<T1, T2, O
 			// consume all remanining keys (hack to prevent remaining inputs during iterations, lets get rid of this soon)
 			while (this.iterator1.nextKey());
 			while (this.iterator2.nextKey());
+			
 			return false;
 		}
 
@@ -165,8 +166,9 @@ public class MergeMatchIterator<T1, T2, O> implements JoinTaskIterator<T1, T2, O
 			// determine the relation between the (possibly composite) keys
 			final int comp = comparator.compareToReference(current2);
 			
-			if (comp == 0)
+			if (comp == 0) {
 				break;
+			}
 			
 			if (comp < 0) {
 				if (!this.iterator2.nextKey()) {

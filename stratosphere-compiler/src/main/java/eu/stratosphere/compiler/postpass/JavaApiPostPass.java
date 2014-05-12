@@ -29,17 +29,38 @@ import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
-import eu.stratosphere.api.java.operators.translation.*;
+import eu.stratosphere.api.java.operators.translation.BinaryJavaPlanNode;
+import eu.stratosphere.api.java.operators.translation.JavaPlanNode;
+import eu.stratosphere.api.java.operators.translation.PlanBulkIterationOperator;
+import eu.stratosphere.api.java.operators.translation.PlanDataSource;
+import eu.stratosphere.api.java.operators.translation.PlanDeltaIterationOperator;
+import eu.stratosphere.api.java.operators.translation.PlanGroupReduceOperator;
+import eu.stratosphere.api.java.operators.translation.PlanUnwrappingReduceGroupOperator;
+import eu.stratosphere.api.java.operators.translation.UnaryJavaPlanNode;
 import eu.stratosphere.api.java.typeutils.AtomicType;
 import eu.stratosphere.api.java.typeutils.CompositeType;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.api.java.typeutils.runtime.RuntimeComparatorFactory;
 import eu.stratosphere.api.java.typeutils.runtime.RuntimePairComparatorFactory;
-import eu.stratosphere.api.java.typeutils.runtime.RuntimeSerializerFactory;
+import eu.stratosphere.api.java.typeutils.runtime.RuntimeStatelessSerializerFactory;
+import eu.stratosphere.api.java.typeutils.runtime.RuntimeStatefulSerializerFactory;
 import eu.stratosphere.compiler.CompilerException;
 import eu.stratosphere.compiler.CompilerPostPassException;
-import eu.stratosphere.compiler.plan.*;
+import eu.stratosphere.compiler.plan.BulkIterationPlanNode;
+import eu.stratosphere.compiler.plan.BulkPartialSolutionPlanNode;
+import eu.stratosphere.compiler.plan.Channel;
+import eu.stratosphere.compiler.plan.DualInputPlanNode;
+import eu.stratosphere.compiler.plan.NAryUnionPlanNode;
+import eu.stratosphere.compiler.plan.OptimizedPlan;
+import eu.stratosphere.compiler.plan.PlanNode;
+import eu.stratosphere.compiler.plan.SingleInputPlanNode;
+import eu.stratosphere.compiler.plan.SinkPlanNode;
+import eu.stratosphere.compiler.plan.SolutionSetPlanNode;
+import eu.stratosphere.compiler.plan.SourcePlanNode;
+import eu.stratosphere.compiler.plan.WorksetIterationPlanNode;
+import eu.stratosphere.compiler.plan.WorksetPlanNode;
 import eu.stratosphere.compiler.util.NoOpUnaryUdfOp;
+import eu.stratosphere.pact.runtime.task.DriverStrategy;
 
 /**
  * The post-optimizer plan traversal. This traversal fills in the API specific utilities (serializers and
@@ -80,6 +101,12 @@ public class JavaApiPostPass implements OptimizerPostPass {
 
 			if (iterationNode.getRootOfStepFunction() instanceof NAryUnionPlanNode) {
 				throw new CompilerException("Optimizer cannot compile an iteration step function where next partial solution is created by a Union node.");
+			}
+			
+			// traverse the termination criterion for the first time. create schema only, no utilities. Needed in case of intermediate termination criterion
+			if (iterationNode.getRootOfTerminationCriterion() != null) {
+				SingleInputPlanNode addMapper = (SingleInputPlanNode) iterationNode.getRootOfTerminationCriterion();
+				traverseChannel(addMapper.getInput());
 			}
 
 			PlanBulkIterationOperator<?> operator = (PlanBulkIterationOperator<?>) iterationNode.getPactContract();
@@ -126,9 +153,9 @@ public class JavaApiPostPass implements OptimizerPostPass {
 				if(sn.getOptimizerNode().getPactContract() instanceof NoOpUnaryUdfOp) {
 					traverseChannel(sn.getInput());
 					return;
-				}
-				else
+				} else {
 					throw new RuntimeException("Wrong operator type found in post pass.");
+				}
 			}
 			
 			UnaryJavaPlanNode<?, ?> javaNode = (UnaryJavaPlanNode<?, ?>) sn.getOptimizerNode().getPactContract();
@@ -178,8 +205,8 @@ public class JavaApiPostPass implements OptimizerPostPass {
 		}
 		// catch the sources of the iterative step functions
 		else if (node instanceof BulkPartialSolutionPlanNode ||
-				 node instanceof SolutionSetPlanNode ||
-				 node instanceof WorksetPlanNode)
+				node instanceof SolutionSetPlanNode ||
+				node instanceof WorksetPlanNode)
 		{
 			// Do nothing :D
 		}
@@ -205,7 +232,15 @@ public class JavaApiPostPass implements OptimizerPostPass {
 
 		TypeInformation<?> type = null;
 
-		if (javaOp instanceof JavaPlanNode<?>) {
+		if(javaOp instanceof PlanGroupReduceOperator && source.getDriverStrategy().equals(DriverStrategy.SORTED_GROUP_COMBINE)) {
+			PlanGroupReduceOperator<?, ?> groupNode = (PlanGroupReduceOperator<?, ?>) javaOp;
+			type = groupNode.getInputType();
+		}
+		else if(javaOp instanceof PlanUnwrappingReduceGroupOperator && source.getDriverStrategy().equals(DriverStrategy.SORTED_GROUP_COMBINE)) {
+			PlanUnwrappingReduceGroupOperator<?, ?, ?> groupNode = (PlanUnwrappingReduceGroupOperator<?, ?, ?>) javaOp;
+			type = groupNode.getInputType();
+		}
+		else if (javaOp instanceof JavaPlanNode<?>) {
 			JavaPlanNode<?> javaNode = (JavaPlanNode<?>) javaOp;
 			type = javaNode.getReturnType();
 		} else if (javaOp instanceof BulkIteration.PartialSolutionPlaceHolder) {
@@ -270,7 +305,11 @@ public class JavaApiPostPass implements OptimizerPostPass {
 	private static <T> TypeSerializerFactory<?> createSerializer(TypeInformation<T> typeInfo) {
 		TypeSerializer<T> serializer = typeInfo.createSerializer();
 		
-		return new RuntimeSerializerFactory<T>(serializer, typeInfo.getTypeClass());
+		if (serializer.isStateful()) {
+			return new RuntimeStatefulSerializerFactory<T>(serializer, typeInfo.getTypeClass());
+		} else {
+			return new RuntimeStatelessSerializerFactory<T>(serializer, typeInfo.getTypeClass());
+		}
 	}
 	
 	

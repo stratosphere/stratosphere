@@ -153,8 +153,9 @@ public class Instance extends NetworkNode {
 		// Now distribute the required libraries for the job
 		String[] requiredLibraries = LibraryCacheManager.getRequiredJarFiles(jobID);
 
-		if (requiredLibraries == null)
+		if (requiredLibraries == null) {
 			throw new IOException("No entry of required libraries for job " + jobID);
+		}
 
 		LibraryCacheProfileRequest request = new LibraryCacheProfileRequest();
 		request.setRequiredLibraries(requiredLibraries);

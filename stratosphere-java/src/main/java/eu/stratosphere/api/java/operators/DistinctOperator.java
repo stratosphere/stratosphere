@@ -14,28 +14,30 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 
 /**
  * @param <IN> The type of the data set made distinct by the operator.
  */
 public class DistinctOperator<IN> extends SingleInputOperator<IN, IN, DistinctOperator<IN>> {
 	
+	@SuppressWarnings("unused")
 	private final Keys<IN> keys;
 	
 	public DistinctOperator(DataSet<IN> input, Keys<IN> keys) {
 		super(input, input.getType());
 		
-		if (keys == null)
+		if (keys == null) {
 			throw new NullPointerException();
+		}
 		
 		this.keys = keys;
 	}
 
-
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
+		
 		throw new UnsupportedOperationException("NOT IMPLEMENTED");
 	}
 }

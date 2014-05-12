@@ -25,8 +25,8 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordPairComparatorFactory;
 import eu.stratosphere.pact.runtime.test.util.DriverTestBase;
 import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
-import eu.stratosphere.types.Key;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
@@ -36,11 +36,11 @@ public class CoGroupTaskExternalITCase extends DriverTestBase<GenericCoGrouper<R
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator1 = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator2 = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 	
 	private final CountingOutputCollector output = new CountingOutputCollector();
 	

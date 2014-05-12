@@ -14,7 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.test.broadcastvars;
 
+<<<<<<< HEAD
 import eu.stratosphere.configuration.ConfigConstants;
+=======
+import eu.stratosphere.test.util.RecordAPITestBase;
+>>>>>>> upstream/master
 import org.apache.log4j.Level;
 
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;
@@ -43,19 +47,18 @@ import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.NoOpDriver;
-import eu.stratosphere.pact.runtime.task.ReduceDriver;
+import eu.stratosphere.pact.runtime.task.GroupReduceDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedCollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
 import eu.stratosphere.test.iterative.nephele.JobGraphUtils;
 import eu.stratosphere.test.testdata.KMeansData;
-import eu.stratosphere.test.util.TestBase2;
 import eu.stratosphere.types.DoubleValue;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.util.LogUtils;
 
 
-public class KMeansIterativeNepheleITCase extends TestBase2 {
+public class KMeansIterativeNepheleITCase extends RecordAPITestBase {
 
 	private static final int ITERATION_ID = 42;
 	
@@ -233,8 +236,8 @@ public class KMeansIterativeNepheleITCase extends TestBase2 {
 		tailConfig.setIsWorksetUpdate();
 		
 		// inputs and driver
-		tailConfig.setDriver(ReduceDriver.class);
-		tailConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP);
+		tailConfig.setDriver(GroupReduceDriver.class);
+		tailConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP_REDUCE);
 		tailConfig.addInputToGroup(0);
 		tailConfig.setInputSerializer(inputSerializer, 0);		
 		tailConfig.setDriverComparator(inputComparator, 0);

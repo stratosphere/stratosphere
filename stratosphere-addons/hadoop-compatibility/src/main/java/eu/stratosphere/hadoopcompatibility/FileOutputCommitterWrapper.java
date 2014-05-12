@@ -13,6 +13,10 @@
 
 package eu.stratosphere.hadoopcompatibility;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -22,10 +26,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.util.StringUtils;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-
 /**
  * Hadoop 1.2.1 {@link org.apache.hadoop.mapred.FileOutputCommitter} takes {@link org.apache.hadoop.mapred.JobContext}
  * as input parameter. However JobContext class is package private, and in Hadoop 2.2.0 it's public.
@@ -33,6 +33,8 @@ import java.net.URI;
  */
 public class FileOutputCommitterWrapper extends FileOutputCommitter implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	static final String SUCCESSFUL_JOB_OUTPUT_DIR_MARKER =
 		"mapreduce.fileoutputcommitter.marksuccessfuljobs";
 
@@ -66,7 +68,7 @@ public class FileOutputCommitterWrapper extends FileOutputCommitter implements S
 	}
 
 	private Path getFinalPath(Path jobOutputDir, Path taskOutput,
-							  Path taskOutputPath) throws IOException {
+							Path taskOutputPath) throws IOException {
 		URI taskOutputUri = taskOutput.toUri();
 		URI relativePath = taskOutputPath.toUri().relativize(taskOutputUri);
 		if (taskOutputUri == relativePath) {//taskOutputPath is not a parent of taskOutput
@@ -80,9 +82,9 @@ public class FileOutputCommitterWrapper extends FileOutputCommitter implements S
 		}
 	}
 	private void moveTaskOutputs(JobConf conf, TaskAttemptID taskAttemptID,
-								 FileSystem fs,
-								 Path jobOutputDir,
-								 Path taskOutput)
+								FileSystem fs,
+								Path jobOutputDir,
+								Path taskOutput)
 		throws IOException {
 		if (fs.isFile(taskOutput)) {
 			Path finalOutputPath = getFinalPath(jobOutputDir, taskOutput,

@@ -28,8 +28,8 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparatorFactory;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializerFactory;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
-import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
+import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.MapTaskTest.MockMapStub;
 import eu.stratosphere.pact.runtime.task.ReduceTaskTest.MockReduceStub;
 import eu.stratosphere.pact.runtime.task.RegularPactTask;
@@ -87,14 +87,14 @@ public class ChainTaskTest extends TaskTestBase {
 				combineConfig.setOutputSerializer(serFact);
 				
 				// driver
-				combineConfig.setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
+				combineConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP_COMBINE);
 				combineConfig.setDriverComparator(compFact, 0);
 				combineConfig.setRelativeMemoryDriver(memoryFraction);
 				
 				// udf
 				combineConfig.setStubWrapper(new UserCodeClassWrapper<MockReduceStub>(MockReduceStub.class));
 				
-				getTaskConfig().addChainedTask(ChainedCombineDriver.class, combineConfig, "combine");
+				getTaskConfig().addChainedTask(SynchronousChainedCombineDriver.class, combineConfig, "combine");
 			}
 			
 			// chained map+combine
@@ -146,14 +146,14 @@ public class ChainTaskTest extends TaskTestBase {
 				combineConfig.setOutputSerializer(serFact);
 				
 				// driver
-				combineConfig.setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
+				combineConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP_COMBINE);
 				combineConfig.setDriverComparator(compFact, 0);
 				combineConfig.setRelativeMemoryDriver(memoryFraction);
 				
 				// udf
 				combineConfig.setStubWrapper(new UserCodeClassWrapper<MockFailingCombineStub>(MockFailingCombineStub.class));
 				
-				getTaskConfig().addChainedTask(ChainedCombineDriver.class, combineConfig, "combine");
+				getTaskConfig().addChainedTask(SynchronousChainedCombineDriver.class, combineConfig, "combine");
 			}
 			
 			// chained map+combine
@@ -190,8 +190,9 @@ public class ChainTaskTest extends TaskTestBase {
 			if (++this.cnt >= 5) {
 				throw new RuntimeException("Expected Test Exception");
 			}
-			while(records.hasNext())
+			while(records.hasNext()) {
 				out.collect(records.next());
+			}
 		}
 	}
 }

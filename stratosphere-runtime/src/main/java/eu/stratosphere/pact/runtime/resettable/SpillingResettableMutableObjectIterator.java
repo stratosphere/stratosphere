@@ -36,11 +36,10 @@ import eu.stratosphere.util.MutableObjectIterator;
  * Implementation of a resettable iterator. While iterating the first time over the data, the iterator writes the
  * records to a spillable buffer. Any subsequent iteration re-reads the data from that buffer.
  * 
- * 
  * @param <T> The type of record that the iterator handles.
  */
-public class SpillingResettableMutableObjectIterator<T> implements ResettableMutableObjectIterator<T>
-{
+public class SpillingResettableMutableObjectIterator<T> implements ResettableMutableObjectIterator<T> {
+	
 	private static final Log LOG = LogFactory.getLog(SpillingResettableMutableObjectIterator.class);
 
 	// ------------------------------------------------------------------------
@@ -90,27 +89,26 @@ public class SpillingResettableMutableObjectIterator<T> implements ResettableMut
 		this.memorySegments = memory;
 		this.releaseMemoryOnClose = releaseMemOnClose;
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating spilling resettable iterator with " + memory.size() + " pages of memory.");
+		}
 		
 		this.buffer = new SpillingBuffer(ioManager, new ListMemorySegmentSource(memory), memoryManager.getPageSize());
 	}
 
-	public void open() throws IOException
-	{}
+	public void open() {}
 
 
 	@Override
-	public void reset() throws IOException
-	{
+	public void reset() throws IOException {
 		this.inView = this.buffer.flip();
 		this.currentElementNum = 0;
 	}
 
-	public List<MemorySegment> close() throws IOException
-	{
-		if (LOG.isDebugEnabled())
+	public List<MemorySegment> close() throws IOException {
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Spilling Resettable Iterator closing. Stored " + this.elementCount + " records.");
+		}
 
 		this.inView = null;
 		
@@ -127,9 +125,9 @@ public class SpillingResettableMutableObjectIterator<T> implements ResettableMut
 	}
 
 	@Override
-	public T next(T reuse) throws IOException
-	{
+	public T next(T reuse) throws IOException {
 		if (this.inView != null) {
+			// reading, any subsequent pass
 			if (this.currentElementNum < this.elementCount) {
 				try {
 					reuse = this.serializer.deserialize(reuse, this.inView);
@@ -153,6 +151,22 @@ public class SpillingResettableMutableObjectIterator<T> implements ResettableMut
 				return reuse;
 			} else {
 				return null;
+			}
+		}
+	}
+	
+	public void consumeAndCacheRemainingData() throws IOException {
+		// check that we are in the first pass and that more input data is left
+		if (this.inView == null) {
+			T holder = this.serializer.createInstance();
+			
+			while ((holder = this.input.next(holder)) != null) {
+				try {
+					this.serializer.serialize(holder, this.buffer);
+				} catch (IOException e) {
+					throw new RuntimeException("SpillingIterator: Error writing element to buffer.", e);
+				}
+				this.elementCount++;
 			}
 		}
 	}

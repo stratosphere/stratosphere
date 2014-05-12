@@ -16,11 +16,10 @@ package eu.stratosphere.pact.runtime.task;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
+import eu.stratosphere.api.common.functions.GenericReduce;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
-import eu.stratosphere.pact.runtime.util.MutableToRegularIteratorWrapper;
-import eu.stratosphere.util.Collector;
 import eu.stratosphere.util.MutableObjectIterator;
 
 /**
@@ -31,23 +30,26 @@ import eu.stratosphere.util.MutableObjectIterator;
  * The ReduceTask creates a iterator over all records from its input. The iterator returns all records grouped by their
  * key. The iterator is handed to the <code>reduce()</code> method of the ReduceFunction.
  * 
- * @see GenericGroupReduce
+ * @see GenericReduce
  */
-public class AllReduceDriver<IT, OT> implements PactDriver<GenericGroupReduce<IT, OT>, OT> {
+public class AllReduceDriver<T> implements PactDriver<GenericReduce<T>, T> {
 	
 	private static final Log LOG = LogFactory.getLog(AllReduceDriver.class);
 
-	private PactTaskContext<GenericGroupReduce<IT, OT>, OT> taskContext;
+	private PactTaskContext<GenericReduce<T>, T> taskContext;
 	
-	private MutableObjectIterator<IT> input;
+	private MutableObjectIterator<T> input;
 
-	private TypeSerializer<IT> serializer;
+	private TypeSerializer<T> serializer;
+	
+	private boolean running;
 
 	// ------------------------------------------------------------------------
 
 	@Override
-	public void setup(PactTaskContext<GenericGroupReduce<IT, OT>, OT> context) {
+	public void setup(PactTaskContext<GenericReduce<T>, T> context) {
 		this.taskContext = context;
+		this.running = true;
 	}
 	
 	@Override
@@ -56,9 +58,9 @@ public class AllReduceDriver<IT, OT> implements PactDriver<GenericGroupReduce<IT
 	}
 
 	@Override
-	public Class<GenericGroupReduce<IT, OT>> getStubType() {
+	public Class<GenericReduce<T>> getStubType() {
 		@SuppressWarnings("unchecked")
-		final Class<GenericGroupReduce<IT, OT>> clazz = (Class<GenericGroupReduce<IT, OT>>) (Class<?>) GenericGroupReduce.class;
+		final Class<GenericReduce<T>> clazz = (Class<GenericReduce<T>>) (Class<?>) GenericReduce.class;
 		return clazz;
 	}
 
@@ -72,10 +74,12 @@ public class AllReduceDriver<IT, OT> implements PactDriver<GenericGroupReduce<IT
 	@Override
 	public void prepare() throws Exception {
 		final TaskConfig config = this.taskContext.getTaskConfig();
-		if (config.getDriverStrategy() != DriverStrategy.ALL_GROUP) {
+		if (config.getDriverStrategy() != DriverStrategy.ALL_REDUCE) {
 			throw new Exception("Unrecognized driver strategy for AllReduce driver: " + config.getDriverStrategy().name());
 		}
-		this.serializer = this.taskContext.getInputSerializer(0);
+		
+		TypeSerializerFactory<T> serializerFactory = this.taskContext.getInputSerializer(0);
+		this.serializer = serializerFactory.getSerializer();
 		this.input = this.taskContext.getInput(0);
 	}
 
@@ -85,19 +89,29 @@ public class AllReduceDriver<IT, OT> implements PactDriver<GenericGroupReduce<IT
 			LOG.debug(this.taskContext.formatLogString("AllReduce preprocessing done. Running Reducer code."));
 		}
 
-		final GenericGroupReduce<IT, OT> stub = this.taskContext.getStub();
-		final Collector<OT> output = this.taskContext.getOutputCollector();
-		final MutableToRegularIteratorWrapper<IT> inIter = new MutableToRegularIteratorWrapper<IT>(this.input, this.serializer);
-
-		// single UDF call with the single group
-		if (inIter.hasNext()) {
-			stub.reduce(inIter, output);
+		final GenericReduce<T> stub = this.taskContext.getStub();
+		final MutableObjectIterator<T> input = this.input;
+		final TypeSerializer<T> serializer = this.serializer;
+		
+		T val1 = serializer.createInstance();
+		
+		if ((val1 = input.next(val1)) == null) {
+			return;
 		}
+		
+		T val2;
+		while (running && (val2 = input.next(serializer.createInstance())) != null) {
+			val1 = stub.reduce(val1, val2);
+		}
+		
+		this.taskContext.getOutputCollector().collect(val1);
 	}
 
 	@Override
 	public void cleanup() {}
 
 	@Override
-	public void cancel() {}
+	public void cancel() {
+		this.running = false;
+	}
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.nephele.services.memorymanager.MemoryAllocationException;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
@@ -31,8 +32,8 @@ import eu.stratosphere.util.MutableObjectIterator;
  * pulls records from an iterator, but offers a collector into which data to be sorted is pushed.
  * 
  */
-public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSorter<E>
-{
+public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSorter<E> {
+	
 	private InputDataCollector<E> collector;
 	
 	// ------------------------------------------------------------------------
@@ -40,11 +41,9 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * 
-	 * 
 	 * @param memoryManager The memory manager from which to allocate the memory.
 	 * @param parentTask The parent task, which owns all resources used by this sorter.
-	 * @param serializer The type serializer.
+	 * @param serializerFactory The type serializer.
 	 * @param comparator The type comparator establishing the order relation.
 	 * @param fractionMemory The fraction of memory dedicated to sorting.
 	 * 
@@ -54,8 +53,8 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	 */
 	public AsynchronousPartialSorterCollector(MemoryManager memoryManager,
 			AbstractInvokable parentTask, 
-			TypeSerializer<E> serializer, TypeComparator<E> comparator,
-			double fractionMemory)
+			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
+			long totalMemory)
 	throws IOException, MemoryAllocationException
 	{
 		super(memoryManager, null, parentTask, serializer, comparator, fractionMemory);
@@ -72,9 +71,6 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 		return this.collector;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.runtime.sort.UnilateralSortMerger#getReadingThread(eu.stratosphere.pact.runtime.sort.ExceptionHandler, eu.stratosphere.pact.common.util.MutableObjectIterator, eu.stratosphere.pact.runtime.sort.UnilateralSortMerger.CircularQueues, eu.stratosphere.nephele.template.AbstractInvokable, eu.stratosphere.pact.runtime.plugable.TypeSerializers, long)
-	 */
 	@Override
 	protected ThreadBase<E> getReadingThread(ExceptionHandler<IOException> exceptionHandler,
 		MutableObjectIterator<E> reader, CircularQueues<E> queues, AbstractInvokable parentTask,
@@ -85,11 +81,11 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	}
 	
 
-	public void close()
-	{
+	public void close() {
 		try {
-			if (this.collector != null)
+			if (this.collector != null) {
 				this.collector.close();
+			}
 		}
 		finally {
 			super.close();

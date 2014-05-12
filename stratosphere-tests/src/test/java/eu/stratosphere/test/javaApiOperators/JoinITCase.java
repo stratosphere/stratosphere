@@ -30,6 +30,7 @@ import eu.stratosphere.api.java.functions.KeySelector;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.api.java.tuple.Tuple5;
+import eu.stratosphere.api.java.tuple.Tuple6;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.test.javaApiOperators.util.CollectionDataSets;
 import eu.stratosphere.test.javaApiOperators.util.CollectionDataSets.CustomType;
@@ -39,7 +40,7 @@ import eu.stratosphere.test.util.JavaProgramTestBase;
 @RunWith(Parameterized.class)
 public class JoinITCase extends JavaProgramTestBase {
 	
-	private static int NUM_PROGRAMS = 9;
+	private static int NUM_PROGRAMS = 13;
 	
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
@@ -316,79 +317,136 @@ public class JoinITCase extends JavaProgramTestBase {
 					"Hello,Hello\n" +
 					"Hello world,Hello\n";
 			
-		}
-			// TODO: Activate once Avro Serializer supports copy()
-//			case 10: {
-//				
-//				/*
-//				 * Join on a tuple input with key field selector and a custom type input with key extractor
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<Tuple3<Integer, Long, String>> ds1 = CollectionDataSets.getSmall3TupleDataSet(env);
-//				DataSet<CustomType> ds2 = CollectionDataSets.getCustomTypeDataSet(env);
-//				DataSet<Tuple2<String, String>> joinDs = 
-//						ds1.join(ds2)
-//						   .where(1).equalTo(new KeySelector<CustomType, Long>() {
-//									   @Override
-//									   public Long getKey(CustomType value) {
-//										   return value.myLong;
-//									   }
-//								   })
-//						   .with(new T3CustJoin());
-//				
-//				joinDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "Hi,Hello\n" +
-//						"Hello,Hello world\n" +
-//						"Hello world,Hello world\n";
-//						
-//			}
-			// TODO: Activate once Avro Serializer supports copy()
-//			case 11: {
-//				
-//				/*
-//				 * (Default) Join on two custom type inputs with key extractors
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<CustomType> ds1 = CollectionDataSets.getCustomTypeDataSet(env);
-//				DataSet<CustomType> ds2 = CollectionDataSets.getSmallCustomTypeDataSet(env);
-//				@SuppressWarnings("serial")
-//				DataSet<Tuple2<CustomType, CustomType>> joinDs = 
-//					ds1.join(ds2)
-//					   .where(
-//							   new KeySelector<CustomType, Integer>() {
-//								   @Override
-//								   public Integer getKey(CustomType value) {
-//									   return value.myInt;
-//								   }
-//							   }
-//							  )
-//						.equalTo(
-//								new KeySelector<CustomType, Integer>() {
-//									   @Override
-//									   public Integer getKey(CustomType value) {
-//										   return value.myInt;
-//									   }
-//								   }
-//								);
-//																				
-//				joinDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "1,0,Hi,1,0,Hi\n" +
-//						"2,1,Hello,2,1,Hello\n" +
-//						"2,1,Hello,2,2,Hello world\n" +
-//						"2,2,Hello world,2,1,Hello\n" +
-//						"2,2,Hello world,2,2,Hello world\n";
-//	
-//			}
+			}
+			case 10: {
+				
+				/*
+				 * Project join on a tuple input 1
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds1 = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.get5TupleDataSet(env);
+				DataSet<Tuple6<String, Long, String, Integer, Long, Long>> joinDs = 
+						ds1.join(ds2)
+						   .where(1)
+						   .equalTo(1)
+						   .projectFirst(2,1)
+						   .projectSecond(3)
+						   .projectFirst(0)
+						   .projectSecond(4,1)
+						   .types(String.class, Long.class, String.class, Integer.class, Long.class, Long.class);
+				
+				joinDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "Hi,1,Hallo,1,1,1\n" +
+						"Hello,2,Hallo Welt,2,2,2\n" +
+						"Hello world,2,Hallo Welt,3,2,2\n";
+				
+			}
+			case 11: {
+				
+				/*
+				 * Project join on a tuple input 2
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds1 = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.get5TupleDataSet(env);
+				DataSet<Tuple6<String, String, Long, Long, Long, Integer>> joinDs = 
+						ds1.join(ds2)
+						   .where(1)
+						   .equalTo(1)
+						   .projectSecond(3)
+						   .projectFirst(2,1)
+						   .projectSecond(4,1)
+						   .projectFirst(0)
+						   .types(String.class, String.class, Long.class, Long.class, Long.class, Integer.class);
+				
+				joinDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "Hallo,Hi,1,1,1,1\n" +
+						"Hallo Welt,Hello,2,2,2,2\n" +
+						"Hallo Welt,Hello world,2,2,2,3\n";
+			}
+				
+			case 12: {
+				
+				/*
+				 * Join on a tuple input with key field selector and a custom type input with key extractor
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds1 = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<CustomType> ds2 = CollectionDataSets.getCustomTypeDataSet(env);
+				DataSet<Tuple2<String, String>> joinDs = 
+						ds1.join(ds2)
+						   .where(1).equalTo(new KeySelector<CustomType, Long>() {
+									   @Override
+									   public Long getKey(CustomType value) {
+										   return value.myLong;
+									   }
+								   })
+						   .with(new T3CustJoin());
+				
+				joinDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "Hi,Hello\n" +
+						"Hello,Hello world\n" +
+						"Hello world,Hello world\n";
+						
+			}
+			
+			case 13: {
+				
+				/*
+				 * (Default) Join on two custom type inputs with key extractors
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<CustomType> ds1 = CollectionDataSets.getCustomTypeDataSet(env);
+				DataSet<CustomType> ds2 = CollectionDataSets.getSmallCustomTypeDataSet(env);
+				
+				DataSet<Tuple2<CustomType, CustomType>> joinDs = 
+					ds1.join(ds2)
+					   .where(
+							   new KeySelector<CustomType, Integer>() {
+								   @Override
+								   public Integer getKey(CustomType value) {
+									   return value.myInt;
+								   }
+							   }
+							  )
+						.equalTo(
+								new KeySelector<CustomType, Integer>() {
+									   @Override
+									   public Integer getKey(CustomType value) {
+										   return value.myInt;
+									   }
+								   }
+								);
+																				
+				joinDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "1,0,Hi,1,0,Hi\n" +
+						"2,1,Hello,2,1,Hello\n" +
+						"2,1,Hello,2,2,Hello world\n" +
+						"2,2,Hello world,2,1,Hello\n" +
+						"2,2,Hello world,2,2,Hello world\n";
+	
+			}
 			default: 
 				throw new IllegalArgumentException("Invalid program id");
 			}

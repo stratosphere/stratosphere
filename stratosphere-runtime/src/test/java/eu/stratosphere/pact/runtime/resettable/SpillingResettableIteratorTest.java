@@ -13,7 +13,6 @@
 
 package eu.stratosphere.pact.runtime.resettable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -67,8 +66,7 @@ public class SpillingResettableIteratorTest {
 	}
 
 	@After
-	public void shutdown()
-	{
+	public void shutdown() {
 		this.ioman.shutdown();
 		if (!this.ioman.isProperlyShutDown()) {
 			Assert.fail("I/O Manager Shutdown was not completed properly.");
@@ -87,32 +85,30 @@ public class SpillingResettableIteratorTest {
 	 * has to be written to disk.
 	 */
 	@Test
-	public void testResettableIterator()
-	{
+	public void testResettableIterator() {
 		try {
 			// create the resettable Iterator
 			SpillingResettableIterator<IntValue> iterator = new SpillingResettableIterator<IntValue>(
 					this.reader, this.serializer, this.memman, this.ioman, 2, this.memOwner);
 			// open the iterator
-			try {
-				iterator.open();
-			} catch (IOException e) {
-				Assert.fail("Could not open resettable iterator:" + e.getMessage());
-			}
+			iterator.open();
+
 			// now test walking through the iterator
 			int count = 0;
-			while (iterator.hasNext())
+			while (iterator.hasNext()) {
 				Assert.assertEquals("In initial run, element " + count + " does not match expected value!", count++,
 					iterator.next().getValue());
+			}
 			Assert.assertEquals("Too few elements were deserialzied in initial run!", NUM_TESTRECORDS, count);
 			// test resetting the iterator a few times
 			for (int j = 0; j < 10; ++j) {
 				count = 0;
 				iterator.reset();
 				// now we should get the same results
-				while (iterator.hasNext())
+				while (iterator.hasNext()) {
 					Assert.assertEquals("After reset nr. " + j + 1 + " element " + count
 						+ " does not match expected value!", count++, iterator.next().getValue());
+				}
 				Assert.assertEquals("Too few elements were deserialzied after reset nr. " + j + 1 + "!", NUM_TESTRECORDS,
 					count);
 			}
@@ -129,32 +125,30 @@ public class SpillingResettableIteratorTest {
 	 * is kept locally in a membuffer.
 	 */
 	@Test
-	public void testResettableIteratorInMemory()
-	{
+	public void testResettableIteratorInMemory() {
 		try {
 			// create the resettable Iterator
 			SpillingResettableIterator<IntValue> iterator = new SpillingResettableIterator<IntValue>(
 					this.reader, this.serializer, this.memman, this.ioman, 20, this.memOwner);
 			// open the iterator
-			try {
-				iterator.open();
-			} catch (IOException e) {
-				Assert.fail("Could not open resettable iterator:" + e.getMessage());
-			}
+			iterator.open();
+
 			// now test walking through the iterator
 			int count = 0;
-			while (iterator.hasNext())
+			while (iterator.hasNext()) {
 				Assert.assertEquals("In initial run, element " + count + " does not match expected value!", count++,
 					iterator.next().getValue());
+			}
 			Assert.assertEquals("Too few elements were deserialzied in initial run!", NUM_TESTRECORDS, count);
 			// test resetting the iterator a few times
 			for (int j = 0; j < 10; ++j) {
 				count = 0;
 				iterator.reset();
 				// now we should get the same results
-				while (iterator.hasNext())
+				while (iterator.hasNext()) {
 					Assert.assertEquals("After reset nr. " + j + 1 + " element " + count
 						+ " does not match expected value!", count++, iterator.next().getValue());
+				}
 				Assert.assertEquals("Too few elements were deserialzied after reset nr. " + j + 1 + "!", NUM_TESTRECORDS,
 					count);
 			}
@@ -170,18 +164,13 @@ public class SpillingResettableIteratorTest {
 	 * Tests whether multiple call of hasNext() changes the state of the iterator
 	 */
 	@Test
-	public void testHasNext()
-	{
+	public void testHasNext() {
 		try {
 			// create the resettable Iterator
 			SpillingResettableIterator<IntValue> iterator = new SpillingResettableIterator<IntValue>(
 					this.reader, this.serializer, this.memman, this.ioman, 2, this.memOwner);
 			// open the iterator
-			try {
-				iterator.open();
-			} catch (IOException e) {
-				Assert.fail("Could not open resettable iterator:" + e.getMessage());
-			}
+			iterator.open();
 	
 			int cnt = 0;
 			while (iterator.hasNext()) {
@@ -204,18 +193,13 @@ public class SpillingResettableIteratorTest {
 	 * Test whether next() depends on previous call of hasNext()
 	 */
 	@Test
-	public void testNext()
-	{
+	public void testNext() {
 		try {
 			// create the resettable Iterator
 			SpillingResettableIterator<IntValue> iterator = new SpillingResettableIterator<IntValue>(
 					this.reader, this.serializer, this.memman, this.ioman, 2, this.memOwner);
 			// open the iterator
-			try {
-				iterator.open();
-			} catch (IOException e) {
-				Assert.fail("Could not open resettable iterator:" + e.getMessage());
-			}
+			iterator.open();
 	
 			IntValue record;
 			int cnt = 0;

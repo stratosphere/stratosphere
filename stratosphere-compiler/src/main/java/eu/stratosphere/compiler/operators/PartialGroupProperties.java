@@ -36,7 +36,7 @@ public final class PartialGroupProperties extends OperatorDescriptorSingle {
 	
 	@Override
 	public DriverStrategy getStrategy() {
-		return DriverStrategy.PARTIAL_GROUP;
+		return DriverStrategy.SORTED_GROUP_COMBINE;
 	}
 
 	@Override

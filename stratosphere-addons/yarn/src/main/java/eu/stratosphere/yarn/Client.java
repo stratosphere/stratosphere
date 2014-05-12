@@ -65,6 +65,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import eu.stratosphere.client.CliFrontend;
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.GlobalConfiguration;
 
@@ -283,12 +284,18 @@ public class Client {
 		conf = Utils.initializeYarnConfiguration();
 		
 		// intialize HDFS
-	    LOG.info("Copy App Master jar from local filesystem and add to local environment");
-	    // Copy the application master jar to the filesystem 
-	    // Create a local resource to point to the destination jar path 
-	    final FileSystem fs = FileSystem.get(conf);
-	    
-	    // Create yarnClient
+		LOG.info("Copy App Master jar from local filesystem and add to local environment");
+		// Copy the application master jar to the filesystem 
+		// Create a local resource to point to the destination jar path 
+		final FileSystem fs = FileSystem.get(conf);
+		
+		if(fs.getScheme().startsWith("file")) {
+			LOG.warn("The file system scheme is '" + fs.getScheme() + "'. This indicates that the "
+					+ "specified Hadoop configuration path is wrong and the sytem is using the default Hadoop configuration values."
+					+ "The Stratosphere YARN client needs to store its files in a distributed file system");
+		}
+		
+		// Create yarnClient
 		final YarnClient yarnClient = YarnClient.createYarnClient();
 		yarnClient.init(conf);
 		yarnClient.start();
@@ -391,7 +398,7 @@ public class Client {
 		fs.setPermission(paths[2], permission); // set permission for path.
 		Utils.setTokensFor(amContainer, paths, this.conf);
 		
-         
+		 
 		amContainer.setLocalResources(localResources);
 		fs.close();
 
@@ -419,12 +426,15 @@ public class Client {
 		appContext.setAMContainerSpec(amContainer);
 		appContext.setResource(capability);
 		appContext.setQueue(queue);
-
+		
+		// file that we write into the conf/ dir containing the jobManager address.
+		final File addrFile = new File(confDirPath + CliFrontend.JOBMANAGER_ADDRESS_FILE);
+		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-		   @Override
-		   public void run() {
-		    try {
-		    	LOG.info("Killing the Stratosphere-YARN application.");
+		@Override
+		public void run() {
+			try {
+				LOG.info("Killing the Stratosphere-YARN application.");
 				yarnClient.killApplication(appId);
 				LOG.info("Deleting files in "+paths[2]);
 				FileSystem shutFS = FileSystem.get(conf);
@@ -433,10 +443,15 @@ public class Client {
 			} catch (Exception e) {
 				LOG.warn("Exception while killing the YARN application", e);
 			}
-		    LOG.info("YARN Client is shutting down");
-		    yarnClient.stop();
-		   }
-		  });
+			try {
+				addrFile.delete();
+			} catch (Exception e) {
+				LOG.warn("Exception while deleting the jobmanager address file", e);
+			}
+			LOG.info("YARN Client is shutting down");
+			yarnClient.stop();
+		}
+		});
 		
 		LOG.info("Submitting application master " + appId);
 		yarnClient.submitApplication(appContext);
@@ -452,14 +467,18 @@ public class Client {
 				System.err.println("Stratosphere JobManager is now running on "+appReport.getHost()+":"+jmPort);
 				System.err.println("JobManager Web Interface: "+appReport.getTrackingUrl());
 				// write jobmanager connect information
-				PrintWriter out = new PrintWriter(confDirPath+".yarn-jobmanager");
+				
+				PrintWriter out = new PrintWriter(addrFile);
 				out.println(appReport.getHost()+":"+jmPort);
 				out.close();
+				addrFile.setReadable(true, false); // readable for all.
 				told = true;
 			}
 			if(!told) {
 				System.err.print(el[i++]+"\r");
-				if(i == el.length) i = 0;
+				if(i == el.length) {
+					i = 0;
+				}
 				Thread.sleep(500); // wait for the application to switch to RUNNING
 			} else {
 				Thread.sleep(5000);

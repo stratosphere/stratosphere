@@ -74,7 +74,7 @@ public abstract class CostEstimator {
 		for (Iterator<Channel> channels = n.getInputs(); channels.hasNext(); ) {
 			final Channel channel = channels.next();
 			final Costs costs = new Costs();
-			 
+			
 			// Plans that apply the same strategies, but at different points
 			// are equally expensive. For example, if a partitioning can be
 			// pushed below a Map function there is often no difference in plan
@@ -140,10 +140,12 @@ public abstract class CostEstimator {
 		// get the inputs, if we have some
 		{
 			Iterator<Channel> channels = n.getInputs();
-			if (channels.hasNext())
+			if (channels.hasNext()) {
 				firstInput = channels.next();
-			if (channels.hasNext())
+			}
+			if (channels.hasNext()) {
 				secondInput = channels.next();
+			}
 		}
 
 		// determine the local costs
@@ -155,14 +157,16 @@ public abstract class CostEstimator {
 		case MAP:
 		case FLAT_MAP:
 			
-		case ALL_GROUP:
-			// this operation does not do any actual grouping, since every element is in the same single group
+		case ALL_GROUP_REDUCE:
+		case ALL_REDUCE:
+			// this operations does not do any actual grouping, since every element is in the same single group
 			
 		case CO_GROUP:
-		case SORTED_GROUP:
+		case SORTED_GROUP_REDUCE:
+		case SORTED_REDUCE:
 			// grouping or co-grouping over sorted streams for free
 			
-		case PARTIAL_GROUP:
+		case SORTED_GROUP_COMBINE:
 			// partial grouping is always local and main memory resident. we should add a relative cpu cost at some point
 		
 		case UNION:
@@ -190,7 +194,6 @@ public abstract class CostEstimator {
 		case NESTEDLOOP_STREAMED_OUTER_SECOND:
 			addStreamedNestedLoopsCosts(secondInput, firstInput, availableMemory, driverCosts);
 			break;
-		case GROUP_SELF_NESTEDLOOP:
 		default:
 			throw new CompilerException("Unknown local strategy: " + n.getDriverStrategy().name());
 		}

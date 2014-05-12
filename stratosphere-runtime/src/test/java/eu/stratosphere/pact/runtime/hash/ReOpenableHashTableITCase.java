@@ -39,8 +39,8 @@ import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.nephele.template.AbstractTask;
-import eu.stratosphere.pact.runtime.hash.HashMatchIteratorITCase.RecordMatchRemovingJoin;
 import eu.stratosphere.pact.runtime.hash.HashMatchIteratorITCase.RecordMatch;
+import eu.stratosphere.pact.runtime.hash.HashMatchIteratorITCase.RecordMatchRemovingJoin;
 import eu.stratosphere.pact.runtime.hash.HashTableITCase.ConstantsKeyValuePairsIterator;
 import eu.stratosphere.pact.runtime.hash.MutableHashTable.HashBucketIterator;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
@@ -49,12 +49,12 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializer;
 import eu.stratosphere.pact.runtime.test.util.DiscardingOutputCollector;
 import eu.stratosphere.pact.runtime.test.util.DummyInvokable;
 import eu.stratosphere.pact.runtime.test.util.TestData;
-import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
-import eu.stratosphere.pact.runtime.test.util.UnionIterator;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator;
-import eu.stratosphere.pact.runtime.test.util.TestData.Key;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator.KeyMode;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator.ValueMode;
+import eu.stratosphere.pact.runtime.test.util.TestData.Key;
+import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
+import eu.stratosphere.pact.runtime.test.util.UnionIterator;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
@@ -225,7 +225,7 @@ public class ReOpenableHashTableITCase {
 		
 		final JoinFunction firstMatcher = new RecordMatchRemovingJoin(expectedFirstMatchesMap);
 		
-		final Collector<Record> collector = new DiscardingOutputCollector();
+		final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 
 		// reset the generators
 		bgen.reset();
@@ -391,7 +391,7 @@ public class ReOpenableHashTableITCase {
 							(PROBE_VALS_PER_KEY + REPEATED_VALUE_COUNT_PROBE) * (BUILD_VALS_PER_KEY + REPEATED_VALUE_COUNT_BUILD) * NUM_PROBES, val);
 			} else {
 				Assert.assertEquals("Wrong number of values in per-key cross product for key " + key, 
-							 PROBE_VALS_PER_KEY * BUILD_VALS_PER_KEY * NUM_PROBES, val);
+							PROBE_VALS_PER_KEY * BUILD_VALS_PER_KEY * NUM_PROBES, val);
 			}
 		}
 		
@@ -504,7 +504,7 @@ public class ReOpenableHashTableITCase {
 							(PROBE_VALS_PER_KEY + REPEATED_VALUE_COUNT_PROBE) * (BUILD_VALS_PER_KEY + REPEATED_VALUE_COUNT_BUILD) * NUM_PROBES, val);
 			} else {
 				Assert.assertEquals("Wrong number of values in per-key cross product for key " + key, 
-							 PROBE_VALS_PER_KEY * BUILD_VALS_PER_KEY * NUM_PROBES, val);
+							PROBE_VALS_PER_KEY * BUILD_VALS_PER_KEY * NUM_PROBES, val);
 			}
 		}
 		

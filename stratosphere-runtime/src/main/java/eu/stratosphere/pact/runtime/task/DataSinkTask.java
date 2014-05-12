@@ -35,7 +35,6 @@ import eu.stratosphere.nephele.io.MutableRecordReader;
 import eu.stratosphere.nephele.io.MutableUnionRecordReader;
 import eu.stratosphere.nephele.template.AbstractOutputTask;
 import eu.stratosphere.pact.runtime.plugable.DeserializationDelegate;
-import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializer;
 import eu.stratosphere.pact.runtime.sort.UnilateralSortMerger;
 import eu.stratosphere.pact.runtime.task.util.CloseableInputProvider;
 import eu.stratosphere.pact.runtime.task.util.ReaderIterator;
@@ -50,8 +49,8 @@ import eu.stratosphere.util.MutableObjectIterator;
  * 
  * @see eu.eu.stratosphere.pact.common.generic.io.OutputFormat
  */
-public class DataSinkTask<IT> extends AbstractOutputTask
-{
+public class DataSinkTask<IT> extends AbstractOutputTask {
+	
 	public static final String DEGREE_OF_PARALLELISM_KEY = "sink.dop";
 	
 	// Obtain DataSinkTask Logger
@@ -66,10 +65,10 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 	private MutableObjectIterator<IT> reader;
 	
 	// input iterator
-	 private MutableObjectIterator<IT> input;
+	private MutableObjectIterator<IT> input;
 	
 	// The serializer for the input type
-	private TypeSerializer<IT> inputTypeSerializer;
+	private TypeSerializerFactory<IT> inputTypeSerializerFactory;
 	
 	// local strategy
 	private CloseableInputProvider<IT> localStrategy;
@@ -86,8 +85,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 
 	@Override
 	public void registerInputOutput() {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(getLogString("Start registering input and output"));
+		}
 
 		// initialize OutputFormat
 		initOutputFormat();
@@ -100,16 +100,18 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 				e.getMessage() == null ? "." : ": " + e.getMessage(), e);
 		}
 
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(getLogString("Finished registering input and output"));
+		}
 	}
 
 
 	@Override
 	public void invoke() throws Exception
 	{
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(getLogString("Starting data sink operator"));
+		}
 		
 		try {
 			
@@ -133,8 +135,8 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 					UnilateralSortMerger<IT> sorter = new UnilateralSortMerger<IT>(
 							getEnvironment().getMemoryManager(), 
 							getEnvironment().getIOManager(),
-							this.reader, this, this.inputTypeSerializer, compFact.createComparator(),
-							this.config.getRelativeMemoryInput(0), this.config.getFilehandlesInput(0),
+							this.reader, this, this.inputTypeSerializerFactory, compFact.createComparator(),
+							this.config.getMemoryInput(0), this.config.getFilehandlesInput(0),
 							this.config.getSpillingThresholdInput(0));
 					
 					this.localStrategy = sorter;
@@ -149,9 +151,13 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 			}
 			
 			// read the reader and write it to the output
+			
+			final TypeSerializer<IT> serializer = this.inputTypeSerializerFactory.getSerializer();
 			final MutableObjectIterator<IT> input = this.input;
 			final OutputFormat<IT> format = this.format;
-			IT record = this.inputTypeSerializer.createInstance();
+			
+			
+			IT record = serializer.createInstance();
 			
 			// check if task has been canceled
 			if (this.taskCanceled) {
@@ -179,8 +185,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 		catch (Exception ex) {
 			// drop, if the task was canceled
 			if (!this.taskCanceled) {
-				if (LOG.isErrorEnabled())
+				if (LOG.isErrorEnabled()) {
 					LOG.error(getLogString("Error in Pact user code: " + ex.getMessage()), ex);
+				}
 				throw ex;
 			}
 		}
@@ -192,8 +199,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 					this.format.close();
 				}
 				catch (Throwable t) {
-					if (LOG.isWarnEnabled())
+					if (LOG.isWarnEnabled()) {
 						LOG.warn(getLogString("Error closing the ouput format."), t);
+					}
 				}
 			}
 			// close local strategy if necessary
@@ -212,8 +220,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 			}
 		}
 		else {
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug(getLogString("Data sink operator cancelled"));
+			}
 		}
 	}
 
@@ -227,8 +236,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 			} catch (Throwable t) {}
 		}
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(getLogString("Cancelling data sink operator"));
+		}
 	}
 	
 	/**
@@ -314,10 +324,9 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 			throw new Exception("Illegal input group size in task configuration: " + groupSize);
 		}
 		
-		final TypeSerializerFactory<IT> serializerFactory = this.config.getInputSerializer(0, this.userCodeClassLoader);
-		this.inputTypeSerializer = serializerFactory.getSerializer();
+		this.inputTypeSerializerFactory = this.config.getInputSerializer(0, this.userCodeClassLoader);
 		
-		if (this.inputTypeSerializer.getClass() == RecordSerializer.class) {
+		if (this.inputTypeSerializerFactory.getDataType() == Record.class) {
 			// pact record specific deserialization
 			MutableReader<Record> reader = (MutableReader<Record>) inputReader;
 			this.reader = (MutableObjectIterator<IT>)new RecordReaderIterator(reader);
@@ -325,7 +334,7 @@ public class DataSinkTask<IT> extends AbstractOutputTask
 			// generic data type serialization
 			MutableReader<DeserializationDelegate<?>> reader = (MutableReader<DeserializationDelegate<?>>) inputReader;
 			@SuppressWarnings({ "rawtypes" })
-			final MutableObjectIterator<?> iter = new ReaderIterator(reader, this.inputTypeSerializer);
+			final MutableObjectIterator<?> iter = new ReaderIterator(reader, this.inputTypeSerializerFactory.getSerializer());
 			this.reader = (MutableObjectIterator<IT>)iter;
 		}
 		

@@ -29,14 +29,17 @@ public class DataSource<OUT> extends DataSet<OUT> {
 	private final InputFormat<OUT, ?> inputFormat;
 	
 	private String name;
+	
+	private int dop = -1;
 
 	// --------------------------------------------------------------------------------------------
 	
 	public DataSource(ExecutionEnvironment context, InputFormat<OUT, ?> inputFormat, TypeInformation<OUT> type) {
 		super(context, type);
 		
-		if (inputFormat == null)
+		if (inputFormat == null) {
 			throw new IllegalArgumentException("The input format may not be null.");
+		}
 		
 		this.inputFormat = inputFormat;
 	}
@@ -52,6 +55,32 @@ public class DataSource<OUT> extends DataSet<OUT> {
 		return this;
 	}
 	
+	/**
+	 * Returns the degree of parallelism of this data source.
+	 * 
+	 * @return The degree of parallelism of this data source.
+	 */
+	public int getParallelism() {
+		return this.dop;
+	}
+	
+	/**
+	 * Sets the degree of parallelism for this data source.
+	 * The degree must be 1 or more.
+	 * 
+	 * @param dop The degree of parallelism for this data source.
+	 * @return This data source with set degree of parallelism.
+	 */
+	public DataSource<OUT> setParallelism(int dop) {
+		
+		if(dop < 1) {
+			throw new IllegalArgumentException("The parallelism of an operator must be at least 1.");
+		}
+		this.dop = dop;
+		
+		return this;
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	
 	protected GenericDataSource<?> translateToDataFlow() {
@@ -61,6 +90,9 @@ public class DataSource<OUT> extends DataSet<OUT> {
 		}
 		
 		PlanDataSource<OUT> source = new PlanDataSource<OUT>(this.inputFormat, name, getType());
+		// set dop
+		source.setDegreeOfParallelism(dop);
+		
 		return source;
 	}
 }

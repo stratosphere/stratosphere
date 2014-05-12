@@ -25,7 +25,7 @@ import com.google.common.io.Files;
  * Source code generator for tuple classes and classes which depend on the arity
  * of tuples.
  */
-public class TupleGenerator {
+class TupleGenerator {
 
 	// Parameters for tuple classes	
 	private static final String ROOT_DIRECTORY = "./src/main/java";
@@ -55,11 +55,21 @@ public class TupleGenerator {
 	private static final String PROJECT_OPERATOR_PACKAGE = "eu.stratosphere.api.java.operators";
 	
 	private static final String PROJECT_OPERATOR_CLASSNAME = "ProjectOperator";
+	
+	// Parameters for JoinOperator
+	private static final String JOIN_OPERATOR_PACKAGE = "eu.stratosphere.api.java.operators";
+	
+	private static final String JOIN_OPERATOR_CLASSNAME = "JoinOperator";
+
+	// parameters for CrossOperator
+	private static final String CROSS_OPERATOR_PACKAGE = "eu.stratosphere.api.java.operators";
+
+	private static final String CROSS_OPERATOR_CLASSNAME = "CrossOperator";
 
 	// min. and max. tuple arity	
 	private static final int FIRST = 1;
 
-	private static final int LAST = 22;
+	private static final int LAST = 25;
 
 	public static void main(String[] args) throws Exception {
 		File root = new File(ROOT_DIRECTORY);
@@ -73,6 +83,11 @@ public class TupleGenerator {
 		modifyTupleTypeInfo(root);
 		
 		modifyProjectOperator(root);
+		
+		modifyJoinProjectOperator(root);
+
+		modifyCrossProjectOperator(root);
+
 	}
 
 	private static File getPackage(File root, String packageString) {
@@ -129,6 +144,85 @@ public class TupleGenerator {
 		s.close();
 		Files.write(sb.toString(), file, Charsets.UTF_8);
 	}
+
+	private static void modifyCrossProjectOperator(File root) throws IOException {
+		// generate code
+		StringBuilder sb = new StringBuilder();
+
+		for (int numFields = FIRST; numFields <= LAST; numFields++) {
+
+			// method begin
+			sb.append("\n");
+
+			// method comment
+			sb.append("\t\t/**\n");
+			sb.append("\t\t * Projects a pair of crossed elements to a {@link Tuple} with the previously selected fields. \n");
+			sb.append("\t\t * Requires the classes of the fields of the resulting tuples. \n");
+			sb.append("\t\t * \n");
+			for (int i = 0; i < numFields; i++) {
+				sb.append("\t\t * @param type" + i + " The class of field '"+i+"' of the result tuples.\n");
+			}
+			sb.append("\t\t * @return The projected data set.\n");
+			sb.append("\t\t * \n");
+			sb.append("\t\t * @see Tuple\n");
+			sb.append("\t\t * @see DataSet\n");
+			sb.append("\t\t */\n");
+
+			// method signature
+			sb.append("\t\tpublic <");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append("> ProjectCross<I1, I2, Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">> types(");
+			for (int i = 0; i < numFields; i++) {
+				if (i > 0) {
+					sb.append(", ");
+				}
+				sb.append("Class<");
+				sb.append(GEN_TYPE_PREFIX + i);
+				sb.append("> type" + i);
+			}
+			sb.append(") {\n");
+
+			// convert type0..1 to types array
+			sb.append("\t\t\tClass<?>[] types = {");
+			for (int i = 0; i < numFields; i++) {
+				if (i > 0) {
+					sb.append(", ");
+				}
+				sb.append("type" + i);
+			}
+			sb.append("};\n");
+
+			// check number of types and extract field types
+			sb.append("\t\t\tif(types.length != this.fieldIndexes.length) {\n");
+			sb.append("\t\t\t\tthrow new IllegalArgumentException(\"Numbers of projected fields and types do not match.\");\n");
+			sb.append("\t\t\t}\n");
+			sb.append("\t\t\t\n");
+			sb.append("\t\t\tTypeInformation<?>[] fTypes = extractFieldTypes(fieldIndexes, types);\n");
+
+			// create new tuple type info
+			sb.append("\t\t\tTupleTypeInfo<Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">> tType = new TupleTypeInfo<Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">>(fTypes);\n\n");
+
+			// create and return new project operator
+			sb.append("\t\t\treturn new ProjectCross<I1, I2, Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">>(this.ds1, this.ds2, this.fieldIndexes, this.isFieldInFirst, tType);\n");
+
+			// method end
+			sb.append("\t\t}\n");
+
+		}
+
+		// insert code into file
+		File dir = getPackage(root, CROSS_OPERATOR_PACKAGE);
+		File projectOperatorClass = new File(dir, CROSS_OPERATOR_CLASSNAME + ".java");
+		insertCodeIntoFile(sb.toString(), projectOperatorClass);
+	}
 	
 	private static void modifyProjectOperator(File root) throws IOException {
 		// generate code
@@ -141,13 +235,16 @@ public class TupleGenerator {
 			
 			// method comment
 			sb.append("\t\t/**\n");
-			sb.append("\t\t * Projects a tuple data set to the previously selected fields. \n");
-			sb.append("\t\t * Requires the classes of the fields of the resulting tuples. \n");
+			sb.append("\t\t * Projects a {@link Tuple} {@link DataSet} to the previously selected fields. \n");
+			sb.append("\t\t * Requires the classes of the fields of the resulting Tuples. \n");
 			sb.append("\t\t * \n");			
 			for (int i = 0; i < numFields; i++) {
-				sb.append("\t\t * @param type" + i + " The class of field '"+i+"' of the result tuples.\n");
+				sb.append("\t\t * @param type" + i + " The class of field '"+i+"' of the result Tuples.\n");
 			}
-			sb.append("\t\t * @return The projected data set.\n");
+			sb.append("\t\t * @return The projected DataSet.\n");
+			sb.append("\t\t * \n");			
+			sb.append("\t\t * @see Tuple\n");
+			sb.append("\t\t * @see DataSet\n");
 			sb.append("\t\t */\n");
 			
 			// method signature
@@ -206,6 +303,85 @@ public class TupleGenerator {
 		insertCodeIntoFile(sb.toString(), projectOperatorClass);
 	}
 	
+	private static void modifyJoinProjectOperator(File root) throws IOException {
+		// generate code
+		StringBuilder sb = new StringBuilder();
+		
+		for (int numFields = FIRST; numFields <= LAST; numFields++) {
+
+			// method begin
+			sb.append("\n");
+			
+			// method comment
+			sb.append("\t\t/**\n");
+			sb.append("\t\t * Projects a pair of joined elements to a {@link Tuple} with the previously selected fields. \n");
+			sb.append("\t\t * Requires the classes of the fields of the resulting tuples. \n");
+			sb.append("\t\t * \n");			
+			for (int i = 0; i < numFields; i++) {
+				sb.append("\t\t * @param type" + i + " The class of field '"+i+"' of the result tuples.\n");
+			}
+			sb.append("\t\t * @return The projected data set.\n");
+			sb.append("\t\t * \n");			
+			sb.append("\t\t * @see Tuple\n");
+			sb.append("\t\t * @see DataSet\n");
+			sb.append("\t\t */\n");
+			
+			// method signature
+			sb.append("\t\tpublic <");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append("> ProjectJoin<I1, I2, Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">> types(");
+			for (int i = 0; i < numFields; i++) {
+				if (i > 0) {
+					sb.append(", ");
+				}
+				sb.append("Class<");
+				sb.append(GEN_TYPE_PREFIX + i);
+				sb.append("> type" + i);
+			}
+			sb.append(") {\n");
+			
+			// convert type0..1 to types array
+			sb.append("\t\t\tClass<?>[] types = {");
+			for (int i = 0; i < numFields; i++) {
+				if (i > 0) {
+					sb.append(", ");
+				}
+				sb.append("type" + i);
+			}
+			sb.append("};\n");
+			
+			// check number of types and extract field types
+			sb.append("\t\t\tif(types.length != this.fieldIndexes.length) {\n");
+			sb.append("\t\t\t\tthrow new IllegalArgumentException(\"Numbers of projected fields and types do not match.\");\n");
+			sb.append("\t\t\t}\n");
+			sb.append("\t\t\t\n");
+			sb.append("\t\t\tTypeInformation<?>[] fTypes = extractFieldTypes(fieldIndexes, types);\n");
+			
+			// create new tuple type info
+			sb.append("\t\t\tTupleTypeInfo<Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">> tType = new TupleTypeInfo<Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">>(fTypes);\n\n");
+			
+			// create and return new project operator
+			sb.append("\t\t\treturn new ProjectJoin<I1, I2, Tuple"+numFields+"<");
+			appendTupleTypeGenerics(sb, numFields);
+			sb.append(">>(this.ds1, this.ds2, this.keys1, this.keys2, this.hint, this.fieldIndexes, this.isFieldInFirst, tType);\n");
+			
+			// method end
+			sb.append("\t\t}\n");
+			
+		}
+		
+		// insert code into file
+		File dir = getPackage(root, JOIN_OPERATOR_PACKAGE);
+		File projectOperatorClass = new File(dir, JOIN_OPERATOR_CLASSNAME + ".java");
+		insertCodeIntoFile(sb.toString(), projectOperatorClass);
+	}
+	
 	private static void modifyTupleTypeInfo(File root) throws IOException {
 		// generate code
 		StringBuilder sb = new StringBuilder();
@@ -226,11 +402,27 @@ public class TupleGenerator {
 
 	private static void modifyCsvReader(File root) throws IOException {
 		// generate code
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(1000);
 		for (int numFields = FIRST; numFields <= LAST; numFields++) {
 
 			// method begin
 			sb.append("\n");
+			
+			// java doc
+			sb.append("\t/**\n");
+			sb.append("\t * Specifies the types for the CSV fields. This method parses the CSV data to a ").append(numFields).append("-tuple\n");
+			sb.append("\t * which has fields of the specified types.\n");
+			sb.append("\t * This method is overloaded for each possible length of the tuples to support type safe\n");
+			sb.append("\t * creation of data sets through CSV parsing.\n"); 
+			sb.append("\t *\n");
+			
+			for (int pos = 0; pos < numFields; pos++) {
+				sb.append("\t * @param ").append(GEN_TYPE_PREFIX).append(pos);
+				sb.append(" The type of CSV field ").append(pos).append(" and the type of field ");
+				sb.append(pos).append(" in the returned tuple type.\n");
+			}
+			sb.append("\t * @return The {@link eu.stratosphere.api.java.DataSet} representing the parsed CSV data.\n");
+			sb.append("\t */\n");
 
 			// method signature
 			sb.append("\tpublic <");
@@ -340,7 +532,6 @@ public class TupleGenerator {
 			w.println(" * @param <" + GEN_TYPE_PREFIX + i + "> The type of field " + i);
 		}
 		w.println(" */");
-		w.println("@SuppressWarnings({\"restriction\"})");
 		w.print("public class " + className + "<");
 		for (int i = 0; i < numFields; i++) {
 			if (i > 0) {
@@ -468,33 +659,6 @@ public class TupleGenerator {
 		w.println("\t\t\t+ \")\";");
 		w.println("\t}");
 
-		// unsafe fast field access
-		w.println();
-		w.println("\t// -------------------------------------------------------------------------------------------------");
-		w.println("\t// unsafe fast field access");
-		w.println("\t// -------------------------------------------------------------------------------------------------");
-		w.println();
-		w.println("\t@SuppressWarnings({ \"unchecked\"})");
-		w.println("\tpublic <T> T getFieldFast(int pos) {");
-		w.println("\t\treturn (T) UNSAFE.getObject(this, offsets[pos]);");
-		w.println("\t}");
-		w.println();
-		w.println("\tprivate static final sun.misc.Unsafe UNSAFE = eu.stratosphere.core.memory.MemoryUtils.UNSAFE;");
-		w.println();
-		w.println("\tprivate static final long[] offsets = new long[" + numFields + "];");
-		w.println();
-		w.println("\tstatic {");
-		w.println("\t\ttry {");
-
-		for (int i = 0; i < numFields; i++) {
-			w.println("\t\t\toffsets[" + i + "] = UNSAFE.objectFieldOffset(Tuple" + numFields + ".class.getDeclaredField(\"f" + i + "\"));");
-		}
-
-		w.println("\t\t} catch (Throwable t) {");
-		w.println("\t\t\tthrow new RuntimeException(\"Could not initialize fast field accesses for tuple data type.\");");
-		w.println("\t\t}");
-		w.println("\t}");
-
 		// foot
 		w.println("}");
 	}
@@ -531,8 +695,9 @@ public class TupleGenerator {
 		// package and imports
 		w.println("package " + PACKAGE + "." + BUILDER_SUFFIX + ';');
 		w.println();
-		w.println("import java.util.List;");
 		w.println("import java.util.LinkedList;");
+		w.println("import java.util.List;");
+		w.println();
 		w.println("import " + PACKAGE + ".Tuple" + numFields + ";");
 		w.println();
 

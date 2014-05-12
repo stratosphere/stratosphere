@@ -24,9 +24,10 @@ import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
+import eu.stratosphere.api.common.functions.GenericCombine;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.memory.MemorySegment;
 import eu.stratosphere.nephele.services.iomanager.BlockChannelAccess;
@@ -39,19 +40,20 @@ import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.pact.runtime.util.EmptyMutableObjectIterator;
 import eu.stratosphere.pact.runtime.util.KeyGroupedIterator;
-import eu.stratosphere.types.Key;
 import eu.stratosphere.util.Collector;
 import eu.stratosphere.util.MutableObjectIterator;
 
 
 /**
  * The {@link CombiningUnilateralSortMerger} is part of a merge-sort implementation.
- * The {@link ReduceTask} requires a grouping of the incoming key-value pairs by key. Typically grouping is achieved by
+ * The {@link ReduceTask} requires a grouping of the incoming key-value pairs by key. 
+ * For a {@link GroupReduceFunction}  grouping is achieved by
  * determining a total order for the given set of pairs (sorting). Thereafter an iteration over the ordered set is
  * performed and each time the key changes the consecutive objects are united into a new group. Reducers have a combining feature
  * can reduce the data before it is written to disk. In order to implement a combining Reducer, the 
  * {@link eu.stratosphere.pact.ReduceFunction.stub.ReduceStub#combine(Key, Iterator, Collector)} method must be implemented and the ReduceFunction 
  * must be annotated with the {@link eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable} annotation.
+ * For a {@link ReduceFuntion} the combine method can automatically call the reduce function without a combine annotation.
  * Conceptually, a merge sort with combining works as follows:
  * (1) Divide the unsorted list into n sublists of about 1/n the size. (2) Sort each sublist recursively by re-applying
  * merge sort. (3) Combine all tuples with the same key within a sublist (4) Merge the two sublists back into one sorted
@@ -72,7 +74,7 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	 */
 	private static final Log LOG = LogFactory.getLog(CombiningUnilateralSortMerger.class);
 
-	private final GenericGroupReduce<E, ?> combineStub;	// the user code stub that does the combining
+	private final GenericCombine<E> combineStub;	// the user code stub that does the combining
 	
 	private Configuration udfConfig;
 	
@@ -91,7 +93,7 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	 * @param ioManager The I/O manager, which is used to write temporary files to disk.
 	 * @param input The input that is sorted by this sorter.
 	 * @param parentTask The parent task, which owns all resources used by this sorter.
-	 * @param serializer The type serializer.
+	 * @param serializerFactory The type serializer.
 	 * @param comparator The type comparator establishing the order relation.
 	 * @param fractionMemory The fraction of memory dedicated to sorting, merging and I/O.
 	 * @param maxNumFileHandles The maximum number of files to be merged at once.
@@ -102,10 +104,10 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	 * @throws MemoryAllocationException Thrown, if not enough memory can be obtained from the memory manager to
 	 *                                   perform the sort.
 	 */
-	public CombiningUnilateralSortMerger(GenericGroupReduce<E, ?> combineStub, MemoryManager memoryManager, IOManager ioManager,
+	public CombiningUnilateralSortMerger(GenericCombine<E> combineStub, MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
-			TypeSerializer<E> serializer, TypeComparator<E> comparator,
-			double fractionMemory, int maxNumFileHandles, float startSpillingFraction)
+			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
+			long totalMemory, int maxNumFileHandles, float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
 		this(combineStub, memoryManager, ioManager, input, parentTask, serializer, comparator,
@@ -122,7 +124,7 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	 * @param ioManager The I/O manager, which is used to write temporary files to disk.
 	 * @param input The input that is sorted by this sorter.
 	 * @param parentTask The parent task, which owns all resources used by this sorter.
-	 * @param serializer The type serializer.
+	 * @param serializerFactory The type serializer.
 	 * @param comparator The type comparator establishing the order relation.
 	 * @param fractionMemory The fraction of memory dedicated to sorting, merging and I/O.
 	 * @param numSortBuffers The number of distinct buffers to use creation of the initial runs.
@@ -134,10 +136,10 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	 * @throws MemoryAllocationException Thrown, if not enough memory can be obtained from the memory manager to
 	 *                                   perform the sort.
 	 */
-	public CombiningUnilateralSortMerger(GenericGroupReduce<E, ?> combineStub, MemoryManager memoryManager, IOManager ioManager,
+	public CombiningUnilateralSortMerger(GenericCombine<E> combineStub, MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
-			TypeSerializer<E> serializer, TypeComparator<E> comparator,
-			double fractionMemory, int numSortBuffers, int maxNumFileHandles,
+			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
+			long totalMemory, int numSortBuffers, int maxNumFileHandles, 
 			float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
@@ -158,11 +160,11 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	@Override
 	protected ThreadBase<E> getSpillingThread(ExceptionHandler<IOException> exceptionHandler, CircularQueues<E> queues,
 		AbstractInvokable parentTask, MemoryManager memoryManager, IOManager ioManager, 
-		TypeSerializer<E> serializer, TypeComparator<E> comparator,
+		TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
 		List<MemorySegment> sortReadMemory, List<MemorySegment> writeMemory, int maxFileHandles)
 	{
 		return new CombiningSpillingThread(exceptionHandler, queues, parentTask,
-			memoryManager, ioManager, serializer, comparator, sortReadMemory, writeMemory, maxFileHandles);
+			memoryManager, ioManager, serializerFactory.getSerializer(), comparator, sortReadMemory, writeMemory, maxFileHandles);
 	}
 
 	// ------------------------------------------------------------------------
@@ -205,9 +207,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 						LOG.error("Sorting thread was interrupted (without being shut down) while grabbing a buffer. " +
 								"Retrying to grab buffer...");
 						continue;
-					}
-					else
+					} else {
 						return;
+					}
 				}
 				if (element == spillingMarker()) {
 					break;
@@ -227,21 +229,21 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 			// ------------------- In-Memory Merge ------------------------
 			if (cacheOnly) {
 				/* operates on in-memory segments only */
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Initiating in memory merge.");
+				}
 				
 				List<MutableObjectIterator<E>> iterators = new ArrayList<MutableObjectIterator<E>>(cache.size());
 								
 				// iterate buffers and collect a set of iterators
-				for (CircularElement<E> cached : cache)
-				{
-					// note: the yielded iterator only operates on the buffer heap (and disregards the stack)
+				for (CircularElement<E> cached : cache) {
 					iterators.add(cached.buffer.getIterator());
 				}
 				
 				// release the remaining sort-buffers
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Releasing unused sort-buffer memory.");
+				}
 				disposeSortBuffers(true);
 				
 				// set lazy iterator
@@ -255,7 +257,7 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 			
 			// ------------------- Spilling Phase ------------------------
 			
-			final GenericGroupReduce<E, ?> combineStub = CombiningUnilateralSortMerger.this.combineStub;
+			final GenericCombine<E> combineStub = CombiningUnilateralSortMerger.this.combineStub;
 			
 			// now that we are actually spilling, take the combiner, and open it
 			try {
@@ -280,8 +282,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 						LOG.error("Sorting thread was interrupted (without being shut down) while grabbing a buffer. " +
 								"Retrying to grab buffer...");
 						continue;
+					} else {
+						return;
 					}
-					else return;
 				}
 				
 				// check if we are still running
@@ -297,8 +300,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 				Channel.ID channel = enumerator.next();
 				registerChannelToBeRemovedAtShudown(channel);
 				
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Creating temp file " + channel.toString() + '.');
+				}
 
 				// create writer
 				final BlockChannelWriter writer = this.ioManager.createBlockChannelWriter(
@@ -308,8 +312,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 																			this.memManager.getPageSize());
 
 				// write sort-buffer to channel
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Combining buffer " + element.id + '.');
+				}
 
 				// set up the combining helpers
 				final InMemorySorter<E> buffer = element.buffer;
@@ -348,8 +353,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 				}
 
 				// done combining and writing out
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Combined and spilled buffer " + element.id + ".");
+				}
 
 				output.close();
 				unregisterOpenChannelToBeRemovedAtShudown(writer);
@@ -371,8 +377,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 			disposeSortBuffers(false);
 			
 			
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Closing combiner user code.");
+			}
 			
 			// close the user code
 			try {
@@ -382,8 +389,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 				throw new IOException("The user-defined combiner failed in its 'close()' method.", t);
 			}
 			
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("User code closed.");
+			}
 
 			// ------------------- Merging Phase ------------------------
 
@@ -401,8 +409,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 				setResultIterator(EmptyMutableObjectIterator.<E>get());
 			}
 			else {
-				if (LOG.isDebugEnabled())
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Beginning final merge.");
+				}
 				
 				// allocate the memory for the final merging step
 				List<List<MemorySegment>> readBuffers = new ArrayList<List<MemorySegment>>(channelIDs.size());
@@ -421,8 +430,9 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 			}
 
 			// done
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Spilling and merging thread done.");
+			}
 		}
 		
 		// ------------------ Combining & Merging Methods -----------------
@@ -459,7 +469,7 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 																			this.memManager.getPageSize());
 			
 			final WriterCollector<E> collector = new WriterCollector<E>(output, this.serializer);
-			final GenericGroupReduce<E, ?> combineStub = CombiningUnilateralSortMerger.this.combineStub;
+			final GenericCombine<E> combineStub = CombiningUnilateralSortMerger.this.combineStub;
 
 			// combine and write to disk
 			try {

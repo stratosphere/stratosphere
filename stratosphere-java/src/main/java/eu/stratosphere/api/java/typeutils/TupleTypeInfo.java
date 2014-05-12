@@ -14,9 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.typeutils;
 
+import java.util.Arrays;
+
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
+//CHECKSTYLE.OFF: AvoidStarImport - Needed for TupleGenerator
 import eu.stratosphere.api.java.tuple.*;
+//CHECKSTYLE.ON: AvoidStarImport
 import eu.stratosphere.api.java.typeutils.runtime.TupleComparator;
 import eu.stratosphere.api.java.typeutils.runtime.TupleSerializer;
 import eu.stratosphere.api.java.typeutils.runtime.TupleSingleFieldComparator;
@@ -28,8 +32,9 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 	private final Class<T> tupleType;
 	
 	public TupleTypeInfo(Class<T> tupleType, TypeInformation<?>... types) {
-		if (types == null || types.length == 0 || types.length >= Tuple.MAX_ARITY)
+		if (types == null || types.length == 0 || types.length >= Tuple.MAX_ARITY) {
 			throw new IllegalArgumentException();
+		}
 		
 		this.tupleType = tupleType;
 		this.types = types;
@@ -68,8 +73,9 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 
 	
 	public <X> TypeInformation<X> getTypeAt(int pos) {
-		if (pos < 0 || pos >= this.types.length)
+		if (pos < 0 || pos >= this.types.length) {
 			throw new IndexOutOfBoundsException();
+		}
 
 		@SuppressWarnings("unchecked")
 		TypeInformation<X> typed = (TypeInformation<X>) this.types[pos];
@@ -125,6 +131,26 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 		return new TupleComparator<T>(logicalKeyFields, fieldComparators);
 	}
 	
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof TupleTypeInfo) {
+			@SuppressWarnings("unchecked")
+			TupleTypeInfo<T> other = (TupleTypeInfo<T>) obj;
+			return ((this.tupleType == null && other.tupleType == null) || this.tupleType.equals(other.tupleType)) &&
+					Arrays.deepEquals(this.types, other.types);
+			
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.types.hashCode() ^ Arrays.deepHashCode(this.types);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder bld = new StringBuilder("Tuple");
@@ -142,8 +168,9 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 	// --------------------------------------------------------------------------------------------
 	
 	public static <X extends Tuple> TupleTypeInfo<X> getBasicTupleTypeInfo(Class<?>... basicTypes) {
-		if (basicTypes == null || basicTypes.length == 0)
+		if (basicTypes == null || basicTypes.length == 0) {
 			throw new IllegalArgumentException();
+		}
 		
 		TypeInformation<?>[] infos = new TypeInformation<?>[basicTypes.length];
 		for (int i = 0; i < infos.length; i++) {
@@ -170,7 +197,7 @@ public class TupleTypeInfo<T extends Tuple> extends TypeInformation<T> implement
 	// BEGIN_OF_TUPLE_DEPENDENT_CODE	
 	// GENERATED FROM eu.stratosphere.api.java.tuple.TupleGenerator.
 	private static final Class<?>[] CLASSES = new Class<?>[] {
-	Tuple1.class, Tuple2.class, Tuple3.class, Tuple4.class, Tuple5.class, Tuple6.class, Tuple7.class, Tuple8.class, Tuple9.class, Tuple10.class, Tuple11.class, Tuple12.class, Tuple13.class, Tuple14.class, Tuple15.class, Tuple16.class, Tuple17.class, Tuple18.class, Tuple19.class, Tuple20.class, Tuple21.class, Tuple22.class
+	Tuple1.class, Tuple2.class, Tuple3.class, Tuple4.class, Tuple5.class, Tuple6.class, Tuple7.class, Tuple8.class, Tuple9.class, Tuple10.class, Tuple11.class, Tuple12.class, Tuple13.class, Tuple14.class, Tuple15.class, Tuple16.class, Tuple17.class, Tuple18.class, Tuple19.class, Tuple20.class, Tuple21.class, Tuple22.class, Tuple23.class, Tuple24.class, Tuple25.class
 	};
 	// END_OF_TUPLE_DEPENDENT_CODE
 	

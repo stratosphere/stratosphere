@@ -17,24 +17,25 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import eu.stratosphere.hadoopcompatibility.HadoopDataSink;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.Program;
 import eu.stratosphere.api.common.ProgramDescription;
-
+import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
 import eu.stratosphere.api.java.record.functions.MapFunction;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
-import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
 import eu.stratosphere.client.LocalExecutor;
+import eu.stratosphere.hadoopcompatibility.HadoopDataSink;
 import eu.stratosphere.hadoopcompatibility.HadoopDataSource;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
@@ -45,6 +46,7 @@ import eu.stratosphere.util.Collector;
  * Implements a word count which takes the input file and counts the number of
  * the occurrences of each word in the file.
  */
+@SuppressWarnings("serial")
 public class WordCountWithHadoopOutputFormat implements Program, ProgramDescription {
 
 	/**
@@ -112,7 +114,8 @@ public class WordCountWithHadoopOutputFormat implements Program, ProgramDescript
 		String dataInput = (args.length > 1 ? args[1] : "");
 		String output    = (args.length > 2 ? args[2] : "");
 
-		HadoopDataSource source = new HadoopDataSource(new TextInputFormat(), new JobConf(), "Input Lines");
+		HadoopDataSource<LongWritable, Text> source = new HadoopDataSource<LongWritable, Text>(
+				new TextInputFormat(), new JobConf(), "Input Lines");
 		TextInputFormat.addInputPath(source.getJobConf(), new Path(dataInput));
 
 
@@ -124,7 +127,7 @@ public class WordCountWithHadoopOutputFormat implements Program, ProgramDescript
 				.input(mapper)
 				.name("Count Words")
 				.build();
-		HadoopDataSink out = new HadoopDataSink(new TextOutputFormat<Text, IntWritable>(),new JobConf(), "Hadoop TextOutputFormat", reducer, Text.class, IntWritable.class);
+		HadoopDataSink<Text, IntWritable> out = new HadoopDataSink<Text, IntWritable>(new TextOutputFormat<Text, IntWritable>(),new JobConf(), "Hadoop TextOutputFormat", reducer, Text.class, IntWritable.class);
 		TextOutputFormat.setOutputPath(out.getJobConf(), new Path(output));
 
 		Plan plan = new Plan(out, "Hadoop OutputFormat Example");

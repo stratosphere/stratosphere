@@ -13,6 +13,12 @@
 
 package eu.stratosphere.hadoopcompatibility;
 
+import java.util.List;
+
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputFormat;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -21,12 +27,6 @@ import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.compiler.contextcheck.Validatable;
 import eu.stratosphere.hadoopcompatibility.datatypes.DefaultStratosphereTypeConverter;
 import eu.stratosphere.hadoopcompatibility.datatypes.StratosphereTypeConverter;
-
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputFormat;
-
-import java.util.List;
 
 /**
  * The HadoopDataSink is a generic wrapper for all Hadoop OutputFormats.
@@ -65,6 +65,7 @@ public class HadoopDataSink<K,V> extends GenericDataSink implements Validatable 
 
 
 
+	@SuppressWarnings("deprecation")
 	public HadoopDataSink(OutputFormat<K,V> hadoopFormat, JobConf jobConf, String name, List<Operator> input, StratosphereTypeConverter<K,V> conv, Class<K> keyClass, Class<V> valueClass) {
 		super(new HadoopOutputFormatWrapper<K,V>(hadoopFormat, jobConf, conv),input, name);
 		Preconditions.checkNotNull(hadoopFormat);

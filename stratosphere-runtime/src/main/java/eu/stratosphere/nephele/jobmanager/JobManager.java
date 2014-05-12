@@ -246,10 +246,6 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			this.profiler = null;
 			LOG.debug("Profiler disabled");
 		}
-
-		// Add shutdown hook for clean up tasks
-		Runtime.getRuntime().addShutdownHook(new JobManagerCleanUp(this));
-
 	}
 
 	public void shutdown() {
@@ -620,6 +616,10 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			return;
 		}
 
+		if (executionState.getExecutionState() == ExecutionState.FAILED) {
+			LOG.error(executionState.getDescription());
+		}
+
 		final ExecutionGraph eg = this.scheduler.getExecutionGraphByID(executionState.getJobID());
 		if (eg == null) {
 			LOG.error("Cannot find execution graph for ID " + executionState.getJobID() + " to change state to "
@@ -842,8 +842,9 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 
 		ManagementGraph mg = this.eventCollector.getManagementGraph(jobID);
 		if (mg == null) {
-			if(this.archive != null)
+			if(this.archive != null) {
 				mg = this.archive.getManagementGraph(jobID);
+			}
 			
 			if (mg == null) {
 				throw new IOException("Cannot find job with ID " + jobID);

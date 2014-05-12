@@ -36,8 +36,22 @@ public class GenericArraySerializer<C> extends TypeSerializer<C[]> {
 	
 	
 	public GenericArraySerializer(Class<C> componentClass, TypeSerializer<C> componentSerializer) {
+		if (componentClass == null || componentSerializer == null) {
+			throw new NullPointerException();
+		}
+		
 		this.componentClass = componentClass;
 		this.componentSerializer = componentSerializer;
+	}
+	
+	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return this.componentSerializer.isStateful();
 	}
 
 	
@@ -113,5 +127,23 @@ public class GenericArraySerializer<C> extends TypeSerializer<C[]> {
 	@SuppressWarnings("unchecked")
 	private final C[] create(int len) {
 		return (C[]) Array.newInstance(componentClass, len);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return componentClass.hashCode() + componentSerializer.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj != null && obj instanceof GenericArraySerializer) {
+			GenericArraySerializer<?> other = (GenericArraySerializer<?>) obj;
+			return this.componentClass == other.componentClass &&
+					this.componentSerializer.equals(other.componentSerializer);
+		} else {
+			return false;
+		}
 	}
 }

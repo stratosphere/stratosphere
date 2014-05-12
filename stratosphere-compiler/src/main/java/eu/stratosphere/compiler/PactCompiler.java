@@ -40,10 +40,11 @@ import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.operators.Union;
 import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
 import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
+import eu.stratosphere.api.common.operators.base.FilterOperatorBase;
 import eu.stratosphere.api.common.operators.base.FlatMapOperatorBase;
+import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
 import eu.stratosphere.api.common.operators.base.JoinOperatorBase;
 import eu.stratosphere.api.common.operators.base.MapOperatorBase;
-import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
 import eu.stratosphere.api.common.operators.base.PlainMapOperatorBase;
 import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.compiler.costs.CostEstimator;
@@ -56,13 +57,14 @@ import eu.stratosphere.compiler.dag.CollectorMapNode;
 import eu.stratosphere.compiler.dag.CrossNode;
 import eu.stratosphere.compiler.dag.DataSinkNode;
 import eu.stratosphere.compiler.dag.DataSourceNode;
+import eu.stratosphere.compiler.dag.FilterNode;
 import eu.stratosphere.compiler.dag.FlatMapNode;
+import eu.stratosphere.compiler.dag.GroupReduceNode;
 import eu.stratosphere.compiler.dag.IterationNode;
 import eu.stratosphere.compiler.dag.MapNode;
 import eu.stratosphere.compiler.dag.MatchNode;
 import eu.stratosphere.compiler.dag.OptimizerNode;
 import eu.stratosphere.compiler.dag.PactConnection;
-import eu.stratosphere.compiler.dag.GroupReduceNode;
 import eu.stratosphere.compiler.dag.ReduceNode;
 import eu.stratosphere.compiler.dag.SinkJoiner;
 import eu.stratosphere.compiler.dag.SolutionSetNode;
@@ -519,9 +521,10 @@ public class PactCompiler {
 	 *         Thrown, if the plan is invalid or the optimizer encountered an inconsistent
 	 *         situation during the compilation process.
 	 */
-	private OptimizedPlan compile(Plan program, OptimizerPostPass postPasser) throws CompilerException {
-		if (program == null || postPasser == null)
+	private OptimizedPlan compile(Plan program, InstanceTypeDescription type, OptimizerPostPass postPasser) throws CompilerException {
+		if (program == null || type == null || postPasser == null) {
 			throw new NullPointerException();
+		}
 		
 		
 		if (LOG.isDebugEnabled()) {
@@ -714,6 +717,9 @@ public class PactCompiler {
 			}
 			else if (c instanceof FlatMapOperatorBase) {
 				n = new FlatMapNode((FlatMapOperatorBase<?>) c);
+			}
+			else if (c instanceof FilterOperatorBase) {
+				n = new FilterNode((FilterOperatorBase<?>) c);
 			}
 			else if (c instanceof ReduceOperatorBase) {
 				n = new ReduceNode((ReduceOperatorBase<?>) c);

@@ -13,8 +13,8 @@
 package eu.stratosphere.compiler.util;
 
 import eu.stratosphere.api.common.operators.DualInputOperator;
-import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.api.common.operators.RecordOperator;
+import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
 import eu.stratosphere.types.Key;
 
 
@@ -28,8 +28,8 @@ public class NoOpBinaryUdfOp extends DualInputOperator<NoOpFunction> implements 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends Key>[] getKeyClasses() {
-		return (Class<? extends Key>[]) new Class[0];
+	public Class<? extends Key<?>>[] getKeyClasses() {
+		return (Class<? extends Key<?>>[]) new Class[0];
 	}
 }
 

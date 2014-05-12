@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import eu.stratosphere.api.common.typeutils.TypeComparator;
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.core.memory.MemorySegment;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryAllocationException;
@@ -31,10 +31,9 @@ import eu.stratosphere.util.MutableObjectIterator;
  * The {@link AsynchronousPartialSorter} is a simple sort implementation that sorts
  * bulks inside its buffers, and returns them directly, without merging them. Therefore,
  * it establishes an order within certain windows, but not across them.
- * 
  */
-public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
-{
+public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E> {
+	
 	private static final int MAX_MEM_PER_PARTIAL_SORT = 64 * 1024 * 0124;
 	
 	private BufferQueueIterator bufferIterator;
@@ -49,7 +48,7 @@ public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
 	 * @param memoryManager The memory manager from which to allocate the memory.
 	 * @param input The input that is sorted by this sorter.
 	 * @param parentTask The parent task, which owns all resources used by this sorter.
-	 * @param serializer The type serializer.
+	 * @param serializerFactory The type serializer.
 	 * @param comparator The type comparator establishing the order relation.
 	 * @param fractionMemory The fraction of memory dedicated to sorting.
 	 * 
@@ -59,8 +58,8 @@ public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
 	 */
 	public AsynchronousPartialSorter(MemoryManager memoryManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
-			TypeSerializer<E> serializer, TypeComparator<E> comparator,
-			double fractionMemory)
+			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
+			long totalMemory)
 	throws IOException, MemoryAllocationException
 	{
 		super(memoryManager, null, input, parentTask, serializer, comparator, fractionMemory,
@@ -87,13 +86,11 @@ public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
 	/* 
 	 * This method does not actually create a spilling thread, but grabs the circular queues and creates the
 	 * iterator that reads from the sort buffers in turn.
-	 * 
-	 * @see eu.stratosphere.pact.runtime.sort.UnilateralSortMerger#getSpillingThread(eu.stratosphere.pact.runtime.sort.ExceptionHandler, eu.stratosphere.pact.runtime.sort.UnilateralSortMerger.CircularQueues, eu.stratosphere.nephele.template.AbstractInvokable, eu.stratosphere.nephele.services.memorymanager.MemoryManager, eu.stratosphere.nephele.services.iomanager.IOManager, eu.stratosphere.pact.runtime.plugable.TypeSerializers, eu.stratosphere.pact.runtime.plugable.TypeComparator, java.util.List, java.util.List, int)
 	 */
 	@Override
 	protected ThreadBase<E> getSpillingThread(ExceptionHandler<IOException> exceptionHandler, CircularQueues<E> queues,
 			AbstractInvokable parentTask, MemoryManager memoryManager, IOManager ioManager, 
-			TypeSerializer<E> serializer, TypeComparator<E> comparator,
+			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
 			List<MemorySegment> sortReadMemory, List<MemorySegment> writeMemory, int maxFileHandles)
 	{
 		this.bufferIterator = new BufferQueueIterator(queues);
@@ -109,8 +106,8 @@ public class AsynchronousPartialSorter<E> extends UnilateralSortMerger<E>
 	 * The iterator returns the values of a given
 	 * interval.
 	 */
-	private final class BufferQueueIterator implements MutableObjectIterator<E>
-	{
+	private final class BufferQueueIterator implements MutableObjectIterator<E> {
+		
 		private final CircularQueues<E> queues;
 		
 		private CircularElement<E> currentElement;

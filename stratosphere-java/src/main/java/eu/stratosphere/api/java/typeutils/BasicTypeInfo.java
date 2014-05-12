@@ -18,8 +18,8 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.base.BooleanComparator;
 import eu.stratosphere.api.common.typeutils.base.BooleanSerializer;
 import eu.stratosphere.api.common.typeutils.base.ByteComparator;
@@ -107,6 +107,24 @@ public class BasicTypeInfo<T> extends TypeInformation<T> implements AtomicType<T
 		return instantiateComparator(comparatorClass, sortOrderAscending);
 	}
 
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return this.clazz.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof BasicTypeInfo) {
+			@SuppressWarnings("unchecked")
+			BasicTypeInfo<T> other = (BasicTypeInfo<T>) obj;
+			return this.clazz.equals(other.clazz);
+		} else {
+			return false;
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return clazz.getSimpleName();
@@ -115,8 +133,9 @@ public class BasicTypeInfo<T> extends TypeInformation<T> implements AtomicType<T
 	// --------------------------------------------------------------------------------------------
 	
 	public static <X> BasicTypeInfo<X> getInfoFor(Class<X> type) {
-		if (type == null)
+		if (type == null) {
 			throw new NullPointerException();
+		}
 		
 		@SuppressWarnings("unchecked")
 		BasicTypeInfo<X> info = (BasicTypeInfo<X>) TYPES.get(type);

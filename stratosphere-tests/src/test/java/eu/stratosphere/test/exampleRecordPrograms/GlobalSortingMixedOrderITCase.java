@@ -29,13 +29,12 @@ import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.api.common.operators.Ordering;
 import eu.stratosphere.api.java.record.io.CsvInputFormat;
 import eu.stratosphere.api.java.record.io.CsvOutputFormat;
-import eu.stratosphere.test.util.TestBase2;
+import eu.stratosphere.test.util.RecordAPITestBase;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Key;
 
-public class GlobalSortingMixedOrderITCase extends TestBase2 {
-	private static final int DOP = 4;
-
+public class GlobalSortingMixedOrderITCase extends RecordAPITestBase {
+	
 	private static final int NUM_RECORDS = 100000;
 
 	private static final int RANGE_I1 = 100;
@@ -125,8 +124,8 @@ public class GlobalSortingMixedOrderITCase extends TestBase2 {
 		}
 
 		@Override
-		public Key[] getBucketBoundary(int bucketNum, int totalNumBuckets) {
-
+		public Key<?>[] getBucketBoundary(int bucketNum, int totalNumBuckets) {
+			
 			final float bucketWidth = ((float) RANGE_I1) / totalNumBuckets;
 			int boundVal = (int) ((bucketNum + 1) * bucketWidth);
 			if (!this.ascendingI1) {

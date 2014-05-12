@@ -27,7 +27,7 @@ import eu.stratosphere.util.ReflectionUtil;
  * @param <U> Type of the pair's first element.
  * @param <V> Type of the pair's second element.
  */
-public abstract class Pair<U extends Key, V extends Key> implements Key {
+public abstract class Pair<U extends Key<U>, V extends Key<V>> implements Key<Pair<U, V>> {
 	private static final long serialVersionUID = 1L;
 	
 	// class of the first pair element
@@ -87,8 +87,9 @@ public abstract class Pair<U extends Key, V extends Key> implements Key {
 	 *        The new value of the first encapsulated pair element.
 	 */
 	public void setFirst(final U first) {
-		if (first == null)
+		if (first == null) {
 			throw new NullPointerException("first must not be null");
+		}
 
 		this.first = first;
 	}
@@ -109,8 +110,9 @@ public abstract class Pair<U extends Key, V extends Key> implements Key {
 	 *        The new value of the second encapsulated pair element.
 	 */
 	public void setSecond(final V second) {
-		if (second == null)
+		if (second == null) {
 			throw new NullPointerException("second must not be null");
+		}
 
 		this.second = second;
 	}
@@ -133,13 +135,11 @@ public abstract class Pair<U extends Key, V extends Key> implements Key {
 	}
 
 	@Override
-	public int compareTo(final Key o) {
-		if (!(o instanceof Pair<?, ?>))
-			throw new ClassCastException("Cannot compare " + o.getClass().getName() + " to N_Pair.");
-
-		int result = this.first.compareTo(((Pair<?, ?>) o).first);
-		if (result == 0)
-			result = this.second.compareTo(((Pair<?, ?>) o).second);
+	public int compareTo(Pair<U, V> o) {
+		int result = this.first.compareTo(o.first);
+		if (result == 0) {
+			result = this.second.compareTo(o.second);
+		}
 		return result;
 	}
 
@@ -154,12 +154,15 @@ public abstract class Pair<U extends Key, V extends Key> implements Key {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (this.getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 		final Pair<?, ?> other = (Pair<?, ?>) obj;
 		return this.first.equals(other.first) && this.second.equals(other.second);
 	}

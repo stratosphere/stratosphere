@@ -14,12 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.typeutils;
 
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.java.functions.InvalidTypesException;
+import eu.stratosphere.api.java.typeutils.runtime.CopyableValueComparator;
 import eu.stratosphere.api.java.typeutils.runtime.CopyableValueSerializer;
+import eu.stratosphere.api.java.typeutils.runtime.ValueComparator;
+import eu.stratosphere.api.java.typeutils.runtime.ValueSerializer;
 import eu.stratosphere.types.CopyableValue;
-import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Value;
 
 
@@ -29,21 +31,25 @@ public class ValueTypeInfo<T extends Value> extends TypeInformation<T> implement
 
 	
 	public ValueTypeInfo(Class<T> type) {
+		if (type == null) {
+			throw new NullPointerException();
+		}
+		if (!Value.class.isAssignableFrom(type)) {
+			throw new IllegalArgumentException("ValueTypeInfo can only be used for subclasses of " + Value.class.getName());
+		}
+		
 		this.type = type;
 	}
-	
 	
 	@Override
 	public int getArity() {
 		return 1;
 	}
 
-
 	@Override
 	public Class<T> getTypeClass() {
 		return this.type;
 	}
-
 
 	@Override
 	public boolean isBasicType() {
@@ -55,38 +61,47 @@ public class ValueTypeInfo<T extends Value> extends TypeInformation<T> implement
 		return false;
 	}
 	
-	
 	@Override
 	public boolean isKeyType() {
-		return Key.class.isAssignableFrom(type);
+		return Comparable.class.isAssignableFrom(type);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public TypeSerializer<T> createSerializer() {
 		if (CopyableValue.class.isAssignableFrom(type)) {
-			return (TypeSerializer<T>) createCopyableSerializer(type.asSubclass(CopyableValue.class));
+			return (TypeSerializer<T>) createCopyableValueSerializer(type.asSubclass(CopyableValue.class));
 		}
 		else {
-			throw new UnsupportedOperationException("Serialization is not yet implemented for Value types that are not CopyableValue subclasses.");
+			return new ValueSerializer<T>(type);
 		}
 	}
 	
-	private static <X extends CopyableValue<X>> TypeSerializer<X> createCopyableSerializer(Class<X> clazz) {
-		TypeSerializer<X> ser = new CopyableValueSerializer<X>(clazz);
-		return ser;
-	}
-	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public TypeComparator<T> createComparator(boolean sortOrderAscending) {
-		throw new UnsupportedOperationException("Value comparators not yet implemented.");
+		if (!isKeyType()) {
+			throw new RuntimeException("The type " + type.getName() + " is not Comparable.");
+		}
+		
+		if (CopyableValue.class.isAssignableFrom(type)) {
+			return (TypeComparator<T>) new ValueComparator(sortOrderAscending, type);
+		}
+		else {
+			return (TypeComparator<T>) new CopyableValueComparator(sortOrderAscending, type);
+		}
+	}
+	
+	// utility method to summon the necessary bound
+	private static <X extends CopyableValue<X>> CopyableValueSerializer<X> createCopyableValueSerializer(Class<X> clazz) {
+		return new CopyableValueSerializer<X>(clazz);
 	}
 	
 	// --------------------------------------------------------------------------------------------
 	
 	@Override
 	public int hashCode() {
-		return type.hashCode() ^ 0xd3a2646c;
+		return this.type.hashCode() ^ 0xd3a2646c;
 	}
 	
 	@Override

@@ -13,13 +13,14 @@
 
 package eu.stratosphere.pact.runtime.task;
 
-import eu.stratosphere.pact.runtime.task.chaining.ChainedDriver;
+import static eu.stratosphere.pact.runtime.task.DamBehavior.FULL_DAM;
+import static eu.stratosphere.pact.runtime.task.DamBehavior.MATERIALIZING;
+import static eu.stratosphere.pact.runtime.task.DamBehavior.PIPELINED;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedCollectorMapDriver;
+import eu.stratosphere.pact.runtime.task.chaining.ChainedDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedFlatMapDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedMapDriver;
 import eu.stratosphere.pact.runtime.task.chaining.SynchronousChainedCombineDriver;
-
-import static eu.stratosphere.pact.runtime.task.DamBehavior.*;
 
 /**
  * Enumeration of all available operator strategies. 
@@ -29,30 +30,42 @@ public enum DriverStrategy {
 	NONE(null, null, PIPELINED, false),
 	// a unary no-op operator
 	UNARY_NO_OP(NoOpDriver.class, null, PIPELINED, PIPELINED, false),
-	// a binary no-op operator
+	// a binary no-op operator. non implementation available
 	BINARY_NO_OP(null, null, PIPELINED, PIPELINED, false),
+
 	// the old mapper
 	COLLECTOR_MAP(CollectorMapDriver.class, ChainedCollectorMapDriver.class, PIPELINED, false),
 	// the proper mapper
 	MAP(MapDriver.class, ChainedMapDriver.class, PIPELINED, false),
 	// the flat mapper
 	FLAT_MAP(FlatMapDriver.class, ChainedFlatMapDriver.class, PIPELINED, false),
-	// grouping the inputs
-	SORTED_GROUP(ReduceDriver.class, null, PIPELINED, true),
+
+	// group everything together into one group and apply the Reduce function
+	ALL_REDUCE(AllReduceDriver.class, null, PIPELINED, false),
+	// group everything together into one group and apply the GroupReduce function
+	ALL_GROUP_REDUCE(AllGroupReduceDriver.class, null, PIPELINED, false),
+
+	// grouping the inputs and apply the Reduce Function
+	SORTED_REDUCE(ReduceDriver.class, null, PIPELINED, true),
+	// sorted partial reduce is the combiner for the Reduce. same function, but potentially not fully sorted
+	SORTED_PARTIAL_REDUCE(ReduceCombineDriver.class, null, MATERIALIZING, true),
+	
+	// grouping the inputs and apply the GroupReduce function
+	SORTED_GROUP_REDUCE(GroupReduceDriver.class, null, PIPELINED, true),
 	// partially grouping inputs (best effort resulting possibly in duplicates --> combiner)
-	PARTIAL_GROUP(CombineDriver.class, SynchronousChainedCombineDriver.class, MATERIALIZING, true),
-	// group everything together into one group
-	ALL_GROUP(AllReduceDriver.class, null, PIPELINED, false),
-	// already grouped input, within a key values are crossed in a nested loop fashion
-	GROUP_SELF_NESTEDLOOP(null, null, PIPELINED, true),	// Note: Self-Match currently inactive
+	SORTED_GROUP_COMBINE(GroupReduceCombineDriver.class, SynchronousChainedCombineDriver.class, MATERIALIZING, true),
+
 	// both inputs are merged, but materialized to the side for block-nested-loop-join among values with equal key
 	MERGE(MatchDriver.class, null, MATERIALIZING, MATERIALIZING, true),
+
 	// co-grouping inputs
 	CO_GROUP(CoGroupDriver.class, null, PIPELINED, PIPELINED, true),
+	
 	// the first input is build side, the second side is probe side of a hybrid hash table
 	HYBRIDHASH_BUILD_FIRST(MatchDriver.class, null, FULL_DAM, MATERIALIZING, true),
 	// the second input is build side, the first side is probe side of a hybrid hash table
 	HYBRIDHASH_BUILD_SECOND(MatchDriver.class, null, MATERIALIZING, FULL_DAM, true),
+	
 	// the second input is inner loop, the first input is outer loop and block-wise processed
 	NESTEDLOOP_BLOCKED_OUTER_FIRST(CrossDriver.class, null, MATERIALIZING, MATERIALIZING, false),
 	// the first input is inner loop, the second input is outer loop and block-wise processed
@@ -61,10 +74,11 @@ public enum DriverStrategy {
 	NESTEDLOOP_STREAMED_OUTER_FIRST(CrossDriver.class, null, PIPELINED, MATERIALIZING, false),
 	// the first input is inner loop, the second input is outer loop and stream-processed
 	NESTEDLOOP_STREAMED_OUTER_SECOND(CrossDriver.class, null, MATERIALIZING, PIPELINED, false),
+	
 	// union utility op. unions happen implicitly on the network layer (in the readers) when bundeling streams
-	UNION(null, null, FULL_DAM, FULL_DAM, false),
+	UNION(null, null, FULL_DAM, FULL_DAM, false);
 	// explicit binary union between a streamed and a cached input
-	UNION_WITH_CACHED(UnionWithTempOperator.class, null, FULL_DAM, PIPELINED, false);
+//	UNION_WITH_CACHED(UnionWithTempOperator.class, null, FULL_DAM, PIPELINED, false);
 	
 	// --------------------------------------------------------------------------------------------
 	

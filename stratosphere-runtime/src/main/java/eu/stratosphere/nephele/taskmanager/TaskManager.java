@@ -71,7 +71,6 @@ import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.ipc.RPC;
 import eu.stratosphere.nephele.ipc.Server;
 import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.jobmanager.JobManager;
 import eu.stratosphere.nephele.net.NetUtils;
 import eu.stratosphere.nephele.profiling.ProfilingUtils;
 import eu.stratosphere.nephele.profiling.TaskManagerProfiler;
@@ -106,6 +105,7 @@ public class TaskManager implements TaskOperationProtocol {
 	
 	private static final int IPC_HANDLER_COUNT = 1;
 	
+	public final static String ARG_CONF_DIR = "tempDir";
 	
 	private final JobManagerProtocol jobManager;
 
@@ -123,7 +123,7 @@ public class TaskManager implements TaskOperationProtocol {
 	/**
 	 * This map contains all the tasks whose threads are in a state other than TERMINATED. If any task
 	 * is stored inside this map and its thread status is TERMINATED, this indicates a virtual machine error.
-	 * As a result, task status will switch to FAILED and reported to the {@link JobManager}.
+	 * As a result, task status will switch to FAILED and reported to the {@link eu.stratosphere.nephele.jobmanager.JobManager}.
 	 */
 	private final Map<ExecutionVertexID, Task> runningTasks = new ConcurrentHashMap<ExecutionVertexID, Task>();
 
@@ -144,7 +144,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 	private final IOManager ioManager;
 
-	private final HardwareDescription hardwareDescription;
+	private static HardwareDescription hardwareDescription = null;
 
 	private final int numberOfSlots;
 
@@ -276,7 +276,7 @@ public class TaskManager implements TaskOperationProtocol {
 
 		// Get the directory for storing temporary files
 		final String[] tmpDirPaths = GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY,
-			ConfigConstants.DEFAULT_TASK_MANAGER_TMP_PATH).split(File.pathSeparator);
+			ConfigConstants.DEFAULT_TASK_MANAGER_TMP_PATH).split(",|"+File.pathSeparator);
 
 		checkTempDirs(tmpDirPaths);
 		
@@ -337,9 +337,6 @@ public class TaskManager implements TaskOperationProtocol {
 
 		this.heartbeatThread.setName("Heartbeat Thread");
 		this.heartbeatThread.start();
-		
-		// Add shutdown hook for clean up tasks
-		Runtime.getRuntime().addShutdownHook(new TaskManagerCleanUp(this));
 	}
 
 	private int getAvailablePort() {
@@ -375,12 +372,19 @@ public class TaskManager implements TaskOperationProtocol {
 	 * @throws IOException 
 	 */
 	@SuppressWarnings("static-access")
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {		
 		Option configDirOpt = OptionBuilder.withArgName("config directory").hasArg().withDescription(
 			"Specify configuration directory.").create("configDir");
+		// tempDir option is used by the YARN client.
+		Option tempDir = OptionBuilder.withArgName("temporary directory (overwrites configured option)")
+				.hasArg().withDescription(
+				"Specify temporary directory.").create(ARG_CONF_DIR);
 		configDirOpt.setRequired(true);
+		tempDir.setRequired(false);
 		Options options = new Options();
 		options.addOption(configDirOpt);
+		options.addOption(tempDir);
+		
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine line = null;
@@ -392,10 +396,19 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 
 		String configDir = line.getOptionValue(configDirOpt.getOpt(), null);
-		
+		String tempDirVal = line.getOptionValue(tempDir.getOpt(), null);
+
 		// First, try to load global configuration
 		GlobalConfiguration.loadConfiguration(configDir);
-
+		if(tempDirVal != null // the YARN TM runner has set a value for the temp dir
+				// the configuration does not contain a temp direcory
+				&& GlobalConfiguration.getString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY, null) == null) {
+			Configuration c = GlobalConfiguration.getConfiguration();
+			c.setString(ConfigConstants.TASK_MANAGER_TMP_DIR_KEY, tempDirVal);
+			LOG.info("Setting temporary directory to "+tempDirVal);
+			GlobalConfiguration.includeConfiguration(c);
+		}
+		System.err.println("Configuration "+GlobalConfiguration.getConfiguration());
 		LOG.info("Current user "+UserGroupInformation.getCurrentUser().getShortUserName());
 		
 		// Create a new task manager object
@@ -407,9 +420,12 @@ public class TaskManager implements TaskOperationProtocol {
 		}
 		
 		// park the main thread to keep the JVM alive (all other threads may be daemon threads)
-		try {
-			new Object().wait();
-		} catch (InterruptedException ex) {}
+		Object mon = new Object();
+		synchronized (mon) {
+			try {
+				mon.wait();
+			} catch (InterruptedException ex) {}
+		}
 	}
 
 	/**
@@ -807,10 +823,11 @@ public class TaskManager implements TaskOperationProtocol {
 		String[] requiredLibraries = request.getRequiredLibraries();
 
 		for (int i = 0; i < requiredLibraries.length; i++) {
-			if (LibraryCacheManager.contains(requiredLibraries[i]) == null)
+			if (LibraryCacheManager.contains(requiredLibraries[i]) == null) {
 				response.setCached(i, false);
-			else
+			} else {
 				response.setCached(i, true);
+			}
 		}
 
 		return response;
@@ -969,15 +986,15 @@ public class TaskManager implements TaskOperationProtocol {
 			final File f = new File(dir);
 
 			if (!f.exists()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " does not exist.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' does not exist.");
 			}
 
 			if (!f.isDirectory()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " is not a directory.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' is not a directory.");
 			}
 
 			if (!f.canWrite()) {
-				throw new Exception("Temporary file directory #" + (i + 1) + " is not writable.");
+				throw new Exception("Temporary file directory '" + f.getAbsolutePath() + "' is not writable.");
 			}
 		}
 	}

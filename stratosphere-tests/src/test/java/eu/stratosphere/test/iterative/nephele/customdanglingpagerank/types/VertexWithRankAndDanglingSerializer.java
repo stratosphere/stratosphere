@@ -22,6 +22,17 @@ public final class VertexWithRankAndDanglingSerializer extends TypeSerializer<Ve
 
 	private static final long serialVersionUID = 1L;
 	
+	
+	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return false;
+	}
+	
 	@Override
 	public VertexWithRankAndDangling createInstance() {
 		return new VertexWithRankAndDangling();
@@ -58,5 +69,17 @@ public final class VertexWithRankAndDanglingSerializer extends TypeSerializer<Ve
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException {
 		target.write(source, 17);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return 2;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && obj.getClass() == VertexWithRankAndDanglingSerializer.class;
 	}
 }

@@ -17,9 +17,8 @@ package eu.stratosphere.api.java;
 import eu.stratosphere.api.common.aggregators.Aggregator;
 import eu.stratosphere.api.common.aggregators.AggregatorRegistry;
 import eu.stratosphere.api.common.aggregators.ConvergenceCriterion;
-import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.operators.SingleInputOperator;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.types.Value;
 
@@ -53,7 +52,25 @@ public class IterativeDataSet<T> extends SingleInputOperator<T, T, IterativeData
 	 * @see DataSet#iterate(int)
 	 */
 	public DataSet<T> closeWith(DataSet<T> iterationResult) {
-		return new IterativeResultDataSet<T>(getExecutionEnvironment(), getType(), this, iterationResult);
+		return new BulkIterationResultSet<T>(getExecutionEnvironment(), getType(), this, iterationResult);
+	}
+	
+	/**
+	 * Closes the iteration and specifies a termination criterion. This method defines the end of
+	 * the iterative program part.
+	 * <p>
+	 * The termination criterion is a means of dynamically signaling the iteration to halt. It is expressed via a data
+	 * set that will trigger to halt the loop as soon as the data set is empty. A typical way of using the termination
+	 * criterion is to have a filter that filters out all elements that are considered non-converged. As soon as no more
+	 * such elements exist, the iteration finishes.
+	 * 
+	 * @param iterationResult The data set that will be fed back to the next iteration.
+	 * @return The DataSet that represents the result of the iteration, after the computation has terminated.
+	 * 
+	 * @see DataSet#iterate(int)
+	 */
+	public DataSet<T> closeWith(DataSet<T> iterationResult, DataSet<?> terminationCriterion) {
+		return new BulkIterationResultSet<T>(getExecutionEnvironment(), getType(), this, iterationResult, terminationCriterion);
 	}
 
 	/**
@@ -118,7 +135,7 @@ public class IterativeDataSet<T> extends SingleInputOperator<T, T, IterativeData
 	// --------------------------------------------------------------------------------------------
 
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
 		// All the translation magic happens when the iteration end is encountered.
 		throw new UnsupportedOperationException("This should never happen.");
 	}

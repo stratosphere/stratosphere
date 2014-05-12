@@ -21,8 +21,8 @@ import eu.stratosphere.types.Record;
 /**
  * A factory that create a serializer for the {@link Record} data type.
  */
-public class RecordSerializerFactory implements TypeSerializerFactory<Record>
-{
+public class RecordSerializerFactory implements TypeSerializerFactory<Record> {
+	
 	private static final RecordSerializerFactory INSTANCE = new RecordSerializerFactory();
 	
 	/**
@@ -39,15 +39,10 @@ public class RecordSerializerFactory implements TypeSerializerFactory<Record>
 	
 
 	@Override
-	public void writeParametersToConfig(Configuration config)
-	{}
+	public void writeParametersToConfig(Configuration config) {}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.generic.types.TypeSerializerFactory#readParametersFromConfig(eu.stratosphere.nephele.configuration.Configuration, java.lang.ClassLoader)
-	 */
 	@Override
-	public void readParametersFromConfig(Configuration config, ClassLoader cl) throws ClassNotFoundException
-	{}
+	public void readParametersFromConfig(Configuration config, ClassLoader cl) {}
 	
 
 	@Override
@@ -55,9 +50,20 @@ public class RecordSerializerFactory implements TypeSerializerFactory<Record>
 		return RecordSerializer.get();
 	}
 
-
 	@Override
 	public Class<Record> getDataType() {
 		return Record.class;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return 31;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && obj.getClass() == RecordSerializerFactory.class;
 	}
 }

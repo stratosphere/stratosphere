@@ -15,10 +15,9 @@ package eu.stratosphere.test.exampleRecordPrograms;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.test.testPrograms.TPCHQueryAsterix;
-import eu.stratosphere.test.util.TestBase2;
+import eu.stratosphere.test.util.RecordAPITestBase;
 
-public class TPCHQueryAsterixITCase extends TestBase2 {
-	private static final int DOP = 4;
+public class TPCHQueryAsterixITCase extends RecordAPITestBase {
 
 	private String ordersPath;
 	private String custPath;

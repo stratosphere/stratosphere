@@ -21,13 +21,13 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 import eu.stratosphere.api.common.InvalidProgramException;
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.aggregation.AggregationFunction;
 import eu.stratosphere.api.java.aggregation.AggregationFunctionFactory;
 import eu.stratosphere.api.java.aggregation.Aggregations;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.operators.translation.PlanGroupReduceOperator;
-import eu.stratosphere.api.java.operators.translation.UnaryNodeTranslation;
 import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.configuration.Configuration;
@@ -59,8 +59,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) input.getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		AggregationFunctionFactory factory = function.getFactory();
 		AggregationFunction<?> aggFunct = factory.createAggregationFunction(inType.getTypeAt(field).getTypeClass());
@@ -90,8 +91,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) input.getDataSet().getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		AggregationFunctionFactory factory = function.getFactory();
 		AggregationFunction<?> aggFunct = factory.createAggregationFunction(inType.getTypeAt(field).getTypeClass());
@@ -108,8 +110,9 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		
 		TupleTypeInfo<?> inType = (TupleTypeInfo<?>) getType();
 		
-		if (field < 0 || field >= inType.getArity())
+		if (field < 0 || field >= inType.getArity()) {
 			throw new IllegalArgumentException("Aggregation field position is out of range.");
+		}
 		
 		
 		AggregationFunctionFactory factory = function.getFactory();
@@ -123,7 +126,8 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	protected UnaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input) {
+		
 		// sanity check
 		if (this.aggregationFunctions.isEmpty() || this.aggregationFunctions.size() != this.fields.size()) {
 			throw new IllegalStateException();
@@ -153,18 +157,37 @@ public class AggregateOperator<IN> extends SingleInputOperator<IN, IN, Aggregate
 		// distinguish between grouped reduce and non-grouped reduce
 		if (this.grouping == null) {
 			// non grouped aggregation
-			return new UnaryNodeTranslation(new PlanGroupReduceOperator<IN, IN>(function, new int[0], name, getInputType(), getResultType()));
+			PlanGroupReduceOperator<IN, IN> po = 
+					new PlanGroupReduceOperator<IN, IN>(function, new int[0], name, getInputType(), getResultType());
+			// set input
+			po.setInput(input);
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;
 		}
 		
-		
 		if (this.grouping.getKeys() instanceof Keys.FieldPositionKeys) {
+			// grouped aggregation
 			int[] logicalKeyPositions = this.grouping.getKeys().computeLogicalKeyPositions();
-			return new UnaryNodeTranslation(new PlanGroupReduceOperator<IN, IN>(function, logicalKeyPositions, name, getInputType(), getResultType()));
+			PlanGroupReduceOperator<IN, IN> po = 
+					new PlanGroupReduceOperator<IN, IN>(function, logicalKeyPositions, name, getInputType(), getResultType());
+			// set input
+			po.setInput(input);
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;			
+		}
+		else if (this.grouping.getKeys() instanceof Keys.SelectorFunctionKeys) {
+			throw new UnsupportedOperationException("Aggregate does not support grouping with KeySelector functions, yet.");
 		}
 		else {
 			throw new UnsupportedOperationException("Unrecognized key type.");
 		}
+		
 	}
+	
 	
 	// --------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------

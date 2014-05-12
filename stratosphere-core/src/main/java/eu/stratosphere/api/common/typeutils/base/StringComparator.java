@@ -31,10 +31,6 @@ public final class StringComparator extends BasicTypeComparator<String> {
 	private static final int HIGH_BIT2 = 0x1 << 13;
 	
 	private static final int HIGH_BIT2_MASK = 0x3 << 6;
-
-	
-	private final StringValue holder1 = new StringValue();
-	private final StringValue holder2 = new StringValue();
 	
 	
 	public StringComparator(boolean ascending) {
@@ -43,9 +39,9 @@ public final class StringComparator extends BasicTypeComparator<String> {
 
 	@Override
 	public int compare(DataInputView firstSource, DataInputView secondSource) throws IOException {
-		holder1.read(firstSource);
-		holder2.read(secondSource);
-		int comp = holder1.compareTo(holder2); 
+		String s1 = StringValue.readString(firstSource);
+		String s2 = StringValue.readString(secondSource);
+		int comp = s1.compareTo(s2); 
 		return ascendingComparison ? comp : -comp;
 	}
 
@@ -85,15 +81,18 @@ public final class StringComparator extends BasicTypeComparator<String> {
 			}
 			else if (c < HIGH_BIT2) {
 				target.put(offset++, (byte) ((c >>> 7) | HIGH_BIT));
-				if (offset < limit)
+				if (offset < limit) {
 					target.put(offset++, (byte) c);
+				}
 			}
 			else {
 				target.put(offset++, (byte) ((c >>> 10) | HIGH_BIT2_MASK));
-				if (offset < limit)
+				if (offset < limit) {
 					target.put(offset++, (byte) (c >>> 2));
-				if (offset < limit)
+				}
+				if (offset < limit) {
 					target.put(offset++, (byte) c);
+				}
 			}
 		}
 		while (offset < limit) {

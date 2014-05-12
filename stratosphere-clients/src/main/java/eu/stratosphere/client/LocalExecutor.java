@@ -51,7 +51,7 @@ public class LocalExecutor extends PlanExecutor {
 	private int taskManagerRpcPort = -1;
 	
 	private int taskManagerDataPort = -1;
-	
+
 	private String configDir;
 
 	private String hdfsConfigFile;
@@ -59,7 +59,7 @@ public class LocalExecutor extends PlanExecutor {
 	private boolean defaultOverwriteFiles = DEFAULT_OVERWRITE;
 	
 	private boolean defaultAlwaysCreateDirectory = false;
-	
+
 	// --------------------------------------------------------------------------------------------
 	
 	public LocalExecutor() {
@@ -67,7 +67,7 @@ public class LocalExecutor extends PlanExecutor {
 			setLoggingLevel(Level.INFO);
 		}
 	}
-	
+
 	public int getJobManagerRpcPort() {
 		return jobManagerRpcPort;
 	}
@@ -185,8 +185,9 @@ public class LocalExecutor extends PlanExecutor {
 	 *                   caused an exception.
 	 */
 	public JobExecutionResult executePlan(Plan plan) throws Exception {
-		if (plan == null)
+		if (plan == null) {
 			throw new IllegalArgumentException("The plan may not be null.");
+		}
 		
 		ContextChecker checker = new ContextChecker();
 		checker.check(plan);

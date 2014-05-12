@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import eu.stratosphere.api.java.DataSet;
-import eu.stratosphere.api.java.DeltaIterativeDataSet;
+import eu.stratosphere.api.java.DeltaIteration;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
@@ -114,10 +114,10 @@ public class DependencyConnectedComponentsITCase extends JavaProgramTestBase {
 			DataSet<Tuple2<Long, Long>> edges = env.fromCollection(edgesInput);
 			int keyPosition = 0;
 			
-			DeltaIterativeDataSet<Tuple2<Long, Long>, Tuple2<Long, Long>> iteration = 
+			DeltaIteration<Tuple2<Long, Long>, Tuple2<Long, Long>> iteration =
 					initialSolutionSet.iterateDelta(initialSolutionSet, MAX_ITERATIONS, keyPosition);
 			
-			DataSet<Long> candidates = iteration.join(edges).where(0).equalTo(0)
+			DataSet<Long> candidates = iteration.getWorkset().join(edges).where(0).equalTo(0)
 					.with(new FindCandidatesJoin())
 					.groupBy(new KeySelector<Long, Long>() { 
                         public Long getKey(Long id) { return id; } 

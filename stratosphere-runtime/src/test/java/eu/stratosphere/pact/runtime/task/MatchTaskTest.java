@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 import eu.stratosphere.api.common.functions.GenericJoiner;
 import eu.stratosphere.api.java.record.functions.JoinFunction;
@@ -28,10 +28,10 @@ import eu.stratosphere.pact.runtime.test.util.DelayingInfinitiveInputIterator;
 import eu.stratosphere.pact.runtime.test.util.DriverTestBase;
 import eu.stratosphere.pact.runtime.test.util.ExpectedTestException;
 import eu.stratosphere.pact.runtime.test.util.NirvanaOutputList;
-import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
 import eu.stratosphere.pact.runtime.test.util.TaskCancelThread;
-import eu.stratosphere.types.Key;
+import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 
@@ -51,11 +51,11 @@ public class MatchTaskTest extends DriverTestBase<GenericJoiner<Record, Record, 
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator1 = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator2 = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 	
 	private final List<Record> outList = new ArrayList<Record>();
 	

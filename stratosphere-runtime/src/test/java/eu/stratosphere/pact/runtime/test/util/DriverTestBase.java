@@ -24,14 +24,14 @@ import org.junit.BeforeClass;
 
 import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.services.memorymanager.spi.DefaultMemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
-import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializer;
+import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializerFactory;
 import eu.stratosphere.pact.runtime.sort.UnilateralSortMerger;
 import eu.stratosphere.pact.runtime.task.PactDriver;
 import eu.stratosphere.pact.runtime.task.PactTaskContext;
@@ -144,13 +144,13 @@ public class DriverTestBase<S extends Function> implements PactTaskContext<S, Re
 		this.numFileHandles = numFileHandles;
 	}
 
-	public void testDriver(PactDriver<S, Record> driver, Class<? extends S> stubClass) throws Exception {
+	@SuppressWarnings({"unchecked","rawtypes"})
+	public void testDriver(PactDriver driver, Class stubClass) throws Exception {
 		
 		this.driver = driver;
 		driver.setup(this);
 		
-		// instantiate the stub
-		this.stub = stubClass.newInstance();
+		this.stub = (S)stubClass.newInstance();
 		
 		// regular running logic
 		this.running = true;
@@ -250,10 +250,10 @@ public class DriverTestBase<S extends Function> implements PactTaskContext<S, Re
 	}
 
 	@Override
-	public <X> TypeSerializer<X> getInputSerializer(int index) {
+	public <X> TypeSerializerFactory<X> getInputSerializer(int index) {
 		@SuppressWarnings("unchecked")
-		TypeSerializer<X> serializer = (TypeSerializer<X>) RecordSerializer.get();
-		return serializer;
+		TypeSerializerFactory<X> factory = (TypeSerializerFactory<X>) RecordSerializerFactory.get();
+		return factory;
 	}
 
 	@Override
@@ -289,8 +289,9 @@ public class DriverTestBase<S extends Function> implements PactTaskContext<S, Re
 	public void shutdownAll() throws Exception {
 		// 1st, shutdown sorters
 		for (UnilateralSortMerger<?> sorter : this.sorters) {
-			if (sorter != null)
+			if (sorter != null) {
 				sorter.close();
+			}
 		}
 		this.sorters.clear();
 		

@@ -13,9 +13,8 @@
 
 package eu.stratosphere.pact.runtime.task;
 
-import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
 import eu.stratosphere.nephele.template.AbstractInvokable;
@@ -30,10 +29,13 @@ import eu.stratosphere.util.MutableObjectIterator;
  * deals with the runtime setup and teardown and the control-flow logic. The later appears especially
  * in the case of iterations.
  *
+ * @param <S> The UDF type.
+ * @param <OT> The produced data type.
+ *
  * @see PactDriver
  */
-public interface PactTaskContext<S extends Function, OT>
-{
+public interface PactTaskContext<S, OT> {
+	
 	TaskConfig getTaskConfig();
 	
 	ClassLoader getUserCodeClassLoader();
@@ -44,7 +46,7 @@ public interface PactTaskContext<S extends Function, OT>
 	
 	<X> MutableObjectIterator<X> getInput(int index);
 	
-	<X> TypeSerializer<X> getInputSerializer(int index);
+	<X> TypeSerializerFactory<X> getInputSerializer(int index);
 	
 	<X> TypeComparator<X> getInputComparator(int index);
 	

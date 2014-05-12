@@ -114,6 +114,7 @@ public final class SimpleStringUtils {
 			
 			final int start = pos;
 			for (; pos < limit && !Character.isWhitespace(data[pos]); pos++);
+			
 			this.pos = pos;
 			target.setValue(this.toTokenize, start, pos - start);
 			return true;

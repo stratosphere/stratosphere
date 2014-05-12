@@ -14,15 +14,17 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators.translation;
 
+import java.util.Iterator;
+
+import eu.stratosphere.api.common.functions.GenericCombine;
 import eu.stratosphere.api.common.functions.GenericGroupReduce;
 import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
+import eu.stratosphere.api.java.functions.GroupReduceFunction.Combinable;
 import eu.stratosphere.api.java.operators.Keys;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 import eu.stratosphere.util.Collector;
-
-import java.util.Iterator;
 
 /**
  *
@@ -36,12 +38,15 @@ public class PlanUnwrappingReduceGroupOperator<IN, OUT, K> extends GroupReduceOp
 
 
 	public PlanUnwrappingReduceGroupOperator(GroupReduceFunction<IN, OUT> udf, Keys.SelectorFunctionKeys<IN, K> key, String name,
-			TypeInformation<IN> inType, TypeInformation<OUT> outType, TypeInformation<Tuple2<K, IN>> typeInfoWithKey)
+			TypeInformation<IN> inType, TypeInformation<OUT> outType, TypeInformation<Tuple2<K, IN>> typeInfoWithKey,
+			boolean combinable)
 	{
-		super(new TupleUnwrappingGroupReducer<IN, OUT, K>(udf), key.computeLogicalKeyPositions(), name);
+		super(combinable ? new TupleUnwrappingCombinableGroupReducer<IN, OUT, K>(udf) : new TupleUnwrappingNonCombinableGroupReducer<IN, OUT, K>(udf),
+				key.computeLogicalKeyPositions(), name);
 		
 		this.outputType = outType;
 		this.typeInfoWithKey = typeInfoWithKey;
+		super.setCombinable(udf.getClass().getAnnotation(Combinable.class) != null);
 	}
 	
 	
@@ -58,37 +63,65 @@ public class PlanUnwrappingReduceGroupOperator<IN, OUT, K> extends GroupReduceOp
 	
 	// --------------------------------------------------------------------------------------------
 	
-	public static final class TupleUnwrappingGroupReducer<IN, OUT, K> extends WrappingFunction<GroupReduceFunction<IN, OUT>>
-		implements GenericGroupReduce<Tuple2<K, IN>, OUT>
+	@Combinable
+	public static final class TupleUnwrappingCombinableGroupReducer<IN, OUT, K> extends WrappingFunction<GroupReduceFunction<IN, OUT>>
+		implements GenericGroupReduce<Tuple2<K, IN>, OUT>, GenericCombine<Tuple2<K, IN>>
 	{
 
 		private static final long serialVersionUID = 1L;
 		
 		private TupleUnwrappingIterator<IN, K> iter;
+		private TupleWrappingCollector<IN, K> coll; 
 		
-		private TupleUnwrappingGroupReducer(GroupReduceFunction<IN, OUT> wrapped) {
+		private TupleUnwrappingCombinableGroupReducer(GroupReduceFunction<IN, OUT> wrapped) {
 			super(wrapped);
 			this.iter = new TupleUnwrappingIterator<IN, K>();
+			this.coll = new TupleWrappingCollector<IN, K>(this.iter);
 		}
 
 
 		@Override
 		public void reduce(Iterator<Tuple2<K, IN>> values, Collector<OUT> out) throws Exception {
 			iter.set(values);
-
 			this.wrappedFunction.reduce(iter, out);
 		}
 
 		@Override
 		public void combine(Iterator<Tuple2<K, IN>> values, Collector<Tuple2<K, IN>> out) throws Exception {
-//			iter.set(values);
-//
-//			@SuppressWarnings("unchecked")
-//			ReferenceWrappingCollector<IN> combColl = (ReferenceWrappingCollector<IN>) coll;
-//
-//			combColl.set(out);
-//
-//			this.wrappedFunction.reduce(iter, coll);
+				iter.set(values);
+				coll.set(out);
+				this.wrappedFunction.combine(iter, coll);
+		}
+		
+		@Override
+		public String toString() {
+			return this.wrappedFunction.toString();
+		}
+	}
+	
+	public static final class TupleUnwrappingNonCombinableGroupReducer<IN, OUT, K> extends WrappingFunction<GroupReduceFunction<IN, OUT>>
+		implements GenericGroupReduce<Tuple2<K, IN>, OUT>
+	{
+	
+		private static final long serialVersionUID = 1L;
+		
+		private TupleUnwrappingIterator<IN, K> iter; 
+		
+		private TupleUnwrappingNonCombinableGroupReducer(GroupReduceFunction<IN, OUT> wrapped) {
+			super(wrapped);
+			this.iter = new TupleUnwrappingIterator<IN, K>();
+		}
+	
+	
+		@Override
+		public void reduce(Iterator<Tuple2<K, IN>> values, Collector<OUT> out) throws Exception {
+			iter.set(values);
+			this.wrappedFunction.reduce(iter, out);
+		}
+		
+		@Override
+		public String toString() {
+			return this.wrappedFunction.toString();
 		}
 	}
 }

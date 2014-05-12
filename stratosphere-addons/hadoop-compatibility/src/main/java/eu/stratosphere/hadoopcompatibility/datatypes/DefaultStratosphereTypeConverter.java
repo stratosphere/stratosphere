@@ -13,10 +13,22 @@
 
 package eu.stratosphere.hadoopcompatibility.datatypes;
 
-import eu.stratosphere.types.*;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
-import java.lang.reflect.ParameterizedType;
+import eu.stratosphere.types.BooleanValue;
+import eu.stratosphere.types.ByteValue;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.FloatValue;
+import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.LongValue;
+import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
 
 /**
  * Converter Stratosphere Record into the default hadoop writables.
@@ -34,14 +46,23 @@ public class DefaultStratosphereTypeConverter<K,V> implements StratosphereTypeCo
 	}
 	@Override
 	public K convertKey(Record stratosphereRecord) {
-		return convert(stratosphereRecord, 0, this.keyClass);
+		if(stratosphereRecord.getNumFields() > 0) {
+			return convert(stratosphereRecord, 0, this.keyClass);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
 	public V convertValue(Record stratosphereRecord) {
-		return convert(stratosphereRecord, 1, this.valueClass);
+		if(stratosphereRecord.getNumFields() > 1) {
+			return convert(stratosphereRecord, 1, this.valueClass);
+		} else {
+			return null;
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private<T> T convert(Record stratosphereType, int pos, Class<T> hadoopType) {
 		if(hadoopType == LongWritable.class ) {
 			return (T) new LongWritable((stratosphereType.getField(pos, LongValue.class)).getValue());

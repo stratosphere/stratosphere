@@ -70,6 +70,11 @@ public final class ManagementVertex extends ManagementAttachment implements IORe
 	private final int indexInGroup;
 
 	/**
+	 * The error message when executionState is FAILED.
+	 */
+	private String optMessage;
+
+	/**
 	 * Constructs a new management vertex.
 	 * 
 	 * @param groupVertex

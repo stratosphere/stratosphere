@@ -66,6 +66,10 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 	
 	private double relativeMemoryPerSubTask;					// the amount of memory dedicated to each task, in bytes
 	
+	private int degreeOfParallelism;
+	
+	private int subtasksPerInstance;
+	
 	private boolean pFlag;							// flag for the internal pruning algorithm
 	
 	// --------------------------------------------------------------------------------------------
@@ -76,6 +80,9 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 		this.template = template;
 		this.nodeName = nodeName;
 		this.driverStrategy = strategy;
+		
+		this.degreeOfParallelism = template.getDegreeOfParallelism();
+		this.subtasksPerInstance = template.getSubtasksPerInstance();
 		
 		// check, if there is branch at this node. if yes, this candidate must be associated with
 		// the branching template node.
@@ -245,8 +252,9 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 			Costs result = cumulativeCosts.clone();
 			if(this.template != null && this.template.getOutgoingConnections() != null){
 				int outDegree = this.template.getOutgoingConnections().size();
-				if(outDegree > 0)
+				if(outDegree > 0) {
 					result.divideBy(outDegree);
+				}
 			}
 
 			return result;
@@ -267,15 +275,24 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 		this.cumulativeCosts = nodeCosts.clone();
 		for (Iterator<PlanNode> preds = getPredecessors(); preds.hasNext();) {
 			Costs parentCosts = preds.next().getCumulativeCostsShare();
-			if (parentCosts != null)
+			if (parentCosts != null) {
 				this.cumulativeCosts.addCosts(parentCosts);
-			else
+			} else {
 				throw new CompilerException();
+			}
 		}
 	}
 	
+	public void setDegreeOfParallelism(int parallelism) {
+		this.degreeOfParallelism = parallelism;
+	}
+	
+	public void setSubtasksPerInstance(int subTasksPerInstance) {
+		this.subtasksPerInstance = subTasksPerInstance;
+	}
+	
 	public int getDegreeOfParallelism() {
-		return this.template.getDegreeOfParallelism();
+		return this.degreeOfParallelism;
 	}
 	
 	public long getGuaranteedAvailableMemory() {

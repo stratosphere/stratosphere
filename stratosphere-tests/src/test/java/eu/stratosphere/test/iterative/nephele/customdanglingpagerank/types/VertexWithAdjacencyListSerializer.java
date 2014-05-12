@@ -22,6 +22,17 @@ public final class VertexWithAdjacencyListSerializer extends TypeSerializer<Vert
 
 	private static final long serialVersionUID = 1L;
 	
+	
+	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return false;
+	}
+	
 	@Override
 	public VertexWithAdjacencyList createInstance() {
 		return new VertexWithAdjacencyList();
@@ -83,5 +94,17 @@ public final class VertexWithAdjacencyListSerializer extends TypeSerializer<Vert
 		final int numTargets = source.readInt();
 		target.writeInt(numTargets);
 		target.write(source, numTargets * 8);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return 3;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && obj.getClass() == VertexWithAdjacencyListSerializer.class;
 	}
 }

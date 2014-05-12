@@ -16,7 +16,6 @@ package eu.stratosphere.pact.runtime.task;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import eu.stratosphere.pact.runtime.task.chaining.ExceptionInChainedStubException;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -26,13 +25,13 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordComparator;
 import eu.stratosphere.pact.runtime.task.CombineTaskTest.MockCombiningReduceStub;
 import eu.stratosphere.pact.runtime.test.util.DriverTestBase;
 import eu.stratosphere.pact.runtime.test.util.UniformRecordGenerator;
-import eu.stratosphere.types.Key;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.Key;
 import eu.stratosphere.types.Record;
 
 
-public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce<Record, ?>>
-{
+public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce<Record, ?>> {
+	
 	private static final long COMBINE_MEM = 3 * 1024 * 1024;
 
 	private final double combine_frac;
@@ -41,7 +40,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 
 	public CombineTaskExternalITCase() {
 		super(COMBINE_MEM, 0);
@@ -63,7 +62,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
-		final CombineDriver<Record> testTask = new CombineDriver<Record>();
+		final GroupReduceCombineDriver<Record> testTask = new GroupReduceCombineDriver<Record>();
 		
 		try {
 			testDriver(testTask, MockCombiningReduceStub.class);
@@ -116,7 +115,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
-		final CombineDriver<Record> testTask = new CombineDriver<Record>();
+		final GroupReduceCombineDriver<Record> testTask = new GroupReduceCombineDriver<Record>();
 
 		try {
 			testDriver(testTask, MockCombiningReduceStub.class);

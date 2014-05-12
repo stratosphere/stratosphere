@@ -16,6 +16,7 @@ package eu.stratosphere.api.java.operators;
 
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.operators.translation.PlanDataSink;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
@@ -31,14 +32,18 @@ public class DataSink<T> {
 	
 	private String name;
 	
+	private int dop = -1;
 	
 	public DataSink(DataSet<T> data, OutputFormat<T> format, TypeInformation<T> type) {
-		if (format == null)
+		if (format == null) {
 			throw new IllegalArgumentException("The output format must not be null.");
-		if (type == null)
+		}
+		if (type == null) {
 			throw new IllegalArgumentException("The input type information must not be null.");
-		if (data == null)
+		}
+		if (data == null) {
 			throw new IllegalArgumentException("The data set must not be null.");
+		}
 		
 		
 		this.format = format;
@@ -68,10 +73,21 @@ public class DataSink<T> {
 	
 	// --------------------------------------------------------------------------------------------
 	
-	protected GenericDataSink translateToDataFlow() {
+	protected GenericDataSink translateToDataFlow(Operator input) {
 		// select the name (or create a default one)
 		String name = this.name != null ? this.name : this.format.toString();
 		PlanDataSink<T> sink = new PlanDataSink<T>(this.format, name, this.type);
+		// set input
+		sink.setInput(input);
+		// set dop
+		if(this.dop > 0) {
+			// use specified dop
+			sink.setDegreeOfParallelism(this.dop);
+		} else {
+			// if no dop has been specified, use dop of input operator to enable chaining
+			sink.setDegreeOfParallelism(input.getDegreeOfParallelism());
+		}
+		
 		return sink;
 	}
 	
@@ -80,5 +96,31 @@ public class DataSink<T> {
 	@Override
 	public String toString() {
 		return "DataSink '" + (this.name == null ? "<unnamed>" : this.name) + "' (" + this.format.toString() + ")";
+	}
+	
+	/**
+	 * Returns the degree of parallelism of this data sink.
+	 * 
+	 * @return The degree of parallelism of this data sink.
+	 */
+	public int getParallelism() {
+		return this.dop;
+	}
+	
+	/**
+	 * Sets the degree of parallelism for this data sink.
+	 * The degree must be 1 or more.
+	 * 
+	 * @param dop The degree of parallelism for this data sink.
+	 * @return This data sink with set degree of parallelism.
+	 */
+	public DataSink<T> setParallelism(int dop) {
+		
+		if(dop < 1) {
+			throw new IllegalArgumentException("The parallelism of an operator must be at least 1.");
+		}
+		this.dop = dop;
+		
+		return this;
 	}
 }

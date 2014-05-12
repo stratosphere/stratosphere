@@ -17,9 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 import eu.stratosphere.api.common.functions.GenericCollectorMap;
 import eu.stratosphere.api.java.record.functions.MapFunction;
@@ -69,7 +68,7 @@ public class MapTaskTest extends DriverTestBase<GenericCollectorMap<Record, Reco
 		final int valCnt = 20;
 		
 		addInput(new UniformRecordGenerator(keyCnt, valCnt, false));
-		setOutput(new DiscardingOutputCollector());
+		setOutput(new DiscardingOutputCollector<Record>());
 		
 		final CollectorMapDriver<Record, Record> testTask = new CollectorMapDriver<Record, Record>();
 		try {
@@ -86,7 +85,7 @@ public class MapTaskTest extends DriverTestBase<GenericCollectorMap<Record, Reco
 	@Test
 	public void testCancelMapTask() {
 		addInput(new InfiniteInputIterator());
-		setOutput(new DiscardingOutputCollector());
+		setOutput(new DiscardingOutputCollector<Record>());
 		
 		final CollectorMapDriver<Record, Record> testTask = new CollectorMapDriver<Record, Record>();
 		

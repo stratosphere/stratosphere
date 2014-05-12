@@ -22,13 +22,13 @@ import java.util.Iterator;
 
 import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.io.GenericInputFormat;
-import eu.stratosphere.api.common.io.UnsplittableInput;
+import eu.stratosphere.api.common.io.NonParallelInput;
 import eu.stratosphere.core.io.GenericInputSplit;
 
 /**
  * An input format that returns objects from a collection.
  */
-public class CollectionInputFormat<T> extends GenericInputFormat<T> implements UnsplittableInput {
+public class CollectionInputFormat<T> extends GenericInputFormat<T> implements NonParallelInput {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,8 +39,9 @@ public class CollectionInputFormat<T> extends GenericInputFormat<T> implements U
 
 	
 	public CollectionInputFormat(Collection<T> dataSet) {
-		if (dataSet == null)
+		if (dataSet == null) {
 			throw new NullPointerException();
+		}
 		
 		this.dataSet = dataSet;
 	}

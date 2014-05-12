@@ -41,16 +41,16 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializer;
 import eu.stratosphere.pact.runtime.test.util.DiscardingOutputCollector;
 import eu.stratosphere.pact.runtime.test.util.DummyInvokable;
 import eu.stratosphere.pact.runtime.test.util.TestData;
-import eu.stratosphere.pact.runtime.test.util.UniformIntPairGenerator;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator.KeyMode;
 import eu.stratosphere.pact.runtime.test.util.TestData.Generator.ValueMode;
+import eu.stratosphere.pact.runtime.test.util.UniformIntPairGenerator;
+import eu.stratosphere.pact.runtime.test.util.UnionIterator;
 import eu.stratosphere.pact.runtime.test.util.types.IntPair;
 import eu.stratosphere.pact.runtime.test.util.types.IntPairComparator;
 import eu.stratosphere.pact.runtime.test.util.types.IntPairSerializer;
-import eu.stratosphere.pact.runtime.test.util.UnionIterator;
-import eu.stratosphere.types.NullKeyFieldException;
 import eu.stratosphere.types.IntValue;
+import eu.stratosphere.types.NullKeyFieldException;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.Value;
 import eu.stratosphere.util.Collector;
@@ -137,7 +137,7 @@ public class HashMatchIteratorITCase {
 				collectRecordData(input2));
 			
 			final JoinFunction matcher = new RecordMatchRemovingJoin(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			// reset the generators
 			generator1.reset();
@@ -156,12 +156,13 @@ public class HashMatchIteratorITCase {
 			
 			while (iterator.callWithNextKey(matcher, collector));
 			
-			iterator.close();;
+			iterator.close();
 	
 			// assert that each expected match was seen
 			for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedMatchesMap.entrySet()) {
-				if (!entry.getValue().isEmpty())
+				if (!entry.getValue().isEmpty()) {
 					Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+				}
 			}
 		}
 		catch (Exception e) {
@@ -230,7 +231,7 @@ public class HashMatchIteratorITCase {
 			input2 = new UnionIterator<Record>(inList2);
 			
 			final JoinFunction matcher = new RecordMatchRemovingJoin(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			BuildFirstHashMatchIterator<Record, Record, Record> iterator = 
 					new BuildFirstHashMatchIterator<Record, Record, Record>(
@@ -272,7 +273,7 @@ public class HashMatchIteratorITCase {
 				collectRecordData(input2));
 			
 			final JoinFunction matcher = new RecordMatchRemovingJoin(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			// reset the generators
 			generator1.reset();
@@ -295,8 +296,9 @@ public class HashMatchIteratorITCase {
 	
 			// assert that each expected match was seen
 			for (Entry<TestData.Key, Collection<RecordMatch>> entry : expectedMatchesMap.entrySet()) {
-				if (!entry.getValue().isEmpty())
+				if (!entry.getValue().isEmpty()) {
 					Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+				}
 			}
 		}
 		catch (Exception e) {
@@ -365,7 +367,7 @@ public class HashMatchIteratorITCase {
 			input2 = new UnionIterator<Record>(inList2);
 			
 			final JoinFunction matcher = new RecordMatchRemovingJoin(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			BuildSecondHashMatchIterator<Record, Record, Record> iterator = 
 				new BuildSecondHashMatchIterator<Record, Record, Record>(
@@ -406,7 +408,7 @@ public class HashMatchIteratorITCase {
 				collectRecordData(input2));
 			
 			final GenericJoiner<IntPair, Record, Record> matcher = new RecordIntPairMatchRemovingMatcher(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			// reset the generators
 			input1 = new UniformIntPairGenerator(500, 40, false);
@@ -428,8 +430,9 @@ public class HashMatchIteratorITCase {
 	
 			// assert that each expected match was seen
 			for (Entry<TestData.Key, Collection<RecordIntPairMatch>> entry : expectedMatchesMap.entrySet()) {
-				if (!entry.getValue().isEmpty())
+				if (!entry.getValue().isEmpty()) {
 					Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+				}
 			}
 		}
 		catch (Exception e) {
@@ -452,7 +455,7 @@ public class HashMatchIteratorITCase {
 				collectRecordData(input2));
 			
 			final GenericJoiner<IntPair, Record, Record> matcher = new RecordIntPairMatchRemovingMatcher(expectedMatchesMap);
-			final Collector<Record> collector = new DiscardingOutputCollector();
+			final Collector<Record> collector = new DiscardingOutputCollector<Record>();
 	
 			// reset the generators
 			input1 = new UniformIntPairGenerator(500, 40, false);
@@ -474,8 +477,9 @@ public class HashMatchIteratorITCase {
 	
 			// assert that each expected match was seen
 			for (Entry<TestData.Key, Collection<RecordIntPairMatch>> entry : expectedMatchesMap.entrySet()) {
-				if (!entry.getValue().isEmpty())
+				if (!entry.getValue().isEmpty()) {
 					Assert.fail("Collection for key " + entry.getKey() + " is not empty");
+				}
 			}
 		}
 		catch (Exception e) {

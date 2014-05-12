@@ -16,7 +16,7 @@ package eu.stratosphere.test.iterative.nephele;
 import java.io.BufferedReader;
 import java.util.Collection;
 
-import eu.stratosphere.configuration.ConfigConstants;
+import eu.stratosphere.test.util.RecordAPITestBase;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -50,7 +50,7 @@ import eu.stratosphere.pact.runtime.task.BuildSecondCachedMatchDriver;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.JoinWithSolutionSetSecondDriver;
-import eu.stratosphere.pact.runtime.task.ReduceDriver;
+import eu.stratosphere.pact.runtime.task.GroupReduceDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedCollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
@@ -58,7 +58,6 @@ import eu.stratosphere.test.testPrograms.WorksetConnectedComponents.MinimumCompo
 import eu.stratosphere.test.testPrograms.WorksetConnectedComponents.NeighborWithComponentIDJoin;
 import eu.stratosphere.test.testPrograms.WorksetConnectedComponents.UpdateComponentIdMatch;
 import eu.stratosphere.test.testdata.ConnectedComponentsData;
-import eu.stratosphere.test.util.TestBase2;
 import eu.stratosphere.types.LongValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
@@ -71,7 +70,7 @@ import eu.stratosphere.util.Collector;
  * - intermediate solution set update and workset tail
  */
 @RunWith(Parameterized.class)
-public class ConnectedComponentsNepheleITCase extends TestBase2 {
+public class ConnectedComponentsNepheleITCase extends RecordAPITestBase {
 
 	private static final long SEED = 0xBADC0FFEEBEEFL;
 
@@ -309,8 +308,8 @@ public class ConnectedComponentsNepheleITCase extends TestBase2 {
 			intermediateConfig.setOutputSerializer(serializer);
 			intermediateConfig.addOutputShipStrategy(ShipStrategyType.FORWARD);
 
-			intermediateConfig.setDriver(ReduceDriver.class);
-			intermediateConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP);
+			intermediateConfig.setDriver(GroupReduceDriver.class);
+			intermediateConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP_REDUCE);
 			intermediateConfig.setDriverComparator(comparator, 0);
 			intermediateConfig.setStubWrapper(
 				new UserCodeClassWrapper<MinimumComponentIDReduce>(MinimumComponentIDReduce.class));

@@ -39,6 +39,7 @@ import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.Program;
 import eu.stratosphere.api.common.ProgramDescription;
 import eu.stratosphere.api.java.ExecutionEnvironment;
+import eu.stratosphere.client.program.Client.ProgramAbortException;
 import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.dag.DataSinkNode;
 import eu.stratosphere.compiler.plandump.PlanJSONDumpGenerator;
@@ -207,8 +208,12 @@ public class PackagedProgram {
 			env.setAsContext();
 			try {
 				invokeInteractiveModeForExecution();
-			} catch (Throwable t) {
+			} catch (ProgramAbortException e) {
 				// the invocation gets aborted with the preview plan
+			} catch (ProgramInvocationException e) {
+				throw e;
+			} catch (Throwable t) {
+				throw new ProgramInvocationException("Program invokation failed with " + t.getClass().getSimpleName() + ": " + t.getMessage(), t);
 			}
 			previewPlan =  env.previewPlan;
 		}
@@ -488,8 +493,9 @@ public class PackagedProgram {
 		
 		Random rnd = new Random();
 		
+		JarFile jar = null;
 		try {
-			final JarFile jar = new JarFile(jarFile);
+			jar = new JarFile(jarFile);
 			final List<JarEntry> containedJarFileEntries = new ArrayList<JarEntry>();
 			
 			Enumeration<JarEntry> entries = jar.entries();
@@ -572,6 +578,13 @@ public class PackagedProgram {
 		}
 		catch (Throwable t) {
 			throw new ProgramInvocationException("Unknown I/O error while extracting contained jar files.", t);
+		}
+		finally {
+			if (jar != null) {
+				try {
+					jar.close();
+				} catch (Throwable t) {}
+			}
 		}
 	}
 	

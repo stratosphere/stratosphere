@@ -14,15 +14,15 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators.translation;
 
-import eu.stratosphere.api.common.functions.GenericGroupReduce;
-import eu.stratosphere.api.common.operators.base.GroupReduceOperatorBase;
+import eu.stratosphere.api.common.functions.GenericReduce;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.typeutils.TypeInformation;
 
 /**
  *
  */
-public class PlanReduceOperator<T> extends GroupReduceOperatorBase<GenericGroupReduce<T,T>>
+public class PlanReduceOperator<T> extends ReduceOperatorBase<GenericReduce<T>>
 	implements UnaryJavaPlanNode<T, T>
 {
 

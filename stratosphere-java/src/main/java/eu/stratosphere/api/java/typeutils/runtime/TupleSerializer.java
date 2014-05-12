@@ -34,12 +34,34 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 	
 	private final int arity;
 	
+	private final boolean stateful;
+	
 	
 	@SuppressWarnings("unchecked")
 	public TupleSerializer(Class<T> tupleClass, TypeSerializer<?>[] fieldSerializers) {
 		this.tupleClass = tupleClass;
 		this.fieldSerializers = (TypeSerializer<Object>[]) fieldSerializers;
 		this.arity = fieldSerializers.length;
+		
+		boolean stateful = false;
+		for (TypeSerializer<?> ser : fieldSerializers) {
+			if (ser.isStateful()) {
+				stateful = true;
+				break;
+			}
+		}
+		this.stateful = stateful;
+	}
+	
+	
+	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return this.stateful;
 	}
 	
 	
@@ -100,18 +122,24 @@ public final class TupleSerializer<T extends Tuple> extends TypeSerializer<T> {
 	}
 	
 	@Override
+	public int hashCode() {
+		int hashCode = arity * 47;
+		for (TypeSerializer<?> ser : this.fieldSerializers) {
+			hashCode = (hashCode << 7) | (hashCode >>> -7);
+			hashCode += ser.hashCode();
+		}
+		return hashCode;
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
-		if(obj == null){
+		if (obj != null && obj instanceof TupleSerializer) {
+			TupleSerializer<?> otherTS = (TupleSerializer<?>) obj;
+			return (otherTS.tupleClass == this.tupleClass) && 
+					Arrays.deepEquals(this.fieldSerializers, otherTS.fieldSerializers);
+		}
+		else {
 			return false;
 		}
-		
-		if(!(obj instanceof TupleSerializer<?>)){
-			return false;
-		}
-		
-		TupleSerializer<?> otherTS = (TupleSerializer<?>) obj;
-		
-		return (otherTS.tupleClass == this.tupleClass) && 
-				Arrays.deepEquals(this.fieldSerializers, otherTS.fieldSerializers);
 	}
 }

@@ -24,6 +24,10 @@ public class WordCountITCase extends JavaProgramTestBase {
 	protected String textPath;
 	protected String resultPath;
 
+	public WordCountITCase(){
+		setNumTaskManager(2);
+	}
+
 	
 	@Override
 	protected void preSubmit() throws Exception {

@@ -19,43 +19,77 @@ import java.io.IOException;
 import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.avro.reflect.ReflectDatumWriter;
 
+import com.esotericsoftware.kryo.Kryo;
+
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.util.InstantiationUtil;
 
 
+/**
+ * General purpose serialization. Currently using Apache Avro's Reflect-serializers for serialization and
+ * Kryo for deep object copies. We want to change this to Kryo-only.
+ *
+ * @param <T> The type serialized.
+ */
 public class AvroSerializer<T> extends TypeSerializer<T> {
 
 	private static final long serialVersionUID = 1L;
 	
+	private final Class<T> type;
+	
+	private final Class<? extends T> typeToInstantiate;
+	
 	private transient ReflectDatumWriter<T> writer;
 	private transient ReflectDatumReader<T> reader;
 	
-	private transient DataOutputEncoder encoder = new DataOutputEncoder();
-	private transient DataInputDecoder decoder = new DataInputDecoder();
-
-	private final Class<T> type;
+	private transient DataOutputEncoder encoder;
+	private transient DataInputDecoder decoder;
+	
+	private transient Kryo kryo;
+	
+	private transient T deepCopyInstance;
 	
 	// --------------------------------------------------------------------------------------------
 	
 	public AvroSerializer(Class<T> type) {
-		this.type = type;
+		this(type, type);
+	}
+	
+	public AvroSerializer(Class<T> type, Class<? extends T> typeToInstantiate) {
+		if (type == null || typeToInstantiate == null) {
+			throw new NullPointerException();
+		}
 		
-		this.writer = new ReflectDatumWriter<T>(type);
-		this.reader = new ReflectDatumReader<T>(type);
+		InstantiationUtil.checkForInstantiation(typeToInstantiate);
+		
+		this.type = type;
+		this.typeToInstantiate = typeToInstantiate;
 	}
 
 	// --------------------------------------------------------------------------------------------
 	
 	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return true;
+	}
+	
+	@Override
 	public T createInstance() {
-		return InstantiationUtil.instantiate(type, Object.class);
+		return InstantiationUtil.instantiate(this.typeToInstantiate);
 	}
 
 	@Override
 	public T copy(T from, T reuse) {
-		throw new UnsupportedOperationException();
+		checkKryoInitialized();
+		reuse = this.kryo.copy(from);
+		return reuse;
 	}
 
 	@Override
@@ -65,37 +99,48 @@ public class AvroSerializer<T> extends TypeSerializer<T> {
 
 	@Override
 	public void serialize(T value, DataOutputView target) throws IOException {
+		checkAvroInitialized();
 		this.encoder.setOut(target);
 		this.writer.write(value, this.encoder);
 	}
 
 	@Override
 	public T deserialize(T reuse, DataInputView source) throws IOException {
+		checkAvroInitialized();
 		this.decoder.setIn(source);
 		return this.reader.read(reuse, this.decoder);
 	}
 
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-	
-	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
-		// write the core object, ignore the remainder
-		s.defaultWriteObject();
-	}
-	
-	// --------------------------------------------------------------------------------------------
-	// serialization
-	// --------------------------------------------------------------------------------------------
-	
-	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-		// read basic object and the type
-		s.defaultReadObject();
+		checkAvroInitialized();
 		
-		this.reader = new ReflectDatumReader<T>(type);
-		this.writer = new ReflectDatumWriter<T>(type);
-		this.encoder = new DataOutputEncoder();
-		this.decoder = new DataInputDecoder();
+		if (this.deepCopyInstance == null) {
+			this.deepCopyInstance = InstantiationUtil.instantiate(type, Object.class);
+		}
+		
+		this.decoder.setIn(source);
+		this.encoder.setOut(target);
+		
+		T tmp = this.reader.read(this.deepCopyInstance, this.decoder);
+		this.writer.write(tmp, this.encoder);
+	}
+	
+	
+	private final void checkAvroInitialized() {
+		if (this.reader == null) {
+			this.reader = new ReflectDatumReader<T>(type);
+			this.writer = new ReflectDatumWriter<T>(type);
+			this.encoder = new DataOutputEncoder();
+			this.decoder = new DataInputDecoder();
+		}
+	}
+	
+	private final void checkKryoInitialized() {
+		if (this.kryo == null) {
+			this.kryo = new Kryo();
+			this.kryo.setAsmEnabled(true);
+			this.kryo.register(type);
+		}
 	}
 }

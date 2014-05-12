@@ -20,7 +20,6 @@ import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.types.CopyableValue;
-import eu.stratosphere.types.Value;
 import eu.stratosphere.util.InstantiationUtil;
 
 
@@ -31,18 +30,26 @@ public class CopyableValueSerializer<T extends CopyableValue<T>> extends TypeSer
 	
 	private final Class<T> valueClass;
 	
-	private final T instance;
+	private transient T instance;
 	
 	
 	public CopyableValueSerializer(Class<T> valueClass) {
 		this.valueClass = valueClass;
-		this.instance = createInstance();
 	}
 
+	@Override
+	public boolean isImmutableType() {
+		return false;
+	}
+
+	@Override
+	public boolean isStateful() {
+		return false;
+	}
 
 	@Override
 	public T createInstance() {
-		return InstantiationUtil.instantiate(this.valueClass, Value.class);
+		return InstantiationUtil.instantiate(this.valueClass);
 	}
 
 	@Override
@@ -53,6 +60,7 @@ public class CopyableValueSerializer<T extends CopyableValue<T>> extends TypeSer
 
 	@Override
 	public int getLength() {
+		ensureInstanceInstantiated();
 		return instance.getBinaryLength();
 	}
 
@@ -69,6 +77,15 @@ public class CopyableValueSerializer<T extends CopyableValue<T>> extends TypeSer
 
 	@Override
 	public void copy(DataInputView source, DataOutputView target) throws IOException {
+		ensureInstanceInstantiated();
 		instance.copy(source, target);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	private final void ensureInstanceInstantiated() {
+		if (instance == null) {
+			instance = createInstance();
+		}
 	}
 }

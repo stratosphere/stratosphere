@@ -46,7 +46,7 @@ public class CombineTaskTest extends DriverTestBase<GenericGroupReduce<Record, ?
 	
 	@SuppressWarnings("unchecked")
 	private final RecordComparator comparator = new RecordComparator(
-		new int[]{0}, (Class<? extends Key>[])new Class[]{ IntValue.class });
+		new int[]{0}, (Class<? extends Key<?>>[])new Class[]{ IntValue.class });
 
 	public CombineTaskTest() {
 		super(COMBINE_MEM, 0);
@@ -67,7 +67,7 @@ public class CombineTaskTest extends DriverTestBase<GenericGroupReduce<Record, ?
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
-		final CombineDriver<Record> testTask = new CombineDriver<Record>();
+		final GroupReduceCombineDriver<Record> testTask = new GroupReduceCombineDriver<Record>();
 		
 		try {
 			testDriver(testTask, MockCombiningReduceStub.class);
@@ -97,13 +97,13 @@ public class CombineTaskTest extends DriverTestBase<GenericGroupReduce<Record, ?
 		
 		addInput(new UniformRecordGenerator(keyCnt, valCnt, false));
 		addInputComparator(this.comparator);
-		setOutput(new DiscardingOutputCollector());
+		setOutput(new DiscardingOutputCollector<Record>());
 		
 		getTaskConfig().setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
-		final CombineDriver<Record> testTask = new CombineDriver<Record>();
+		final GroupReduceCombineDriver<Record> testTask = new GroupReduceCombineDriver<Record>();
 		
 		try {
 			testDriver(testTask, MockFailingCombiningReduceStub.class);
@@ -121,13 +121,13 @@ public class CombineTaskTest extends DriverTestBase<GenericGroupReduce<Record, ?
 	{
 		addInput(new DelayingInfinitiveInputIterator(100));
 		addInputComparator(this.comparator);
-		setOutput(new DiscardingOutputCollector());
+		setOutput(new DiscardingOutputCollector<Record>());
 		
 		getTaskConfig().setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
-		final CombineDriver<Record> testTask = new CombineDriver<Record>();
+		final GroupReduceCombineDriver<Record> testTask = new GroupReduceCombineDriver<Record>();
 		
 		final AtomicBoolean success = new AtomicBoolean(false);
 		

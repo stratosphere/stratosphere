@@ -13,13 +13,13 @@
 
 package eu.stratosphere.types;
 
-import eu.stratosphere.core.memory.DataInputView;
-import eu.stratosphere.core.memory.DataOutputView;
-import eu.stratosphere.core.memory.MemorySegment;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import eu.stratosphere.core.memory.DataInputView;
+import eu.stratosphere.core.memory.DataOutputView;
+import eu.stratosphere.core.memory.MemorySegment;
 
 /**
  * Boxed serializable and comparable boolean type, representing the primitive
@@ -27,7 +27,7 @@ import java.io.IOException;
  * 
  * @see eu.stratosphere.types.Key
  */
-public class BooleanValue implements NormalizableKey, ResettableValue<BooleanValue>, CopyableValue<BooleanValue> {
+public class BooleanValue implements NormalizableKey<BooleanValue>, ResettableValue<BooleanValue>, CopyableValue<BooleanValue> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -62,10 +62,10 @@ public class BooleanValue implements NormalizableKey, ResettableValue<BooleanVal
 		this.value = value;
 	}
 
-    @Override
-    public void setValue(BooleanValue value) {
-        this.value = value.value;
-    }
+	@Override
+	public void setValue(BooleanValue value) {
+		this.value = value.value;
+	}
 	
 	// --------------------------------------------------------------------------------------------
 
@@ -88,19 +88,16 @@ public class BooleanValue implements NormalizableKey, ResettableValue<BooleanVal
 	public boolean equals(Object obj) {
 		if (obj.getClass() == BooleanValue.class) {
 			return ((BooleanValue) obj).value == this.value;
+		} else {
+			return false;
 		}
-		else return false;
 	}
 
 	@Override
-	public int compareTo(Key o) {
-		if (o.getClass() == BooleanValue.class) {
-			final int ov = ((BooleanValue) o).value ? 1 : 0;
-			final int tv = this.value ? 1 : 0;
-			return tv - ov;
-		} else {
-			throw new ClassCastException("Cannot compare " + o.getClass().getName() + " to N_Integer!");
-		}
+	public int compareTo(BooleanValue o) {
+		final int ov = o.value ? 1 : 0;
+		final int tv = this.value ? 1 : 0;
+		return tv - ov;
 	}
 	
 	@Override

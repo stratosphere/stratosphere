@@ -26,7 +26,7 @@ public class Ordering {
 	
 	protected final FieldList indexes = new FieldList();
 	
-	protected final ArrayList<Class<? extends Key>> types = new ArrayList<Class<? extends Key>>();
+	protected final ArrayList<Class<? extends Key<?>>> types = new ArrayList<Class<? extends Key<?>>>();
 	
 	protected final ArrayList<Order> orders = new ArrayList<Order>();
 
@@ -42,7 +42,7 @@ public class Ordering {
 	 * @param type
 	 * @param order
 	 */
-	public Ordering(int index, Class<? extends Key> type, Order order) {
+	public Ordering(int index, Class<? extends Key<?>> type, Order order) {
 		appendOrdering(index, type, order);
 	}
 	
@@ -55,7 +55,7 @@ public class Ordering {
 	 * 
 	 * @return This ordering with an additional appended order requirement.
 	 */
-	public Ordering appendOrdering(Integer index, Class<? extends Key> type, Order order) {
+	public Ordering appendOrdering(Integer index, Class<? extends Key<?>> type, Order order) {
 		if (index.intValue() < 0) {
 			throw new IllegalArgumentException("The key index must not be negative.");
 		}
@@ -89,7 +89,7 @@ public class Ordering {
 		return this.indexes.get(index);
 	}
 	
-	public Class<? extends Key> getType(int index) {
+	public Class<? extends Key<?>> getType(int index) {
 		if (index < 0 || index >= this.types.size()) {
 			throw new IndexOutOfBoundsException(String.valueOf(index));
 		}
@@ -106,7 +106,7 @@ public class Ordering {
 	// --------------------------------------------------------------------------------------------
 	
 	@SuppressWarnings("unchecked")
-	public Class<? extends Key>[] getTypes() {
+	public Class<? extends Key<?>>[] getTypes() {
 		return this.types.toArray(new Class[this.types.size()]);
 	}
 	
@@ -198,8 +198,9 @@ public class Ordering {
 		}
 		
 		for (int i = 0; i < fields.size(); i++) {
-			if (!fields.contains(this.indexes.get(i)))
+			if (!fields.contains(this.indexes.get(i))) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -232,28 +233,37 @@ public class Ordering {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Ordering other = (Ordering) obj;
 		if (indexes == null) {
-			if (other.indexes != null)
+			if (other.indexes != null) {
 				return false;
-		} else if (!indexes.equals(other.indexes))
+			}
+		} else if (!indexes.equals(other.indexes)) {
 			return false;
+		}
 		if (orders == null) {
-			if (other.orders != null)
+			if (other.orders != null) {
 				return false;
-		} else if (!orders.equals(other.orders))
+			}
+		} else if (!orders.equals(other.orders)) {
 			return false;
+		}
 		if (types == null) {
-			if (other.types != null)
+			if (other.types != null) {
 				return false;
-		} else if (!types.equals(other.types))
+			}
+		} else if (!types.equals(other.types)) {
 			return false;
+		}
 		return true;
 	}
 

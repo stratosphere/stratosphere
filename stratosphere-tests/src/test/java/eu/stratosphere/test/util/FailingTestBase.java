@@ -26,7 +26,7 @@ import eu.stratosphere.util.LogUtils;
 /**
  * Base class for integration tests which test whether the system recovers from failed executions.
  */
-public abstract class FailingTestBase extends TestBase2 {
+public abstract class FailingTestBase extends RecordAPITestBase {
 
 	public FailingTestBase() {
 		LogUtils.initializeDefaultConsoleLogger(Level.OFF);
@@ -141,7 +141,7 @@ public abstract class FailingTestBase extends TestBase2 {
 			try {
 				// submit failing job
 				JobClient client = this.executor.getJobClient(this.failingJob);
-				client.setConsoleStreamForReporting(getNullPrintStream());
+				client.setConsoleStreamForReporting(AbstractTestBase.getNullPrintStream());
 				client.submitJobAndWait();
 				
 				this.error = new Exception("The job did not fail.");
@@ -155,7 +155,7 @@ public abstract class FailingTestBase extends TestBase2 {
 			try {
 				// submit working job
 				JobClient client = this.executor.getJobClient(this.job);
-				client.setConsoleStreamForReporting(getNullPrintStream());
+				client.setConsoleStreamForReporting(AbstractTestBase.getNullPrintStream());
 				client.submitJobAndWait();
 			} catch (Exception e) {
 				this.error = e;

@@ -32,11 +32,11 @@ import eu.stratosphere.pact.runtime.plugable.pactrecord.RecordSerializerFactory;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
 import eu.stratosphere.pact.runtime.task.CollectorMapDriver;
-import eu.stratosphere.pact.runtime.task.ReduceDriver;
+import eu.stratosphere.pact.runtime.task.GroupReduceDriver;
 import eu.stratosphere.pact.runtime.task.chaining.ChainedCollectorMapDriver;
 import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
-import eu.stratosphere.test.util.TestBase2;
+import eu.stratosphere.test.util.RecordAPITestBase;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
@@ -61,8 +61,7 @@ import java.util.Iterator;
  * @link {https://github.com/stratosphere/stratosphere/issues/123}
  */
 @RunWith(Parameterized.class)
-public class IterationWithChainingNepheleITCase extends TestBase2 {
-	private static final int DOP = 2;
+public class IterationWithChainingNepheleITCase extends RecordAPITestBase {
 
 	private static final String INPUT_STRING = "0|%d.25|\n" + "1|%d.25|\n";
 
@@ -185,8 +184,8 @@ public class IterationWithChainingNepheleITCase extends TestBase2 {
 			tailConfig.setOutputSerializer(serializer);
 
 			// the driver
-			tailConfig.setDriver(ReduceDriver.class);
-			tailConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP);
+			tailConfig.setDriver(GroupReduceDriver.class);
+			tailConfig.setDriverStrategy(DriverStrategy.SORTED_GROUP_REDUCE);
 			tailConfig.setDriverComparator(comparator, 0);
 			tailConfig.setStubWrapper(new UserCodeClassWrapper<DummyReducer>(DummyReducer.class));
 

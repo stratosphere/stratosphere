@@ -27,13 +27,6 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.stratosphere.types.DoubleValue;
-import eu.stratosphere.types.IntValue;
-import eu.stratosphere.types.ListValue;
-import eu.stratosphere.types.MapValue;
-import eu.stratosphere.types.Pair;
-import eu.stratosphere.types.StringValue;
-
 public class CollectionsDataTypeTest {
 	private DataOutputStream out;
 
@@ -111,12 +104,13 @@ public class CollectionsDataTypeTest {
 		NfDoubleStringPair mPair7 = new NfDoubleStringPair();
 		mPair7.setFirst(new DoubleValue(2.3));
 
-		try {
-			pair1.compareTo(mPair7);
-			Assert.fail();
-		} catch (Exception e) {
-			Assert.assertTrue(e instanceof ClassCastException);
-		}
+		// this is caught by the compiler now
+//		try {
+//			pair1.compareTo(mPair7);
+//			Assert.fail();
+//		} catch (Exception e) {
+//			Assert.assertTrue(e instanceof ClassCastException);
+//		}
 
 		// test sorting
 		NfIntStringPair[] pairs = new NfIntStringPair[5];

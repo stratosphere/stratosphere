@@ -13,14 +13,19 @@
 
 package eu.stratosphere.nephele.instance.cluster;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
 import eu.stratosphere.nephele.instance.*;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.nephele.jobgraph.JobID;

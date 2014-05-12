@@ -39,8 +39,8 @@ import eu.stratosphere.pact.runtime.util.ResettableIterator;
  * 
  * @param <T> The type of record that the iterator handles.
  */
-public class SpillingResettableIterator<T> implements ResettableIterator<T>
-{
+public class SpillingResettableIterator<T> implements ResettableIterator<T> {
+	
 	private static final Log LOG = LogFactory.getLog(SpillingResettableIterator.class);
 	
 	// ------------------------------------------------------------------------
@@ -95,28 +95,27 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 		this.memorySegments = memory;
 		this.releaseMemoryOnClose = releaseMemOnClose;
 		
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating spilling resettable iterator with " + memory.size() + " pages of memory.");
+		}
 		
 		this.buffer = new SpillingBuffer(ioManager, new ListMemorySegmentSource(memory), memoryManager.getPageSize());
 	}
 
 	
-	public void open() throws IOException
-	{
-		if (LOG.isDebugEnabled())
+	public void open() {
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Spilling Resettable Iterator opened.");
+		}
 	}
 
-	public void reset() throws IOException
-	{
+	public void reset() throws IOException {
 		this.inView = this.buffer.flip();
 		this.currentElementNum = 0;
 	}
 
 	@Override
-	public boolean hasNext()
-	{
+	public boolean hasNext() {
 		if (this.next == null) {
 			if (this.inView != null) {
 				if (this.currentElementNum < this.elementCount) {
@@ -152,8 +151,7 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 	}
 
 	@Override
-	public T next()
-	{
+	public T next() {
 		if (this.next != null || hasNext()) {
 			final T out = this.next;
 			this.next = null;
@@ -168,10 +166,10 @@ public class SpillingResettableIterator<T> implements ResettableIterator<T>
 		throw new UnsupportedOperationException();
 	}
 
-	public List<MemorySegment> close() throws IOException
-	{
-		if (LOG.isDebugEnabled())
+	public List<MemorySegment> close() throws IOException {
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Spilling Resettable Iterator closing. Stored " + this.elementCount + " records.");
+		}
 
 		this.inView = null;
 		

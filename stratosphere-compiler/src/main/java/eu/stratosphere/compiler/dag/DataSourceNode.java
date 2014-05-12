@@ -18,12 +18,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import eu.stratosphere.api.common.io.FileInputFormat;
 import eu.stratosphere.api.common.io.InputFormat;
-import eu.stratosphere.api.common.io.UnsplittableInput;
+import eu.stratosphere.api.common.io.NonParallelInput;
 import eu.stratosphere.api.common.io.statistics.BaseStatistics;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.Operator;
-import eu.stratosphere.api.common.io.FileInputFormat;
 import eu.stratosphere.compiler.DataStatistics;
 import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.costs.CostEstimator;
@@ -38,7 +38,7 @@ import eu.stratosphere.util.Visitor;
  */
 public class DataSourceNode extends OptimizerNode {
 	
-	private final boolean unsplittable;
+	private final boolean sequentialInput;
 
 	/**
 	 * Creates a new DataSourceNode for the given contract.
@@ -53,11 +53,11 @@ public class DataSourceNode extends OptimizerNode {
 			throw new IllegalArgumentException("Input format has not been set.");
 		}
 		
-		if (UnsplittableInput.class.isAssignableFrom(pactContract.getUserCodeWrapper().getUserCodeClass())) {
+		if (NonParallelInput.class.isAssignableFrom(pactContract.getUserCodeWrapper().getUserCodeClass())) {
 			setDegreeOfParallelism(1);
 			this.unsplittable = true;
 		} else {
-			this.unsplittable = false;
+			this.sequentialInput = false;
 		}
 	}
 
@@ -79,7 +79,7 @@ public class DataSourceNode extends OptimizerNode {
 	@Override
 	public void setDegreeOfParallelism(int degreeOfParallelism) {
 		// if unsplittable, DOP remains at 1
-		if (!this.unsplittable) {
+		if (!this.sequentialInput) {
 			super.setDegreeOfParallelism(degreeOfParallelism);
 		}
 	}
@@ -107,9 +107,10 @@ public class DataSourceNode extends OptimizerNode {
 				format.configure(config);
 			}
 			catch (Throwable t) {
-				if (PactCompiler.LOG.isWarnEnabled())
+				if (PactCompiler.LOG.isWarnEnabled()) {
 					PactCompiler.LOG.warn("Could not instantiate InputFormat to obtain statistics."
 						+ " Limited statistics will be available.", t);
+				}
 				return;
 			}
 			try {
@@ -126,15 +127,17 @@ public class DataSourceNode extends OptimizerNode {
 				bs = format.getStatistics(cachedStatistics);
 			}
 			catch (Throwable t) {
-				if (PactCompiler.LOG.isWarnEnabled())
+				if (PactCompiler.LOG.isWarnEnabled()) {
 					PactCompiler.LOG.warn("Error obtaining statistics from input format: " + t.getMessage(), t);
+				}
 			}
 			
 			if (bs != null) {
 				final long len = bs.getTotalInputSize();
 				if (len == BaseStatistics.SIZE_UNKNOWN) {
-					if (PactCompiler.LOG.isInfoEnabled())
+					if (PactCompiler.LOG.isInfoEnabled()) {
 						PactCompiler.LOG.info("Compiler could not determine the size of input '" + inFormatDescription + "'. Using default estimates.");
+					}
 				}
 				else if (len >= 0) {
 					this.estimatedOutputSize = len;

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import eu.stratosphere.api.java.tuple.Tuple6;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -37,7 +38,7 @@ import eu.stratosphere.test.util.JavaProgramTestBase;
 @RunWith(Parameterized.class)
 public class CrossITCase extends JavaProgramTestBase {
 	
-	private static int NUM_PROGRAMS = 6;
+	private static int NUM_PROGRAMS = 11;
 	
 	private int curProgId = config.getInteger("ProgramId", -1);
 	private String resultPath;
@@ -117,9 +118,9 @@ public class CrossITCase extends JavaProgramTestBase {
 				
 				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
 				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
-				DataSet<Tuple3<Integer, Long, String>> coGroupDs = ds.cross(ds2).with(new Tuple3ReturnLeft());
+				DataSet<Tuple3<Integer, Long, String>> crossDs = ds.cross(ds2).with(new Tuple3ReturnLeft());
 				
-				coGroupDs.writeAsCsv(resultPath);
+				crossDs.writeAsCsv(resultPath);
 				env.execute();
 				
 				// return expected result
@@ -144,9 +145,9 @@ public class CrossITCase extends JavaProgramTestBase {
 				
 				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
 				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
-				DataSet<Tuple5<Integer, Long, Integer, String, Long>> coGroupDs = ds.cross(ds2).with(new Tuple5ReturnRight());
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> crossDs = ds.cross(ds2).with(new Tuple5ReturnRight());
 				
-				coGroupDs.writeAsCsv(resultPath);
+				crossDs.writeAsCsv(resultPath);
 				env.execute();
 				
 				// return expected result
@@ -173,9 +174,9 @@ public class CrossITCase extends JavaProgramTestBase {
 				
 				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds = CollectionDataSets.getSmall5TupleDataSet(env);
 				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
-				DataSet<Tuple3<Integer, Integer, Integer>> coGroupDs = ds.cross(ds2).with(new Tuple5CrossBC()).withBroadcastSet(intDs, "ints");
+				DataSet<Tuple3<Integer, Integer, Integer>> crossDs = ds.cross(ds2).with(new Tuple5CrossBC()).withBroadcastSet(intDs, "ints");
 				
-				coGroupDs.writeAsCsv(resultPath);
+				crossDs.writeAsCsv(resultPath);
 				env.execute();
 				
 				// return expected result
@@ -243,61 +244,151 @@ public class CrossITCase extends JavaProgramTestBase {
 						"4,Hallo Welt wieHallo Welt wie\n";
 				
 			}
-			// TODO Currently not working because AvroSerializer does not implement copy()
-//			case 7: {
-//				
-//				/*
-//				 * check correctness of cross on two custom type inputs
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<CustomType> ds = CollectionDataSets.getSmallCustomTypeDataSet(env);
-//				DataSet<CustomType> ds2 = CollectionDataSets.getSmallCustomTypeDataSet(env);
-//				DataSet<CustomType> crossDs = ds.cross(ds2).with(new CustomTypeCross());
-//				
-//				crossDs.writeAsText(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "1,0,HalloHallo\n" +
-//						"2,1,HalloHallo Welt\n" +
-//						"2,2,HalloHallo Welt wie\n" +
-//						"2,1,Hallo WeltHallo\n" +
-//						"4,2,Hallo WeltHallo Welt\n" +
-//						"4,3,Hallo WeltHallo Welt wie\n" +
-//						"2,2,Hallo Welt wieHallo\n" +
-//						"4,3,Hallo Welt wieHallo Welt\n" +
-//						",44,Hallo Welt wieHallo Welt wie\n";
-//			}
-			// TODO Currently not working because AvroSerializer does not implement copy()
-//			case 8: {
-//				
-//				/*
-//				 * check correctness of cross a tuple input and a custom type input
-//				 */
-//				
-//				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-//				
-//				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds = CollectionDataSets.get5TupleDataSet(env);
-//				DataSet<CustomType> ds2 = CollectionDataSets.getCustomTypeDataSet(env);
-//				DataSet<Tuple3<Integer, Long, String>> coGroupDs = ds.cross(ds2).with(new MixedCross());
-//				
-//				coGroupDs.writeAsCsv(resultPath);
-//				env.execute();
-//				
-//				// return expected result
-//				return "2,0,HalloHi\n" +
-//						"3,0,HalloHello\n" +
-//						"3,0,HalloHello world\n" +
-//						"3,0,Hallo WeltHi\n" +
-//						"4,1,Hallo WeltHello\n" +
-//						"4,2,Hallo WeltHello world\n" +
-//						"3,0,Hallo Welt wieHi\n" +
-//						"4,2,Hallo Welt wieHello\n" +
-//						"4,4,Hallo Welt wieHello world\n";
-//				
-//			}
+			case 7: {
+
+			/*
+			 * project cross on a tuple input 1
+			 */
+
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
+				DataSet<Tuple6<String, Long, String, Integer, Long, Long>> crossDs = ds.cross(ds2)
+					.projectFirst(2, 1)
+					.projectSecond(3)
+					.projectFirst(0)
+					.projectSecond(4,1)
+					.types(String.class, Long.class, String.class, Integer.class, Long.class, Long.class);
+
+				crossDs.writeAsCsv(resultPath);
+				env.execute();
+
+				// return expected result
+				return "Hi,1,Hallo,1,1,1\n" +
+					"Hi,1,Hallo Welt,1,2,2\n" +
+					"Hi,1,Hallo Welt wie,1,1,3\n" +
+					"Hello,2,Hallo,2,1,1\n" +
+					"Hello,2,Hallo Welt,2,2,2\n" +
+					"Hello,2,Hallo Welt wie,2,1,3\n" +
+					"Hello world,2,Hallo,3,1,1\n" +
+					"Hello world,2,Hallo Welt,3,2,2\n" +
+					"Hello world,2,Hallo Welt wie,3,1,3\n";
+
+			}
+			case 8: {
+
+			/*
+			 * project cross on a tuple input 2
+			 */
+
+					final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+
+					DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
+					DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
+					DataSet<Tuple6<String, String, Long, Long, Long,Integer>> crossDs = ds.cross(ds2)
+						.projectSecond(3)
+						.projectFirst(2, 1)
+						.projectSecond(4,1)
+						.projectFirst(0)
+						.types(String.class, String.class, Long.class, Long.class, Long.class, Integer.class);
+
+					crossDs.writeAsCsv(resultPath);
+					env.execute();
+
+					// return expected result
+					return "Hallo,Hi,1,1,1,1\n" +
+						"Hallo Welt,Hi,1,2,2,1\n" +
+						"Hallo Welt wie,Hi,1,1,3,1\n" +
+						"Hallo,Hello,2,1,1,2\n" +
+						"Hallo Welt,Hello,2,2,2,2\n" +
+						"Hallo Welt wie,Hello,2,1,3,2\n" +
+						"Hallo,Hello world,2,1,1,3\n" +
+						"Hallo Welt,Hello world,2,2,2,3\n" +
+						"Hallo Welt wie,Hello world,2,1,3,3\n";
+
+			}
+			case 9: {
+				/*
+				 * check correctness of default cross
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple3<Integer, Long, String>> ds = CollectionDataSets.getSmall3TupleDataSet(env);
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds2 = CollectionDataSets.getSmall5TupleDataSet(env);
+				DataSet<Tuple2<Tuple3<Integer, Long, String>, Tuple5<Integer, Long, Integer, String, Long>>> crossDs = ds.cross(ds2);
+				
+				crossDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "(1, 1, Hi),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(1, 1, Hi),(1, 1, 0, Hallo, 1)\n" +
+						"(1, 1, Hi),(2, 3, 2, Hallo Welt wie, 1)\n" +
+						"(2, 2, Hello),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(2, 2, Hello),(1, 1, 0, Hallo, 1)\n" +
+						"(2, 2, Hello),(2, 3, 2, Hallo Welt wie, 1)\n" +
+						"(3, 2, Hello world),(2, 2, 1, Hallo Welt, 2)\n" +
+						"(3, 2, Hello world),(1, 1, 0, Hallo, 1)\n" +
+						"(3, 2, Hello world),(2, 3, 2, Hallo Welt wie, 1)\n";
+				
+			}
+
+			case 10: {
+				
+				/*
+				 * check correctness of cross on two custom type inputs
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<CustomType> ds = CollectionDataSets.getSmallCustomTypeDataSet(env);
+				DataSet<CustomType> ds2 = CollectionDataSets.getSmallCustomTypeDataSet(env);
+				DataSet<CustomType> crossDs = ds.cross(ds2).with(new CustomTypeCross());
+				
+				crossDs.writeAsText(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "1,0,HiHi\n"
+						+ "2,1,HiHello\n"
+						+ "2,2,HiHello world\n"
+						+ "2,1,HelloHi\n"
+						+ "4,2,HelloHello\n"
+						+ "4,3,HelloHello world\n"
+						+ "2,2,Hello worldHi\n"
+						+ "4,3,Hello worldHello\n"
+						+ "4,4,Hello worldHello world";
+			}
+			
+			case 11: {
+				
+				/*
+				 * check correctness of cross a tuple input and a custom type input
+				 */
+				
+				final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+				
+				DataSet<Tuple5<Integer, Long, Integer, String, Long>> ds = CollectionDataSets.getSmall5TupleDataSet(env);
+				DataSet<CustomType> ds2 = CollectionDataSets.getSmallCustomTypeDataSet(env);
+				DataSet<Tuple3<Integer, Long, String>> crossDs = ds.cross(ds2).with(new MixedCross());
+				
+				crossDs.writeAsCsv(resultPath);
+				env.execute();
+				
+				// return expected result
+				return "2,0,HalloHi\n" +
+						"3,0,HalloHello\n" +
+						"3,0,HalloHello world\n" +
+						"3,0,Hallo WeltHi\n" +
+						"4,1,Hallo WeltHello\n" +
+						"4,2,Hallo WeltHello world\n" +
+						"3,0,Hallo Welt wieHi\n" +
+						"4,2,Hallo Welt wieHello\n" +
+						"4,4,Hallo Welt wieHello world\n";
+				
+			}
 			default: 
 				throw new IllegalArgumentException("Invalid program id");
 			}

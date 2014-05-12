@@ -37,8 +37,9 @@ import org.apache.commons.lang3.Validate;
  * @see java.lang.String
  * @see java.lang.CharSequence
  */
-public class StringValue implements Key, NormalizableKey, CharSequence, ResettableValue<StringValue>, 
-        CopyableValue<StringValue>, Appendable {
+public class StringValue implements NormalizableKey<StringValue>, CharSequence, ResettableValue<StringValue>, 
+		CopyableValue<StringValue>, Appendable
+{
 	private static final long serialVersionUID = 1L;
 	
 	private static final char[] EMPTY_STRING = new char[0];
@@ -110,8 +111,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The new length.
 	 */
 	public void setLength(int len) {
-		if (len < 0 || len > this.len)
+		if (len < 0 || len > this.len) {
 			throw new IllegalArgumentException("Length must be between 0 and the current length.");
+		}
 		this.len = len;
 	}
 	/**
@@ -139,8 +141,8 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param value The new string value.
 	 */
 	public void setValue(CharSequence value) {
-        Validate.notNull(value);
-        setValue(value, 0, value.length());
+		Validate.notNull(value);
+		setValue(value, 0, value.length());
 	}
 	
 	/**
@@ -148,9 +150,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * 
 	 * @param value The new string value.
 	 */
-    @Override
+	@Override
 	public void setValue(StringValue value) {
-        Validate.notNull(value);
+		Validate.notNull(value);
 		setValue(value.value, 0, value.len);
 	}
 
@@ -162,7 +164,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(StringValue value, int offset, int len) {
-        Validate.notNull(value);
+		Validate.notNull(value);
 		setValue(value.value, offset, len);
 	}
 	
@@ -174,14 +176,16 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(CharSequence value, int offset, int len) {
-        Validate.notNull(value);
-		if (offset < 0 || len < 0 || offset > value.length() - len)
-            throw new IndexOutOfBoundsException("offset: " + offset + " len: " + len + " value.len: " + len);
+		Validate.notNull(value);
+		if (offset < 0 || len < 0 || offset > value.length() - len) {
+			throw new IndexOutOfBoundsException("offset: " + offset + " len: " + len + " value.len: " + len);
+		}
 
 		ensureSize(len);
 		this.len = len;		
-		for (int i = 0; i < len; i++) 
+		for (int i = 0; i < len; i++) {
 			this.value[i] = value.charAt(offset + i);
+		}
 		this.len = len;
 		this.hashCode = 0;
 	}
@@ -194,7 +198,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param buffer The character buffer to read the characters from.
 	 */
 	public void setValue(CharBuffer buffer) {
-        Validate.notNull(buffer);
+		Validate.notNull(buffer);
 		final int len = buffer.length();
 		ensureSize(len);
 		buffer.get(this.value, 0, len);
@@ -210,9 +214,10 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The length of the substring.
 	 */
 	public void setValue(char[] chars, int offset, int len) {
-        Validate.notNull(chars);
-		if (offset < 0 || len < 0 || offset > chars.length - len)
+		Validate.notNull(chars);
+		if (offset < 0 || len < 0 || offset > chars.length - len) {
 			throw new IndexOutOfBoundsException();
+		}
 
 		ensureSize(len);
 		System.arraycopy(chars, offset, this.value, 0, len);
@@ -229,10 +234,12 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	 * @param len The number of bytes to read from the array.
 	 */
 	public void setValueAscii(byte[] bytes, int offset, int len) {
-		if (bytes == null)
+		if (bytes == null) {
 			throw new NullPointerException("Bytes must not be null");
-		if (len < 0 | offset < 0 | offset > bytes.length - len)
+		}
+		if (len < 0 | offset < 0 | offset > bytes.length - len) {
 			throw new IndexOutOfBoundsException();
+		}
 		
 		ensureSize(len);
 		this.len = len;
@@ -322,8 +329,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 		final int pLen = this.len;
 		final int sLen = str.length();
 		
-		if (sLen == 0)
+		if (sLen == 0) {
 			throw new IllegalArgumentException("Cannot find empty string.");
+		}
 		
 		int pPos = start;
 		
@@ -429,8 +437,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	public Appendable append(CharSequence csq, int start, int end) {
 		final int otherLen = end - start;
 		grow(this.len + otherLen);
-		for (int pos = start; pos < end; pos++)
+		for (int pos = start; pos < end; pos++) {
 			this.value[this.len + pos] = csq.charAt(pos);
+		}
 		this.len += otherLen;
 		return this;
 	}
@@ -482,9 +491,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 
 		for (int i = 0; i < len; i++) {
 			int c = in.readUnsignedByte();
-			if (c < HIGH_BIT)
+			if (c < HIGH_BIT) {
 				data[i] = (char) c;
-			else {
+			} else {
 				int shift = 7;
 				int curr;
 				c = c & 0x7f;
@@ -529,26 +538,21 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 	}
 
 	@Override
-	public int compareTo(final Key o) {
-		if (o instanceof StringValue) {
-			StringValue other = (StringValue) o;
+	public int compareTo(StringValue other) {
+		int len1 = this.len;
+		int len2 = other.len;
+		int n = Math.min(len1, len2);
+		char[] v1 = value;
+		char[] v2 = other.value;
 
-			int len1 = this.len;
-			int len2 = other.len;
-			int n = Math.min(len1, len2);
-			char v1[] = value;
-			char v2[] = other.value;
-
-			for (int k = 0; k < n; k++) {
-				char c1 = v1[k];
-				char c2 = v2[k];
-				if (c1 != c2) {
-					return c1 - c2;
-				}
+		for (int k = 0; k < n; k++) {
+			char c1 = v1[k];
+			char c2 = v2[k];
+			if (c1 != c2) {
+				return c1 - c2;
 			}
-			return len1 - len2;
-		} else
-			throw new ClassCastException("Cannot compare StringValue to " + o.getClass().getName());
+		}
+		return len1 - len2;
 	}
 
 	@Override
@@ -556,7 +560,7 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 		int h = this.hashCode;
 		if (h == 0 && this.len > 0) {
 			int off = 0;
-			char val[] = this.value;
+			char[] val = this.value;
 			int len = this.len;
 			for (int i = 0; i < len; i++) {
 				h = 31 * h + val[off++];
@@ -582,7 +586,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 				int i = 0, j = 0;
 				
 				while (len-- != 0) {
-					if (tc[i++] != oc[j++]) return false;
+					if (tc[i++] != oc[j++]) {
+						return false;
+					}
 				}
 				return true;
 			}
@@ -638,15 +644,18 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 			}
 			else if (c < HIGH_BIT2) {
 				target.put(offset++, (byte) ((c >>> 7) | HIGH_BIT));
-				if (offset < limit)
+				if (offset < limit) {
 					target.put(offset++, (byte) c);
+				}
 			}
 			else {
 				target.put(offset++, (byte) ((c >>> 10) | HIGH_BIT2_MASK));
-				if (offset < limit)
+				if (offset < limit) {
 					target.put(offset++, (byte) (c >>> 2));
-				if (offset < limit)
+				}
+				if (offset < limit) {
 					target.put(offset++, (byte) c);
+				}
 			}
 		}
 		while (offset < limit) {
@@ -749,9 +758,9 @@ public class StringValue implements Key, NormalizableKey, CharSequence, Resettab
 
 		for (int i = 0; i < len; i++) {
 			int c = in.readUnsignedByte();
-			if (c < HIGH_BIT)
+			if (c < HIGH_BIT) {
 				data[i] = (char) c;
-			else {
+			} else {
 				int shift = 7;
 				int curr;
 				c = c & 0x7f;

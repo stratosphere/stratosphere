@@ -14,7 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.common.typeutils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,9 +26,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
-import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
 
@@ -261,6 +266,27 @@ public abstract class SerializerTestBase<T> {
 			}
 			
 			assertEquals("Wrong number of elements copied.", testData.length, num);
+		}
+		catch (Exception e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			fail("Exception in test: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testSerializabilityAndEquals() {
+		try {
+			TypeSerializer<T> ser1 = getSerializer();
+			TypeSerializer<T> ser2;
+			try {
+				ser2 = SerializationUtils.clone(ser1);
+			} catch (SerializationException e) {
+				fail("The serializer is not serializable.");
+				return;
+			}
+			
+			assertEquals("The copy of the serializer is not equal to the original one.", ser1, ser2);
 		}
 		catch (Exception e) {
 			System.err.println(e.getMessage());

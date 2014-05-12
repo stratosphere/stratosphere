@@ -17,10 +17,10 @@ package eu.stratosphere.api.java.operators;
 import java.security.InvalidParameterException;
 
 import eu.stratosphere.api.common.InvalidProgramException;
+import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
 import eu.stratosphere.api.java.functions.KeySelector;
-import eu.stratosphere.api.java.operators.translation.BinaryNodeTranslation;
 import eu.stratosphere.api.java.operators.translation.KeyExtractingMapper;
 import eu.stratosphere.api.java.operators.translation.PlanCogroupOperator;
 import eu.stratosphere.api.java.operators.translation.PlanMapOperator;
@@ -43,16 +43,17 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 
 
 	protected CoGroupOperator(DataSet<I1> input1, DataSet<I2> input2,
-							  Keys<I1> keys1, Keys<I2> keys2,
-							  CoGroupFunction<I1, I2, OUT> function,
-							  TypeInformation<OUT> returnType)
+							Keys<I1> keys1, Keys<I2> keys2,
+							CoGroupFunction<I1, I2, OUT> function,
+							TypeInformation<OUT> returnType)
 	{
 		super(input1, input2, returnType);
 
 		this.function = function;
 
-		if (keys1 == null || keys2 == null)
+		if (keys1 == null || keys2 == null) {
 			throw new NullPointerException();
+		}
 		
 		this.keys1 = keys1;
 		this.keys2 = keys2;
@@ -67,7 +68,8 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 	}
 	
 	@Override
-	protected BinaryNodeTranslation translateToDataFlow() {
+	protected Operator translateToDataFlow(Operator input1, Operator input2) {
+		
 		String name = getName() != null ? getName() : function.getClass().getName();
 		
 		if (keys1 instanceof Keys.SelectorFunctionKeys 
@@ -79,8 +81,14 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			@SuppressWarnings("unchecked")
 			Keys.SelectorFunctionKeys<I2, ?> selectorKeys2 = (Keys.SelectorFunctionKeys<I2, ?>) keys2;
 			
-			return translateSelectorFunctionCoGroup(selectorKeys1, selectorKeys2, function, 
-					getInput1Type(), getInput2Type(), getResultType(), name);
+			PlanUnwrappingCoGroupOperator<I1, I2, OUT, ?> po = 
+					translateSelectorFunctionCoGroup(selectorKeys1, selectorKeys2, function, 
+					getInput1Type(), getInput2Type(), getResultType(), name, input1, input2);
+			
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;
 			
 		}
 		else if (keys1 instanceof Keys.FieldPositionKeys 
@@ -91,9 +99,18 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			int[] logicalKeyPositions1 = keys1.computeLogicalKeyPositions();
 			int[] logicalKeyPositions2 = keys2.computeLogicalKeyPositions();
 			
-			return new BinaryNodeTranslation(
+			PlanCogroupOperator<I1, I2, OUT> po = 
 					new PlanCogroupOperator<I1, I2, OUT>(function, logicalKeyPositions1, logicalKeyPositions2, 
-							name, getInput1Type(), getInput2Type(), getResultType()));
+							name, getInput1Type(), getInput2Type(), getResultType());
+			
+			// set inputs
+			po.setFirstInput(input1);
+			po.setSecondInput(input2);
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;
+			
 		}
 		else if (keys1 instanceof Keys.FieldPositionKeys 
 				&& keys2 instanceof Keys.SelectorFunctionKeys
@@ -105,8 +122,14 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			@SuppressWarnings("unchecked")
 			Keys.SelectorFunctionKeys<I2, ?> selectorKeys2 = (Keys.SelectorFunctionKeys<I2, ?>) keys2;
 			
-			return translateSelectorFunctionCoGroupRight(logicalKeyPositions1, selectorKeys2, function, 
-					getInput1Type(), getInput2Type(), getResultType(), name);
+			PlanUnwrappingCoGroupOperator<I1, I2, OUT, ?> po = 
+					translateSelectorFunctionCoGroupRight(logicalKeyPositions1, selectorKeys2, function, 
+					getInput1Type(), getInput2Type(), getResultType(), name, input1, input2);
+			
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;
 		}
 		else if (keys1 instanceof Keys.SelectorFunctionKeys
 				&& keys2 instanceof Keys.FieldPositionKeys 
@@ -118,18 +141,26 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			
 			int[] logicalKeyPositions2 = keys2.computeLogicalKeyPositions();
 			
-			return translateSelectorFunctionCoGroupLeft(selectorKeys1, logicalKeyPositions2, function, 
-					getInput1Type(), getInput2Type(), getResultType(), name);
+			PlanUnwrappingCoGroupOperator<I1, I2, OUT, ?> po =  
+					translateSelectorFunctionCoGroupLeft(selectorKeys1, logicalKeyPositions2, function, 
+					getInput1Type(), getInput2Type(), getResultType(), name, input1, input2);
+			
+			// set dop
+			po.setDegreeOfParallelism(this.getParallelism());
+			
+			return po;
 		}
 		else {
 			throw new UnsupportedOperationException("Unrecognized or incompatible key types.");
 		}
 	}
 	
-	private static <I1, I2, K, OUT> BinaryNodeTranslation translateSelectorFunctionCoGroup(
+	
+	private static <I1, I2, K, OUT> PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> translateSelectorFunctionCoGroup(
 			Keys.SelectorFunctionKeys<I1, ?> rawKeys1, Keys.SelectorFunctionKeys<I2, ?> rawKeys2, 
 			CoGroupFunction<I1, I2, OUT> function, 
-			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name)
+			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name,
+			Operator input1, Operator input2)
 	{
 		@SuppressWarnings("unchecked")
 		final Keys.SelectorFunctionKeys<I1, K> keys1 = (Keys.SelectorFunctionKeys<I1, K>) rawKeys1;
@@ -144,21 +175,29 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		
 		final PlanMapOperator<I1, Tuple2<K, I1>> keyMapper1 = new PlanMapOperator<I1, Tuple2<K, I1>>(extractor1, "Key Extractor 1", inputType1, typeInfoWithKey1);
 		final PlanMapOperator<I2, Tuple2<K, I2>> keyMapper2 = new PlanMapOperator<I2, Tuple2<K, I2>>(extractor2, "Key Extractor 2", inputType2, typeInfoWithKey2);
-		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> join = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, keys1, keys2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
+		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> cogroup = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, keys1, keys2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
 		
-		join.addFirstInput(keyMapper1);
-		join.addSecondInput(keyMapper2);
+		cogroup.setFirstInput(keyMapper1);
+		cogroup.setSecondInput(keyMapper2);
 		
-		return new BinaryNodeTranslation(keyMapper1, keyMapper2, join);
+		keyMapper1.setInput(input1);
+		keyMapper2.setInput(input2);
+		// set dop
+		keyMapper1.setDegreeOfParallelism(input1.getDegreeOfParallelism());
+		keyMapper2.setDegreeOfParallelism(input2.getDegreeOfParallelism());
+		
+		return cogroup;
 	}
 	
-	private static <I1, I2, K, OUT> BinaryNodeTranslation translateSelectorFunctionCoGroupRight(
+	private static <I1, I2, K, OUT> PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> translateSelectorFunctionCoGroupRight(
 			int[] logicalKeyPositions1, Keys.SelectorFunctionKeys<I2, ?> rawKeys2, 
 			CoGroupFunction<I1, I2, OUT> function, 
-			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name)
+			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name,
+			Operator input1, Operator input2)
 	{
-		if(!inputType1.isTupleType())
+		if(!inputType1.isTupleType()) {
 			throw new InvalidParameterException("Should not happen.");
+		}
 		
 		@SuppressWarnings("unchecked")
 		final Keys.SelectorFunctionKeys<I2, K> keys2 = (Keys.SelectorFunctionKeys<I2, K>) rawKeys2;
@@ -172,21 +211,29 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		final PlanMapOperator<I1, Tuple2<K, I1>> keyMapper1 = new PlanMapOperator<I1, Tuple2<K, I1>>(extractor1, "Key Extractor 1", inputType1, typeInfoWithKey1);
 		final PlanMapOperator<I2, Tuple2<K, I2>> keyMapper2 = new PlanMapOperator<I2, Tuple2<K, I2>>(extractor2, "Key Extractor 2", inputType2, typeInfoWithKey2);
 		
-		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> join = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, logicalKeyPositions1, keys2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
+		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> cogroup = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, logicalKeyPositions1, keys2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
 		
-		join.addFirstInput(keyMapper1);
-		join.addSecondInput(keyMapper2);
+		cogroup.setFirstInput(keyMapper1);
+		cogroup.setSecondInput(keyMapper2);
 		
-		return new BinaryNodeTranslation(keyMapper1, keyMapper2, join);
+		keyMapper1.setInput(input1);
+		keyMapper2.setInput(input2);
+		// set dop
+		keyMapper1.setDegreeOfParallelism(input1.getDegreeOfParallelism());
+		keyMapper2.setDegreeOfParallelism(input2.getDegreeOfParallelism());
+		
+		return cogroup;
 	}
 	
-	private static <I1, I2, K, OUT> BinaryNodeTranslation translateSelectorFunctionCoGroupLeft(
+	private static <I1, I2, K, OUT> PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> translateSelectorFunctionCoGroupLeft(
 			Keys.SelectorFunctionKeys<I1, ?> rawKeys1, int[] logicalKeyPositions2,
 			CoGroupFunction<I1, I2, OUT> function, 
-			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name)
+			TypeInformation<I1> inputType1, TypeInformation<I2> inputType2, TypeInformation<OUT> outputType, String name,
+			Operator input1, Operator input2)
 	{
-		if(!inputType2.isTupleType())
+		if(!inputType2.isTupleType()) {
 			throw new InvalidParameterException("Should not happen.");
+		}
 		
 		@SuppressWarnings("unchecked")
 		final Keys.SelectorFunctionKeys<I1, K> keys1 = (Keys.SelectorFunctionKeys<I1, K>) rawKeys1;
@@ -200,12 +247,18 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		final PlanMapOperator<I1, Tuple2<K, I1>> keyMapper1 = new PlanMapOperator<I1, Tuple2<K, I1>>(extractor1, "Key Extractor 1", inputType1, typeInfoWithKey1);
 		final PlanMapOperator<I2, Tuple2<K, I2>> keyMapper2 = new PlanMapOperator<I2, Tuple2<K, I2>>(extractor2, "Key Extractor 2", inputType2, typeInfoWithKey2);
 		
-		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> join = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, keys1, logicalKeyPositions2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
+		final PlanUnwrappingCoGroupOperator<I1, I2, OUT, K> cogroup = new PlanUnwrappingCoGroupOperator<I1, I2, OUT, K>(function, keys1, logicalKeyPositions2, name, outputType, typeInfoWithKey1, typeInfoWithKey2);
 		
-		join.addFirstInput(keyMapper1);
-		join.addSecondInput(keyMapper2);
+		cogroup.setFirstInput(keyMapper1);
+		cogroup.setSecondInput(keyMapper2);
 		
-		return new BinaryNodeTranslation(keyMapper1, keyMapper2, join);
+		keyMapper1.setInput(input1);
+		keyMapper2.setInput(input2);
+		// set dop
+		keyMapper1.setDegreeOfParallelism(input1.getDegreeOfParallelism());
+		keyMapper2.setDegreeOfParallelism(input2.getDegreeOfParallelism());
+		
+		return cogroup;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -218,8 +271,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 		private final DataSet<I2> input2;
 		
 		public CoGroupOperatorSets(DataSet<I1> input1, DataSet<I2> input2) {
-			if (input1 == null || input2 == null)
+			if (input1 == null || input2 == null) {
 				throw new NullPointerException();
+			}
 			
 			this.input1 = input1;
 			this.input2 = input2;
@@ -244,8 +298,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			private final Keys<I1> keys1;
 			
 			private CoGroupOperatorSetsPredicate(Keys<I1> keys1) {
-				if (keys1 == null)
+				if (keys1 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys1.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -270,8 +325,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 			
 			
 			private CoGroupOperatorWithoutFunction createCoGroupOperator(Keys<I2> keys2) {
-				if (keys2 == null)
+				if (keys2 == null) {
 					throw new NullPointerException();
+				}
 				
 				if (keys2.isEmpty()) {
 					throw new InvalidProgramException("The join keys must not be empty.");
@@ -288,8 +344,9 @@ public class CoGroupOperator<I1, I2, OUT> extends TwoInputUdfOperator<I1, I2, OU
 				private final Keys<I2> keys2;
 
 				private CoGroupOperatorWithoutFunction(Keys<I2> keys2) {
-					if (keys2 == null)
+					if (keys2 == null) {
 						throw new NullPointerException();
+					}
 
 					if (keys2.isEmpty()) {
 						throw new InvalidProgramException("The join keys must not be empty.");

@@ -14,7 +14,6 @@
 package eu.stratosphere.api.common.operators;
 
 import eu.stratosphere.types.Key;
-import eu.stratosphere.types.Record;
 
 /**
  * Interface marking contract classes to be referring to the {@link Record} data model.
@@ -26,5 +25,5 @@ public interface RecordOperator {
 	 * 
 	 * @return The key classes that this record works on.
 	 */
-	Class<? extends Key>[] getKeyClasses();
+	Class<? extends Key<?>>[] getKeyClasses();
 }

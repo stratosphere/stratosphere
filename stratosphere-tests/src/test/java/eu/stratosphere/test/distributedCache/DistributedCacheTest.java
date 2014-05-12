@@ -21,7 +21,7 @@ import eu.stratosphere.api.java.record.io.CsvOutputFormat;
 import eu.stratosphere.api.java.record.io.TextInputFormat;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.test.testdata.WordCountData;
-import eu.stratosphere.test.util.TestBase2;
+import eu.stratosphere.test.util.RecordAPITestBase;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.StringValue;
@@ -34,12 +34,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
  * Test the distributed cache via using the cache file to do a selection on the input
  */
-public class DistributedCacheTest extends TestBase2 {
+public class DistributedCacheTest extends RecordAPITestBase {
 
 	public static final String cacheData = "machen\n" + "zeit\n" + "heerscharen\n" + "keiner\n" + "meine\n"
 		+ "fuehr\n" + "triumph\n" + "kommst\n" + "frei\n" + "schaffen\n" + "gesinde\n"
@@ -133,7 +135,11 @@ public class DistributedCacheTest extends TestBase2 {
 	@Override
 	protected Plan getTestJob() {
 		Plan plan =  getPlan(1 , textPath, resultPath);
-		plan.registerCachedFile(cachePath, "cache_test");
+		try {
+			plan.registerCachedFile(cachePath, "cache_test");
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}		
 		return plan;
 	}
 

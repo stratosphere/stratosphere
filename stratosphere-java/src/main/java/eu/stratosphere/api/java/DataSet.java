@@ -19,8 +19,6 @@ import org.apache.commons.lang3.Validate;
 import eu.stratosphere.api.common.io.FileOutputFormat;
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.java.aggregation.Aggregations;
-import eu.stratosphere.api.java.functions.CoGroupFunction;
-import eu.stratosphere.api.java.functions.CrossFunction;
 import eu.stratosphere.api.java.functions.FilterFunction;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
@@ -34,18 +32,15 @@ import eu.stratosphere.api.java.operators.AggregateOperator;
 import eu.stratosphere.api.java.operators.CoGroupOperator;
 import eu.stratosphere.api.java.operators.CoGroupOperator.CoGroupOperatorSets;
 import eu.stratosphere.api.java.operators.CrossOperator;
-import eu.stratosphere.api.java.operators.CrossOperator.CrossOperatorSets;
 import eu.stratosphere.api.java.operators.CustomUnaryOperation;
 import eu.stratosphere.api.java.operators.DataSink;
 import eu.stratosphere.api.java.operators.FilterOperator;
 import eu.stratosphere.api.java.operators.FlatMapOperator;
 import eu.stratosphere.api.java.operators.Grouping;
-import eu.stratosphere.api.java.operators.JoinOperator;
 import eu.stratosphere.api.java.operators.JoinOperator.JoinHint;
 import eu.stratosphere.api.java.operators.JoinOperator.JoinOperatorSets;
 import eu.stratosphere.api.java.operators.Keys;
 import eu.stratosphere.api.java.operators.MapOperator;
-import eu.stratosphere.api.java.operators.ProjectOperator;
 import eu.stratosphere.api.java.operators.ProjectOperator.Projection;
 import eu.stratosphere.api.java.operators.ReduceGroupOperator;
 import eu.stratosphere.api.java.operators.ReduceOperator;
@@ -76,11 +71,13 @@ public abstract class DataSet<T> {
 	
 	
 	protected DataSet(ExecutionEnvironment context, TypeInformation<T> type) {
-		if (context == null)
+		if (context == null) {
 			throw new NullPointerException("context is null");
+		}
 
-		if (type == null)
+		if (type == null) {
 			throw new NullPointerException("type is null");
+		}
 		
 		this.context = context;
 		this.type = type;
@@ -169,7 +166,7 @@ public abstract class DataSet<T> {
 	 * Initiates a Project transformation on a {@link Tuple} {@link DataSet}.<br/>
 	 * <b>Note: Only Tuple DataSets can be projected.</b></br>
 	 * The transformation projects each Tuple of the DataSet onto a (sub)set of fields.</br>
-	 * This method returns a {@link Projection} on which {@link Projection#types()} needs to 
+	 * This method returns a {@link Projection} on which {@link Projection#types()} needs to
 	 *   be called to completed the transformation.
 	 * 
 	 * @param fieldIndexes The field indexes of the input tuples that are retained.
@@ -439,8 +436,8 @@ public abstract class DataSet<T> {
 	 * @see CrossOperatorSets
 	 * @see DataSet
 	 */
-	public <R> CrossOperator.CrossOperatorSets<T, R> cross(DataSet<R> other) {
-		return new CrossOperator.CrossOperatorSets<T, R>(this, other);
+	public <R> CrossOperator.DefaultCross<T, R> cross(DataSet<R> other) {
+		return new CrossOperator.DefaultCross<T, R>(this, other);
 	}
 	
 	/**
@@ -463,8 +460,8 @@ public abstract class DataSet<T> {
 	 * @see CrossOperatorSets
 	 * @see DataSet
 	 */
-	public <R> CrossOperator.CrossOperatorSets<T, R> crossWithTiny(DataSet<R> other) {
-		return new CrossOperator.CrossOperatorSets<T, R>(this, other);
+	public <R> CrossOperator.DefaultCross<T, R> crossWithTiny(DataSet<R> other) {
+		return new CrossOperator.DefaultCross<T, R>(this, other);
 	}
 	
 	/**
@@ -487,8 +484,8 @@ public abstract class DataSet<T> {
 	 * @see CrossOperatorSets
 	 * @see DataSet
 	 */
-	public <R> CrossOperator.CrossOperatorSets<T, R> crossWithHuge(DataSet<R> other) {
-		return new CrossOperator.CrossOperatorSets<T, R>(this, other);
+	public <R> CrossOperator.DefaultCross<T, R> crossWithHuge(DataSet<R> other) {
+		return new CrossOperator.DefaultCross<T, R>(this, other);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -530,12 +527,15 @@ public abstract class DataSet<T> {
 	}
 	
 	/**
-	 * Initiates a delta iteration. A delta iteration is similar to a regular iteration (as started by {@link #iterate(int)),
-	 * but maintains state across the individual iteration steps. The state is called the <i>solution set</i>, can be obtained
-	 * via {@link DeltaIterativeDataSet#getSolutionSet()}, and be accessed by joining (or CoGrouping) with it. The solution
-	 * set is updated by producing a delta for it, which is merged into the solution set at the end of each iteration step.
+	 * Initiates a delta iteration. A delta iteration is similar to a regular iteration (as started by {@link #iterate(int)},
+	 * but maintains state across the individual iteration steps. The Solution set, which represents the current state
+	 * at the beginning of each iteration can be obtained via {@link DeltaIteration#getSolutionSet()} ()}.
+	 * It can be be accessed by joining (or CoGrouping) with it. The DataSet that represents the workset of an iteration
+	 * can be obtained via {@link DeltaIteration#getWorkset()}.
+	 * The solution set is updated by producing a delta for it, which is merged into the solution set at the end of each
+	 * iteration step.
 	 * <p>
-	 * The delta iteration must be closed by calling {@link DeltaIterativeDataSet#closeWith(DataSet, DataSet)}. The two 
+	 * The delta iteration must be closed by calling {@link DeltaIteration#closeWith(DataSet, DataSet)}. The two
 	 * parameters are the delta for the solution set and the new workset (the data set that will be fed back).
 	 * The return value of the {@code closeWith(DataSet, DataSet)} method is the resulting
 	 * data set after the iteration has terminated. Delta iterations terminate when the feed back data set
@@ -550,7 +550,7 @@ public abstract class DataSet<T> {
 	 * A code example for a delta iteration is as follows
 	 * <pre>
 	 * {@code
-	 * DeltaIterativeDataSet<Tuple2<Long, Long>, Tuple2<Long, Long>> iteration = 
+	 * DeltaIteration<Tuple2<Long, Long>, Tuple2<Long, Long>> iteration =
 	 *                                                  initialState.iterateDelta(initialFeedbakSet, 100, 0);
 	 * 
 	 * DataSet<Tuple2<Long, Long>> delta = iteration.groupBy(0).aggregate(Aggregations.AVG, 1)
@@ -566,15 +566,15 @@ public abstract class DataSet<T> {
 	 * 
 	 * @param workset The initial version of the data set that is fed back to the next iteration step (the workset).
 	 * @param maxIterations The maximum number of iteration steps, as a fall back safeguard.
-	 * @param keyPosition The position of the tuple fields that is used as the key of the solution set.
+	 * @param keyPositions The position of the tuple fields that is used as the key of the solution set.
 	 * 
-	 * @return The DeltaIterativeDataSet that marks the start of a delta iteration.
+	 * @return The DeltaIteration that marks the start of a delta iteration.
 	 * 
-	 * @see eu.stratosphere.api.java.DeltaIterativeDataSet
+	 * @see DeltaIteration
 	 */
-	public <R> DeltaIterativeDataSet<T, R> iterateDelta(DataSet<R> workset, int maxIterations, int... keyPositions) {
+	public <R> DeltaIteration<T, R> iterateDelta(DataSet<R> workset, int maxIterations, int... keyPositions) {
 		Keys.FieldPositionKeys<T> keys = new Keys.FieldPositionKeys<T>(keyPositions, getType(), false);
-		return new DeltaIterativeDataSet<T, R>(getExecutionEnvironment(), getType(), this, workset, keys, maxIterations);
+		return new DeltaIteration<T, R>(getExecutionEnvironment(), getType(), this, workset, keys, maxIterations);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -614,12 +614,13 @@ public abstract class DataSet<T> {
 	 * Writes a DataSet as a text file to the specified location.<br/>
 	 * For each element of the DataSet the result of {@link Object#toString()} is written.  
 	 * 
-	 * @param filePath The path pointing to the location the text file is written to. 
+	 * @param filePath The path pointing to the location the text file is written to.
+	 * @return The DataSink that writes the DataSet.
 	 * 
 	 * @see TextOutputFormat
 	 */
-	public void writeAsText(String filePath) {
-		output(new TextOutputFormat<T>(new Path(filePath)));
+	public DataSink<T> writeAsText(String filePath) {
+		return output(new TextOutputFormat<T>(new Path(filePath)));
 	}
 	
 	/**
@@ -630,12 +631,13 @@ public abstract class DataSet<T> {
 	 * Tuples are are separated by the default line delimiter {@link CsvOutputFormat.DEFAULT_LINE_DELIMITER}.
 	 * 
 	 * @param filePath The path pointing to the location the CSV file is written to.
+	 * @return The DataSink that writes the DataSet.
 	 * 
 	 * @see Tuple
 	 * @see CsvOutputFormat
 	 */
-	public void writeAsCsv(String filePath) {
-		writeAsCsv(filePath, CsvOutputFormat.DEFAULT_LINE_DELIMITER, CsvOutputFormat.DEFAULT_FIELD_DELIMITER);
+	public DataSink<T> writeAsCsv(String filePath) {
+		return writeAsCsv(filePath, CsvOutputFormat.DEFAULT_LINE_DELIMITER, CsvOutputFormat.DEFAULT_FIELD_DELIMITER);
 	}
 	
 	/**
@@ -650,30 +652,34 @@ public abstract class DataSet<T> {
 	 * @see Tuple
 	 * @see CsvOutputFormat
 	 */
-	public void writeAsCsv(String filePath, String rowDelimiter, String fieldDelimiter) {
+	public DataSink<T> writeAsCsv(String filePath, String rowDelimiter, String fieldDelimiter) {
 		Validate.isTrue(this.type.isTupleType(), "The writeAsCsv() method can only be used on data sets of tuples.");
-		internalWriteAsCsv(new Path(filePath), rowDelimiter, fieldDelimiter);
+		return internalWriteAsCsv(new Path(filePath), rowDelimiter, fieldDelimiter);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <X extends Tuple> void internalWriteAsCsv(Path filePath, String rowDelimiter, String fieldDelimiter) {
-		output((OutputFormat<T>) new CsvOutputFormat<X>(filePath, rowDelimiter, fieldDelimiter));
+	private <X extends Tuple> DataSink<T> internalWriteAsCsv(Path filePath, String rowDelimiter, String fieldDelimiter) {
+		return output((OutputFormat<T>) new CsvOutputFormat<X>(filePath, rowDelimiter, fieldDelimiter));
 	}
 	
 	/**
 	 * Writes a DataSet to the standard output stream (stdout).<br/>
-	 * For each element of the DataSet the result of {@link Object#toString()} is written. 
+	 * For each element of the DataSet the result of {@link Object#toString()} is written.
+	 * 
+	 *  @return The DataSink that writes the DataSet.
 	 */
-	public void print() {
-		output(new PrintingOutputFormat<T>(false));
+	public DataSink<T> print() {
+		return output(new PrintingOutputFormat<T>(false));
 	}
 	
 	/**
 	 * Writes a DataSet to the standard error stream (stderr).<br/>
 	 * For each element of the DataSet the result of {@link Object#toString()} is written.
+	 * 
+	 * @return The DataSink that writes the DataSet.
 	 */
-	public void printToErr() {
-		output(new PrintingOutputFormat<T>(true));
+	public DataSink<T> printToErr() {
+		return output(new PrintingOutputFormat<T>(true));
 	}
 	
 	/**
@@ -681,15 +687,16 @@ public abstract class DataSet<T> {
 	 * 
 	 * @param outputFormat The FileOutputFormat to write the DataSet.
 	 * @param filePath The path to the location where the DataSet is written.
+	 * @return The DataSink that writes the DataSet.
 	 * 
 	 * @see FileOutputFormat
 	 */
-	public void write(FileOutputFormat<T> outputFormat, String filePath) {
+	public DataSink<T> write(FileOutputFormat<T> outputFormat, String filePath) {
 		Validate.notNull(filePath, "File path must not be null.");
 		Validate.notNull(outputFormat, "Output format must not be null.");
 
 		outputFormat.setOutputFilePath(new Path(filePath));
-		output(outputFormat);
+		return output(outputFormat);
 	}
 	
 	/**
@@ -698,17 +705,18 @@ public abstract class DataSet<T> {
 	 * @param outputFormat The FileOutputFormat to write the DataSet.
 	 * @param filePath The path to the location where the DataSet is written.
 	 * @param writeMode The mode of writing, indicating whether to overwrite existing files.
+	 * @return The DataSink that writes the DataSet.
 	 * 
 	 * @see FileOutputFormat
 	 */
-	public void write(FileOutputFormat<T> outputFormat, String filePath, WriteMode writeMode) {
+	public DataSink<T> write(FileOutputFormat<T> outputFormat, String filePath, WriteMode writeMode) {
 		Validate.notNull(filePath, "File path must not be null.");
 		Validate.notNull(writeMode, "Write mode must not be null.");
 		Validate.notNull(outputFormat, "Output format must not be null.");
 
 		outputFormat.setOutputFilePath(new Path(filePath));
 		outputFormat.setWriteMode(writeMode);
-		output(outputFormat);
+		return output(outputFormat);
 	}
 	
 	/**
