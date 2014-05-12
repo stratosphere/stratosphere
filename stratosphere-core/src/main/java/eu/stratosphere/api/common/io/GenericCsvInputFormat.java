@@ -293,7 +293,9 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 						return false;
 					} else {
 						String lineAsString = new String(bytes, offset, numBytes);
-						throw new ParseException("Line could not be parsed: " + lineAsString);
+						throw new ParseException("Line could not be parsed: '" + lineAsString+"'\n"
+								+ "Expect field types: "+fieldTypesToString()+" \n"
+								+ "in file: "+filePath);
 					}
 				}
 				output++;
@@ -304,7 +306,9 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 				if (startPos < 0) {
 					if (!lenient) {
 						String lineAsString = new String(bytes, offset, numBytes);
-						throw new ParseException("Line could not be parsed: " + lineAsString);
+						throw new ParseException("Line could not be parsed: '" + lineAsString+"'\n"
+								+ "Expect field types: "+fieldTypesToString()+" \n"
+								+ "in file: "+filePath);
 					}
 				}
 			}
@@ -312,6 +316,14 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat<OT>
 		return true;
 	}
 	
+	private String fieldTypesToString() {
+		String ret = ""; // lets be inefficient in an error case 
+		for(Class<?> field : fieldTypes) {
+			ret += field.toString() + ", ";
+		}
+		return ret;
+	}
+
 	protected int skipFields(byte[] bytes, int startPos, int limit, char delim) {
 		int i = startPos;
 		
