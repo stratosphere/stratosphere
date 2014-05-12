@@ -39,6 +39,6 @@ public class StringSerializerTest extends SerializerTestBase<String> {
 	
 	@Override
 	protected String[] getTestData() {
-		return new String[] {"a", "", "bcd", "jbmbmner8 jhk hj \n \t üäßß@µ", "", "non-empty"};
+		return new String[] {new String(Character.toChars(127315)), "a", "", "bcd", "jbmbmner8 jhk hj \n \t üäßß@µ", "", "non-empty"};
 	}
 }
