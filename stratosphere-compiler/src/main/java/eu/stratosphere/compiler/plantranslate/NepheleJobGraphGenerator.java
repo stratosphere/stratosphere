@@ -797,7 +797,7 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 
 	private JobTaskVertex createDualInputVertex(DualInputPlanNode node) throws CompilerException {
 		final String taskName = node.getNodeName();
-		final DriverStrategy ds = node.getDriverStrategy();
+		DriverStrategy ds = node.getDriverStrategy();
 		final JobTaskVertex vertex = new JobTaskVertex(taskName, this.jobGraph);
 		final TaskConfig config = new TaskConfig(vertex.getConfiguration());
 		vertex.setTaskClass( (this.currentIteration != null && node.isOnDynamicPath()) ? IterationIntermediatePactTask.class : RegularPactTask.class);
@@ -806,9 +806,49 @@ public class NepheleJobGraphGenerator implements Visitor<PlanNode> {
 		config.setStubWrapper(node.getPactContract().getUserCodeWrapper());
 		config.setStubParameters(node.getPactContract().getParameters());
 		
+		// checks if its better to switch to cached hash join inside of iterations
+		if(this.currentIteration != null && (ds.equals(DriverStrategy.HYBRIDHASH_BUILD_FIRST) || ds.equals(DriverStrategy.HYBRIDHASH_BUILD_SECOND)))
+		{
+			// get estimated number of iterations
+			int estimatedNumberOfIterations = 1;
+			
+			// should always be the case
+			if(this.currentIteration instanceof PlanNode) {
+				PlanNode it = (PlanNode) this.currentIteration;
+				estimatedNumberOfIterations = it.getCostWeight();
+			}
+			
+			// input 1 on static path and currently at build side -> switch to cached version in any case
+			if(!node.getInput1().isOnDynamicPath() && ds.equals(DriverStrategy.HYBRIDHASH_BUILD_FIRST)) {
+				ds = DriverStrategy.HYBRIDHASH_BUILD_FIRST_CACHED;
+			}
+			
+			// input 1 on static path but currently at probe side
+			else if(!node.getInput1().isOnDynamicPath() && ds.equals(DriverStrategy.HYBRIDHASH_BUILD_SECOND)) {
+				// check if it is beneficial to switch sides and to use cached hash join
+				if(node.getInput1().getEstimatedOutputSize() < node.getInput2().getEstimatedOutputSize() * estimatedNumberOfIterations) {
+					ds = DriverStrategy.HYBRIDHASH_BUILD_FIRST_CACHED;
+				}
+			}
+			
+			// input 2 on static path and currently at build side -> switch to cached version in any case
+			else if(!node.getInput2().isOnDynamicPath() && ds.equals(DriverStrategy.HYBRIDHASH_BUILD_SECOND)) {
+				ds = DriverStrategy.HYBRIDHASH_BUILD_SECOND_CACHED;
+			}
+			
+			// input 2 on static path but currently at probe side
+			else if(!node.getInput2().isOnDynamicPath() && ds.equals(DriverStrategy.HYBRIDHASH_BUILD_FIRST)) {
+				// check if it is beneficial to switch sides and to use cached hash join
+				if(node.getInput2().getEstimatedOutputSize() < node.getInput2().getEstimatedOutputSize() * estimatedNumberOfIterations) {
+					ds = DriverStrategy.HYBRIDHASH_BUILD_SECOND_CACHED;
+				}
+			}
+		}
+		
 		// set the driver strategy
 		config.setDriver(ds.getDriverClass());
 		config.setDriverStrategy(ds);
+		
 		if (node.getComparator1() != null) {
 			config.setDriverComparator(node.getComparator1(), 0);
 		}
