@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.hadoop.mapred.JobConf;
 
 import eu.stratosphere.runtime.fs.hdfs.DistributedFileSystem;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * merge hadoopConf into jobConf. This is necessary for the hdfs configuration
@@ -30,5 +31,21 @@ public class HadoopConfiguration {
 		for (Map.Entry<String, String> e : hadoopConf) {
 			jobConf.set(e.getKey(), e.getValue());
 		}
+	}
+
+	public static void setOutputCollectorToConf(Class<? extends HadoopOutputWrapper> outputClass, JobConf jobConf) {
+		jobConf.getClass("stratosphere.collector", outputClass, HadoopOutputWrapper.class );
+	}
+
+	public static Class<? extends HadoopOutputWrapper> getOutputCollectorFromConf(JobConf jobConf) {
+		return  jobConf.getClass("stratosphere.collector", DefaultHadoopOutput.class, HadoopOutputWrapper.class );
+	}
+
+	public static void setReporterToConf(Class<? extends Reporter> reporterClass, JobConf jobConf) {
+		jobConf.getClass("stratosphere.reporter", reporterClass, Reporter.class );
+	}
+
+	public static Class<? extends Reporter> getReporterFromConf(JobConf jobConf) {
+		return  jobConf.getClass("stratosphere.collector", DummyHadoopReporter.class, Reporter.class );
 	}
 }
