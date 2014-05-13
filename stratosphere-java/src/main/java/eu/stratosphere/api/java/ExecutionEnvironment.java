@@ -103,7 +103,7 @@ public abstract class ExecutionEnvironment {
 		return allowLocalExecution;
 	}
 	
-	public static void disableLocalExecution() {
+	protected static void disableLocalExecution() {
 		allowLocalExecution = false;
 	}
 	
