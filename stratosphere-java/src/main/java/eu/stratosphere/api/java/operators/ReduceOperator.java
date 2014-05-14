@@ -30,110 +30,118 @@ import eu.stratosphere.api.java.typeutils.TypeInformation;
  * @param <IN> The type of the data set reduced by the operator.
  */
 public class ReduceOperator<IN> extends SingleInputUdfOperator<IN, IN, ReduceOperator<IN>> {
-	
+
 	private final ReduceFunction<IN> function;
-	
+
 	private final Grouping<IN> grouper;
-	
+
 	/**
-	 * 
+	 *
 	 * This is the case for a reduce-all case (in contrast to the reduce-per-group case).
-	 * 
+	 *
 	 * @param input
 	 * @param function
 	 */
 	public ReduceOperator(DataSet<IN> input, ReduceFunction<IN> function) {
 		super(input, input.getType());
-		
+
 		if (function == null) {
 			throw new NullPointerException("Reduce function must not be null.");
 		}
-		
+
 		this.function = function;
 		this.grouper = null;
 	}
-	
-	
+
+
 	public ReduceOperator(Grouping<IN> input, ReduceFunction<IN> function) {
 		super(input.getDataSet(), input.getDataSet().getType());
-		
+
 		if (function == null) {
 			throw new NullPointerException("Reduce function must not be null.");
 		}
-		
+
 		this.function = function;
 		this.grouper = input;
 	}
 
 	@Override
 	protected Operator translateToDataFlow(Operator input) {
-		
+
 		String name = getName() != null ? getName() : function.getClass().getName();
-		
+
 		// distinguish between grouped reduce and non-grouped reduce
 		if (grouper == null) {
 			// non grouped reduce
 			PlanReduceOperator<IN> po = new PlanReduceOperator<IN>(function, new int[0], name, getInputType());
+			//set semantic properties
+			if (this.getSematicProperties() != null) {
+				po.setSemanticProperties(this.getSematicProperties());
+			}
 			// set input
 			po.setInput(input);
 			// set dop
 			po.setDegreeOfParallelism(this.getParallelism());
-			
-			return po;			
+
+			return po;
 		}
-		
+
 		if (grouper.getKeys() instanceof Keys.SelectorFunctionKeys) {
-			
+
 			// reduce with key selector function
 			@SuppressWarnings("unchecked")
 			Keys.SelectorFunctionKeys<IN, ?> selectorKeys = (Keys.SelectorFunctionKeys<IN, ?>) grouper.getKeys();
-			
+
 			PlanUnwrappingReduceOperator<IN, ?> po = translateSelectorFunctionReducer(selectorKeys, function, getInputType(), name, input);
 			// set dop
 			po.setDegreeOfParallelism(this.getParallelism());
-			
+
 			return po;
 		}
 		else if (grouper.getKeys() instanceof Keys.FieldPositionKeys) {
-			
+
 			// reduce with field positions
 			int[] logicalKeyPositions = grouper.getKeys().computeLogicalKeyPositions();
 			PlanReduceOperator<IN> po = new PlanReduceOperator<IN>(function, logicalKeyPositions, name, getInputType());
-			
+
+			//set semantic properties
+			if (this.getSematicProperties() != null) {
+				po.setSemanticProperties(this.getSematicProperties());
+			}
 			// set input
 			po.setInput(input);
 			// set dop
 			po.setDegreeOfParallelism(this.getParallelism());
-			
+
 			return po;
 		}
 		else {
 			throw new UnsupportedOperationException("Unrecognized key type.");
 		}
-		
+
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	private static <T, K> PlanUnwrappingReduceOperator<T, K> translateSelectorFunctionReducer(Keys.SelectorFunctionKeys<T, ?> rawKeys,
 			ReduceFunction<T> function, TypeInformation<T> inputType, String name, Operator input)
 	{
 		@SuppressWarnings("unchecked")
 		final Keys.SelectorFunctionKeys<T, K> keys = (Keys.SelectorFunctionKeys<T, K>) rawKeys;
-		
+
 		TypeInformation<Tuple2<K, T>> typeInfoWithKey = new TupleTypeInfo<Tuple2<K, T>>(keys.getKeyType(), inputType);
-		
+
 		KeyExtractingMapper<T, K> extractor = new KeyExtractingMapper<T, K>(keys.getKeyExtractor());
-		
+
 		PlanUnwrappingReduceOperator<T, K> reducer = new PlanUnwrappingReduceOperator<T, K>(function, keys, name, inputType, typeInfoWithKey);
-		
+
 		PlanMapOperator<T, Tuple2<K, T>> mapper = new PlanMapOperator<T, Tuple2<K, T>>(extractor, "Key Extractor", inputType, typeInfoWithKey);
 
 		reducer.setInput(mapper);
 		mapper.setInput(input);
 		// set dop
 		mapper.setDegreeOfParallelism(input.getDegreeOfParallelism());
-		
+
 		return reducer;
 	}
 }

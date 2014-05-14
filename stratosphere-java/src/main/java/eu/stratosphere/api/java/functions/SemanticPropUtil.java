@@ -271,7 +271,7 @@ public class SemanticPropUtil {
 	}
 
 	public static DualInputSemanticProperties getSemanticPropsDualFromString(String[] constantSetFirst, String[] constantSetSecond, String constantSetFirstExcept,
-																			 String constantSetSecondExcept, String readFieldsFirst, String readFieldsSecond, TypeInformation<?> inType1, TypeInformation<?> inType2, TypeInformation<?> outType) {
+	String constantSetSecondExcept, String readFieldsFirst, String readFieldsSecond, TypeInformation<?> inType1, TypeInformation<?> inType2, TypeInformation<?> outType) {
 		DualInputSemanticProperties result = new DualInputSemanticProperties();
 		parseConstantFieldsFirst(constantSetFirst, result, inType1, outType);
 		parseConstantFieldsSecond(constantSetSecond, result, inType2, outType);
