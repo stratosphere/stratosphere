@@ -154,6 +154,8 @@ public class OperatorTranslation {
 
 		iterationOperator.setInitialSolutionSet(translate(iterationHead.getInitialSolutionSet()));
 		iterationOperator.setInitialWorkset(translate(iterationHead.getInitialWorkset()));
+		
+		iterationOperator.getAggregators().addAll(iterationHead.getAggregators());
 
 		return iterationOperator;
 	}

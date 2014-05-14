@@ -109,7 +109,7 @@ public class BulkIteration extends SingleInputOperator<AbstractFunction> impleme
 		mapper.setInput(criterion);
 		
 		this.terminationCriterion = mapper;
-		this.getAggregators().registerAggregationConvergenceCriterion(TERMINATION_CRITERION_AGGREGATOR_NAME, TerminationCriterionAggregator.class, TerminationCriterionAggregationConvergence.class);
+		this.getAggregators().registerAggregationConvergenceCriterion(TERMINATION_CRITERION_AGGREGATOR_NAME, new TerminationCriterionAggregator(), new TerminationCriterionAggregationConvergence());
 	}
 	
 	/**
@@ -201,6 +201,7 @@ public class BulkIteration extends SingleInputOperator<AbstractFunction> impleme
 	/**
 	 * Aggregator that basically only adds 1 for every output tuple of the termination criterion branch
 	 */
+	@SuppressWarnings("serial")
 	public static class TerminationCriterionAggregator implements Aggregator<LongValue> {
 
 		private long count;
@@ -228,6 +229,7 @@ public class BulkIteration extends SingleInputOperator<AbstractFunction> impleme
 	/**
 	 * Convergence for the termination criterion is reached if no tuple is output at current iteration for the termination criterion branch
 	 */
+	@SuppressWarnings("serial")
 	public static class TerminationCriterionAggregationConvergence implements ConvergenceCriterion<LongValue> {
 
 		private static final Log log = LogFactory.getLog(TerminationCriterionAggregationConvergence.class);

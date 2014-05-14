@@ -146,7 +146,7 @@ object IterateMacros {
           mapper.setInput(criterion)
           terminationCriterion = mapper
           getAggregators.registerAggregationConvergenceCriterion(BulkIteration.TERMINATION_CRITERION_AGGREGATOR_NAME,
-            classOf[TerminationCriterionAggregator], classOf[TerminationCriterionAggregationConvergence])
+            new TerminationCriterionAggregator, new TerminationCriterionAggregationConvergence)
         }
       }
 
