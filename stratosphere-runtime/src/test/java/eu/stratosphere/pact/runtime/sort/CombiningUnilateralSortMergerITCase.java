@@ -120,7 +120,7 @@ public class CombiningUnilateralSortMergerITCase {
 		TestCountCombiner comb = new TestCountCombiner();
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
-				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
+				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializerFactory, this.comparator,
 				0.25, 64, 0.7f);
 
 		final Record rec = new Record();
@@ -161,7 +161,7 @@ public class CombiningUnilateralSortMergerITCase {
 		TestCountCombiner comb = new TestCountCombiner();
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
-				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
+				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializerFactory, this.comparator,
 				0.01, 64, 0.005f);
 
 		final Record rec = new Record();
@@ -210,7 +210,7 @@ public class CombiningUnilateralSortMergerITCase {
 		TestCountCombiner2 comb = new TestCountCombiner2();
 		
 		Sorter<Record> merger = new CombiningUnilateralSortMerger<Record>(comb, 
-				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializer, this.comparator,
+				this.memoryManager, this.ioManager, reader, this.parentTask, this.serializerFactory, this.comparator,
 				0.25, 2, 0.7f);
 
 		// emit data

@@ -13,7 +13,6 @@
 
 package eu.stratosphere.compiler;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -466,6 +465,9 @@ public class PactCompiler {
 	
 	public void setDefaultDegreeOfParallelism(int defaultDegreeOfParallelism) {
 		if (defaultDegreeOfParallelism == -1 || defaultDegreeOfParallelism > 0) {
+			if(defaultDegreeOfParallelism == -1){
+				throw new RuntimeException("DOP = -1");
+			}
 			this.defaultDegreeOfParallelism = defaultDegreeOfParallelism;
 		} else {
 			throw new IllegalArgumentException();
@@ -521,8 +523,8 @@ public class PactCompiler {
 	 *         Thrown, if the plan is invalid or the optimizer encountered an inconsistent
 	 *         situation during the compilation process.
 	 */
-	private OptimizedPlan compile(Plan program, InstanceTypeDescription type, OptimizerPostPass postPasser) throws CompilerException {
-		if (program == null || type == null || postPasser == null) {
+	private OptimizedPlan compile(Plan program, OptimizerPostPass postPasser) throws CompilerException {
+		if (program == null || postPasser == null) {
 			throw new NullPointerException();
 		}
 		
@@ -676,7 +678,7 @@ public class PactCompiler {
 		}
 
 		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP,
-									 int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
+								int defaultParallelism, HashMap<Operator, OptimizerNode> closure) {
 			if (closure == null){
 				con2node = new HashMap<Operator, OptimizerNode>();
 			} else {

@@ -186,10 +186,10 @@ public class UnilateralSortMerger<E> implements Sorter<E> {
 	public UnilateralSortMerger(MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory, int maxNumFileHandles, float startSpillingFraction)
+			double fractionMemory, int maxNumFileHandles, float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
-		this(memoryManager, ioManager, input, parentTask, serializer, comparator,
+		this(memoryManager, ioManager, input, parentTask, serializerFactory, comparator,
 			fractionMemory, -1, maxNumFileHandles, startSpillingFraction);
 	}
 	
@@ -217,11 +217,11 @@ public class UnilateralSortMerger<E> implements Sorter<E> {
 	public UnilateralSortMerger(MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory, int numSortBuffers, int maxNumFileHandles, 
+			double fractionMemory, int numSortBuffers, int maxNumFileHandles,
 			float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
-		this(memoryManager, ioManager, input, parentTask, serializer, comparator,
+		this(memoryManager, ioManager, input, parentTask, serializerFactory, comparator,
 			fractionMemory, numSortBuffers, maxNumFileHandles, startSpillingFraction, false);
 	}
 	
@@ -249,7 +249,7 @@ public class UnilateralSortMerger<E> implements Sorter<E> {
 	protected UnilateralSortMerger(MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory, int numSortBuffers, int maxNumFileHandles, 
+			double fractionMemory, int numSortBuffers, int maxNumFileHandles,
 			float startSpillingFraction, boolean noSpillingMemory)
 	throws IOException, MemoryAllocationException
 	{

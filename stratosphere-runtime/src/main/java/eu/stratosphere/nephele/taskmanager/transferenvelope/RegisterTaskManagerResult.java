@@ -11,34 +11,40 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.nephele.instance;
+package eu.stratosphere.nephele.taskmanager.transferenvelope;
+
+import eu.stratosphere.core.io.IOReadableWritable;
+import eu.stratosphere.nephele.util.EnumUtils;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+public class RegisterTaskManagerResult implements IOReadableWritable {
+	public enum ReturnCode{
+		SUCCESS, FAILURE
+	};
+
+	public RegisterTaskManagerResult(){
+		this.returnCode = ReturnCode.SUCCESS;
+	}
+
+	public RegisterTaskManagerResult(ReturnCode returnCode){
+		this.returnCode = returnCode;
+	}
+
+	private ReturnCode returnCode;
+
+	public ReturnCode getReturnCode() { return this.returnCode; }
 
 
-import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.nephele.jobgraph.JobID;
-import eu.stratosphere.nephele.topology.NetworkTopology;
+	@Override
+	public void write(DataOutput out) throws IOException {
+		EnumUtils.writeEnum(out, this.returnCode);
+	}
 
-public interface InstanceManager {
-
-
-	void shutdown();
-
-	void releaseAllocatedResource(AllocatedResource allocatedResource) throws InstanceException;
-
-	void reportHeartBeat(InstanceConnectionInfo instanceConnectionInfo);
-
-	void registerTaskManager(InstanceConnectionInfo instanceConnectionInfo,
-									HardwareDescription hardwareDescription, int numberOfSlots);
-	void requestInstance(JobID jobID, Configuration conf,  int requiredSlots)
-			throws InstanceException;
-
-	NetworkTopology getNetworkTopology(JobID jobID);
-
-	void setInstanceListener(InstanceListener instanceListener);
-
-	Instance getInstanceByName(String name);
-
-	int getNumberOfTaskTrackers();
-
-	int getNumberOfSlots();
+	@Override
+	public void read(DataInput in) throws IOException {
+		this.returnCode = EnumUtils.readEnum(in, ReturnCode.class);
+	}
 }

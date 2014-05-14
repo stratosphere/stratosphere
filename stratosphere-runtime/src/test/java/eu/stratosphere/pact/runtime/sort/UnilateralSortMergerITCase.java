@@ -307,7 +307,7 @@ public class UnilateralSortMergerITCase {
 		LOG.debug("Initializing sortmerger...");
 		
 		Sorter<IntPair> merger = new UnilateralSortMerger<IntPair>(this.memoryManager, this.ioManager, 
-				generator, this.parentTask, serializer, comparator, (double)64/78, 4, 0.7f);
+				generator, this.parentTask, serializerFactory, comparator, (double)64/78, 4, 0.7f);
 
 		// emit data
 		LOG.debug("Emitting data...");

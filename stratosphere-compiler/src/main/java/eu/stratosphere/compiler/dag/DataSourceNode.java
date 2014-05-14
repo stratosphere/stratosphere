@@ -55,7 +55,7 @@ public class DataSourceNode extends OptimizerNode {
 		
 		if (NonParallelInput.class.isAssignableFrom(pactContract.getUserCodeWrapper().getUserCodeClass())) {
 			setDegreeOfParallelism(1);
-			this.unsplittable = true;
+			this.sequentialInput = true;
 		} else {
 			this.sequentialInput = false;
 		}

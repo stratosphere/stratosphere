@@ -118,7 +118,7 @@ public class DriverTestBase<S extends Function> implements PactTaskContext<S, Re
 	
 	public void addInputSorted(MutableObjectIterator<Record> input, RecordComparator comp) throws Exception {
 		UnilateralSortMerger<Record> sorter = new UnilateralSortMerger<Record>(
-				this.memManager, this.ioManager, input, this.owner, RecordSerializer.get(), comp,
+				this.memManager, this.ioManager, input, this.owner, RecordSerializerFactory.get(), comp,
 				this.perSortFractionMem, 32, 0.8f);
 		this.sorters.add(sorter);
 		this.inputs.add(null);

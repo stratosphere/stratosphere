@@ -443,7 +443,7 @@ public final class ConfigConstants {
 	/**
 	 * Sets the number of local task managers
 	 */
-	public static final String LOCAL_INSTANCE_MANAGER_NUMBER_TASK_TRACKER = "localinstancemanager.numtaskmanager";
+	public static final String LOCAL_INSTANCE_MANAGER_NUMBER_TASK_TRACKER = "localinstancemanager.numtasktracker";
 
 
 

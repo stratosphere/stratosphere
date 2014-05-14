@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import eu.stratosphere.nephele.instance.Hardware;
+import eu.stratosphere.nephele.taskmanager.transferenvelope.RegisterTaskManagerResult;
 import eu.stratosphere.nephele.types.IntegerRecord;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -437,8 +438,24 @@ public class TaskManager implements TaskOperationProtocol {
 						ConfigConstants.DEFAULT_TASK_MANAGER_HEARTBEAT_INTERVAL);
 
 		try {
-			this.jobManager.registerTaskManager(this.localInstanceConnectionInfo, this.hardwareDescription,
-					new IntegerRecord(this.numberOfSlots));
+			while(!shutdownStarted.get()){
+				RegisterTaskManagerResult result  = this.jobManager.registerTaskManager(this
+								.localInstanceConnectionInfo,this.hardwareDescription,
+						new IntegerRecord(this.numberOfSlots));
+
+				if(result.getReturnCode() == RegisterTaskManagerResult.ReturnCode.SUCCESS){
+					break;
+				}
+
+				try{
+					Thread.sleep(50);
+				}catch(InterruptedException e){
+					if (!shutdownStarted.get()) {
+						LOG.error("TaskManager register task manager loop was interrupted without shutdown.");
+					}
+				}
+			}
+
 		} catch (IOException e) {
 			if(!shutdownStarted.get()){
 				LOG.error("Registering task manager caused an exception: " + e.getMessage(), e);

@@ -283,7 +283,7 @@ public class AsynchonousPartialSorterITCase
 		public ExceptionThrowingAsynchronousPartialSorter(MemoryManager memoryManager,
 				MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 				TypeSerializerFactory<E> serializer, TypeComparator<E> comparator,
-				long totalMemory)
+				double fractionMemory)
 		throws IOException, MemoryAllocationException
 		{
 			super(memoryManager, input, parentTask, serializer, comparator, fractionMemory);

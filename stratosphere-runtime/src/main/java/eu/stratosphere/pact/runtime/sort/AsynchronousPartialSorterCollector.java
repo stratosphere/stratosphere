@@ -54,10 +54,11 @@ public class AsynchronousPartialSorterCollector<E> extends AsynchronousPartialSo
 	public AsynchronousPartialSorterCollector(MemoryManager memoryManager,
 			AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory)
+			double fractionMemory)
 	throws IOException, MemoryAllocationException
 	{
-		super(memoryManager, null, parentTask, serializer, comparator, fractionMemory);
+		super(memoryManager, null, parentTask, serializerFactory, comparator,
+				fractionMemory);
 	}
 	
 	// ------------------------------------------------------------------------

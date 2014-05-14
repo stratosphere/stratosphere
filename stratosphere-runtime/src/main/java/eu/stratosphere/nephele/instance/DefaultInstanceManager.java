@@ -21,7 +21,14 @@ import eu.stratosphere.nephele.topology.NetworkTopology;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.TimerTask;
+import java.util.Timer;
 
 /**
  * In Nephele an instance manager maintains the set of available compute resources. It is responsible for allocating new
@@ -209,7 +216,7 @@ public class DefaultInstanceManager implements InstanceManager {
 	 * @return a new {@link Instance} object or <code>null</code> if the cluster instance could not be created
 	 */
 	private Instance createNewHost(final InstanceConnectionInfo instanceConnectionInfo,
-										  final HardwareDescription hardwareDescription, int numberOfSlots) {
+							final HardwareDescription hardwareDescription, int numberOfSlots) {
 
 		// Try to match new host with a stub host from the existing topology
 		String instanceName = instanceConnectionInfo.getHostName();

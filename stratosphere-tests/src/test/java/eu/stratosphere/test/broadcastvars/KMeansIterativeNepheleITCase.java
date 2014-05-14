@@ -14,11 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.test.broadcastvars;
 
-<<<<<<< HEAD
-import eu.stratosphere.configuration.ConfigConstants;
-=======
 import eu.stratosphere.test.util.RecordAPITestBase;
->>>>>>> upstream/master
 import org.apache.log4j.Level;
 
 import eu.stratosphere.api.common.operators.util.UserCodeObjectWrapper;

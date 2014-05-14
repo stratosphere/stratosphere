@@ -40,6 +40,8 @@ public class LocalExecutor extends PlanExecutor {
 	
 	private static boolean DEFAULT_OVERWRITE = false;
 
+	private static final int DEFAULT_TASK_MANAGER_NUM_SLOTS = 1;
+
 	private final Object lock = new Object();	// we lock to ensure singleton execution
 	
 	private NepheleMiniCluster nephele;
@@ -51,6 +53,8 @@ public class LocalExecutor extends PlanExecutor {
 	private int taskManagerRpcPort = -1;
 	
 	private int taskManagerDataPort = -1;
+
+	private int taskManagerNumSlots = DEFAULT_TASK_MANAGER_NUM_SLOTS;
 
 	private String configDir;
 
@@ -123,6 +127,10 @@ public class LocalExecutor extends PlanExecutor {
 	public void setDefaultAlwaysCreateDirectory(boolean defaultAlwaysCreateDirectory) {
 		this.defaultAlwaysCreateDirectory = defaultAlwaysCreateDirectory;
 	}
+
+	public void setTaskManagerNumSlots(int taskManagerNumSlots) { this.taskManagerNumSlots = taskManagerNumSlots; }
+
+	public int getTaskManagerNumSlots() { return this.taskManagerNumSlots; }
 	
 	// --------------------------------------------------------------------------------------------
 	
@@ -151,6 +159,7 @@ public class LocalExecutor extends PlanExecutor {
 				}
 				nephele.setDefaultOverwriteFiles(defaultOverwriteFiles);
 				nephele.setDefaultAlwaysCreateDirectory(defaultAlwaysCreateDirectory);
+				nephele.setTaskManagerNumSlots(taskManagerNumSlots);
 				
 				// start it up
 				this.nephele.start();

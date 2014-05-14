@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import eu.stratosphere.configuration.ConfigConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Level;
@@ -46,8 +45,6 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.util.LogUtils;
 
 public abstract class AbstractTestBase {
-	private static final int DEFAULT_NUM_TASK_MANAGER = 1;
-	
 	protected static final int MINIMUM_HEAP_SIZE_MB = 192;
 	
 	protected static final long TASK_MANAGER_MEMORY_SIZE = 80;
@@ -62,16 +59,14 @@ public abstract class AbstractTestBase {
 	
 	private final List<File> tempFiles;
 
-	protected int taskManagerNumSlots;
+	protected int taskManagerNumSlots = DEFAULT_TASK_MANAGER_NUM_SLOTS;
 
-	protected int numTaskTracker;
+	protected int numTaskTracker = DEFAULT_NUM_TASK_TRACKER;
 
 	public AbstractTestBase(Configuration config) {
 		verifyJvmOptions();
 		this.config = config;
 		this.tempFiles = new ArrayList<File>();
-		taskManagerNumSlots = DEFAULT_TASK_MANAGER_NUM_SLOTS;
-		numTaskTracker = DEFAULT_NUM_TASK_TRACKER;
 
 		LogUtils.initializeDefaultConsoleLogger(Level.WARN);
 	}
@@ -81,15 +76,6 @@ public abstract class AbstractTestBase {
 		Assert.assertTrue("Insufficient java heap space " + heap + "mb - set JVM option: -Xmx" + MINIMUM_HEAP_SIZE_MB
 				+ "m", heap > MINIMUM_HEAP_SIZE_MB - 50);
 	}
-
-	// --------------------------------------------------------------------------------------------
-	//  Getter/Setter
-	// --------------------------------------------------------------------------------------------
-
-	public int getNumTaskManager() { return numTaskManager; }
-
-	public void setNumTaskManager(int numTaskManager) { this.numTaskManager = numTaskManager; }
-
 	// --------------------------------------------------------------------------------------------
 	//  Local Test Cluster Life Cycle
 	// --------------------------------------------------------------------------------------------
@@ -99,8 +85,9 @@ public abstract class AbstractTestBase {
 		this.executor = new NepheleMiniCluster();
 		this.executor.setDefaultOverwriteFiles(true);
 		this.executor.setLazyMemoryAllocation(true);
-		this.executor.setMemorySize(MEMORY_SIZE);
-		this.executor.setNumTaskManager(this.numTaskManager);
+		this.executor.setMemorySize(TASK_MANAGER_MEMORY_SIZE);
+		this.executor.setTaskManagerNumSlots(taskManagerNumSlots);
+		this.executor.setNumTaskTracker(this.numTaskTracker);
 		this.executor.start();
 	}
 

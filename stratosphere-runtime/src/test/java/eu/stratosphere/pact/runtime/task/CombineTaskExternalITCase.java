@@ -58,7 +58,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 		addInputComparator(this.comparator);
 		setOutput(this.outList);
 		
-		getTaskConfig().setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
+		getTaskConfig().setDriverStrategy(DriverStrategy.SORTED_GROUP_COMBINE);
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		
@@ -111,7 +111,7 @@ public class CombineTaskExternalITCase extends DriverTestBase<GenericGroupReduce
 		addInputComparator(this.comparator);
 		setOutput(this.outList);
 		
-		getTaskConfig().setDriverStrategy(DriverStrategy.PARTIAL_GROUP);
+		getTaskConfig().setDriverStrategy(DriverStrategy.SORTED_GROUP_COMBINE);
 		getTaskConfig().setRelativeMemoryDriver(combine_frac);
 		getTaskConfig().setFilehandlesDriver(2);
 		

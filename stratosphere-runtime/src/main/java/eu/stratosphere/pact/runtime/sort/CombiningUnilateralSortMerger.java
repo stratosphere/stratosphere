@@ -107,10 +107,10 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	public CombiningUnilateralSortMerger(GenericCombine<E> combineStub, MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory, int maxNumFileHandles, float startSpillingFraction)
+			double fractionMemory, int maxNumFileHandles, float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
-		this(combineStub, memoryManager, ioManager, input, parentTask, serializer, comparator,
+		this(combineStub, memoryManager, ioManager, input, parentTask, serializerFactory, comparator,
 			fractionMemory, -1, maxNumFileHandles, startSpillingFraction);
 	}
 	
@@ -139,11 +139,11 @@ public class CombiningUnilateralSortMerger<E> extends UnilateralSortMerger<E> {
 	public CombiningUnilateralSortMerger(GenericCombine<E> combineStub, MemoryManager memoryManager, IOManager ioManager,
 			MutableObjectIterator<E> input, AbstractInvokable parentTask, 
 			TypeSerializerFactory<E> serializerFactory, TypeComparator<E> comparator,
-			long totalMemory, int numSortBuffers, int maxNumFileHandles, 
+			double fractionMemory, int numSortBuffers, int maxNumFileHandles,
 			float startSpillingFraction)
 	throws IOException, MemoryAllocationException
 	{
-		super(memoryManager, ioManager, input, parentTask, serializer, comparator,
+		super(memoryManager, ioManager, input, parentTask, serializerFactory, comparator,
 			fractionMemory, numSortBuffers, maxNumFileHandles, startSpillingFraction, false);
 		
 		this.combineStub = combineStub;

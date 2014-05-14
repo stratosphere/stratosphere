@@ -22,9 +22,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
-import eu.stratosphere.nephele.executiongraph.*;
-import eu.stratosphere.nephele.instance.*;
+import eu.stratosphere.nephele.executiongraph.ExecutionEdge;
+import eu.stratosphere.nephele.executiongraph.ExecutionGate;
+import eu.stratosphere.nephele.executiongraph.ExecutionGraph;
+import eu.stratosphere.nephele.executiongraph.ExecutionGraphIterator;
+import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertex;
+import eu.stratosphere.nephele.executiongraph.ExecutionGroupVertexIterator;
+import eu.stratosphere.nephele.executiongraph.ExecutionPipeline;
+import eu.stratosphere.nephele.executiongraph.ExecutionStage;
+import eu.stratosphere.nephele.executiongraph.ExecutionStageListener;
+import eu.stratosphere.nephele.executiongraph.ExecutionVertex;
+import eu.stratosphere.nephele.executiongraph.ExecutionVertexID;
+import eu.stratosphere.nephele.executiongraph.InternalJobStatus;
+import eu.stratosphere.nephele.executiongraph.JobStatusListener;
+import eu.stratosphere.nephele.instance.AllocatedResource;
+import eu.stratosphere.nephele.instance.AllocationID;
+import eu.stratosphere.nephele.instance.DummyInstance;
+import eu.stratosphere.nephele.instance.InstanceException;
+import eu.stratosphere.nephele.instance.InstanceListener;
+import eu.stratosphere.nephele.instance.InstanceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -320,7 +339,7 @@ public class DefaultScheduler implements InstanceListener, JobStatusListener, Ex
 
 	/**
 	 * Collects all execution vertices with the state ASSIGNED starting from the given start vertex and
-	 * deploys them on the assigned {@link AllocatedResource} objects.
+	 * deploys them on the assigned {@link eu.stratosphere.nephele.instance.AllocatedResource} objects.
 	 * 
 	 * @param startVertex
 	 *        the execution vertex to start the deployment from
@@ -350,7 +369,7 @@ public class DefaultScheduler implements InstanceListener, JobStatusListener, Ex
 
 	/**
 	 * Collects all execution vertices with the state ASSIGNED from the given pipeline and deploys them on the assigned
-	 * {@link AllocatedResource} objects.
+	 * {@link eu.stratosphere.nephele.instance.AllocatedResource} objects.
 	 * 
 	 * @param pipeline
 	 *        the execution pipeline to be deployed
@@ -383,7 +402,7 @@ public class DefaultScheduler implements InstanceListener, JobStatusListener, Ex
 
 	/**
 	 * Collects all execution vertices with the state ASSIGNED starting from the given collection of start vertices and
-	 * deploys them on the assigned {@link AllocatedResource} objects.
+	 * deploys them on the assigned {@link eu.stratosphere.nephele.instance.AllocatedResource} objects.
 	 * 
 	 * @param startVertices
 	 *        the collection of execution vertices to start the deployment from
@@ -420,7 +439,7 @@ public class DefaultScheduler implements InstanceListener, JobStatusListener, Ex
 
 	/**
 	 * Collects all execution vertices with the state ASSIGNED starting from the input vertices of the current execution
-	 * stage and deploys them on the assigned {@link AllocatedResource} objects.
+	 * stage and deploys them on the assigned {@link eu.stratosphere.nephele.instance.AllocatedResource} objects.
 	 * 
 	 * @param executionGraph
 	 *        the execution graph to collect the vertices from

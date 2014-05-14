@@ -25,7 +25,8 @@ import eu.stratosphere.test.testdata.WordCountData;
 
 
 public class LocalExecutorITCase {
-	
+	private static final int DOP = 4;
+
 	@Test
 	public void testLocalExecutorWithWordCount() {
 		try {
@@ -45,9 +46,11 @@ public class LocalExecutorITCase {
 			LocalExecutor executor = new LocalExecutor();
 			LocalExecutor.setLoggingLevel(Level.WARN);
 			executor.setDefaultOverwriteFiles(true);
+			executor.setTaskManagerNumSlots(DOP);
 			executor.start();
 			
-			executor.executePlan(wc.getPlan("4", inFile.toURI().toString(), outFile.toURI().toString()));
+			executor.executePlan(wc.getPlan(new Integer(DOP).toString(), inFile.toURI().toString(),
+					outFile.toURI().toString()));
 			executor.stop();
 		} catch (Exception e) {
 			e.printStackTrace();

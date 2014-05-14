@@ -257,6 +257,14 @@ public final class ManagementVertex extends ManagementAttachment implements IORe
 		this.instanceName = instanceName;
 	}
 
+	public void setOptMessage(final String optMessage) {
+		this.optMessage = optMessage;
+	}
+
+	public String getOptMessage() {
+		return this.optMessage;
+	}
+
 	@Override
 	public void read(final DataInput in) throws IOException {
 

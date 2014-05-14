@@ -14,18 +14,40 @@
 package eu.stratosphere.nephele.instance;
 
 
+import eu.stratosphere.configuration.ConfigConstants;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.taskmanager.TaskManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LocalInstanceManager extends DefaultInstanceManager{
-	private TaskManager taskManager;
+	private List<TaskManager> taskManagers = new ArrayList<TaskManager>();
 
 	public LocalInstanceManager() throws Exception{
-		taskManager = new TaskManager();
+		int numTaskManager = GlobalConfiguration.getInteger(ConfigConstants
+				.LOCAL_INSTANCE_MANAGER_NUMBER_TASK_TRACKER, 1);
+
+		for(int i=0; i < numTaskManager; i++){
+			Configuration tm = new Configuration();
+			int ipcPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_IPC_PORT_KEY,
+					ConfigConstants.DEFAULT_TASK_MANAGER_IPC_PORT);
+			int dataPort = GlobalConfiguration.getInteger(ConfigConstants.TASK_MANAGER_DATA_PORT_KEY,
+					ConfigConstants.DEFAULT_TASK_MANAGER_DATA_PORT);
+
+			tm.setInteger(ConfigConstants.TASK_MANAGER_IPC_PORT_KEY, ipcPort + i);
+			tm.setInteger(ConfigConstants.TASK_MANAGER_DATA_PORT_KEY, dataPort + i);
+
+			GlobalConfiguration.includeConfiguration(tm);
+
+			taskManagers.add(new TaskManager());
+		}
 	}
 
 	@Override
 	public void shutdown(){
-		if(this.taskManager != null){
+		for(TaskManager taskManager: taskManagers){
 			taskManager.shutdown();
 		}
 

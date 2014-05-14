@@ -30,8 +30,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import eu.stratosphere.nephele.instance.*;
+import eu.stratosphere.nephele.instance.HardwareDescription;
+import eu.stratosphere.nephele.instance.InstanceConnectionInfo;
+import eu.stratosphere.nephele.instance.InstanceManager;
+import eu.stratosphere.nephele.instance.DummyInstance;
 import eu.stratosphere.nephele.jobmanager.scheduler.DefaultScheduler;
+import eu.stratosphere.nephele.taskmanager.transferenvelope.RegisterTaskManagerResult;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -591,7 +595,7 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 	}
 
 	@Override
-	public void registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
+	public RegisterTaskManagerResult registerTaskManager(final InstanceConnectionInfo instanceConnectionInfo,
 									final HardwareDescription hardwareDescription, final IntegerRecord numberOfSlots){
 		if(this.instanceManager != null) {
 			final Runnable registerTaskManagerRunnable = new Runnable() {
@@ -603,7 +607,10 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			};
 
 			this.executorService.execute(registerTaskManagerRunnable);
+			return new RegisterTaskManagerResult(RegisterTaskManagerResult.ReturnCode.SUCCESS);
 		}
+
+		return new RegisterTaskManagerResult(RegisterTaskManagerResult.ReturnCode.FAILURE);
 	}
 
 

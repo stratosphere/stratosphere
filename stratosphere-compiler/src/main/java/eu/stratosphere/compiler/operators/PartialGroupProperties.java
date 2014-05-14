@@ -45,7 +45,8 @@ public final class PartialGroupProperties extends OperatorDescriptorSingle {
 		GroupReduceNode combinerNode = new GroupReduceNode((GroupReduceOperatorBase<?>) node.getPactContract());
 		combinerNode.setDegreeOfParallelism(in.getSource().getDegreeOfParallelism());
 
-		return new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", in, DriverStrategy.PARTIAL_GROUP, this.keyList);
+		return new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", in,
+				DriverStrategy.SORTED_GROUP_COMBINE, this.keyList);
 	}
 
 	@Override

@@ -29,6 +29,8 @@ import eu.stratosphere.util.LogUtils;
 
 public class PackagedProgramEndToEndITCase {
 
+	private static final int DOP = 4;
+
 	static {
 		LogUtils.initializeDefaultTestConsoleLogger();
 	}
@@ -58,13 +60,14 @@ public class PackagedProgramEndToEndITCase {
 			String jarPath = jarFileURL.getFile();
 
 			// run KMeans
-			cluster.setNumTaskManager(2);
+			cluster.setNumTaskTracker(2);
+			cluster.setTaskManagerNumSlots(2);
 			cluster.start();
 			RemoteExecutor ex = new RemoteExecutor("localhost", 6498);
 
 			ex.executeJar(jarPath,
 					"eu.stratosphere.examples.scala.testing.KMeansForTest",
-					new String[] {"4",
+					new String[] {new Integer(DOP).toString(),
 							points.toURI().toString(),
 							clusters.toURI().toString(),
 							outFile.toURI().toString(),

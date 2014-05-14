@@ -86,7 +86,8 @@ public final class GroupReduceWithCombineProperties extends OperatorDescriptorSi
 			GroupReduceNode combinerNode = ((GroupReduceNode) node).getCombinerUtilityNode();
 			combinerNode.setDegreeOfParallelism(in.getSource().getDegreeOfParallelism());
 
-			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract().getName()+")", toCombiner, DriverStrategy.PARTIAL_GROUP, this.keyList);
+			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine("+node.getPactContract()
+					.getName()+")", toCombiner, DriverStrategy.SORTED_GROUP_COMBINE, this.keyList);
 			combiner.setCosts(new Costs(0, 0));
 			combiner.initProperties(toCombiner.getGlobalProperties(), toCombiner.getLocalProperties());
 			
