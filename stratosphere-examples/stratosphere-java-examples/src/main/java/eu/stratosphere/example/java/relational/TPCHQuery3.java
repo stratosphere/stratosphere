@@ -173,7 +173,7 @@ public class TPCHQuery3 {
 		final String lineitemPath = args[0];
 		final String customerPath = args[1];
 		final String ordersPath = args[2];
-		final String resultPath = args.length >= 4 ? args[4] : null;
+		final String resultPath = args.length >= 4 ? args[3] : null;
 
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
