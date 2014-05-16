@@ -94,8 +94,9 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 		FieldParser<Object>[] fieldParsers = (FieldParser<Object>[]) getFieldParsers();
 		
 		//throw exception if no field parsers are available
-		if(fieldParsers.length == 0)
+		if(fieldParsers.length == 0) {
 			throw new IOException("CsvInputFormat.open(FileInputSplit split) - no field parsers to parse input");
+		}
 		
 		// create the value holders
 		this.parsedValues = new Object[fieldParsers.length];
