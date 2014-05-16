@@ -56,7 +56,9 @@ public interface Function {
 	 * 
 	 * @see eu.stratosphere.configuration.Configuration
 	 */
-	void open(Configuration parameters) throws Exception;
+	default void open(Configuration parameters) throws Exception {
+		
+	}
 
 	/**
 	 * Teardown method for the user code. It is called after the last call to the main working methods
@@ -69,7 +71,9 @@ public interface Function {
 	 *                   runtime catches an exception, it aborts the task and lets the fail-over logic
 	 *                   decide whether to retry the task execution.
 	 */
-	void close() throws Exception;
+	default void close() throws Exception {
+		
+	}
 	
 	
 	/**
@@ -80,12 +84,16 @@ public interface Function {
 	 * 
 	 * @return The UDF's runtime context.
 	 */
-	RuntimeContext getRuntimeContext();
+	default RuntimeContext getRuntimeContext() {
+		throw new UnsupportedOperationException("Runtime context can only be retrieved within an subclass of AbstractFunction.");
+	}
 	
 	/**
 	 * Sets the function's runtime context. Called by the framework when creating a parallel instance of the function.
 	 *  
 	 * @param t The runtime context.
 	 */
-	void setRuntimeContext(RuntimeContext t);
+	default void setRuntimeContext(RuntimeContext t) {
+		throw new UnsupportedOperationException("Runtime context can only be set within an subclass of AbstractFunction.");
+	}
 }

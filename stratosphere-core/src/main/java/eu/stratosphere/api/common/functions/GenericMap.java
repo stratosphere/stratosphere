@@ -13,12 +13,14 @@
 
 package eu.stratosphere.api.common.functions;
 
+import java.io.Serializable;
 
-public interface GenericMap<T, O> extends Function {
+
+public interface GenericMap<IN, OUT> extends Function, Serializable {
 	
 	/**
 	 * A user-implemented function that modifies or transforms an incoming object and
 	 * returns the result.
 	 */
-	O map(T record) throws Exception;
+	OUT map(IN record) throws Exception;
 }

@@ -16,6 +16,7 @@ package eu.stratosphere.api.java;
 
 import org.apache.commons.lang3.Validate;
 
+import eu.stratosphere.api.common.functions.GenericMap;
 import eu.stratosphere.api.common.io.FileOutputFormat;
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.java.aggregation.Aggregations;
@@ -129,8 +130,17 @@ public abstract class DataSet<T> {
 	 * @see MapOperator
 	 * @see DataSet
 	 */
-	public <R> MapOperator<T, R> map(MapFunction<T, R> mapper) {
-		return new MapOperator<T, R>(this, mapper);
+	public <R> MapOperator<T, R> map(GenericMap<T, R> mapper) {
+		if (mapper == null) {
+			throw new NullPointerException("GenericMap function must not be null.");
+		}
+		
+		if(mapper instanceof MapFunction) {
+			return new MapOperator<T, R>(this, (MapFunction<T, R>) mapper);
+		}
+		else {
+			return new MapOperator<T, R>(this, mapper);
+		}
 	}
 	
 	/**
