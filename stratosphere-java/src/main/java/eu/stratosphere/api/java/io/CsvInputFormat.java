@@ -117,17 +117,22 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 
 	@Override
 	public OUT readRecord(OUT reuse, byte[] bytes, int offset, int numBytes) {
+		/*
+		 * Fix to support windows line endings in CSVInputFiles with standard delimiter setup = \n
+		 */
+		//Find windows end line, so find chariage return before the newline 
+		if(this.lineDelimiterIsLinebreak == true && bytes[offset + numBytes -1] == "\r".getBytes(Charsets.UTF_8)[0]) {
+			//reduce the number of bytes so that the Carriage return is not taken as data
+			numBytes--;
+		}
+		
 		if (parseRecord(parsedValues, bytes, offset, numBytes)) {
 			// valid parse, map values into pact record
 			for (int i = 0; i < parsedValues.length; i++) {
 				reuse.setField(parsedValues[i], i);
 			}
 			
-			//Find windows end line character
-			if(this.lineDelimiterIsLinebreak == true && bytes[offset + numBytes] == "\r".getBytes(Charsets.UTF_8)[0]) {
-				//reduce the number of bytes so that the Carriage return is not taken as data
-				numBytes--;
-			}
+			
 			
 			return reuse;
 		} else {
