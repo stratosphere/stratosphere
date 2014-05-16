@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 import eu.stratosphere.api.common.io.GenericCsvInputFormat;
@@ -39,6 +40,9 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 
 
 	private transient Object[] parsedValues;
+	
+	//to speed up readRecord processing. Used to find windows line endings
+	private boolean lineDelimiterIsLinebreak = false;
 	
 	
 	public CsvInputFormat(Path filePath) {
@@ -103,6 +107,12 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 		for (int i = 0; i < fieldParsers.length; i++) {
 			this.parsedValues[i] = fieldParsers[i].createValue();
 		}
+		
+		//left to right evaluation makes access [0] okay
+		//this marker is used to fasten up readRecord, so that it doesn't have to check each call if the line ending is set to default
+		if(this.getDelimiter().length == 1 && this.getDelimiter()[0] == "\n".getBytes(Charsets.UTF_8)[0] ) {
+			this.lineDelimiterIsLinebreak = true;
+		}
 	}
 
 	@Override
@@ -112,11 +122,19 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 			for (int i = 0; i < parsedValues.length; i++) {
 				reuse.setField(parsedValues[i], i);
 			}
+			
+			//Find windows end line character
+			if(this.lineDelimiterIsLinebreak == true && bytes[offset + numBytes] == "\r".getBytes(Charsets.UTF_8)[0]) {
+				//reduce the number of bytes so that the Carriage return is not taken as data
+				numBytes--;
+			}
+			
 			return reuse;
 		} else {
 			return null;
 		}
 	}
+	
 	
 	@Override
 	public String toString() {

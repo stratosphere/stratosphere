@@ -528,41 +528,10 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 			int count = 0;
 
 			while (this.readPos < this.limit && i < this.delimiter.length) {
-				if ((this.readBuffer[this.readPos]) == this.delimiter[i]) {
-					
-					/*
-					 * Fix for accessing files with windows line endings \r\n
-					 * When \r\n is found replace the \r with space.			 
-					 */
-					
-					//Check if delimiter is set to exactly \n 
-					if(this.delimiter[0] == "\n".getBytes(Charsets.UTF_8)[0] && this.delimiter.length == 1){
-						//check if preceding byte equals \r
-						
-						if(this.readPos -1 >= startPos) {// Check array bounds
-							//check for preceding \r
-							if( this.readBuffer[this.readPos -1] == "\r".getBytes(Charsets.UTF_8)[0] ) {
-								// replace \r with space
-								this.readBuffer[this.readPos -1] = "\n".getBytes(Charsets.UTF_8)[0];
-								this.readBuffer[this.readPos] = " ".getBytes(Charsets.UTF_8)[0];
-							}
-						}
-						
-					}//if
-					
-					/*
-					 * Fix END
-					 */
-					
-					//increase number of found delimiter characters
+				if ((this.readBuffer[this.readPos++]) == this.delimiter[i]) {
 					i++;
-					//increase read position
-					this.readPos++;
 				} else {
-					//no delimiter found
 					i = 0;
-					//increase read position
-					this.readPos++;
 				}
 
 			}
