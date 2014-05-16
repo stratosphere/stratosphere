@@ -41,7 +41,8 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 
 	private transient Object[] parsedValues;
 	
-	//to speed up readRecord processing. Used to find windows line endings
+	//To speed up readRecord processing. Used to find windows line endings.
+	//It is set when open so that readRecord does not have to evaluate it
 	private boolean lineDelimiterIsLinebreak = false;
 	
 	
