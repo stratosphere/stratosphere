@@ -526,7 +526,6 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 
 			int startPos = this.readPos;
 			int count = 0;
-			boolean standardDelimiterButWindowsFile = false;
 
 			while (this.readPos < this.limit && i < this.delimiter.length) {
 				if ((this.readBuffer[this.readPos]) == this.delimiter[i]) {
@@ -546,13 +545,6 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 								// replace \r with space
 								this.readBuffer[this.readPos -1] = "\n".getBytes(Charsets.UTF_8)[0];
 								this.readBuffer[this.readPos] = " ".getBytes(Charsets.UTF_8)[0];
-								
-								//the delimiter "\r" was found - so set length(i) to 1.
-								//the increase for the \n will occur later (at the end of this if)
-								i = 1;
-								//set a marker to succeed the test why it stopped
-								standardDelimiterButWindowsFile = true;
-								//but break here
 							}
 						}
 						
@@ -575,11 +567,10 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat<OT> {
 
 			}
 
-			// check why we dropped out - delimiter found or windows delimiter found but standard
-			if (i == this.delimiter.length 
-					|| i  == this.delimiter.length + 1 && standardDelimiterButWindowsFile == true) {
+			// check why we dropped out
+			if (i == this.delimiter.length) {
 				// line end
-				count = this.readPos - startPos - i; // i is the delimiter length. 
+				count = this.readPos - startPos - this.delimiter.length;
 
 				// copy to byte array
 				if (countInWrapBuffer > 0) {
