@@ -43,12 +43,8 @@ public class CsvInputFormatTest {
 	private static final Path PATH = new Path("an/ignored/file/");
 	
 	//Static variables for testing the removal of \r\n to \n
-	private static final String FIRST_PART_1 = "That is";
-	private static final String FIRST_PART_2 =" the first part";
 	private static final String FIRST_PART = "That is the first part";
 	
-	private static final String SECOND_PART_1 = "That is";
-	private static final String SECOND_PART_2 = " the second part";
 	private static final String SECOND_PART = "That is the second part";
 	
 	
