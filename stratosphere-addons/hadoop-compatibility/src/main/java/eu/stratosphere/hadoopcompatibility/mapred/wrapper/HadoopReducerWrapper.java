@@ -18,9 +18,7 @@ import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
 import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
 import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.DefaultStratosphereTypeConverter;
 import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.StratosphereTypeConverter;
-import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DefaultHadoopOutput;
-import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DummyHadoopReporter;
-import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopOutputWrapper;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.PeekingRecordUnwrappingIterator;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 import eu.stratosphere.util.InstantiationUtil;
@@ -36,10 +34,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-
 
 @Combinable
 public class HadoopReducerWrapper<KEYIN extends WritableComparable,VALUEIN extends Writable,
@@ -53,6 +48,7 @@ public class HadoopReducerWrapper<KEYIN extends WritableComparable,VALUEIN exten
 	private StratosphereTypeConverter<KEYIN, VALUEIN> stratosphereConverter;
 	private HadoopOutputWrapper<KEYOUT,VALUEOUT,Record> output;
 	private Reporter reporter;
+	private PeekingRecordUnwrappingIterator valuesIterator;
 
 	@SuppressWarnings("unchecked")
 	public HadoopReducerWrapper(JobConf jobConf) {
@@ -68,29 +64,24 @@ public class HadoopReducerWrapper<KEYIN extends WritableComparable,VALUEIN exten
 		this.stratosphereConverter = stratosphereConverter;
 		this.output = output;
 		this.reporter = reporter;
+		this.valuesIterator = new PeekingRecordUnwrappingIterator<VALUEIN, KEYIN>(stratosphereConverter);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void reduce(Iterator<Record> records, Collector<Record> out) throws Exception {
 		output.wrapStratosphereCollector(out);
-		KEYIN key = null;
-		List<VALUEIN> values = new ArrayList<VALUEIN>();
-		while (records.hasNext()) {
-			Record rec = records.next();
-			if (key == null) {
-				key = stratosphereConverter.convertKey(rec);
-			}
-			values.add(stratosphereConverter.convertValue(rec));
-		}
-		reducer.reduce(key, values.iterator(), output, reporter);
+		valuesIterator.set(records);
+		reducer.reduce(valuesIterator.getKey(), valuesIterator, output, reporter);
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeUTF(reducerName);
-
+		HadoopConfiguration.setOutputCollectorToConf(output.getClass(), jobConf);
+		HadoopConfiguration.setReporterToConf(reporter.getClass(), jobConf);
 		jobConf.write(out);
 		out.writeObject(stratosphereConverter);
+		out.writeObject(valuesIterator);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -107,6 +98,7 @@ public class HadoopReducerWrapper<KEYIN extends WritableComparable,VALUEIN exten
 		}
 		ReflectionUtils.setConf(reducer, jobConf);
 		stratosphereConverter = (StratosphereTypeConverter<KEYIN, VALUEIN>) in.readObject();
+		valuesIterator = (PeekingRecordUnwrappingIterator<VALUEIN, KEYIN>) in.readObject();
 		output = InstantiationUtil.instantiate(HadoopConfiguration.getOutputCollectorFromConf(jobConf));
 		reporter = InstantiationUtil.instantiate(HadoopConfiguration.getReporterFromConf(jobConf));
 	}
