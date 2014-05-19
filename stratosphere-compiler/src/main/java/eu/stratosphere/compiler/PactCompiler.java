@@ -792,6 +792,8 @@ public class PactCompiler {
 		private final GraphCreatingVisitor parent;	// reference to enclosing creator, in case of a recursive translation
 		
 		private final boolean forceDOP;
+		
+		private boolean insideIteration = false; // used to mark inner nodes of iterations
 
 		
 		private GraphCreatingVisitor(int maxMachines, int defaultParallelism) {
@@ -811,6 +813,12 @@ public class PactCompiler {
 			this.defaultParallelism = defaultParallelism;
 			this.parent = parent;
 			this.forceDOP = forceDOP;
+		}
+		
+		private GraphCreatingVisitor(GraphCreatingVisitor parent, boolean forceDOP, int maxMachines,
+				int defaultParallelism, HashMap<Operator, OptimizerNode> closure, boolean insideIteration) {
+			this(parent, forceDOP, maxMachines, defaultParallelism, closure);
+			this.insideIteration = insideIteration;
 		}
 
 		@Override
@@ -944,6 +952,9 @@ public class PactCompiler {
 				// value required to obey the maximum number of machines
 				n.setSubtasksPerInstance(tasksPerInstance);
 			}
+			
+			n.setInsideIteration(insideIteration);
+			
 			return true;
 		}
 
@@ -966,7 +977,7 @@ public class PactCompiler {
 
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
-					this.maxMachines, iterNode.getDegreeOfParallelism(), closure);
+					this.maxMachines, iterNode.getDegreeOfParallelism(), closure, true);
 				
 				BulkPartialSolutionNode partialSolution = null;
 				
@@ -1013,7 +1024,7 @@ public class PactCompiler {
 
 				// first, recursively build the data flow for the step function
 				final GraphCreatingVisitor recursiveCreator = new GraphCreatingVisitor(this, true,
-					this.maxMachines, iterNode.getDegreeOfParallelism(), closure);
+					this.maxMachines, iterNode.getDegreeOfParallelism(), closure, true);
 				// descend from the solution set delta. check that it depends on both the workset
 				// and the solution set. If it does depend on both, this descend should create both nodes
 				iter.getSolutionSetDelta().accept(recursiveCreator);

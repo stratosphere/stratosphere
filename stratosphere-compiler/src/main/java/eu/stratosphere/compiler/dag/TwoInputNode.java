@@ -521,7 +521,7 @@ public abstract class TwoInputNode extends OptimizerNode {
 							{
 								// all right, co compatible
 								instantiate(dps, in1, in2, broadcastPlanChannels, target, estimator, rgps1, rgps2, ilp1, ilp2);
-								break allPossibleLoop;
+								continue allPossibleLoop;
 							} else {
 								// meet, but not co-compatible
 								throw new CompilerException("Implements to adjust one side to the other!");
