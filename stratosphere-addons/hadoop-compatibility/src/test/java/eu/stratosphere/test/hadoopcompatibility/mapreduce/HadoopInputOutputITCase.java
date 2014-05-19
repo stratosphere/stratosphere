@@ -30,7 +30,13 @@ public class HadoopInputOutputITCase extends JavaProgramTestBase {
 	
 	@Override
 	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(WordCountData.COUNTS, resultPath + "/part-r-00001");
+		// TODO fix the different paths for hadoop 1 and 2
+		try {
+			compareResultsByLinesInMemory(WordCountData.COUNTS, resultPath + "/part-r-00001");
+		}
+		catch(AssertionError e) {
+			compareResultsByLinesInMemory(WordCountData.COUNTS, resultPath + "/_temporary/0/task__0000_r_000001/part-r-00001");
+		}
 	}
 	
 	@Override
