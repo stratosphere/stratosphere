@@ -78,7 +78,13 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 			throws IOException {
 		configuration.setInt("mapreduce.input.fileinputformat.split.minsize", minNumSplits);
 		
-		JobContext jobContext = new JobContext(configuration, new JobID());
+		JobContext jobContext = null;
+		try {
+			jobContext = HadoopUtils.instantiateJobContext(configuration, new JobID());
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		
 		List<org.apache.hadoop.mapreduce.InputSplit> splits;
 		try {
@@ -101,8 +107,15 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 	
 	@Override
 	public void open(HadoopInputSplit split) throws IOException {
+		TaskAttemptContext context = null;
 		try {
-			TaskAttemptContext context = new TaskAttemptContext(configuration, new TaskAttemptID());
+			context = HadoopUtils.instantiateTaskAttemptContext(configuration, new TaskAttemptID());
+		}
+		catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		try {
 			this.recordReader = this.mapreduceInputFormat
 					.createRecordReader(split.getHadoopInputSplit(), context);
 			this.recordReader.initialize(split.getHadoopInputSplit(), context);

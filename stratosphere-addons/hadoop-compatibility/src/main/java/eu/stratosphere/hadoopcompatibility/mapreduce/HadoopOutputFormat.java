@@ -19,7 +19,6 @@ import java.io.ObjectOutputStream;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -75,11 +74,21 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 				+ Integer.toString(taskNumber + 1) 
 				+ "_0");
 		
-		this.context = new TaskAttemptContext(this.configuration, taskAttemptID);
+		try {
+			this.context = HadoopUtils.instantiateTaskAttemptContext(this.configuration, taskAttemptID);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		this.configuration.set("mapred.task.id", taskAttemptID.toString());
 		
 		this.fileOutputCommitter = new FileOutputCommitter(new Path(this.configuration.get("mapred.output.dir")), context);
-		this.fileOutputCommitter.setupJob(new JobContext(this.configuration, new JobID()));
+		
+		try {
+			this.fileOutputCommitter.setupJob(HadoopUtils.instantiateJobContext(this.configuration, new JobID()));
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		
 		// compatible for hadoop 2.2.0, the temporary output directory is different from hadoop 1.2.1
 		this.configuration.set("mapreduce.task.output.dir", this.fileOutputCommitter.getWorkPath().toString());
