@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility.example;
+package eu.stratosphere.hadoopcompatibility.mapred.example;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.Program;
@@ -19,10 +19,10 @@ import eu.stratosphere.api.common.ProgramDescription;
 import eu.stratosphere.api.java.record.operators.MapOperator;
 import eu.stratosphere.api.java.record.operators.ReduceOperator;
 import eu.stratosphere.client.LocalExecutor;
-import eu.stratosphere.hadoopcompatibility.HadoopDataSink;
-import eu.stratosphere.hadoopcompatibility.HadoopDataSource;
-import eu.stratosphere.hadoopcompatibility.HadoopMapperWrapper;
-import eu.stratosphere.hadoopcompatibility.HadoopReducerWrapper;
+import eu.stratosphere.hadoopcompatibility.mapred.record.HadoopDataSink;
+import eu.stratosphere.hadoopcompatibility.mapred.record.HadoopDataSource;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopMapperWrapper;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopReducerWrapper;
 import eu.stratosphere.types.StringValue;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;

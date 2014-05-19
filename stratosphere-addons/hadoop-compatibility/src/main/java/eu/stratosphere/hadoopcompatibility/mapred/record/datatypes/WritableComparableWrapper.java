@@ -1,5 +1,5 @@
 /***********************************************************************************************************************
- * Copyright (C) 2010-2014 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -11,17 +11,25 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility;
+package eu.stratosphere.hadoopcompatibility.mapred.record.datatypes;
 
-import eu.stratosphere.hadoopcompatibility.datatypes.HadoopTypeConverter;
-import eu.stratosphere.util.Collector;
-import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.io.WritableComparable;
 
+import eu.stratosphere.types.Key;
 
-public interface HadoopOutputWrapper<K,V,T> extends OutputCollector<K,V> {
+public class WritableComparableWrapper<T extends WritableComparable<T>> extends WritableWrapper<T> implements Key<WritableComparableWrapper<T>> {
+	private static final long serialVersionUID = 1L;
+	
+	public WritableComparableWrapper() {
+		super();
+	}
+	
+	public WritableComparableWrapper(T toWrap) {
+		super(toWrap);
+	}
 
-	public void wrapStratosphereCollector(Collector<T> collector);
-
-	public void setHadoopConverter(HadoopTypeConverter<K,V> converter);
-
+	@Override
+	public int compareTo(WritableComparableWrapper<T> o) {
+		return super.value().compareTo(o.value());
+	}
 }

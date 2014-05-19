@@ -14,7 +14,7 @@
 package eu.stratosphere.test.hadoopcompatibility;
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.hadoopcompatibility.example.HadoopWordCount;
+import eu.stratosphere.hadoopcompatibility.mapred.example.HadoopWordCount;
 import eu.stratosphere.test.testdata.WordCountData;
 import eu.stratosphere.test.util.RecordAPITestBase;
 

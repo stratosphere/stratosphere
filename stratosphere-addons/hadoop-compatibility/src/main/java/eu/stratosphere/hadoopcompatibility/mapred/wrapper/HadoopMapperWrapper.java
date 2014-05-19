@@ -11,11 +11,15 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility;
+package eu.stratosphere.hadoopcompatibility.mapred.wrapper;
 
 import eu.stratosphere.api.java.record.functions.MapFunction;
-import eu.stratosphere.hadoopcompatibility.datatypes.DefaultStratosphereTypeConverter;
-import eu.stratosphere.hadoopcompatibility.datatypes.StratosphereTypeConverter;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.DefaultStratosphereTypeConverter;
+import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.StratosphereTypeConverter;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DefaultHadoopOutput;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DummyHadoopReporter;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopOutputWrapper;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.util.Collector;
 import eu.stratosphere.util.InstantiationUtil;

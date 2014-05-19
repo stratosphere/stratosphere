@@ -11,10 +11,13 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility;
+package eu.stratosphere.hadoopcompatibility.mapred.utils;
 
 import java.util.Map;
 
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DefaultHadoopOutput;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DummyHadoopReporter;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopOutputWrapper;
 import org.apache.hadoop.mapred.JobConf;
 
 import eu.stratosphere.runtime.fs.hdfs.DistributedFileSystem;

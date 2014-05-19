@@ -11,12 +11,16 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility;
+package eu.stratosphere.hadoopcompatibility.mapred.record;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DummyHadoopProgressable;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.DummyHadoopReporter;
+import eu.stratosphere.hadoopcompatibility.mapred.wrapper.FileOutputCommitterWrapper;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -24,7 +28,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.hadoopcompatibility.datatypes.StratosphereTypeConverter;
+import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.StratosphereTypeConverter;
 import eu.stratosphere.types.Record;
 
 

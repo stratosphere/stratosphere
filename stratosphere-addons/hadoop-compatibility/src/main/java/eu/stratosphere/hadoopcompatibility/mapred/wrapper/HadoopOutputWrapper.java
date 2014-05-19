@@ -1,5 +1,5 @@
 /***********************************************************************************************************************
- * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010-2014 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -11,26 +11,17 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility.datatypes;
+package eu.stratosphere.hadoopcompatibility.mapred.wrapper;
 
-import java.io.Serializable;
+import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.HadoopTypeConverter;
+import eu.stratosphere.util.Collector;
+import org.apache.hadoop.mapred.OutputCollector;
 
-import eu.stratosphere.types.Record;
 
+public interface HadoopOutputWrapper<K,V,T> extends OutputCollector<K,V> {
 
-/**
- * An interface describing a class that is able to 
- * convert Hadoop types into Stratosphere's Record model.
- * 
- * The converter must be Serializable.
- * 
- * Stratosphere provides a DefaultHadoopTypeConverter. Custom implementations should
- * chain the type converters.
- */
-public interface HadoopTypeConverter<K, V> extends Serializable {
-	
-	/**
-	 * Convert a Hadoop type to a Stratosphere type.
-	 */
-	public void convert(Record stratosphereRecord, K hadoopKey, V hadoopValue);
+	public void wrapStratosphereCollector(Collector<T> collector);
+
+	public void setHadoopConverter(HadoopTypeConverter<K,V> converter);
+
 }
