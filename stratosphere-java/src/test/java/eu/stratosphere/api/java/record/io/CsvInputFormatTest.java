@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import junit.framework.Assert;
 
@@ -32,6 +33,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import eu.stratosphere.api.java.io.CsvInputFormat;
+import eu.stratosphere.api.java.io.CsvInputFormatTest;
+import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.IllegalConfigurationException;
 import eu.stratosphere.core.fs.FileInputSplit;
@@ -329,6 +333,69 @@ public class CsvInputFormatTest {
 		dos.close();
 			
 		return new FileInputSplit(0, new Path(this.tempFile.toURI().toString()), 0, this.tempFile.length(), new String[] {"localhost"});
+	}
+	
+	@Test
+	public void testWindowsLineEndRemoval() {
+		
+		//Check typical use case -- linux file is correct and it is set up to linuc(\n)
+		this.testRemovingTrailingCR("\n", "\n");
+		
+		//Check typical windows case -- windows file endings and file has windows file endings set up
+		this.testRemovingTrailingCR("\r\n", "\r\n");
+		
+		//Check problematic case windows file -- windows file endings(\r\n) but linux line endings (\n) set up
+		this.testRemovingTrailingCR("\r\n", "\n");
+		
+		//Check problematic case linux file -- linux file endings (\n) but windows file endings set up (\r\n)
+		//Specific setup for windows line endings will expect \r\n because it has to be set up and is not standard.
+	}
+	
+	private void testRemovingTrailingCR(String lineBreakerInFile, String lineBreakerSetup) {
+		File tempFile=null;
+		
+		String fileContent = CsvInputFormatTest.FIRST_PART + lineBreakerInFile + CsvInputFormatTest.SECOND_PART + lineBreakerInFile;
+		
+		try {
+			// create input file
+			tempFile = File.createTempFile("CsvInputFormatTest", "tmp");
+			tempFile.deleteOnExit();
+			tempFile.setWritable(true);
+			
+			OutputStreamWriter wrt = new OutputStreamWriter(new FileOutputStream(tempFile));
+			wrt.write(fileContent);
+			wrt.close();
+			
+			CsvInputFormat<Tuple1<String>> inputFormat = new CsvInputFormat<Tuple1<String>>(new Path(tempFile.toURI().toString()),String.class);
+			
+			Configuration parameters = new Configuration(); 
+			inputFormat.configure(parameters);
+			
+			inputFormat.setDelimiter(lineBreakerSetup);
+			
+			FileInputSplit[] splits = inputFormat.createInputSplits(1);
+						
+			inputFormat.open(splits[0]);
+			
+			Tuple1<String> result = inputFormat.nextRecord(new Tuple1<String>());
+			
+			assertNotNull("Expecting to not return null", result);
+			
+			
+			
+			assertEquals(FIRST_PART, result.f0);
+			
+			result = inputFormat.nextRecord(result);
+			
+			assertNotNull("Expecting to not return null", result);
+			assertEquals(SECOND_PART, result.f0);
+			
+		}
+		catch (Throwable t) {
+			System.err.println("test failed with exception: " + t.getMessage());
+			t.printStackTrace(System.err);
+			fail("Test erroneous");
+		}
 	}
 
 }
