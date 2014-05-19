@@ -33,9 +33,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.stratosphere.api.java.io.CsvInputFormat;
-import eu.stratosphere.api.java.io.CsvInputFormatTest;
-import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.IllegalConfigurationException;
 import eu.stratosphere.core.fs.FileInputSplit;
@@ -50,6 +47,11 @@ public class CsvInputFormatTest {
 	protected File tempFile;
 	
 	private final CsvInputFormat format = new CsvInputFormat();
+	
+	//Static variables for testing the removal of \r\n to \n
+	private static final String FIRST_PART = "That is the first part";
+		
+	private static final String SECOND_PART = "That is the second part";
 	
 	// --------------------------------------------------------------------------------------------
 
@@ -366,9 +368,14 @@ public class CsvInputFormatTest {
 			wrt.write(fileContent);
 			wrt.close();
 			
-			CsvInputFormat<Tuple1<String>> inputFormat = new CsvInputFormat<Tuple1<String>>(new Path(tempFile.toURI().toString()),String.class);
+			//Instantiate input format
+			CsvInputFormat inputFormat = new CsvInputFormat();
 			
-			Configuration parameters = new Configuration(); 
+			Configuration parameters = new Configuration();
+			new CsvInputFormat.ConfigBuilder(null, parameters)
+			.field(StringValue.class, 0).filePath(tempFile.toURI().toString());
+			
+			
 			inputFormat.configure(parameters);
 			
 			inputFormat.setDelimiter(lineBreakerSetup);
@@ -377,18 +384,20 @@ public class CsvInputFormatTest {
 						
 			inputFormat.open(splits[0]);
 			
-			Tuple1<String> result = inputFormat.nextRecord(new Tuple1<String>());
+			Record record = new Record();
+			
+			Record result = inputFormat.nextRecord(record);
 			
 			assertNotNull("Expecting to not return null", result);
 			
 			
 			
-			assertEquals(FIRST_PART, result.f0);
+			assertEquals(FIRST_PART, result.getField(0, StringValue.class).getValue());
 			
-			result = inputFormat.nextRecord(result);
+			result = inputFormat.nextRecord(record);
 			
 			assertNotNull("Expecting to not return null", result);
-			assertEquals(SECOND_PART, result.f0);
+			assertEquals(SECOND_PART, result.getField(0, StringValue.class).getValue());
 			
 		}
 		catch (Throwable t) {
