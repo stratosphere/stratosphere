@@ -15,7 +15,6 @@ package eu.stratosphere.api.java.record.io;
 
 import java.io.IOException;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 import eu.stratosphere.api.common.io.GenericCsvInputFormat;
