@@ -107,7 +107,7 @@ public class SemanticPropUtilTest {
 
 		fs = sp.getForwardedField(4);
 		Assert.assertTrue(fs.size() == 1);
-		Assert.assertTrue(fs.contains(3));
+		Assert.assertTrue(fs.contains(0));
 	}
 
 	@Test
