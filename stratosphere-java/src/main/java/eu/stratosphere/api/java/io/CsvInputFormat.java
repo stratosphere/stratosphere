@@ -111,7 +111,7 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 		
 		//left to right evaluation makes access [0] okay
 		//this marker is used to fasten up readRecord, so that it doesn't have to check each call if the line ending is set to default
-		if(this.getDelimiter().length == 1 && this.getDelimiter()[0] == "\n".getBytes(Charsets.UTF_8)[0] ) {
+		if(this.getDelimiter().length == 1 && this.getDelimiter()[0] == '\n' ) {
 			this.lineDelimiterIsLinebreak = true;
 		}
 	}
@@ -122,7 +122,7 @@ public class CsvInputFormat<OUT extends Tuple> extends GenericCsvInputFormat<OUT
 		 * Fix to support windows line endings in CSVInputFiles with standard delimiter setup = \n
 		 */
 		//Find windows end line, so find chariage return before the newline 
-		if(this.lineDelimiterIsLinebreak == true && bytes[offset + numBytes -1] == "\r".getBytes(Charsets.UTF_8)[0]) {
+		if(this.lineDelimiterIsLinebreak == true && bytes[offset + numBytes -1] == '\r' ) {
 			//reduce the number of bytes so that the Carriage return is not taken as data
 			numBytes--;
 		}
