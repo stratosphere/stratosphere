@@ -14,7 +14,7 @@
 package eu.stratosphere.test.hadoopcompatibility;
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.hadoopcompatibility.example.WordCountWithHadoopOutputFormat;
+import eu.stratosphere.hadoopcompatibility.mapred.example.HadoopWordCount;
 import eu.stratosphere.test.testdata.WordCountData;
 import eu.stratosphere.test.util.RecordAPITestBase;
 
@@ -35,14 +35,13 @@ public class HadoopInputOutputTest extends RecordAPITestBase {
 
 	@Override
 	protected Plan getTestJob() {
-		//WordCountWithHadoopOutputFormat takes hadoop TextInputFormat as input and output file in hadoop TextOutputFormat
-		WordCountWithHadoopOutputFormat wc = new WordCountWithHadoopOutputFormat();
+        HadoopWordCount wc = new HadoopWordCount();
 		return wc.getPlan("1", textPath, resultPath);
 	}
 
 	@Override
 	protected void postSubmit() throws Exception {
-		// Test results, append /1 to resultPath due to the generated _temproray file.
+		// Test results, append /1 to resultPath due to the generated temporary file.
 		compareResultsByLinesInMemory(counts, resultPath + "/1");
 	}
 }

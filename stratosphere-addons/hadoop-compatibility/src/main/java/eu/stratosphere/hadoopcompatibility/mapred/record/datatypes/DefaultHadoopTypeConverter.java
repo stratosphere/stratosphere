@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility.datatypes;
+package eu.stratosphere.hadoopcompatibility.mapred.record.datatypes;
 
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.ByteWritable;
@@ -20,7 +20,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 
 import eu.stratosphere.types.BooleanValue;
 import eu.stratosphere.types.ByteValue;
@@ -52,7 +51,7 @@ public class DefaultHadoopTypeConverter<K, V> implements HadoopTypeConverter<K, 
 			return new LongValue(((LongWritable)hadoopType).get());
 		}
 		if(hadoopType instanceof org.apache.hadoop.io.Text) {
-			return new StringValue(((Text)hadoopType).toString());
+			return new StringValue(hadoopType.toString());
 		}
 		if(hadoopType instanceof org.apache.hadoop.io.IntWritable) {
 			return new IntValue(((IntWritable)hadoopType).get());
