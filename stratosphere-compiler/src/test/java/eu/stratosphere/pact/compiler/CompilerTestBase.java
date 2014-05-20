@@ -29,6 +29,7 @@ import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.api.common.io.FileInputFormat.FileBaseStatistics;
 import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.DeltaIteration;
+import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.compiler.DataStatistics;
@@ -314,5 +315,36 @@ public abstract class CompilerTestBase implements java.io.Serializable {
 
 		@Override
 		public void postVisit(Operator visitable) {}
+	}
+
+	/**
+	 * Collects all DataSources of a plan to add statistics
+	 *
+	 */
+	public static class SourceCollectorVisitor implements Visitor<Operator> {
+		
+		protected final List<GenericDataSource<?>> sources = new ArrayList<GenericDataSource<?>>(4);
+
+		@Override
+		public boolean preVisit(Operator visitable) {
+			
+			if(visitable instanceof GenericDataSource) {
+				sources.add((GenericDataSource<?>) visitable);
+			}
+			else if(visitable instanceof BulkIteration) {
+				((BulkIteration) visitable).getNextPartialSolution().accept(this);
+			}
+			
+			return true;
+		}
+
+		@Override
+		public void postVisit(Operator visitable) {
+		}
+		
+		public List<GenericDataSource<?>> getSources() {
+			return this.sources;
+		}
+		
 	}
 }
