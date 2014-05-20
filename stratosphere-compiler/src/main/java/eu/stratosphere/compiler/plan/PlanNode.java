@@ -401,6 +401,10 @@ public abstract class PlanNode implements Visitable<PlanNode>, DumpableNode<Plan
 		return this.template.getCostWeight();
 	}
 	
+	public boolean isInsideIteration() {
+		return this.template.isInsideIteration();
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	
 	public abstract SourceAndDamReport hasDamOnPathDownTo(PlanNode source);
