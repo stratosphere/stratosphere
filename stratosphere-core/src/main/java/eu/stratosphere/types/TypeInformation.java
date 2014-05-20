@@ -12,25 +12,21 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators.translation;
+package eu.stratosphere.types;
 
-import eu.stratosphere.api.common.io.InputFormat;
-import eu.stratosphere.api.common.operators.GenericDataSource;
-import eu.stratosphere.api.java.typeutils.TypeInformation;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
 
-
-public class PlanDataSource<T> extends GenericDataSource<InputFormat<T,?>> implements JavaPlanNode<T> {
-
-	private final TypeInformation<T> producedType;
-
-	public PlanDataSource(InputFormat<T, ?> format, String name, TypeInformation<T> producedType) {
-		super(format, name);
-		
-		this.producedType = producedType;
-	}
+public abstract class TypeInformation<T> {
 	
-	@Override
-	public TypeInformation<T> getReturnType() {
-		return producedType;
-	}
+	public abstract boolean isBasicType();
+	
+	public abstract boolean isTupleType();
+	
+	public abstract int getArity();
+	
+	public abstract Class<T> getTypeClass();
+	
+	public abstract boolean isKeyType();
+	
+	public abstract TypeSerializer<T> createSerializer();
 }
