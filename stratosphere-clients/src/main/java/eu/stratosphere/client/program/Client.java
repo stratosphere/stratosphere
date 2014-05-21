@@ -167,6 +167,7 @@ public class Client {
 	}
 	
 	public JobExecutionResult run(PackagedProgram prog, boolean wait) throws ProgramInvocationException {
+		Thread.currentThread().setContextClassLoader(prog.getUserCodeClassLoader());
 		if (prog.isUsingProgramEntryPoint()) {
 			return run(prog.getPlanWithJars(), wait);
 		}
