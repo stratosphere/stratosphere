@@ -38,6 +38,11 @@ import eu.stratosphere.util.StringUtils;
 public final class ManagementGroupVertex extends ManagementAttachment implements IOReadableWritable {
 
 	/**
+	 * The number of processed input splits if DataSource or DataSink
+	 */
+	private int processedSplits = 0;
+	
+	/**
 	 * The ID of the management group vertex.
 	 */
 	private final ManagementGroupVertexID id;
@@ -424,6 +429,7 @@ public final class ManagementGroupVertex extends ManagementAttachment implements
 		json.append("\"groupvertexid\": \"" + this.getID() + "\",");
 		json.append("\"groupvertexname\": \"" + StringUtils.escapeHtml(this.getName()) + "\",");
 		json.append("\"numberofgroupmembers\": " + this.getNumberOfGroupMembers() + ",");
+		//json.append("\"processedsplits\": " + this.getProcessedSplits() + ",");
 		json.append("\"groupmembers\": [");
 		
 		// Count state status of group members
@@ -475,5 +481,19 @@ public final class ManagementGroupVertex extends ManagementAttachment implements
 		json.append("}");
 		
 		return json.toString();
+	}
+
+	/**
+	 * @return the processedSplits
+	 */
+	public int getProcessedSplits() {
+		return processedSplits;
+	}
+
+	/**
+	 * @param processedSplits the processedSplits to set
+	 */
+	public void setProcessedSplits(int processedSplits) {
+		this.processedSplits = processedSplits;
 	}
 }
