@@ -90,6 +90,8 @@ import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitManager;
 import eu.stratosphere.nephele.jobmanager.splitassigner.InputSplitWrapper;
 import eu.stratosphere.nephele.jobmanager.web.WebInfoServer;
 import eu.stratosphere.nephele.managementgraph.ManagementGraph;
+import eu.stratosphere.nephele.managementgraph.ManagementGroupVertex;
+import eu.stratosphere.nephele.managementgraph.ManagementVertex;
 import eu.stratosphere.nephele.managementgraph.ManagementVertexID;
 import eu.stratosphere.nephele.multicast.MulticastManager;
 import eu.stratosphere.nephele.profiling.JobManagerProfiler;
@@ -1168,6 +1170,19 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			LOG.error("Cannot find execution vertex for vertex ID " + vertexID);
 			return null;
 		}
+		
+		//Get the management group vertex
+		
+		//get the management graph
+		ManagementGraph mgmtGraph = this.getManagementGraph(jobID);
+		//get the management vertex
+		ManagementVertex mgmtVertex = mgmtGraph.getVertexByID(vertex.getID().toManagementVertexID());
+		//finally get the management group vertex
+		ManagementGroupVertex mgmtGroupVertex = mgmtVertex.getGroupVertex();
+		
+		//increase the number of processed splits - because a new one is requested through this method
+		mgmtGroupVertex.setProcessedSplits(mgmtGroupVertex.getProcessedSplits() + 1);
+		
 
 		return new InputSplitWrapper(jobID, this.inputSplitManager.getNextInputSplit(vertex, sequenceNumber.getValue()));
 	}
