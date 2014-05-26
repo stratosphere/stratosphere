@@ -429,7 +429,7 @@ public final class ManagementGroupVertex extends ManagementAttachment implements
 		json.append("\"groupvertexid\": \"" + this.getID() + "\",");
 		json.append("\"groupvertexname\": \"" + StringUtils.escapeHtml(this.getName()) + "\",");
 		json.append("\"numberofgroupmembers\": " + this.getNumberOfGroupMembers() + ",");
-		//json.append("\"processedsplits\": " + this.getProcessedSplits() + ",");
+		json.append("\"processedsplits\": " + this.getProcessedSplits() + ",");
 		json.append("\"groupmembers\": [");
 		
 		// Count state status of group members
