@@ -23,11 +23,10 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.api.common.operators.BulkIteration;
-import eu.stratosphere.api.common.operators.DeltaIteration;
-import eu.stratosphere.api.common.operators.FileDataSink;
-import eu.stratosphere.api.common.operators.FileDataSource;
-import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.java.record.operators.BulkIteration;
+import eu.stratosphere.api.java.record.operators.DeltaIteration;
+import eu.stratosphere.api.java.record.operators.FileDataSink;
+import eu.stratosphere.api.java.record.operators.FileDataSource;
 import eu.stratosphere.api.java.record.operators.CoGroupOperator;
 import eu.stratosphere.api.java.record.operators.CrossOperator;
 import eu.stratosphere.api.java.record.operators.JoinOperator;
@@ -48,8 +47,7 @@ import eu.stratosphere.pact.compiler.util.IdentityReduce;
 import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.LongValue;
 
-/**
- */
+@SuppressWarnings("serial")
 public class BranchingPlansCompilerTest extends CompilerTestBase {
 	
 	
@@ -58,7 +56,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		final int SINKS = 5;
 	
 		try {
-			List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+			List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 	
 			// construct the plan
 			final String out1Path = "file:///test/1";
@@ -125,7 +123,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 			FileDataSink sinkB = new FileDataSink(DummyOutputFormat.class, out2Path, mapC, "Sink B");
 			FileDataSink sinkC = new FileDataSink(DummyOutputFormat.class, out3Path, mapC, "Sink C");
 			
-			List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+			List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 			sinks.add(sinkA);
 			sinks.add(sinkB);
 			sinks.add(sinkC);
@@ -313,7 +311,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 			FileDataSink sinkB = new FileDataSink(new DummyOutputFormat(), out2Path, mat2);
 			FileDataSink sinkC = new FileDataSink(new DummyOutputFormat(), out3Path, mat2);
 			
-			List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+			List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 			sinks.add(sinkA);
 			sinks.add(sinkB);
 			sinks.add(sinkC);
@@ -364,6 +362,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 				.name("Reduce 1")
 				.build();
 			
+			@SuppressWarnings("unchecked")
 			JoinOperator match1 = JoinOperator.builder(new DummyMatchStub(), IntValue.class, 0, 0)
 				.input1(sourceB, sourceB, sourceC)
 				.input2(sourceC)
@@ -473,6 +472,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 			
 			MapOperator ma3 = MapOperator.builder(new IdentityMap()).input(ma2).name("Map 3").build();
 			
+			@SuppressWarnings("unchecked")
 			JoinOperator mat2 = JoinOperator.builder(new DummyMatchStub(), IntValue.class, 0, 0)
 				.input1(r1, r2, ma2, ma3)
 				.input2(ma2)
@@ -518,7 +518,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 			FileDataSink sinkA = new FileDataSink(DummyOutputFormat.class, out1Path, sourceA);
 			FileDataSink sinkB = new FileDataSink(DummyOutputFormat.class, out2Path, sourceA);
 			
-			List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+			List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 			sinks.add(sinkA);
 			sinks.add(sinkB);
 			
@@ -572,7 +572,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		FileDataSink sinkA = new FileDataSink(DummyOutputFormat.class, out1Path, sourceA);
 		FileDataSink sinkB = new FileDataSink(DummyOutputFormat.class, out2Path, sourceB);
 		
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sinkA);
 		sinks.add(sinkB);
 		
@@ -615,7 +615,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		FileDataSink sink4 = new FileDataSink(DummyOutputFormat.class, out4Path, sourceB, "4");
 		
 		
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink1);
 		sinks.add(sink2);
 		sinks.add(sink3);
@@ -651,7 +651,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		
 		FileDataSink sink2 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, postMap, "Sink 2");
 		
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink1);
 		sinks.add(sink2);
 		
@@ -735,7 +735,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 
 		FileDataSink sink3 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Sink 3");
 
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink1);
 		sinks.add(sink2);
 		sinks.add(sink3);
@@ -791,7 +791,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 
 		FileDataSink sink3 = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Sink 3");
 
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink1);
 		sinks.add(sink2);
 		sinks.add(sink3);
@@ -859,7 +859,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		iteration.setSolutionSetDelta(solutionSetDelta);
 
 		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink);
 
 		Plan plan = new Plan(sinks);
@@ -913,7 +913,7 @@ public class BranchingPlansCompilerTest extends CompilerTestBase {
 		iteration.setNextPartialSolution(nextPartialSolution);
 
 		FileDataSink sink = new FileDataSink(DummyOutputFormat.class, OUT_FILE, iteration, "Iteration sink");
-		List<GenericDataSink> sinks = new ArrayList<GenericDataSink>();
+		List<FileDataSink> sinks = new ArrayList<FileDataSink>();
 		sinks.add(sink);
 
 		Plan plan = new Plan(sinks);

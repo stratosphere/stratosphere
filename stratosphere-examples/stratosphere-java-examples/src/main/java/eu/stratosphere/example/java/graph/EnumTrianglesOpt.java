@@ -64,6 +64,9 @@ import eu.stratosphere.util.Collector;
  *   (2)-(12)
  * </pre>
  * 
+ * Usage: <code>EnumTriangleOpt &lt;edge path&gt; &lt;result path&gt;</code><br>
+ * If no parameters are provided, the program is run with default data from {@link EnumTrianglesData}.
+ * 
  * <p>
  * This example shows how to use:
  * <ul>
@@ -81,7 +84,9 @@ public class EnumTrianglesOpt {
 	
 	public static void main(String[] args) throws Exception {
 		
-		parseParameters(args);
+		if(!parseParameters(args)) {
+			return;
+		}
 		
 		// set up execution environment
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
@@ -307,7 +312,7 @@ public class EnumTrianglesOpt {
 	private static String edgePath = null;
 	private static String outputPath = null;
 	
-	private static void parseParameters(String[] args) {
+	private static boolean parseParameters(String[] args) {
 		
 		if(args.length > 0) {
 			// parse input arguments
@@ -317,7 +322,7 @@ public class EnumTrianglesOpt {
 				outputPath = args[1];
 			} else {
 				System.err.println("Usage: EnumTriangleBasic <edge path> <result path>");
-				System.exit(1);
+				return false;
 			}
 		} else {
 			System.out.println("Executing Enum Triangles Opt example with built-in default data.");
@@ -325,6 +330,7 @@ public class EnumTrianglesOpt {
 			System.out.println("  See the documentation for the correct format of input files.");
 			System.out.println("  Usage: EnumTriangleBasic <edge path> <result path>");
 		}
+		return true;
 	}
 	
 	private static DataSet<Edge> getEdgeDataSet(ExecutionEnvironment env) {

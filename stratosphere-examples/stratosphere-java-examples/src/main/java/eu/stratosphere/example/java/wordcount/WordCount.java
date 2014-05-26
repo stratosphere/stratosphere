@@ -30,6 +30,10 @@ import eu.stratosphere.util.Collector;
  * The input is a plain text file with lines separated by newline characters.
  * 
  * <p>
+ * Usage: <code>WordCount &lt;text path&gt; &lt;result path&gt;</code><br>
+ * If no parameters are provided, the program is run with default data from {@link WordCountData}.
+ * 
+ * <p>
  * This example shows how to:
  * <ul>
  * <li>write a simple Stratosphere program.
@@ -47,7 +51,9 @@ public class WordCount {
 	
 	public static void main(String[] args) throws Exception {
 		
-		parseParameters(args);
+		if(!parseParameters(args)) {
+			return;
+		}
 		
 		// set up the execution environment
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
@@ -106,7 +112,7 @@ public class WordCount {
 	private static String textPath;
 	private static String outputPath;
 	
-	private static void parseParameters(String[] args) {
+	private static boolean parseParameters(String[] args) {
 		
 		if(args.length > 0) {
 			// parse input arguments
@@ -116,13 +122,14 @@ public class WordCount {
 				outputPath = args[1];
 			} else {
 				System.err.println("Usage: WordCount <text path> <result path>");
-				System.exit(1);
+				return false;
 			}
 		} else {
 			System.out.println("Executing WordCount example with built-in default data.");
 			System.out.println("  Provide parameters to read input data from a file.");
 			System.out.println("  Usage: WordCount <text path> <result path>");
 		}
+		return true;
 	}
 	
 	private static DataSet<String> getTextDataSet(ExecutionEnvironment env) {

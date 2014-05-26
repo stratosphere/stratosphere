@@ -55,6 +55,10 @@ import eu.stratosphere.util.Collector;
  * </ul>
  * 
  * <p>
+ * Usage: <code>ConnectedComponents &lt;vertices path&gt; &lt;edges path&gt; &lt;result path&gt; &lt;max number of iterations&gt;</code><br>
+ * If no parameters are provided, the program is run with default data from {@link ConnectedComponentsData} and 10 iterations. 
+ * 
+ * <p>
  * This example shows how to use:
  * <ul>
  * <li>Delta Iterations
@@ -70,18 +74,20 @@ public class ConnectedComponents implements ProgramDescription {
 	
 	public static void main(String... args) throws Exception {
 		
-		parseParameters(args);
+		if(!parseParameters(args)) {
+			return;
+		}
 		
 		// set up execution environment
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 		
 		// read vertex and edge data
 		DataSet<Long> vertices = getVertexDataSet(env);
-		DataSet<Tuple2<Long, Long>> edges = getEdgeDataSet(env);
+		DataSet<Tuple2<Long, Long>> edges = getEdgeDataSet(env).flatMap(new UndirectEdge());
 		
-		// assign the initial components (equal to the vertex id.
+		// assign the initial components (equal to the vertex id)
 		DataSet<Tuple2<Long, Long>> verticesWithInitialId = vertices.map(new DuplicateValue<Long>());
-		
+				
 		// open a delta iteration
 		DeltaIteration<Tuple2<Long, Long>, Tuple2<Long, Long>> iteration =
 				verticesWithInitialId.iterateDelta(verticesWithInitialId, maxIterations, 0);
@@ -118,8 +124,23 @@ public class ConnectedComponents implements ProgramDescription {
 	public static final class DuplicateValue<T> extends MapFunction<T, Tuple2<T, T>> {
 		
 		@Override
-		public Tuple2<T, T> map(T value) {
-			return new Tuple2<T, T>(value, value);
+		public Tuple2<T, T> map(T vertex) {
+			return new Tuple2<T, T>(vertex, vertex);
+		}
+	}
+	
+	/**
+	 * Undirected edges by emitting for each input edge the input edges itself and an inverted version.
+	 */
+	public static final class UndirectEdge extends FlatMapFunction<Tuple2<Long, Long>, Tuple2<Long, Long>> {
+		Tuple2<Long, Long> invertedEdge = new Tuple2<Long, Long>();
+		
+		@Override
+		public void flatMap(Tuple2<Long, Long> edge, Collector<Tuple2<Long, Long>> out) {
+			invertedEdge.f0 = edge.f1;
+			invertedEdge.f1 = edge.f0;
+			out.collect(edge);
+			out.collect(invertedEdge);
 		}
 	}
 	
@@ -166,7 +187,7 @@ public class ConnectedComponents implements ProgramDescription {
 	private static String outputPath = null;
 	private static int maxIterations = 10;
 	
-	private static void parseParameters(String[] programArguments) {
+	private static boolean parseParameters(String[] programArguments) {
 		
 		if(programArguments.length > 0) {
 			// parse input arguments
@@ -178,7 +199,7 @@ public class ConnectedComponents implements ProgramDescription {
 				maxIterations = Integer.parseInt(programArguments[3]);
 			} else {
 				System.err.println("Usage: ConnectedComponents <vertices path> <edges path> <result path> <max number of iterations>");
-				System.exit(1);
+				return false;
 			}
 		} else {
 			System.out.println("Executing Connected Components example with default parameters and built-in default data.");
@@ -186,6 +207,7 @@ public class ConnectedComponents implements ProgramDescription {
 			System.out.println("  See the documentation for the correct format of input files.");
 			System.out.println("  Usage: ConnectedComponents <vertices path> <edges path> <result path> <max number of iterations>");
 		}
+		return true;
 	}
 	
 	private static DataSet<Long> getVertexDataSet(ExecutionEnvironment env) {

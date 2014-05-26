@@ -20,20 +20,24 @@ import java.util.List;
 
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
+import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.api.java.tuple.Tuple2;
 
+/**
+ * Provides the default data sets used for the PageRank example program.
+ * The default data sets are used, if no parameters are given to the program.
+ *
+ */
 public class PageRankData {
 
-	private static int numPages = 15;
+	private static long numPages = 15;
 	
-	public static DataSet<Tuple2<Long, Double>> getDefaultPageWithRankDataSet(ExecutionEnvironment env) {
+	public static DataSet<Tuple1<Long>> getDefaultPagesDataSet(ExecutionEnvironment env) {
 		
-		double initRank = 1.0 / numPages;
+		List<Tuple1<Long>> data = new ArrayList<Tuple1<Long>>();
 		
-		List<Tuple2<Long, Double>> data = new ArrayList<Tuple2<Long, Double>>();
-		
-		for(int i=0; i<numPages; i++) {
-			data.add(new Tuple2<Long, Double>(i+1L, initRank));
+		for(long i=0; i<numPages; i++) {
+			data.add(new Tuple1<Long>(i));
 		}
 		return env.fromCollection(data);
 	}
@@ -74,7 +78,7 @@ public class PageRankData {
 		return env.fromCollection(data);
 	}
 	
-	public static int getNumberOfPages() {
+	public static long getNumberOfPages() {
 		return numPages;
 	}
 	
