@@ -39,6 +39,7 @@ import eu.stratosphere.api.java.typeutils.BasicArrayTypeInfo;
 import eu.stratosphere.api.java.typeutils.BasicTypeInfo;
 import eu.stratosphere.api.java.typeutils.GenericTypeInfo;
 import eu.stratosphere.api.java.typeutils.ObjectArrayTypeInfo;
+import eu.stratosphere.api.java.typeutils.ResultTypeQueryable;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.api.java.typeutils.TypeInfoParser;
@@ -1303,5 +1304,27 @@ public class TypeExtractorTest {
 		} catch (InvalidTypesException e) {
 			// right
 		}
+	}
+	
+	public static class MyQueryableMapper<A> extends MapFunction<String, A> implements ResultTypeQueryable<A> {
+		private static final long serialVersionUID = 1L;
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public TypeInformation<A> getProducedType() {
+			return (TypeInformation<A>) BasicTypeInfo.INT_TYPE_INFO;
+		}
+		
+		@Override
+		public A map(String value) throws Exception {
+			return null;
+		}
+		
+	}
+	
+	@Test
+	public void testResultTypeQueryable() {
+		TypeInformation<?> ti = TypeExtractor.getMapReturnTypes(new MyQueryableMapper<Integer>(), BasicTypeInfo.STRING_TYPE_INFO);
+		Assert.assertEquals(BasicTypeInfo.INT_TYPE_INFO, ti);
 	}
 }
