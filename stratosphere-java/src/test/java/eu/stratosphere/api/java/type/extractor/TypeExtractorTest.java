@@ -1320,7 +1320,7 @@ public class TypeExtractorTest {
 	public void testTypeErasureException() {
 		try {
 			TypeExtractor.getFlatMapReturnTypes(new DummyFlatMapFunction<String, Integer, String, Boolean>(), 
-					(TypeInformation) TypeInformation.parse("Tuple2<String, Integer>"));
+					(TypeInformation) TypeInfoParser.parse("Tuple2<String, Integer>"));
 			Assert.fail("exception expected");
 		}
 		catch (InvalidTypesException e) {
