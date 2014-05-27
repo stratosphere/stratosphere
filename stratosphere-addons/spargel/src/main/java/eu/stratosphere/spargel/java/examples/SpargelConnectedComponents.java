@@ -15,6 +15,7 @@ package eu.stratosphere.spargel.java.examples;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.MapFunction;
+import eu.stratosphere.api.java.operators.CustomUnaryOperation;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.spargel.java.MessageIterator;
 import eu.stratosphere.spargel.java.MessagingFunction;
@@ -34,7 +35,7 @@ public class SpargelConnectedComponents {
 		
 		DataSet<Tuple2<Long, Long>> initialVertices = vertexIds.map(new IdAssigner());
 		
-		DataSet<Tuple2<Long, Long>> result = initialVertices.runOperation(VertexCentricIteration.withPlainEdges(edges, new CCUpdater(), new CCMessager(), 100));
+		DataSet<Tuple2<Long, Long>> result = initialVertices.runOperation((CustomUnaryOperation<Tuple2<Long, Long>, Tuple2<Long, Long>>) VertexCentricIteration.withPlainEdges(edges, new CCUpdater(), new CCMessager(), 100));
 		
 		result.print();
 		env.execute("Spargel Connected Components");
