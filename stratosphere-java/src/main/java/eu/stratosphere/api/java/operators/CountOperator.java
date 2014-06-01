@@ -40,10 +40,12 @@ public class CountOperator<IN> extends SingleInputUdfOperator<IN, Long, CountOpe
 		PlanMapOperator<IN, Long> countMapOperator = new PlanMapOperator<IN, Long>(
 				new CountingMapUdf<IN>(), "Count: map to ones", getInputType(), BasicTypeInfo.LONG_TYPE_INFO);
 		countMapOperator.setInput(input);
+		countMapOperator.setDegreeOfParallelism(input.getDegreeOfParallelism());
 
 		PlanReduceOperator<Long> countReduceOperator = new PlanReduceOperator<Long>(
 				new CountingReduceUdf(), new int[0], "Count: sum up ones", BasicTypeInfo.LONG_TYPE_INFO);
 		countReduceOperator.setInput(countMapOperator);
+		countReduceOperator.setDegreeOfParallelism(input.getDegreeOfParallelism());
 
 		return countReduceOperator;
 	}
@@ -52,6 +54,8 @@ public class CountOperator<IN> extends SingleInputUdfOperator<IN, Long, CountOpe
 
 	public static class CountingMapUdf<IN> extends MapFunction<IN, Long> {
 
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public Long map(IN value) throws Exception {
 			return 1L;
@@ -59,6 +63,8 @@ public class CountOperator<IN> extends SingleInputUdfOperator<IN, Long, CountOpe
 	}
 
 	public static class CountingReduceUdf extends ReduceFunction<Long> {
+
+		private static final long serialVersionUID = 1L;
 
 		@Override
 		public Long reduce(Long value1, Long value2) throws Exception {
