@@ -149,7 +149,7 @@ function updateSourceSink(json) {
 	$.each(json, function(i, job) {
 		$.each(job.groupvertices, function(j, groupvertex) {
 		if(groupvertex.processedsplits > 0) {
-			$("#"+groupvertex.groupvertexid).parent().contents().find(".progress-bar-inner-blue").css("width", (groupvertex.processedsplits/groupvertex.numberofgroupmembers)*100+"%")
+			$("#"+groupvertex.groupvertexid).parent().contents().find(".progress-bar-inner-blue").css("width", (groupvertex.processedsplits/groupvertex.numberofgroupmembers)*100+"%");
 			}
 		})
 	})
