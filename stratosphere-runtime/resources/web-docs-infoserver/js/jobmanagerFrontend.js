@@ -29,6 +29,15 @@ function init() {
 // Init once on page load
 $(init());
 
+function pollForDataSourceSink() {
+$.ajax({ url : "jobsInfo", type : "GET", cache: false, success : function(json) {
+
+	updateSourceSink(json);
+
+	}, dataType : "json",
+	});
+}
+
 /*
  * Pools for updates on currently running jobs
  */
@@ -45,6 +54,7 @@ function poll(jobId) {
 		updateTable(json);
 	}, dataType : "json",
 	});
+pollForDataSourceSink();
 };
 
 /*
@@ -135,6 +145,16 @@ function drawDependencies() {
 
 }
 
+function updateSourceSink(json) {
+	$.each(json, function(i, job) {
+		$.each(job.groupvertices, function(j, groupvertex) {
+		if(groupvertex.processedsplits > 0) {
+			$("#"+groupvertex.groupvertexid).parent().contents().find(".progress-bar-inner-blue").css("width", (groupvertex.numberofgroupmembers/groupvertex.processedsplits)*100+"%")
+			}
+		})
+	})
+}
+
 /*
  * Creates and fills the global running jobs table
  */
@@ -175,10 +195,11 @@ function fillTable(table, json) {
 		$.each(job.groupvertices, function(j, groupvertex) {
 			countGroups++;
 			countTasks += groupvertex.numberofgroupmembers;
+			countProcessedSplits = groupvertex.processedsplits;
 			starting = (groupvertex.CREATED + groupvertex.SCHEDULED + groupvertex.ASSIGNED + groupvertex.READY + groupvertex.STARTING);
 			countStarting += starting;
-			countRunning += groupvertex.RUNNING;
-			countFinished += groupvertex.FINISHING + groupvertex.FINISHED;
+			countRunning += groupvertex.RUNNING +  groupvertex.FINISHING;
+			countFinished += groupvertex.FINISHED;
 			countCanceled += groupvertex.CANCELING + groupvertex.CANCELED;
 			countFailed += groupvertex.FAILED;
 			jobtable += "<tr>\
@@ -188,11 +209,11 @@ function fillTable(table, json) {
 								+ "</span>\
 							</td>\
 							<td class=\"nummembers\">"+ groupvertex.numberofgroupmembers+ "</td>";
-			jobtable += progressBar(groupvertex.numberofgroupmembers, starting, 'starting');
-			jobtable += progressBar(groupvertex.numberofgroupmembers, groupvertex.RUNNING, 'running');
-			jobtable += progressBar(groupvertex.numberofgroupmembers, (groupvertex.FINISHING + groupvertex.FINISHED), 'success finished');
-			jobtable += progressBar(groupvertex.numberofgroupmembers, (groupvertex.CANCELING + groupvertex.CANCELED), 'warning canceled');
-			jobtable += progressBar(groupvertex.numberofgroupmembers, groupvertex.FAILED, 'danger failed');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, groupvertex.STARTING, groupvertex.numberofgroupmembers, countProcessedSplits, 'starting');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers,( groupvertex.RUNNING + groupvertex.FINISHING ), groupvertex.numberofgroupmembers, countProcessedSplits, 'running');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, groupvertex.FINISHED, groupvertex.numberofgroupmembers, countProcessedSplits, 'success finished');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, (groupvertex.CANCELING + groupvertex.CANCELED), groupvertex.numberofgroupmembers, countProcessedSplits, 'warning canceled');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, groupvertex.FAILED, groupvertex.numberofgroupmembers, countProcessedSplits, 'danger failed');
 			jobtable +=	"</tr><tr>\
 						<td colspan=8 id=\"_"+groupvertex.groupvertexid+"\" style=\"display:none\">\
 								<div class =\"table-responsive\">\
@@ -267,6 +288,32 @@ function progressBar2(maximum, input) {
 }
 
 /*
+ * Generates two progress bars in one
+ */
+function progressBarTwoInOne(firstMaximum, firstInput, secondMaximum, secondInput, classVal) {
+	if (firstInput != 0) {
+		return "<td class=\""+classVal+"\" val=\""+firstInput+"\"><div class=\"progress\"><div class=\"progress-bar progress-bar-success\" role=\"progressbar\""
+		 			+ "aria-valuemin=\"0\" aria-valuemax=\""+widthProgressbar+"\" style=\"width:"
+					+ (firstInput / firstMaximum)*100+"%;\">"
+					+ firstInput
+					+ "</div>" //close class=progress-bar progress-bar-success
+					//+ "</div>" //close class=progress
+					+ "<div class=\"progress-bar-inner-blue \" role=\"progressbar\""
+					+ "aria-valuemin=\"0\" aria-valuemax=\""+widthProgressbar+"\" style=\"width:"
+					+ (secondInput / secondMaximum)*100+"%;\">"
+					+ secondInput
+					+ "</div>" //close class=progress-bar-second progress-bar-success
+					+ "</div>" //close class=progress
+					//+ "</div>" //close progress table 
+					+ "</td>"; //close class=classVal
+					
+	} else {
+		return "<td class=\""+classVal+"\" val=\""+firstInput+"\">"+firstInput+"</td>";
+	}
+}
+
+
+/*
  * Returns the new width for a progress bar
  */
 function newWidth(maximum, val) {
@@ -279,10 +326,11 @@ function newWidth(maximum, val) {
  */
 function updateTable(json) {
 	var pollfinished = false;
+	
 	$.each(json.vertexevents , function(i, event) {
 
 		if(parseInt($("#"+event.vertexid).attr("lastupdate")) < event.timestamp)
-		{
+		{	
 			// not very nice
 			var oldstatus = ""+$("#"+event.vertexid).children(".status").html();
 			if(oldstatus == "CREATED" ||  oldstatus == "SCHEDULED" ||oldstatus == "ASSIGNED" ||oldstatus == "READY" ||oldstatus == "STARTING")
@@ -308,9 +356,7 @@ function updateTable(json) {
 			var nummembers = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children(".nummembers").html());
 			var summembers = parseInt($("#sum").children(".nummebembers").html());
 			
-
 			if(oldstatus.toLowerCase() != newstate.toLowerCase()) {
-			
 				// adjust groupvertex
 				var oldcount = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+oldstatus.toLowerCase()).attr("val"));
 				var oldcount2 = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).attr("val"));
@@ -324,12 +370,15 @@ function updateTable(json) {
 					
 				} else if (oldcount > 1) {
 					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+oldstatus.toLowerCase()).first().children().first().children().first().css("width", newWidth(nummembers, (oldcount-1))+"%").html(oldcount-1);
+					
 				}
 				
 				if (oldcount2 == 0) {
 					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).html(progressBar2(nummembers, 1, newstate.toLowerCase()));
 				} else if (oldcount2 > 0) {
 					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).first().children().first().children().first().css("width", newWidth(nummembers, (oldcount2+1))+"%").html(oldcount2+1);
+					//console.log("Inner blue: "+$(".progress-bar-inner-blue").css("width"));
+					
 				}			
 				// adjust sum
 				oldcount = parseInt($("#sum").children("."+oldstatus.toLowerCase()).attr("val"));
@@ -356,7 +405,6 @@ function updateTable(json) {
 	
 	// handle jobevents
 	$.each(json.jobevents , function(i, event) {
-		console.log(event.newstate);
 		
 		if(event.newstate == "FINISHED" || event.newstate == "FAILED" || event.newstate == "CANCELED") {
 			// stop polling
