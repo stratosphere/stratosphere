@@ -1171,20 +1171,27 @@ public class JobManager implements DeploymentManager, ExtendedManagementProtocol
 			return null;
 		}
 		
-		//Get the management group vertex
 		
-		//get the management graph
-		ManagementGraph mgmtGraph = this.getManagementGraph(jobID);
-		//get the management vertex
-		ManagementVertex mgmtVertex = mgmtGraph.getVertexByID(vertex.getID().toManagementVertexID());
-		//finally get the management group vertex
-		ManagementGroupVertex mgmtGroupVertex = mgmtVertex.getGroupVertex();
 		
-		//increase the number of processed splits - because a new one is requested through this method
-		mgmtGroupVertex.setProcessedSplits(mgmtGroupVertex.getProcessedSplits() + 1);
-		
+		// Get inputSplitWrapper
+		InputSplitWrapper inputSplitWrapper = new InputSplitWrapper(jobID, this.inputSplitManager.getNextInputSplit(vertex, sequenceNumber.getValue()));
 
-		return new InputSplitWrapper(jobID, this.inputSplitManager.getNextInputSplit(vertex, sequenceNumber.getValue()));
+		// Save already processed input splits in ManagementGroupVertex
+		
+		// Get the management graph
+		ManagementGraph mgmtGraph = this.getManagementGraph(jobID);
+		// Get the management vertex
+		ManagementVertex mgmtVertex = mgmtGraph.getVertexByID(vertex.getID().toManagementVertexID());
+		// Finally get the management group vertex
+		ManagementGroupVertex mgmtGroupVertex = mgmtVertex.getGroupVertex();
+				
+		// Increase the number of processed splits when input split returned is null
+		// Because then the previous input splits have been read
+		if(inputSplitWrapper.getInputSplit() == null){
+			mgmtGroupVertex.setProcessedSplits(mgmtGroupVertex.getProcessedSplits() + 1);
+		}
+		
+		return inputSplitWrapper;
 	}
 	
 	/**
