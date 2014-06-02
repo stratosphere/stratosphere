@@ -300,8 +300,7 @@ function progressBarTwoInOne(firstMaximum, firstInput, secondMaximum, secondInpu
 					//+ "</div>" //close class=progress
 					+ "<div class=\"progress-bar-inner-blue \" role=\"progressbar\""
 					+ "aria-valuemin=\"0\" aria-valuemax=\""+widthProgressbar+"\" style=\"width:"
-					+ (secondInput / secondMaximum)*100+"%;\">"
-					+ secondInput
+					+ "0%;\">"
 					+ "</div>" //close class=progress-bar-second progress-bar-success
 					+ "</div>" //close class=progress
 					//+ "</div>" //close progress table 
