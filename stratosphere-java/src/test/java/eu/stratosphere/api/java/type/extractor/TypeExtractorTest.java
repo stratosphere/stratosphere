@@ -19,9 +19,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.hadoop.io.Writable;
 import org.junit.Assert;
 import org.junit.Test;
 
+import eu.stratosphere.api.common.functions.GenericMap;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
 import eu.stratosphere.api.java.functions.CrossFunction;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
@@ -50,7 +52,6 @@ import eu.stratosphere.types.StringValue;
 import eu.stratosphere.types.TypeInformation;
 import eu.stratosphere.types.Value;
 import eu.stratosphere.util.Collector;
-import org.apache.hadoop.io.Writable;
 
 public class TypeExtractorTest {
 
@@ -1326,5 +1327,21 @@ public class TypeExtractorTest {
 		catch (InvalidTypesException e) {
 			// right
 		}
+	}
+	
+	@Test
+	public void testLambdas() throws Exception {
+		
+		GenericMap<String, Tuple1<String>> lambda1 = (i) -> new Tuple1<String>("");
+		
+		Assert.assertEquals(TypeInfoParser.parse("Tuple1<String>"), TypeExtractor.getMapReturnTypes(lambda1, TypeInfoParser.parse("String")));
+		
+		final int x = 5;
+		
+		GenericMap<String, Tuple1<Integer>> lambda2 = (i) -> new Tuple1<Integer>(x+1);
+		
+		Assert.assertEquals(TypeInfoParser.parse("Tuple1<Integer>"), TypeExtractor.getMapReturnTypes(lambda2, TypeInfoParser.parse("String")));
+		
+		Assert.assertEquals(TypeInfoParser.parse("Integer"), TypeExtractor.getMapReturnTypes((String i) -> 1, TypeInfoParser.parse("String")));
 	}
 }

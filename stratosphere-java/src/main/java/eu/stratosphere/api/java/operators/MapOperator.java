@@ -21,6 +21,7 @@ import eu.stratosphere.api.common.operators.base.MapOperatorBase;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
+import eu.stratosphere.configuration.Configuration;
 
 /**
  * This operator represents the application of a "map" function on a data set, and the
@@ -35,15 +36,15 @@ public class MapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, MapOpe
 	
 	protected final MapFunction<IN, OUT> function;
 	
-	
 	public MapOperator(DataSet<IN> input, MapFunction<IN, OUT> function) {
 		super(input, TypeExtractor.getMapReturnTypes(function, input.getType()));
-		
-		if (function == null) {
-			throw new NullPointerException("Map function must not be null.");
-		}
-		
 		this.function = function;
+		extractSemanticAnnotationsFromUdf(function.getClass());
+	}
+	
+	public MapOperator(DataSet<IN> input, GenericMap<IN, OUT> function) {
+		super(input, TypeExtractor.getMapReturnTypes(function, input.getType()));
+		this.function = new GenericMapWrapper<IN, OUT>(function);
 		extractSemanticAnnotationsFromUdf(function.getClass());
 	}
 
@@ -66,5 +67,35 @@ public class MapOperator<IN, OUT> extends SingleInputUdfOperator<IN, OUT, MapOpe
 		
 		return po;
 	}
+	
+
+	// --------------------------------------------------------------------------------------------
+	//  Wrapper class that wraps a GenericMap interface into a MapFunction
+	// --------------------------------------------------------------------------------------------
+	
+	public static class GenericMapWrapper<IN, OUT> extends MapFunction<IN, OUT> {
+		private static final long serialVersionUID = 1L;
+		
+		private final GenericMap<IN, OUT> function;
+		
+		public GenericMapWrapper(GenericMap<IN, OUT> function) {
+			this.function = function;
+		}
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			function.open(parameters);
+		}
+
+		@Override
+		public OUT map(IN value) throws Exception {
+			return function.map(value);
+		}
+		
+		@Override
+		public void close() throws Exception {
+			function.close();
+		}
+	};
 	
 }

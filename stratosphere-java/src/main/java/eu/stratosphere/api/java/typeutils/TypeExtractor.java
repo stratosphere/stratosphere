@@ -15,16 +15,20 @@
 package eu.stratosphere.api.java.typeutils;
 
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import eu.stratosphere.types.TypeInformation;
 import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.io.Writable;
 
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.api.common.functions.GenericMap;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.java.functions.CoGroupFunction;
 import eu.stratosphere.api.java.functions.CrossFunction;
@@ -35,6 +39,8 @@ import eu.stratosphere.api.java.functions.JoinFunction;
 import eu.stratosphere.api.java.functions.KeySelector;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.tuple.Tuple;
+import eu.stratosphere.core.memory.MemoryUtils;
+import eu.stratosphere.types.TypeInformation;
 import eu.stratosphere.types.Value;
 
 public class TypeExtractor {
@@ -86,6 +92,62 @@ public class TypeExtractor {
 	}
 	
 	// --------------------------------------------------------------------------------------------
+	//  Lambda specific methods
+	// --------------------------------------------------------------------------------------------
+	
+	@SuppressWarnings("unchecked")
+	public static <IN, OUT> TypeInformation<OUT> getMapReturnTypes(GenericMap<IN, OUT> mapFunctional, TypeInformation<IN> inType) {
+		Method m = getParameterizedMethod(mapFunctional);
+		Type in = m.getGenericParameterTypes()[0];
+		Type out = m.getGenericReturnType();
+		validateInputType(in, inType);
+		return (TypeInformation<OUT>) createTypeInfo(out);
+	}
+	
+	private static Method getParameterizedMethod(Function functional) {
+		Class<?> clazz = functional.getClass();
+		
+		final Pattern p = Pattern.compile("(\\S+)\\$\\$Lambda\\$(\\d+)/\\d+");
+		Matcher m = p.matcher(clazz.getName());
+		
+		if(!m.matches()) {
+			throw new InvalidTypesException("Can not parse Lambda's Class name.");
+		}
+		
+		String lamdaOrigin = m.group(1);
+		int lambdaId = Integer.valueOf(m.group(2));
+		
+		// instantiate lamdaOrigin
+		Class<?> lamdaOriginClass = null;
+		try {
+			Class<?> origin = Class.forName(lamdaOrigin);
+			// a getClass() on an instance differs from a Class retrieved by name 
+			// we therefore need to create an instance of the Class first
+			@SuppressWarnings("restriction")
+			Object o = MemoryUtils.UNSAFE.allocateInstance(origin);
+			lamdaOriginClass = o.getClass();
+		}
+		catch(Exception e) {
+			throw new InvalidTypesException("Can not access Class that contains parameterized Lamda.");
+		}
+		
+		Method[] methods = lamdaOriginClass.getDeclaredMethods();
+		Method parameterizedMethod = null;
+		for(Method method : methods) {
+			if(Modifier.isStatic(method.getModifiers()) && method.getName().equals("lambda$" + (lambdaId-1))) {
+				parameterizedMethod = method;
+				break;
+			}
+		}
+		
+		if(parameterizedMethod == null) {
+			throw new InvalidTypesException("Can not find parameterized Lamda method.");
+		}
+		
+		return parameterizedMethod;
+	}
+	
+	// --------------------------------------------------------------------------------------------
 	//  Generic utility methods
 	// --------------------------------------------------------------------------------------------
 	
@@ -120,6 +182,16 @@ public class TypeExtractor {
 	
 	public static Type getParameterType(Class<?> baseClass, Class<?> clazz, int pos) {
 		return getParameterType(baseClass, null, clazz, pos);
+	}
+	
+	private static void validateInputType(Type t, TypeInformation<?> inType) {
+		ArrayList<Type> typeHierarchy = new ArrayList<Type>();		
+		try {
+			validateInfo(typeHierarchy, t, inType);
+		}
+		catch(InvalidTypesException e) {
+			throw new InvalidTypesException("Input mismatch: " + e.getMessage());
+		}
 	}
 	
 	private static void validateInputType(Class<?> baseClass, Class<?> clazz, int inputParamPos, TypeInformation<?> inType) {
