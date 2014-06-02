@@ -329,7 +329,7 @@ function updateTable(json) {
 	$.each(json.vertexevents , function(i, event) {
 
 		if(parseInt($("#"+event.vertexid).attr("lastupdate")) < event.timestamp)
-		{	
+		{
 			// not very nice
 			var oldstatus = ""+$("#"+event.vertexid).children(".status").html();
 			if(oldstatus == "CREATED" ||  oldstatus == "SCHEDULED" ||oldstatus == "ASSIGNED" ||oldstatus == "READY" ||oldstatus == "STARTING")
@@ -376,8 +376,6 @@ function updateTable(json) {
 					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).html(progressBar2(nummembers, 1, newstate.toLowerCase()));
 				} else if (oldcount2 > 0) {
 					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).first().children().first().children().first().css("width", newWidth(nummembers, (oldcount2+1))+"%").html(oldcount2+1);
-					//console.log("Inner blue: "+$(".progress-bar-inner-blue").css("width"));
-					
 				}			
 				// adjust sum
 				oldcount = parseInt($("#sum").children("."+oldstatus.toLowerCase()).attr("val"));
