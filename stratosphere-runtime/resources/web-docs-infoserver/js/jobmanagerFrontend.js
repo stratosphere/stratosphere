@@ -149,7 +149,7 @@ function updateSourceSink(json) {
 	$.each(json, function(i, job) {
 		$.each(job.groupvertices, function(j, groupvertex) {
 		if(groupvertex.processedsplits > 0) {
-			$("#"+groupvertex.groupvertexid).parent().contents().find(".progress-bar-inner-blue").css("width", (groupvertex.numberofgroupmembers/groupvertex.processedsplits)*100+"%")
+			$("#"+groupvertex.groupvertexid).parent().contents().find(".progress-bar-inner-blue").css("width", (groupvertex.processedsplits/groupvertex.numberofgroupmembers)*100+"%")
 			}
 		})
 	})
@@ -209,7 +209,7 @@ function fillTable(table, json) {
 								+ "</span>\
 							</td>\
 							<td class=\"nummembers\">"+ groupvertex.numberofgroupmembers+ "</td>";
-			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, groupvertex.STARTING, groupvertex.numberofgroupmembers, countProcessedSplits, 'starting');
+			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, starting, groupvertex.numberofgroupmembers, countProcessedSplits, 'starting');
 			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers,( groupvertex.RUNNING + groupvertex.FINISHING ), groupvertex.numberofgroupmembers, countProcessedSplits, 'running');
 			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, groupvertex.FINISHED, groupvertex.numberofgroupmembers, countProcessedSplits, 'success finished');
 			jobtable += progressBarTwoInOne(groupvertex.numberofgroupmembers, (groupvertex.CANCELING + groupvertex.CANCELED), groupvertex.numberofgroupmembers, countProcessedSplits, 'warning canceled');
