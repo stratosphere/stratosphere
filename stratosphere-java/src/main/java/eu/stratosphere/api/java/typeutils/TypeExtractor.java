@@ -91,24 +91,38 @@ public class TypeExtractor {
 		return createTypeInfo(InputFormat.class, inputFormat.getClass(), 0, null, null);
 	}
 	
+	private static final Pattern lambdaPattern = Pattern.compile("(\\S+)\\$\\$Lambda\\$(\\d+)/\\d+");
+	
+	@SuppressWarnings("unchecked")
+	public static <IN, OUT> TypeInformation<OUT> getMapReturnTypes(GenericMap<IN, OUT> mapFunctional, TypeInformation<IN> inType) {
+		// for lambda functions
+		if(isLambdaFunction(mapFunctional)) {
+			Method m = getParameterizedMethod(mapFunctional);
+			Type in = m.getGenericParameterTypes()[0];
+			Type out = m.getGenericReturnType();
+			validateInputType(in, inType);
+			return (TypeInformation<OUT>) createTypeInfo(out);
+		}
+		// for classes
+		else {
+			// TODO rework getParameterType()
+			// validateInputType(MapFunction.class, mapFunction.getClass(), 0, inType);
+			// return createTypeInfo(MapFunction.class, mapFunction.getClass(), 1, inType, null);
+			return null;
+		}
+		
+	}
+	
 	// --------------------------------------------------------------------------------------------
 	//  Lambda specific methods
 	// --------------------------------------------------------------------------------------------
 	
-	@SuppressWarnings("unchecked")
-	public static <IN, OUT> TypeInformation<OUT> getMapReturnTypes(GenericMap<IN, OUT> mapFunctional, TypeInformation<IN> inType) {
-		Method m = getParameterizedMethod(mapFunctional);
-		Type in = m.getGenericParameterTypes()[0];
-		Type out = m.getGenericReturnType();
-		validateInputType(in, inType);
-		return (TypeInformation<OUT>) createTypeInfo(out);
+	private static boolean isLambdaFunction(Function functional) {
+		return lambdaPattern.matcher(functional.getClass().getName()).matches();
 	}
 	
 	private static Method getParameterizedMethod(Function functional) {
-		Class<?> clazz = functional.getClass();
-		
-		final Pattern p = Pattern.compile("(\\S+)\\$\\$Lambda\\$(\\d+)/\\d+");
-		Matcher m = p.matcher(clazz.getName());
+		Matcher m = lambdaPattern.matcher(functional.getClass().getName());
 		
 		if(!m.matches()) {
 			throw new InvalidTypesException("Can not parse Lambda's Class name.");

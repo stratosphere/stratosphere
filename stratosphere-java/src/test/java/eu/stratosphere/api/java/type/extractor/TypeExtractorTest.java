@@ -1344,4 +1344,20 @@ public class TypeExtractorTest {
 		
 		Assert.assertEquals(TypeInfoParser.parse("Integer"), TypeExtractor.getMapReturnTypes((String i) -> 1, TypeInfoParser.parse("String")));
 	}
+	
+	@Test
+	public void testLambdaInterfaceClasses() {
+		
+		GenericMap<String, Tuple1<String>> genericMap = new GenericMap<String, Tuple1<String>>() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Tuple1<String> map(String record) throws Exception {
+				return new Tuple1<String>("test");
+			}
+		};
+		
+		Assert.assertEquals(TypeInfoParser.parse("Tuple1<String>"), TypeExtractor.getMapReturnTypes(genericMap, TypeInfoParser.parse("String")));
+		
+	}
 }
