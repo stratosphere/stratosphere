@@ -58,10 +58,9 @@ function drawGraph(data, svgID){
 	layout = renderer.layout(layout).run(g, svgElement);
 	
 	 var svg = d3.select("#svg-main")
-	 	//.attr("width", layout.graph().width + 40)
 	 	.attr("width", $(document).width() - 15)
-	 	//.attr("height", layout.graph().height + 40)
 	 	.attr("height", $(document).height() - 15 - 110)
+//	 	.attr("viewBox", "0 0 "+ ($(document).width() - 150) +" "+($(document).height() - 15 - 110))
 	 	.call(d3.behavior.zoom("#svg-main").on("zoom", function() {
      		var ev = d3.event;
      		svg.select("#svg-main g")
@@ -104,14 +103,22 @@ function loadJsonToDagre(data){
 		console.log("Normal Json Data");
 		for (var i in data.nodes) {
 			var el = data.nodes[i];
-			g.addNode(el.id, { label: createLabelNode(el) } );
+			g.addNode(el.id, { label: createLabelNode(el, ""), nodesWithoutEdges: ""} );
 			existingNodes.push(el.id);
 			if (el.predecessors != null) {
 				for (var j in el.predecessors) {
 					if (existingNodes.indexOf(el.predecessors[j].id) != -1) {
 						g.addEdge(null, el.predecessors[j].id, el.id, { label: createLabelEdge(el.predecessors[j]) });	
 					} else {
-						console.log("Nodes not in graph yet: " + el.predecessors[j].id);
+						console.log("Edge to node not in graph yet: " + el.predecessors[j].id);
+						var nWE = g.node(el.id).nodesWithoutEdges;
+						if (nWE != "") {
+							nWE += ", "+el.predecessors[j].id;
+						} else {
+							nWE = el.predecessors[j].id;
+						}
+						
+						g.node(el.id, { label: createLabelNode(el, nWE), nodesWithoutEdges: nWE});
 					}
 				}
 			}
@@ -120,14 +127,22 @@ function loadJsonToDagre(data){
 		console.log("Iteration Json Data");
 		for (var i in data.step_function) {
 			var el = data.step_function[i];
-			g.addNode(el.id, { label: createLabelNode(el) } );
+			g.addNode(el.id, { label: createLabelNode(el, ""), nodesWithoutEdges: ""} );
 			existingNodes.push(el.id);
 			if (el.predecessors != null) {
 				for (var j in el.predecessors) {
 					if (existingNodes.indexOf(el.predecessors[j].id) != -1) {
 						g.addEdge(null, el.predecessors[j].id, el.id, { label: createLabelEdge(el.predecessors[j]) });	
 					} else {
-						console.log("Nodes not in graph yet: " + el.predecessors[j].id);	
+						console.log("Edge to node not in graph yet: " + el.predecessors[j].id);
+						var nWE = g.node(el.id).nodesWithoutEdges;
+						if (nWE != "") {
+							nWE += ", "+el.predecessors[j].id;
+						} else {
+							nWE = el.predecessors[j].id;
+						}
+						
+						g.node(el.id, { label: createLabelNode(el, nWE), nodesWithoutEdges: nWE});
 					}
 				}
 			}
@@ -139,19 +154,24 @@ function loadJsonToDagre(data){
 
 //create a label of an edge
 function createLabelEdge(el) {
-	var labelValue = "<div style=\"font-size: 100%; border:2px solid\">";
-	if (el.ship_strategy != null) {
-		labelValue += el.ship_strategy;
-	} 
-	if (el.local_strategy != undefined) {
-		labelValue += ",<br>" + el.local_strategy;
+	var labelValue = "";
+	
+	if (el.ship_strategy != null && el.local_strategy != null) {
+		labelValue += "<div style=\"font-size: 100%; border:2px solid\">";
+		if (el.ship_strategy != null) {
+			labelValue += el.ship_strategy;
+		} 
+		if (el.local_strategy != undefined) {
+			labelValue += ",<br>" + el.local_strategy;
+		}
+		labelValue += "</div>";
 	}
-	labelValue += "</div>";
+	
 	return labelValue;
 }
 
-//creates the label of a node
-function createLabelNode(el) {
+//creates the label of a node, nWE are the NodesWithoutEdges
+function createLabelNode(el, nWE) {
 	var labelValue = "<div style=\"margin-top: 0\">";
 	//set color of panel
 	if (el.pact == "Data Source") {
@@ -163,7 +183,8 @@ function createLabelNode(el) {
 	}
 	//Nodename
 	//New Solution with overlay
-	labelValue += "<div><a nodeID=\""+el.id+"\" href=\"#\" rel=\"#propertyO\"><h3 style=\"text-align: center; font-size: 150%\">" + el.pact + "</h3></a>";
+	labelValue += "<div><a nodeID=\""+el.id+"\" href=\"#\" rel=\"#propertyO\"><h3 style=\"text-align: center; font-size: 150%\">" + el.pact 
+				+ "  <span class=\"badge\" style=\"font-size:16px\">ID = "+el.id+"</span></h3></a>";
 	if (el.contents == "") {
 		labelValue += "</div>";
 	} else {
@@ -187,6 +208,11 @@ function createLabelNode(el) {
 		labelValue += "<p>Driver Strategy: " + el.driver_strategy + "</p>";
 	}
 	
+	//Nodes without edges
+	if (nWE != "") {
+		labelValue += "<p>Additional Edge to Node: <span class=\"badge\">"+nWE+"</span></p>";
+	}
+	
 	//close panel
 	labelValue += "</div></div>";
 	return labelValue;
@@ -199,7 +225,7 @@ function extendLabelNodeForIteration(id) {
 	//Find out the position of the iterationElement in the iterationGraphArray
 	var index = iterationIds.indexOf(id);
 	//Set the size and the width of the svg Element as precomputetd
-	var width = iterationWidths[index] + 40;
+	var width = iterationWidths[index] + 70;
 	var height = iterationHeights[index] + 40;
 	
 	var labelValue = "<div id=\"attach\"><svg id=\""+svgID+"\" width="+width+" height="+height+"><g transform=\"translate(20, 20)\"/></svg></div>";
