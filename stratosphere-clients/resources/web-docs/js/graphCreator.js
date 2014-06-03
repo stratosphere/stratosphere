@@ -156,8 +156,8 @@ function loadJsonToDagre(data){
 function createLabelEdge(el) {
 	var labelValue = "";
 	
-	if (el.ship_strategy != null && el.local_strategy != null) {
-		labelValue += "<div style=\"font-size: 100%; border:2px solid\">";
+	if (el.ship_strategy != null || el.local_strategy != null) {
+		labelValue += "<div style=\"font-size: 100%; border:2px solid; padding:5px\">";
 		if (el.ship_strategy != null) {
 			labelValue += el.ship_strategy;
 		} 
@@ -184,7 +184,7 @@ function createLabelNode(el, nWE) {
 	//Nodename
 	//New Solution with overlay
 	labelValue += "<div><a nodeID=\""+el.id+"\" href=\"#\" rel=\"#propertyO\"><h3 style=\"text-align: center; font-size: 150%\">" + el.pact 
-				+ "  <span class=\"badge\" style=\"font-size:16px\">ID = "+el.id+"</span></h3></a>";
+				+ " (ID = "+el.id+")</h3></a>";
 	if (el.contents == "") {
 		labelValue += "</div>";
 	} else {
@@ -201,16 +201,16 @@ function createLabelNode(el, nWE) {
 	}
 	
 	if (el.parallelism != "") {
-		labelValue += "<p>Parallelism: " + el.parallelism + "</p>";
+		labelValue += "<h5 style=\"font-size:115%\">Parallelism: " + el.parallelism + "</h5>";
 	}
 
 	if (el.driver_strategy != undefined) {
-		labelValue += "<p>Driver Strategy: " + el.driver_strategy + "</p>";
+		labelValue += "<h5 style=\"font-size:115%\">Driver Strategy: " + el.driver_strategy + "</h5";
 	}
 	
 	//Nodes without edges
 	if (nWE != "") {
-		labelValue += "<p>Additional Edge to Node: <span class=\"badge\">"+nWE+"</span></p>";
+		labelValue += "<h5 style=\"font-size:115%\">Additional Edge to Node: <span class=\"badge\" style=\"font-size:120%\">"+nWE+"</span></h5>";
 	}
 	
 	//close panel
