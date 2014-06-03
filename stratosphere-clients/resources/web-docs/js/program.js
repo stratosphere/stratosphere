@@ -62,7 +62,7 @@ function toggleCheckboxes(box)
   if (box.is(':checked')) {
     $('.jobItemCheckbox').attr('checked', false);
     box.attr('checked', true);
-    var id = box.parentsUntil('.jobListItem').parent().attr('id').substr(4);
+    var id = box.parentsUntil('.JobListItems').parent().attr('id').substr(4);
 
     $('#mainCanvas').html('');
     $('#planDescription').html('');
@@ -90,7 +90,7 @@ function showPreviewPlan(data)
 	//TODO check again the stuff below
 //  // check whether this one is still selected
 //  var active = $('.jobItemCheckbox:checked');
-//  var id = active.parentsUntil('.jobListItem').parent().attr('id').substr(4);
+//  var id = active.parentsUntil('.JobListItems').parent().attr('id').substr(4);
 //  
 //  if (pactPlanRequested == id) {
 //    if (data == undefined || data.jobname == undefined || data.jobname != pactPlanRequested || data.plan == undefined) {
@@ -102,9 +102,9 @@ function showPreviewPlan(data)
 //	}
 	
 	$("#mainCanvas").empty();
-    var svgElement = "<div id=\"attach\"><svg id=\"svg-canvas\" width=500 height=500><g transform=\"translate(20, 20)\"/></svg></div>";
+    var svgElement = "<div id=\"attach\"><svg id=\"svg-main\" width=500 height=500><g transform=\"translate(20, 20)\"/></svg></div>";
     $("#mainCanvas").append(svgElement);
-    drawGraph(data.plan);
+    drawGraph(data.plan, "#svg-main");
     pactPlanRequested = 0;
 //  }
 }
@@ -163,10 +163,10 @@ function createJobList(data)
     }
     
     
-    markup += '<div id="job_' + name + '" class="jobListItem"><table class="table"><tr>';
+    markup += '<div id="job_' + name + '" class="JobListItems"><table class="table"><tr>';
     markup += '<td width="30px;"><input class="jobItemCheckbox" type="checkbox"></td>';
-    markup += '<td><p class="jobListItemName">' + name + '</p></td>';
-    markup += '<td><p class="jobListItemDate">' + date + '</p></td>';
+    markup += '<td><p class="JobListItemsName">' + name + '</p></td>';
+    markup += '<td><p class="JobListItemsDate">' + date + '</p></td>';
     markup += '<td width="30px"><img class="jobItemDeleteIcon" src="img/delete-icon.png" width="24" height="24" /></td>';
     markup += '</tr></table></div>';
   }
@@ -175,7 +175,7 @@ function createJobList(data)
   $('#jobsContents').html(markup); 
   
   // register the event handler that triggers the delete when the delete icon is clicked
-  $('.jobItemDeleteIcon').click(function () { deleteJob($(this).parentsUntil('.jobListItem').parent().attr('id')); } );
+  $('.jobItemDeleteIcon').click(function () { deleteJob($(this).parentsUntil('.JobListItems').parent().attr('id')); } );
   
   // register the event handler, that ensures only one checkbox is active
   $('.jobItemCheckbox').change(function () { toggleCheckboxes($(this)) });
@@ -194,7 +194,7 @@ function runJob ()
      return;
    }
    
-   var jobName = job.parentsUntil('.jobListItem').parent().attr('id').substr(4);
+   var jobName = job.parentsUntil('.JobListItems').parent().attr('id').substr(4);
    var showPlan = $('#showPlanCheck').is(':checked');
    var suspendPlan = $('#suspendJobDuringPlanCheck').is(':checked');
    var args = $('#commandLineArgsField').attr('value'); //TODO? Replace with .val() ?

@@ -152,7 +152,7 @@ function createLabelEdge(el) {
 
 //creates the label of a node
 function createLabelNode(el) {
-	
+	console.log("Creating node " + el.pact);
 	var labelValue = "<div>";
 	//set color of panel
 	if (el.pact == "Data Source") {
