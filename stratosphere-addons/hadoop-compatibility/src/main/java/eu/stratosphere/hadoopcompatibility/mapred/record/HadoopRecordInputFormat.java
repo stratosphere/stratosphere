@@ -25,7 +25,7 @@ import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.common.io.statistics.BaseStatistics;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.HadoopTypeConverter;
-import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyReporter;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopInputSplit;
 import eu.stratosphere.types.Record;
@@ -53,7 +53,7 @@ public class HadoopRecordInputFormat<K, V> implements InputFormat<Record, Hadoop
 		this.hadoopInputFormat = hadoopInputFormat;
 		this.hadoopInputFormatName = hadoopInputFormat.getClass().getName();
 		this.converter = conv;
-		HadoopConfiguration.mergeHadoopConf(job);
+		HadoopUtils.mergeHadoopConf(job);
 		this.jobConf = job;
 	}
 

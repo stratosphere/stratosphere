@@ -18,47 +18,66 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.FileOutputCommitter;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyProgressable;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyReporter;
-import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopFileOutputCommitter;
 
 
-public class HadoopOutputFormat<K extends Writable,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
-
+public class HadoopOutputFormat<K extends Writable & Comparable<?>,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
+	
 	private static final long serialVersionUID = 1L;
-
-	public JobConf jobConf;
-
-	public org.apache.hadoop.mapred.OutputFormat<K,V> hadoopOutputFormat;
-
-	private String hadoopOutputFormatName;
-
-	public RecordWriter<K,V> recordWriter;
-
-	public HadoopFileOutputCommitter fileOutputCommitterWrapper;
-
-	public HadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> hadoopFormat, JobConf job) {
+	
+	public JobConf jobConf;	
+	public org.apache.hadoop.mapred.OutputFormat<K,V> mapredOutputFormat;	
+	public RecordWriter<K,V> recordWriter;	
+	public FileOutputCommitter fileOutputCommitter;
+	private TaskAttemptContext context;
+	private JobContext jobContext;
+	
+	public HadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> mapredOutputFormat, JobConf job) {
 		super();
-		this.hadoopOutputFormat = hadoopFormat;
-		this.hadoopOutputFormatName = hadoopFormat.getClass().getName();
-		this.fileOutputCommitterWrapper = new HadoopFileOutputCommitter();
-		HadoopConfiguration.mergeHadoopConf(job);
+		this.mapredOutputFormat = mapredOutputFormat;
+		HadoopUtils.mergeHadoopConf(job);
 		this.jobConf = job;
 	}
-
+	
+	public void setJobConf(JobConf job) {
+		this.jobConf = job;
+	}
+	
+	public JobConf getJobConf() {
+		return jobConf;
+	}
+	
+	public org.apache.hadoop.mapred.OutputFormat<K,V> getHadoopOutputFormat() {
+		return mapredOutputFormat;
+	}
+	
+	public void setHadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> mapredOutputFormat) {
+		this.mapredOutputFormat = mapredOutputFormat;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	//  OutputFormat
+	// --------------------------------------------------------------------------------------------
+	
 	@Override
 	public void configure(Configuration parameters) {
+		// nothing to do
 	}
-
+	
 	/**
 	 * create the temporary output file for hadoop RecordWriter.
 	 * @param taskNumber The number of the parallel instance.
@@ -67,23 +86,44 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 	 */
 	@Override
 	public void open(int taskNumber, int numTasks) throws IOException {
-		this.fileOutputCommitterWrapper.setupJob(this.jobConf);
-		if (Integer.toString(taskNumber + 1).length() <= 6) {
-			this.jobConf.set("mapred.task.id", "attempt__0000_r_" + String.format("%" + (6 - Integer.toString(taskNumber + 1).length()) + "s"," ").replace(" ", "0") + Integer.toString(taskNumber + 1) + "_0");
-			//compatible for hadoop 2.2.0, the temporary output directory is different from hadoop 1.2.1
-			this.jobConf.set("mapreduce.task.output.dir", this.fileOutputCommitterWrapper.getTempTaskOutputPath(this.jobConf,TaskAttemptID.forName(this.jobConf.get("mapred.task.id"))).toString());
-		} else {
+		if (Integer.toString(taskNumber + 1).length() > 6) {
 			throw new IOException("Task id too large.");
 		}
-		this.recordWriter = this.hadoopOutputFormat.getRecordWriter(null, this.jobConf, Integer.toString(taskNumber + 1), new HadoopDummyProgressable());
+		
+		TaskAttemptID taskAttemptID = TaskAttemptID.forName("attempt__0000_r_" 
+				+ String.format("%" + (6 - Integer.toString(taskNumber + 1).length()) + "s"," ").replace(" ", "0") 
+				+ Integer.toString(taskNumber + 1) 
+				+ "_0");
+		
+		try {
+			this.context = HadoopUtils.instantiateTaskAttemptContext(this.jobConf, taskAttemptID);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		this.jobConf.set("mapred.task.id", taskAttemptID.toString());
+		// for hadoop 2.2
+		this.jobConf.set("mapreduce.task.attempt.id", taskAttemptID.toString());
+		
+		this.fileOutputCommitter = new FileOutputCommitter();
+		
+		try {
+			this.jobContext = HadoopUtils.instantiateJobContext(this.jobConf, new JobID());
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		this.fileOutputCommitter.setupJob(jobContext);
+		
+		this.recordWriter = this.mapredOutputFormat.getRecordWriter(null, this.jobConf, Integer.toString(taskNumber + 1), new HadoopDummyProgressable());
 	}
-
-
+	
 	@Override
 	public void writeRecord(Tuple2<K, V> record) throws IOException {
 		this.recordWriter.write(record.f0, record.f1);
 	}
-
+	
 	/**
 	 * commit the task by moving the output file out from the temporary directory.
 	 * @throws IOException
@@ -91,54 +131,34 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 	@Override
 	public void close() throws IOException {
 		this.recordWriter.close(new HadoopDummyReporter());
-		if (this.fileOutputCommitterWrapper.needsTaskCommit(this.jobConf, TaskAttemptID.forName(this.jobConf.get("mapred.task.id")))) {
-			this.fileOutputCommitterWrapper.commitTask(this.jobConf, TaskAttemptID.forName(this.jobConf.get("mapred.task.id")));
+		
+		if (this.fileOutputCommitter.needsTaskCommit(this.context)) {
+			this.fileOutputCommitter.commitTask(this.context);
 		}
-	//TODO: commitjob when all the tasks are finished
+		this.fileOutputCommitter.commitJob(this.jobContext);
 	}
-
-
-	/**
-	 * Custom serialization methods.
-	 *  @see http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
-	 */
+	
+	// --------------------------------------------------------------------------------------------
+	//  Custom serialization methods
+	// --------------------------------------------------------------------------------------------
+	
 	private void writeObject(ObjectOutputStream out) throws IOException {
-		out.writeUTF(hadoopOutputFormatName);
+		out.writeUTF(mapredOutputFormat.getClass().getName());
 		jobConf.write(out);
-		out.writeObject(fileOutputCommitterWrapper);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-		hadoopOutputFormatName = in.readUTF();
+		String hadoopOutputFormatName = in.readUTF();
 		if(jobConf == null) {
 			jobConf = new JobConf();
 		}
 		jobConf.readFields(in);
 		try {
-			this.hadoopOutputFormat = (org.apache.hadoop.mapred.OutputFormat<K,V>) Class.forName(this.hadoopOutputFormatName).newInstance();
+			this.mapredOutputFormat = (org.apache.hadoop.mapred.OutputFormat<K,V>) Class.forName(hadoopOutputFormatName, true, Thread.currentThread().getContextClassLoader()).newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to instantiate the hadoop output format", e);
 		}
-		ReflectionUtils.setConf(hadoopOutputFormat, jobConf);
-		fileOutputCommitterWrapper = (HadoopFileOutputCommitter) in.readObject();
+		ReflectionUtils.setConf(mapredOutputFormat, jobConf);
 	}
-
-
-	public void setJobConf(JobConf job) {
-		this.jobConf = job;
-	}
-
-	public JobConf getJobConf() {
-		return jobConf;
-	}
-
-	public org.apache.hadoop.mapred.OutputFormat<K,V> getHadoopOutputFormat() {
-		return hadoopOutputFormat;
-	}
-
-	public void setHadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> hadoopOutputFormat) {
-		this.hadoopOutputFormat = hadoopOutputFormat;
-	}
-
 }

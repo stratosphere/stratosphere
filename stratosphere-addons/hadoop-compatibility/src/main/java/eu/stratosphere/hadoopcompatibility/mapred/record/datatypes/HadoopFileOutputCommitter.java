@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.hadoopcompatibility.mapred.wrapper;
+package eu.stratosphere.hadoopcompatibility.mapred.record.datatypes;
 
 import java.io.IOException;
 import java.io.Serializable;

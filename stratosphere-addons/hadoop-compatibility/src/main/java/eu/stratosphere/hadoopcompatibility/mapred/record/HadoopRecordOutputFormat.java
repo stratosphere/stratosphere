@@ -24,11 +24,11 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.HadoopFileOutputCommitter;
 import eu.stratosphere.hadoopcompatibility.mapred.record.datatypes.StratosphereTypeConverter;
-import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopConfiguration;
+import eu.stratosphere.hadoopcompatibility.mapred.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyProgressable;
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyReporter;
-import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopFileOutputCommitter;
 import eu.stratosphere.types.Record;
 
 
@@ -54,7 +54,7 @@ public class HadoopRecordOutputFormat<K,V> implements OutputFormat<Record> {
 		this.hadoopOutputFormatName = hadoopFormat.getClass().getName();
 		this.converter = conv;
 		this.fileOutputCommitterWrapper = new HadoopFileOutputCommitter();
-		HadoopConfiguration.mergeHadoopConf(job);
+		HadoopUtils.mergeHadoopConf(job);
 		this.jobConf = job;
 	}
 

@@ -41,11 +41,11 @@ public class HadoopUtils {
 			Class<?> clazz;
 			// for Hadoop 1.xx
 			if(JobContext.class.isInterface()) {
-				clazz = Class.forName("org.apache.hadoop.mapreduce.task.JobContextImpl");
+				clazz = Class.forName("org.apache.hadoop.mapreduce.task.JobContextImpl", true, Thread.currentThread().getContextClassLoader());
 			}
 			// for Hadoop 2.xx
 			else {
-				clazz = Class.forName("org.apache.hadoop.mapreduce.JobContext");
+				clazz = Class.forName("org.apache.hadoop.mapreduce.JobContext", true, Thread.currentThread().getContextClassLoader());
 			}
 			Constructor<?> constructor = clazz.getConstructor(Configuration.class, JobID.class);
 			JobContext context = (JobContext) constructor.newInstance(configuration, jobId);

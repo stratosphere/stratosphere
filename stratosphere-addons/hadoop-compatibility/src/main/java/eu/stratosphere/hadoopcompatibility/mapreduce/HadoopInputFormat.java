@@ -16,8 +16,11 @@ package eu.stratosphere.hadoopcompatibility.mapreduce;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -25,7 +28,9 @@ import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
+import eu.stratosphere.api.common.io.FileInputFormat.FileBaseStatistics;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.common.io.statistics.BaseStatistics;
 import eu.stratosphere.api.java.tuple.Tuple2;
@@ -33,13 +38,18 @@ import eu.stratosphere.api.java.typeutils.ResultTypeQueryable;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.api.java.typeutils.WritableTypeInfo;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FileStatus;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.hadoopcompatibility.mapreduce.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapreduce.wrapper.HadoopInputSplit;
 import eu.stratosphere.types.TypeInformation;
 
-public class HadoopInputFormat<K extends Writable,V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
+public class HadoopInputFormat<K extends Writable & Comparable<?>, V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private static final Log LOG = LogFactory.getLog(HadoopInputFormat.class);
 	
 	private org.apache.hadoop.mapreduce.InputFormat<K, V> mapreduceInputFormat;
 	private Class<K> keyClass;
@@ -63,14 +73,68 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 		HadoopUtils.mergeHadoopConf(configuration);
 	}
 	
+	public void setConfiguration(org.apache.hadoop.conf.Configuration configuration) {
+		this.configuration = configuration;
+	}
+	
+	public org.apache.hadoop.mapreduce.InputFormat<K,V> getHadoopInputFormat() {
+		return this.mapreduceInputFormat;
+	}
+	
+	public void setHadoopInputFormat(org.apache.hadoop.mapreduce.InputFormat<K,V> mapreduceInputFormat) {
+		this.mapreduceInputFormat = mapreduceInputFormat;
+	}
+	
+	public org.apache.hadoop.conf.Configuration getConfiguration() {
+		return this.configuration;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	//  InputFormat
+	// --------------------------------------------------------------------------------------------
+	
 	@Override
 	public void configure(Configuration parameters) {
-		
+		// nothing to do
 	}
 	
 	@Override
-	public BaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
-		return null;
+	public BaseStatistics getStatistics(BaseStatistics cachedStats) throws IOException {
+		// only gather base statistics for FileInputFormats
+		if(!(mapreduceInputFormat instanceof FileInputFormat)) {
+			return null;
+		}
+		
+		JobContext jobContext = null;
+		try {
+			jobContext = HadoopUtils.instantiateJobContext(configuration, null);
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		final FileBaseStatistics cachedFileStats = (cachedStats != null && cachedStats instanceof FileBaseStatistics) ?
+				(FileBaseStatistics) cachedStats : null;
+				
+				try {
+					final org.apache.hadoop.fs.Path[] paths = FileInputFormat.getInputPaths(jobContext);
+					
+					return getFileStats(cachedFileStats, paths, new ArrayList<FileStatus>(1));
+				} catch (IOException ioex) {
+					if (LOG.isWarnEnabled()) {
+						LOG.warn("Could not determine statistics due to an io error: "
+								+ ioex.getMessage());
+					}
+				}
+				catch (Throwable t) {
+					if (LOG.isErrorEnabled()) {
+						LOG.error("Unexpected problen while getting the file statistics: "
+								+ t.getMessage(), t);
+					}
+				}
+				
+				// no statistics available
+				return null;
 	}
 	
 	@Override
@@ -126,6 +190,14 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 		}
 	}
 	
+	@Override
+	public boolean reachedEnd() throws IOException {
+		if(!this.fetched) {
+			fetchNext();
+		}
+		return !this.hasNext;
+	}
+	
 	private void fetchNext() throws IOException {
 		try {
 			this.hasNext = this.recordReader.nextKeyValue();
@@ -134,14 +206,6 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 		} finally {
 			this.fetched = true;
 		}
-	}
-	
-	@Override
-	public boolean reachedEnd() throws IOException {
-		if(!this.fetched) {
-			fetchNext();
-		}
-		return !this.hasNext;
 	}
 	
 	@Override
@@ -168,10 +232,63 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 		this.recordReader.close();
 	}
 	
-	/**
-	 * Custom serialization methods.
-	 *  @see http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
-	 */
+	// --------------------------------------------------------------------------------------------
+	//  Helper methods
+	// --------------------------------------------------------------------------------------------
+	
+	private FileBaseStatistics getFileStats(FileBaseStatistics cachedStats, org.apache.hadoop.fs.Path[] hadoopFilePaths,
+			ArrayList<FileStatus> files) throws IOException {
+		
+		long latestModTime = 0L;
+		
+		// get the file info and check whether the cached statistics are still valid.
+		for(org.apache.hadoop.fs.Path hadoopPath : hadoopFilePaths) {
+			
+			final Path filePath = new Path(hadoopPath.toUri());
+			final FileSystem fs = FileSystem.get(filePath.toUri());
+			
+			final FileStatus file = fs.getFileStatus(filePath);
+			latestModTime = Math.max(latestModTime, file.getModificationTime());
+			
+			// enumerate all files and check their modification time stamp.
+			if (file.isDir()) {
+				FileStatus[] fss = fs.listStatus(filePath);
+				files.ensureCapacity(files.size() + fss.length);
+				
+				for (FileStatus s : fss) {
+					if (!s.isDir()) {
+						files.add(s);
+						latestModTime = Math.max(s.getModificationTime(), latestModTime);
+					}
+				}
+			} else {
+				files.add(file);
+			}
+		}
+		
+		// check whether the cached statistics are still valid, if we have any
+		if (cachedStats != null && latestModTime <= cachedStats.getLastModificationTime()) {
+			return cachedStats;
+		}
+		
+		// calculate the whole length
+		long len = 0;
+		for (FileStatus s : files) {
+			len += s.getLen();
+		}
+		
+		// sanity check
+		if (len <= 0) {
+			len = BaseStatistics.SIZE_UNKNOWN;
+		}
+		
+		return new FileBaseStatistics(latestModTime, len, BaseStatistics.AVG_RECORD_BYTES_UNKNOWN);
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	//  Custom serialization methods
+	// --------------------------------------------------------------------------------------------
+	
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeUTF(this.mapreduceInputFormat.getClass().getName());
 		out.writeUTF(this.keyClass.getName());
@@ -193,37 +310,25 @@ public class HadoopInputFormat<K extends Writable,V extends Writable> implements
 		}
 		
 		try {
-			this.mapreduceInputFormat = (org.apache.hadoop.mapreduce.InputFormat<K,V>) Class.forName(hadoopInputFormatClassName).newInstance();
+			this.mapreduceInputFormat = (org.apache.hadoop.mapreduce.InputFormat<K,V>) Class.forName(hadoopInputFormatClassName, true, Thread.currentThread().getContextClassLoader()).newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to instantiate the hadoop input format", e);
 		}
 		try {
-			this.keyClass = (Class<K>) Class.forName(keyClassName);
+			this.keyClass = (Class<K>) Class.forName(keyClassName, true, Thread.currentThread().getContextClassLoader());
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to find key class.", e);
 		}
 		try {
-			this.valueClass = (Class<V>) Class.forName(valueClassName);
+			this.valueClass = (Class<V>) Class.forName(valueClassName, true, Thread.currentThread().getContextClassLoader());
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to find value class.", e);
 		}
 	}
 	
-	public void setConfiguration(org.apache.hadoop.conf.Configuration configuration) {
-		this.configuration = configuration;
-	}
-	
-	public org.apache.hadoop.mapreduce.InputFormat<K,V> getHadoopInputFormat() {
-		return this.mapreduceInputFormat;
-	}
-	
-	public void setHadoopInputFormat(org.apache.hadoop.mapreduce.InputFormat<K,V> mapreduceInputFormat) {
-		this.mapreduceInputFormat = mapreduceInputFormat;
-	}
-	
-	public org.apache.hadoop.conf.Configuration getConfiguration() {
-		return this.configuration;
-	}
+	// --------------------------------------------------------------------------------------------
+	//  ResultTypeQueryable
+	// --------------------------------------------------------------------------------------------
 	
 	@SuppressWarnings("unchecked")
 	@Override

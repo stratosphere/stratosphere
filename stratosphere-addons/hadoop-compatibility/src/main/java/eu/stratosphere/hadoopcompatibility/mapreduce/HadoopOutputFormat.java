@@ -16,7 +16,11 @@ package eu.stratosphere.hadoopcompatibility.mapreduce;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.JobID;
@@ -31,20 +35,15 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.hadoopcompatibility.mapreduce.utils.HadoopUtils;
 
 
-public class HadoopOutputFormat<K extends Writable,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
+public class HadoopOutputFormat<K extends Writable & Comparable<?>,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
 	
 	private static final long serialVersionUID = 1L;
 	
 	private org.apache.hadoop.conf.Configuration configuration;
-	
 	private org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat;
-	
 	private RecordWriter<K,V> recordWriter;
-	
 	private FileOutputCommitter fileOutputCommitter;
-	
 	private TaskAttemptContext context;
-	
 	
 	public HadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat, org.apache.hadoop.conf.Configuration configuration) {
 		super();
@@ -53,8 +52,29 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 		HadoopUtils.mergeHadoopConf(configuration);
 	}
 	
+	public void setConfiguration(org.apache.hadoop.conf.Configuration configuration) {
+		this.configuration = configuration;
+	}
+	
+	public org.apache.hadoop.conf.Configuration getConfiguration() {
+		return this.configuration;
+	}
+	
+	public org.apache.hadoop.mapreduce.OutputFormat<K,V> getHadoopOutputFormat() {
+		return this.mapreduceOutputFormat;
+	}
+	
+	public void setHadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat) {
+		this.mapreduceOutputFormat = mapreduceOutputFormat;
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	//  OutputFormat
+	// --------------------------------------------------------------------------------------------
+	
 	@Override
 	public void configure(Configuration parameters) {
+		// nothing to do
 	}
 	
 	/**
@@ -69,6 +89,9 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 			throw new IOException("Task id too large.");
 		}
 		
+		// for hadoop 2.2
+		this.configuration.set("mapreduce.output.basename", "tmp");
+		
 		TaskAttemptID taskAttemptID = TaskAttemptID.forName("attempt__0000_r_" 
 				+ String.format("%" + (6 - Integer.toString(taskNumber + 1).length()) + "s"," ").replace(" ", "0") 
 				+ Integer.toString(taskNumber + 1) 
@@ -80,6 +103,8 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 			throw new RuntimeException(e);
 		}
 		this.configuration.set("mapred.task.id", taskAttemptID.toString());
+		// for hadoop 2.2
+		this.configuration.set("mapreduce.task.attempt.id", taskAttemptID.toString());
 		
 		this.fileOutputCommitter = new FileOutputCommitter(new Path(this.configuration.get("mapred.output.dir")), context);
 		
@@ -125,13 +150,32 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 		if (this.fileOutputCommitter.needsTaskCommit(this.context)) {
 			this.fileOutputCommitter.commitTask(this.context);
 		}
-		// TODO: commitjob when all the tasks are finished
+		this.fileOutputCommitter.commitJob(this.context);
+		
+		// rename tmp-* files to final name
+		FileSystem fs = FileSystem.get(this.configuration);
+		
+		Path outputPath = new Path(this.configuration.get("mapred.output.dir"));
+
+		final Pattern p = Pattern.compile("tmp-(.)-([0-9]+)");
+		
+		if(fs.isDirectory(outputPath)) {
+			FileStatus[] files = fs.listStatus(outputPath);
+			
+			for(FileStatus f : files) {
+				Matcher m = p.matcher(f.getPath().getName());
+				if(m.matches()) {
+					int part = Integer.valueOf(m.group(2));
+					fs.rename(f.getPath(), new Path(outputPath.toString()+"/"+part));
+				}
+			}
+		}
 	}
 	
-	/**
-	 * Custom serialization methods.
-	 *  @see http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
-	 */
+	// --------------------------------------------------------------------------------------------
+	//  Custom serialization methods
+	// --------------------------------------------------------------------------------------------
+	
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeUTF(this.mapreduceOutputFormat.getClass().getName());
 		this.configuration.write(out);
@@ -149,27 +193,9 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 		}
 		
 		try {
-			this.mapreduceOutputFormat = (org.apache.hadoop.mapreduce.OutputFormat<K,V>) Class.forName(hadoopOutputFormatClassName).newInstance();
+			this.mapreduceOutputFormat = (org.apache.hadoop.mapreduce.OutputFormat<K,V>) Class.forName(hadoopOutputFormatClassName, true, Thread.currentThread().getContextClassLoader()).newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to instantiate the hadoop output format", e);
 		}
 	}
-	
-	
-	public void setConfiguration(org.apache.hadoop.conf.Configuration configuration) {
-		this.configuration = configuration;
-	}
-	
-	public org.apache.hadoop.conf.Configuration getConfiguration() {
-		return this.configuration;
-	}
-	
-	public org.apache.hadoop.mapreduce.OutputFormat<K,V> getHadoopOutputFormat() {
-		return this.mapreduceOutputFormat;
-	}
-	
-	public void setHadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat) {
-		this.mapreduceOutputFormat = mapreduceOutputFormat;
-	}
-	
 }
