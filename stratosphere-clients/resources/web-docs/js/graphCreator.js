@@ -139,12 +139,12 @@ function loadJsonToDagre(data){
 
 //create a label of an edge
 function createLabelEdge(el) {
-	var labelValue = "<div style=\"font-size: 120%; border:2px solid\">";
+	var labelValue = "<div style=\"font-size: 100%; border:2px solid\">";
 	if (el.ship_strategy != null) {
 		labelValue += el.ship_strategy;
 	} 
 	if (el.local_strategy != undefined) {
-		labelValue += ", " + el.local_strategy;
+		labelValue += ",<br>" + el.local_strategy;
 	}
 	labelValue += "</div>";
 	return labelValue;
@@ -152,27 +152,25 @@ function createLabelEdge(el) {
 
 //creates the label of a node
 function createLabelNode(el) {
-	var labelValue = "<div>";
+	var labelValue = "<div style=\"margin-top: 0\">";
 	//set color of panel
 	if (el.pact == "Data Source") {
-		labelValue += "<div class=\"panel panel-success\">";
+		labelValue += "<div style=\"border-color:#4ce199; border-width:4px; border-style:solid\">";
 	} else if (el.pact == "Data Sink") {
-		labelValue += "<div class=\"panel panel-warning\">";
+		labelValue += "<div style=\"border-color:#e6ec8b; border-width:4px; border-style:solid\">";
 	} else {
-		labelValue += "<div class=\"panel panel-info\">";
+		labelValue += "<div style=\"border-color:#3fb6d8; border-width:4px; border-style:solid\">";
 	}
 	//Nodename
-	//Old Solution with onclick
-//	labelValue += "<div class=\"panel-heading\"><a class=\"clickLabel\" nodeID=\""+el.id+"\" href=\"#\"><h4 style=\"text-align: center\">" + el.pact + "</h4></a>";
 	//New Solution with overlay
-	labelValue += "<div class=\"panel-heading\"><a nodeID=\""+el.id+"\" href=\"#\" rel=\"#propertyO\"><h4 style=\"text-align: center\">" + el.pact + "</h4></a>";
+	labelValue += "<div><a nodeID=\""+el.id+"\" href=\"#\" rel=\"#propertyO\"><h3 style=\"text-align: center; font-size: 150%\">" + el.pact + "</h3></a>";
 	if (el.contents == "") {
 		labelValue += "</div>";
 	} else {
 		var stepName = el.contents;
 		//clean stepName
 		stepName = shortenString(stepName);
-	 	labelValue += "<h5 style=\"text-align: center\">" + stepName + "</h5></div>";
+	 	labelValue += "<h4 style=\"text-align: center; font-size: 130%\">" + stepName + "</h4></div>";
 	}
 	
 	//If this node is a "iteration" we need a different panel-body
@@ -181,18 +179,13 @@ function createLabelNode(el) {
 		return labelValue;
 	}
 	
-	//Table
-	labelValue += "<div class=\"panel-body\"><table class=\"table\"\"></tr>";
-
 	if (el.parallelism != "") {
-		labelValue += tableRow("Parallelism", el.parallelism);
+		labelValue += "<p>Parallelism: " + el.parallelism + "</p>";
 	}
 
 	if (el.driver_strategy != undefined) {
-		labelValue += tableRow("Driver Strategy", el.driver_strategy);
+		labelValue += "<p>Driver Strategy: " + el.driver_strategy + "</p>";
 	}
-		
-	labelValue += "</table></div>";
 	
 	//close panel
 	labelValue += "</div></div>";
@@ -314,7 +307,7 @@ function searchForIterationNodes() {
 //creates a row for a table with two collums
 function tableRow(nameX, valueX) {
 	var htmlCode = "";
-	htmlCode += "<tr><td>" + nameX + "</td><td>" + valueX + "</td></tr>";
+	htmlCode += "<tr><td align=\"left\">" + nameX + "</td><td align=\"right\">" + valueX + "</td></tr>";
 	return htmlCode;
 }
 
@@ -330,6 +323,10 @@ function shortenString(s) {
 	if (s.charAt(0) == "<") {
 			s = s.replace("<", "&lt;");
 			s = s.replace(">", "&gt;");
+	}
+	
+	if (s.length > 30) {
+		s = "..." + s.substring(s.length-30, s.length);
 	}
 	return s;
 }
