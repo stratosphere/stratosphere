@@ -39,16 +39,11 @@ public class HadoopUtils {
 	
 	public static JobContext instantiateJobContext(JobConf jobConf, JobID jobId) throws Exception {
 		try {
-			Class<?> clazz;
+			// for Hadoop 2.xx & 1.xx
+			Class<?> clazz = Class.forName("org.apache.hadoop.mapred.JobContext", true, Thread.currentThread().getContextClassLoader());
+			Constructor<?> constructor = clazz.getDeclaredConstructor(JobConf.class, org.apache.hadoop.mapreduce.JobID.class);
 			// for Hadoop 1.xx
-			if(JobContext.class.isInterface()) {
-				clazz = Class.forName("org.apache.hadoop.mapred.JobContextImpl", true, Thread.currentThread().getContextClassLoader());
-			}
-			// for Hadoop 2.xx
-			else {
-				clazz = Class.forName("org.apache.hadoop.mapred.JobContext", true, Thread.currentThread().getContextClassLoader());
-			}
-			Constructor<?> constructor = clazz.getConstructor(JobConf.class, org.apache.hadoop.mapreduce.JobID.class);
+			constructor.setAccessible(true);
 			JobContext context = (JobContext) constructor.newInstance(jobConf, jobId);
 			
 			return context;
@@ -60,18 +55,12 @@ public class HadoopUtils {
 	
 	public static TaskAttemptContext instantiateTaskAttemptContext(JobConf jobConf,  TaskAttemptID taskAttemptID) throws Exception {
 		try {
-			Class<?> clazz;
+			// for Hadoop 2.xx & 1.xx
+			Class<?> clazz = Class.forName("org.apache.hadoop.mapred.TaskAttemptContext");
+			Constructor<?> constructor = clazz.getDeclaredConstructor(JobConf.class, TaskAttemptID.class);
 			// for Hadoop 1.xx
-			if(JobContext.class.isInterface()) {
-				clazz = Class.forName("org.apache.hadoop.mapred.TaskAttemptContextImpl");
-			}
-			// for Hadoop 2.xx
-			else {
-				clazz = Class.forName("org.apache.hadoop.mapred.TaskAttemptContext");
-			}
-			Constructor<?> constructor = clazz.getConstructor(JobConf.class, TaskAttemptID.class);
+			constructor.setAccessible(true);
 			TaskAttemptContext context = (TaskAttemptContext) constructor.newInstance(jobConf, taskAttemptID);
-			
 			return context;
 		}
 		catch(Exception e) {
