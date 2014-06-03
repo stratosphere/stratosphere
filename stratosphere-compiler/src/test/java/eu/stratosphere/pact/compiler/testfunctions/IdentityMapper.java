@@ -12,18 +12,17 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators;
 
-import eu.stratosphere.api.java.DataSet;
+package eu.stratosphere.pact.compiler.testfunctions;
 
-/**
- *
- * @param <IN> The type of the data set consumed by this operator.
- * @param <OUT> The type of the data set produced by this operator. 
- */
-public interface CustomUnaryOperation<IN, OUT> {
-	
-	void setInput(DataSet<IN> inputData);
-	
-	DataSet<OUT> createResult();
+import eu.stratosphere.api.java.functions.MapFunction;
+
+public class IdentityMapper<T> extends MapFunction<T, T> {
+
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public T map(T value) {
+		return value;
+	}
 }

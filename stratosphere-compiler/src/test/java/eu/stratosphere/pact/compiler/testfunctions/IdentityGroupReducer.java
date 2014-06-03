@@ -12,18 +12,25 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.api.java.operators;
 
-import eu.stratosphere.api.java.DataSet;
+package eu.stratosphere.pact.compiler.testfunctions;
 
-/**
- *
- * @param <IN> The type of the data set consumed by this operator.
- * @param <OUT> The type of the data set produced by this operator. 
- */
-public interface CustomUnaryOperation<IN, OUT> {
-	
-	void setInput(DataSet<IN> inputData);
-	
-	DataSet<OUT> createResult();
+import java.util.Iterator;
+
+import eu.stratosphere.api.java.functions.GroupReduceFunction;
+import eu.stratosphere.api.java.functions.GroupReduceFunction.Combinable;
+import eu.stratosphere.util.Collector;
+
+
+@Combinable
+public class IdentityGroupReducer<T> extends GroupReduceFunction<T, T> {
+
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public void reduce(Iterator<T> values, Collector<T> out) {
+		while (values.hasNext()) {
+			out.collect(values.next());
+		}
+	}
 }
