@@ -52,6 +52,7 @@ CC_CLASSPATH=`manglePathList $(constructCLIClientClassPath)`
 log=$STRATOSPHERE_LOG_DIR/stratosphere-$STRATOSPHERE_IDENT_STRING-stratosphere-client-$HOSTNAME.log
 log_setting="-Dlog.file="$log" -Dlog4j.configuration=file:"$STRATOSPHERE_CONF_DIR"/log4j.properties"
 
+export STRATOSPHERE_ROOT_DIR
 export STRATOSPHERE_CONF_DIR
 
 $JAVA_RUN $JVM_ARGS $log_setting -classpath $CC_CLASSPATH eu.stratosphere.client.CliFrontend $*

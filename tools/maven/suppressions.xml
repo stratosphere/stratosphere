@@ -6,4 +6,5 @@
 
 <suppressions>
 		<suppress files="eu[\\/]stratosphere[\\/]api[\\/]java[\\/]record[\\/]io[\\/]avro[\\/]example[\\/]User.java" checks="[a-zA-Z0-9]*"/>
+		<suppress files="eu[\\/]stratosphere[\\/]languagebinding[\\/]api[\\/]java[\\/]proto[\\/]ProtocolTuple.java" checks="[a-zA-Z0-9]*"/>
 </suppressions>

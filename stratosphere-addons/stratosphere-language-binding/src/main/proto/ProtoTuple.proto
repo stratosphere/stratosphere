@@ -1,0 +1,52 @@
+////////////////////////////////////////////////////////////////////////////////
+ // Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ // the License. You may obtain a copy of the License at
+ //
+ // http://www.apache.org/licenses/LICENSE-2.0
+ //
+ // Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ // an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ // specific language governing permissions and limitations under the License.
+ // ////////////////////////////////////////////////////////////////////////////
+
+//ProtocolTuple.java has been modified. Do not replace without checking sections marked with //MODIFICATION.
+
+//protoc --java_out=./ ProtoTuple.proto
+//protoc --python_out=./ ProtoTuple.proto
+
+package eu.stratosphere.languagebinding.api.java.proto;
+
+option java_outer_classname = "ProtocolTuple";
+
+message TupleSize{
+	required sfixed32 value = 1;
+}
+
+message ProtoTuple{
+        enum FieldType {
+		String = 0;
+                Byte = 1;
+                Short = 2;
+                Integer = 3;
+                Long = 4;
+                Float = 5;
+                Double = 6;                
+                Boolean = 7;
+  	}
+
+        required bool atomicType = 2;
+
+        message FieldValue{
+                required FieldType fieldType = 1;
+                optional string stringVal = 2;
+                optional int32 int32Val = 3;
+                optional int64 int64Val = 4;
+                optional double doubleVal = 5;
+                optional float floatVal = 6;
+                optional bool boolVal = 7;
+  	}
+
+        repeated FieldValue values = 1;
+}

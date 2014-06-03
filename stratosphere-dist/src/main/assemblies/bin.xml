@@ -194,6 +194,13 @@
 			<fileMode>0644</fileMode>
 		</fileSet>
 
+		<fileSet>
+			<!-- copy python package -->
+			<directory>../stratosphere-addons/stratosphere-language-binding/src/main/python/eu/stratosphere/languagebinding/api/python</directory>
+			<outputDirectory>resources/python/</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+
 	</fileSets>
 
 </assembly>
