@@ -579,7 +579,7 @@ public abstract class ExecutionEnvironment {
 	 * @param executable flag indicating whether the file should be executable
 	 */
 	public void registerCachedFile(String filePath, String name, boolean executable){
-		this.cacheFile.add(new Tuple2(name, new DistributedCacheEntry(name, executable)));
+		this.cacheFile.add(new Tuple2(name, new DistributedCacheEntry(filePath, executable)));
 	}
 	
 	/**
