@@ -1,8 +1,22 @@
+/***********************************************************************************************************************
+ *
+ * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ **********************************************************************************************************************/
+
 package eu.stratosphere.quickstart;
 
 import java.io.Serializable;
 import java.util.Collection;
-
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.IterativeDataSet;
@@ -11,13 +25,81 @@ import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
 
-
+/**
+* This example implements a basic Linear Regression using SGD algorithm.
+*
+* <p>
+* Linear Regression with SGD(Stochastic gradient descent) algorithm is an iterative clustering algorithm and works as follows:<br>
+* Giving a data set and target set, the SGD try to find out the best parameters for the data set to fit the target set.
+* In each iteration, the algorithm computes the gradient of the cost function and use it to update all the parameters.
+* The algorithm terminates after a fixed number of iterations (as in this implementation)
+* With enough iteration, the algorithm can minimize the cost function and find the best parameters
+* This is the Wikipedia entry for the <a herf = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a herf = "http://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD algorithm</a>.
+* 
+* <p>
+* This implementation works on two-dimensional data.<br>
+* It find the best Theta parameter to fit the target.
+*
+* <p>
+* This exmaple shows how to use:
+* <ul>
+* <li> Bulk iterations
+* <li> Broadcast variables in bulk iterations
+* <li> Custom Java objects (PoJos)
+* </ul>
+*/
 
 /**
  * A linearRegression example to solve the y = theta0 + theta1*x problem.
  */
 @SuppressWarnings("serial")
-public class LinearRegression {
+public class LinearRegression_git {
+    
+    
+    // *************************************************************************
+	//     PROGRAM
+	// *************************************************************************
+    
+    
+    public static void main(String[] arg) throws Exception{
+        
+        // set up execution environment
+        
+		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+        
+        // get input x data from elements
+		DataSet<Data> data = env.fromElements(
+                                              new Data(0.5, 1.0),
+                                              new Data(1.0,2.0));
+        // get the parameters from elements
+		DataSet<Params> parameters = env.fromElements(
+                                                      new Params(0.5, 1.0));
+        // set number of bulk iterations for SGD linear Regression
+		IterativeDataSet<Params> loop = parameters.iterate(700);
+        
+		DataSet<Params> new_parameters = data
+        // compute a single step using every sample
+        .map(new SubUpdate()).withBroadcastSet(loop, "parameters")
+        // sum up all the steps
+        .reduce(new UpdateAccumulator())
+        // average the steps and update all parameters
+        .map(new Update());
+        
+        // feed new parameters back into next iteration
+		DataSet<Params> result = loop.closeWith(new_parameters);
+        
+        // emit result
+		result.print();
+        
+        // execute program
+		env.execute("Linear Regression example");
+        
+        
+	}
+    
+    // *************************************************************************
+	//     DATA TYPES
+	// *************************************************************************
 
 
 	/**
@@ -93,11 +175,14 @@ public class LinearRegression {
 
 	}
 
+    
+    // *************************************************************************
+	//     USER FUNCTIONS
+	// *************************************************************************
 	
 	/**
 	 * Compute a single SGD type update for every parameters.
 	 */
-
 	public static class SubUpdate extends MapFunction<Data,Tuple2<Params,Integer>>{
 
 
@@ -108,7 +193,7 @@ public class LinearRegression {
 		private int index = 1;
 
 
-		/** */
+		/** Reads the parameters from a broadcast variable into a collection. */
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			this.parameters = getRuntimeContext().getBroadcastVariable("parameters");
@@ -156,34 +241,6 @@ public class LinearRegression {
 
 	}
 
-
-
-	public static void main(String[] arg) throws Exception{
-		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
-		DataSet<Data> data = env.fromElements(
-				new Data(0.5, 1.0),
-				new Data(1.0,2.0));
-
-		DataSet<Params> parameters = env.fromElements(
-				new Params(0.5, 1.0));
-
-		IterativeDataSet<Params> loop = parameters.iterate(700);
-
-		DataSet<Params> new_parameters = data
-				.map(new SubUpdate()).withBroadcastSet(loop, "parameters")
-				.reduce(new UpdateAccumulator())
-				.map(new Update());
-
-
-		DataSet<Params> result = loop.closeWith(new_parameters);
-
-		result.print();
-
-		env.execute("Linear Regression example");
-
-
-	}
 
 
 
