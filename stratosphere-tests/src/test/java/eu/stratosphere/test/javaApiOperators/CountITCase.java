@@ -16,22 +16,29 @@ package eu.stratosphere.test.javaApiOperators;
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
+import eu.stratosphere.api.java.functions.FilterFunction;
 import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.io.LocalCollectionOutputFormat;
 import eu.stratosphere.test.util.JavaProgramTestBase;
 import eu.stratosphere.util.Collector;
 import junit.framework.Assert;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public class CountITCase extends JavaProgramTestBase {
+
+	public CountITCase() {
+		setNumTaskManager(2);
+	}
 
 	@Override
 	protected void testProgram() throws Exception {
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
-		List<Long> countResults = new ArrayList<Long>();
+		Queue<Long> countResults = new ArrayDeque<Long>();
 		OutputFormat<Long> localOutputFormat = new LocalCollectionOutputFormat<Long>(countResults);
 
 		DataSet<String> text = env.fromElements(
@@ -44,18 +51,14 @@ public class CountITCase extends JavaProgramTestBase {
 		// 11 elements
 		text.flatMap(new LineSplitter()).count().output(localOutputFormat);
 
-//		Notice: Empty DataSets DO NOT WORK at the moment
-//
-//		If the DataSet on which count() is called is empty, there will be no call to the count operator (because there
-//      won't be anything emitted into the count operator in the translated data flow).
-//
-//		// 0 elements
-//		text.filter(new FilterAll()).output(localOutputFormat);
+		// 0 elements
+		text.filter(new FilterAll()).count().output(localOutputFormat);
 
 		env.execute();
 
-		Assert.assertEquals(2, countResults.remove(0).longValue());
-		Assert.assertEquals(11, countResults.remove(0).longValue());
+		Assert.assertEquals(2, countResults.remove().longValue());
+		Assert.assertEquals(11, countResults.remove().longValue());
+		Assert.assertEquals(0, countResults.remove().longValue());
 	}
 
 	private static class LineSplitter extends FlatMapFunction<String, String> {
@@ -67,10 +70,10 @@ public class CountITCase extends JavaProgramTestBase {
 		}
 	}
 
-//	private static class FilterAll extends FilterFunction<String> {
-//		@Override
-//		public boolean filter(String value) throws Exception {
-//			return false;
-//		}
-//	}
+	private static class FilterAll extends FilterFunction<String> {
+		@Override
+		public boolean filter(String value) throws Exception {
+			return false;
+		}
+	}
 }

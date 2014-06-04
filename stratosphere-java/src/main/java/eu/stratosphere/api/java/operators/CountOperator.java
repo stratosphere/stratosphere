@@ -14,13 +14,22 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.operators;
 
+import eu.stratosphere.api.common.functions.GenericMap;
+import eu.stratosphere.api.common.functions.GenericReduce;
 import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.api.common.operators.OperatorInformation;
+import eu.stratosphere.api.common.operators.UnaryOperatorInformation;
+import eu.stratosphere.api.common.operators.Union;
+import eu.stratosphere.api.common.operators.base.GenericDataSourceBase;
+import eu.stratosphere.api.common.operators.base.MapOperatorBase;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.functions.ReduceFunction;
-import eu.stratosphere.api.java.operators.translation.PlanMapOperator;
-import eu.stratosphere.api.java.operators.translation.PlanReduceOperator;
+import eu.stratosphere.api.java.io.CollectionInputFormat;
 import eu.stratosphere.api.java.typeutils.BasicTypeInfo;
+
+import java.util.Arrays;
 
 /**
  * The CountOperator will be translated to a map and reduce function.
@@ -36,18 +45,34 @@ public class CountOperator<IN> extends SingleInputUdfOperator<IN, Long, CountOpe
 	}
 
 	@Override
-	protected Operator translateToDataFlow(Operator input) {
-		PlanMapOperator<IN, Long> countMapOperator = new PlanMapOperator<IN, Long>(
-				new CountingMapUdf<IN>(), "Count: map to ones", getInputType(), BasicTypeInfo.LONG_TYPE_INFO);
-		countMapOperator.setInput(input);
-		countMapOperator.setDegreeOfParallelism(input.getDegreeOfParallelism());
+	protected ReduceOperatorBase<Long, GenericReduce<Long>> translateToDataFlow(Operator input) {
+		MapOperatorBase<IN, Long, GenericMap<IN, Long>> mapToOnes =
+				new MapOperatorBase<IN, Long, GenericMap<IN, Long>>(
+						new CountingMapUdf<IN>(),
+						new UnaryOperatorInformation<IN, Long>(getInputType(), BasicTypeInfo.LONG_TYPE_INFO),
+						"Count: map to ones");
+		mapToOnes.setInput(input);
+		mapToOnes.setDegreeOfParallelism(input.getDegreeOfParallelism());
 
-		PlanReduceOperator<Long> countReduceOperator = new PlanReduceOperator<Long>(
-				new CountingReduceUdf(), new int[0], "Count: sum up ones", BasicTypeInfo.LONG_TYPE_INFO);
-		countReduceOperator.setInput(countMapOperator);
-		countReduceOperator.setDegreeOfParallelism(input.getDegreeOfParallelism());
+		// dummy source with a single element (0L), which is needed for empty
+		// inputs (count 0) to ensure at least a single element for the reducer
+		GenericDataSourceBase<Long, CollectionInputFormat<Long>> dummySource = new GenericDataSourceBase(
+				new CollectionInputFormat<Long>(Arrays.asList(new Long[]{0L})),
+				new OperatorInformation<Long>(BasicTypeInfo.LONG_TYPE_INFO),
+				"Count: dummy source (for 0 count)");
 
-		return countReduceOperator;
+		Union<Long> unionMapToOnesAndZero = new Union<Long>(mapToOnes, dummySource);
+
+		ReduceOperatorBase<Long, GenericReduce<Long>> sumOnes =
+				new ReduceOperatorBase<Long, GenericReduce<Long>>(
+						new CountingReduceUdf(),
+						new UnaryOperatorInformation<Long, Long>(BasicTypeInfo.LONG_TYPE_INFO, BasicTypeInfo.LONG_TYPE_INFO),
+						new int[0],
+						"Count: sum up ones");
+		sumOnes.setInput(unionMapToOnesAndZero);
+		sumOnes.setDegreeOfParallelism(1);
+
+		return sumOnes;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
