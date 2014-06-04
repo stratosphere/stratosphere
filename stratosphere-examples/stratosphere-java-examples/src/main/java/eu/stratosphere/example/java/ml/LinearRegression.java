@@ -59,8 +59,6 @@ public class LinearRegression {
     // *************************************************************************
 	//     PROGRAM
 	// *************************************************************************
-    
-    
     public static void main(String[] arg) throws Exception{
         
         // set up execution environment
