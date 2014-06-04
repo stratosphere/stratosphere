@@ -23,8 +23,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import eu.stratosphere.api.common.io.OutputFormat;
@@ -35,16 +35,16 @@ import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyProgressabl
 import eu.stratosphere.hadoopcompatibility.mapred.wrapper.HadoopDummyReporter;
 
 
-public class HadoopOutputFormat<K extends Writable & Comparable<?>,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
+public class HadoopOutputFormat<K extends Writable,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
 	
 	private static final long serialVersionUID = 1L;
 	
 	public JobConf jobConf;	
 	public org.apache.hadoop.mapred.OutputFormat<K,V> mapredOutputFormat;	
-	public RecordWriter<K,V> recordWriter;	
-	public FileOutputCommitter fileOutputCommitter;
-	private TaskAttemptContext context;
-	private JobContext jobContext;
+	public transient RecordWriter<K,V> recordWriter;	
+	public transient FileOutputCommitter fileOutputCommitter;
+	private transient TaskAttemptContext context;
+	private transient JobContext jobContext;
 	
 	public HadoopOutputFormat(org.apache.hadoop.mapred.OutputFormat<K,V> mapredOutputFormat, JobConf job) {
 		super();

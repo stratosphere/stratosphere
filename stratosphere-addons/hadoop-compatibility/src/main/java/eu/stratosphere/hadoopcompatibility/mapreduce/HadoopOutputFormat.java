@@ -35,15 +35,15 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.hadoopcompatibility.mapreduce.utils.HadoopUtils;
 
 
-public class HadoopOutputFormat<K extends Writable & Comparable<?>,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
+public class HadoopOutputFormat<K extends Writable,V extends Writable> implements OutputFormat<Tuple2<K, V>> {
 	
 	private static final long serialVersionUID = 1L;
 	
 	private org.apache.hadoop.conf.Configuration configuration;
 	private org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat;
-	private RecordWriter<K,V> recordWriter;
-	private FileOutputCommitter fileOutputCommitter;
-	private TaskAttemptContext context;
+	private transient RecordWriter<K,V> recordWriter;
+	private transient FileOutputCommitter fileOutputCommitter;
+	private transient TaskAttemptContext context;
 	
 	public HadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat, org.apache.hadoop.conf.Configuration configuration) {
 		super();
@@ -159,7 +159,7 @@ public class HadoopOutputFormat<K extends Writable & Comparable<?>,V extends Wri
 
 		final Pattern p = Pattern.compile("tmp-(.)-([0-9]+)");
 		
-		if(fs.isDirectory(outputPath)) {
+		if(fs.getFileStatus(outputPath).isDir()) {
 			FileStatus[] files = fs.listStatus(outputPath);
 			
 			for(FileStatus f : files) {

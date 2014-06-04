@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -45,7 +46,8 @@ import eu.stratosphere.hadoopcompatibility.mapreduce.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapreduce.wrapper.HadoopInputSplit;
 import eu.stratosphere.types.TypeInformation;
 
-public class HadoopInputFormat<K extends Writable & Comparable<?>, V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
+@SuppressWarnings("rawtypes")
+public class HadoopInputFormat<K extends WritableComparable, V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -56,7 +58,7 @@ public class HadoopInputFormat<K extends Writable & Comparable<?>, V extends Wri
 	private Class<V> valueClass;
 	private org.apache.hadoop.conf.Configuration configuration;
 	
-	public RecordReader<K, V> recordReader;
+	public transient RecordReader<K, V> recordReader;
 	private boolean fetched = false;
 	private boolean hasNext;
 	
@@ -330,9 +332,8 @@ public class HadoopInputFormat<K extends Writable & Comparable<?>, V extends Wri
 	//  ResultTypeQueryable
 	// --------------------------------------------------------------------------------------------
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public TypeInformation<Tuple2<K,V>> getProducedType() {
-		return new TupleTypeInfo<Tuple2<K,V>>(new WritableTypeInfo<Writable>((Class<Writable>) keyClass), new WritableTypeInfo<Writable>((Class<Writable>) valueClass));
+		return new TupleTypeInfo<Tuple2<K,V>>(new WritableTypeInfo<K>((Class<K>) keyClass), new WritableTypeInfo<V>((Class<V>) valueClass));
 	}
 }
