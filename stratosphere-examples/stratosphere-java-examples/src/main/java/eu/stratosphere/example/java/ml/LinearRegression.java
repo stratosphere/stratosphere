@@ -34,14 +34,14 @@ import eu.stratosphere.configuration.Configuration;
 * In each iteration, the algorithm computes the gradient of the cost function and use it to update all the parameters.
 * The algorithm terminates after a fixed number of iterations (as in this implementation)
 * With enough iteration, the algorithm can minimize the cost function and find the best parameters
-* This is the Wikipedia entry for the <a herf = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a herf = "http://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD algorithm</a>.
+* This is the Wikipedia entry for the <a href = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a href = "http://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD algorithm</a>.
 * 
 * <p>
 * This implementation works on two-dimensional data.<br>
 * It find the best Theta parameter to fit the target.
 *
 * <p>
-* This exmaple shows how to use:
+* This example shows how to use:
 * <ul>
 * <li> Bulk iterations
 * <li> Broadcast variables in bulk iterations
@@ -69,21 +69,21 @@ public class LinearRegression_git {
         
         // get input x data from elements
 		DataSet<Data> data = env.fromElements(
-                                              new Data(0.5, 1.0),
-                                              new Data(1.0,2.0));
+				new Data(0.5, 1.0),
+				new Data(1.0,2.0));
         // get the parameters from elements
 		DataSet<Params> parameters = env.fromElements(
-                                                      new Params(0.5, 1.0));
+				new Params(0.5, 1.0));
         // set number of bulk iterations for SGD linear Regression
 		IterativeDataSet<Params> loop = parameters.iterate(700);
         
 		DataSet<Params> new_parameters = data
         // compute a single step using every sample
-        .map(new SubUpdate()).withBroadcastSet(loop, "parameters")
+				.map(new SubUpdate()).withBroadcastSet(loop, "parameters")
         // sum up all the steps
-        .reduce(new UpdateAccumulator())
+				.reduce(new UpdateAccumulator())
         // average the steps and update all parameters
-        .map(new Update());
+				.map(new Update());
         
         // feed new parameters back into next iteration
 		DataSet<Params> result = loop.closeWith(new_parameters);
