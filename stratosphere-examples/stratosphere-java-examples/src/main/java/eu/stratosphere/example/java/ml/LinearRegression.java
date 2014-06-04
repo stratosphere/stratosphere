@@ -53,7 +53,7 @@ import eu.stratosphere.configuration.Configuration;
  * A linearRegression example to solve the y = theta0 + theta1*x problem.
  */
 @SuppressWarnings("serial")
-public class LinearRegression_git {
+public class LinearRegression {
     
     
     // *************************************************************************
