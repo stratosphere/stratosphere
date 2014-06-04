@@ -11,15 +11,17 @@
  * specific language governing permissions and limitations under the License.
  **********************************************************************************************************************/
 
-package eu.stratosphere.example.java.clustering.util;
+package eu.stratosphere.example.java.ml.util;
 
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
-import eu.stratosphere.example.java.clustering.KMeans.Centroid;
-import eu.stratosphere.example.java.clustering.KMeans.Point;
+import eu.stratosphere.example.java.ml.LinearRegression.Data;
+import eu.stratosphere.example.java.ml.LinearRegression.Params;
+
+
 
 /**
- * Provides the default data sets used for the K-Means example program.
+ * Provides the default data sets used for the Linear Regression example program.
  * The default data sets are used, if no parameters are given to the program.
  *
  */

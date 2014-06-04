@@ -59,10 +59,10 @@ public class LinearRegression {
     // *************************************************************************
 	//     PROGRAM
 	// *************************************************************************
-    public static void main(String[] arg) throws Exception{
+	public static void main(String[] arg) throws Exception{
         
         // set up execution environment
-        
+		
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         
         // get input x data from elements
