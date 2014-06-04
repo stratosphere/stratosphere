@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.quickstart;
+package eu.stratosphere.example.java.ml;
 
 import java.io.Serializable;
 import java.util.Collection;
