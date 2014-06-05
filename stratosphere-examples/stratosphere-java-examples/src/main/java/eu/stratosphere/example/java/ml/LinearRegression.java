@@ -26,79 +26,84 @@ import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
 
 /**
-* This example implements a basic Linear Regression using SGD algorithm.
-*
-* <p>
-* Linear Regression with SGD(Stochastic gradient descent) algorithm is an iterative clustering algorithm and works as follows:<br>
-* Giving a data set and target set, the SGD try to find out the best parameters for the data set to fit the target set.
-* In each iteration, the algorithm computes the gradient of the cost function and use it to update all the parameters.
-* The algorithm terminates after a fixed number of iterations (as in this implementation)
-* With enough iteration, the algorithm can minimize the cost function and find the best parameters
-* This is the Wikipedia entry for the <a href = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a href = "http://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD algorithm</a>.
-* 
-* <p>
-* This implementation works on two-dimensional data.<br>
-* It find the best Theta parameter to fit the target.
-*
-* <p>
-* This example shows how to use:
-* <ul>
-* <li> Bulk iterations
-* <li> Broadcast variables in bulk iterations
-* <li> Custom Java objects (PoJos)
-* </ul>
-*/
+ * This example implements a basic Linear Regression using batch gradient descent algorithm.
+ *
+ * <p>
+ * Linear Regression with BGD(batch gradient descent) algorithm is an iterative clustering algorithm and works as follows:<br>
+ * Giving a data set and target set, the BGD try to find out the best parameters for the data set to fit the target set.
+ * In each iteration, the algorithm computes the gradient of the cost function and use it to update all the parameters.
+ * The algorithm terminates after a fixed number of iterations (as in this implementation)
+ * With enough iteration, the algorithm can minimize the cost function and find the best parameters
+ * This is the Wikipedia entry for the <a href = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a href = "http://en.wikipedia.org/wiki/Gradient_descent">Gradient descent algorithm</a>.
+ * 
+ * <p>
+ * This implementation works on two-dimensional data.<br>
+ * It find the best Theta parameter to fit the target.
+ *
+ * <p>
+ * This example shows how to use:
+ * <ul>
+ * <li> Bulk iterations
+ * <li> Broadcast variables in bulk iterations
+ * <li> Custom Java objects (PoJos)
+ * </ul>
+ */
 
 /**
  * A linearRegression example to solve the y = theta0 + theta1*x problem.
  */
 @SuppressWarnings("serial")
 public class LinearRegression {
-    
-    
-    // *************************************************************************
+
+	// *************************************************************************
 	//     PROGRAM
 	// *************************************************************************
-	public static void main(String[] arg) throws Exception{
-        
-        // set up execution environment
-		
+
+	public static void main(String[] args) throws Exception{
+
+		if(!parseParameters(args)) {
+			return;
+		}
+
+		// set up execution environment
+
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        
-        // get input x data from elements
-		DataSet<Data> data = env.fromElements(
-				new Data(0.5, 1.0),
-				new Data(1.0,2.0));
-        // get the parameters from elements
-		DataSet<Params> parameters = env.fromElements(
-				new Params(0.5, 1.0));
-        // set number of bulk iterations for SGD linear Regression
-		IterativeDataSet<Params> loop = parameters.iterate(700);
-        
+
+		// get input x data from elements
+		DataSet<Data> data = getDataSet(env);
+
+		// get the parameters from elements
+		DataSet<Params> parameters = getParamsDataSet(env);
+
+		// set number of bulk iterations for SGD linear Regression
+		IterativeDataSet<Params> loop = parameters.iterate(numIterations);
+
 		DataSet<Params> new_parameters = data
-        // compute a single step using every sample
+				// compute a single step using every sample
 				.map(new SubUpdate()).withBroadcastSet(loop, "parameters")
-        // sum up all the steps
+				// sum up all the steps
 				.reduce(new UpdateAccumulator())
-        // average the steps and update all parameters
+				// average the steps and update all parameters
 				.map(new Update());
-        
-        // feed new parameters back into next iteration
+
+		// feed new parameters back into next iteration
 		DataSet<Params> result = loop.closeWith(new_parameters);
-        
-        // emit result
-		result.print();
-        
-        // execute program
+
+		// emit result
+		if(fileOutput) {
+			result.writeAsCsv(outputPath, "\n", " ");
+		} else {
+			result.print();
+		}
+
+		// execute program
 		env.execute("Linear Regression example");
-        
-        
+
 	}
-    
-    // *************************************************************************
+
+	// *************************************************************************
 	//     DATA TYPES
 	// *************************************************************************
-
 
 	/**
 	 * A simple data sample, x means the input, and y means the target.
@@ -107,7 +112,6 @@ public class LinearRegression {
 		public double x,y;
 
 		public Data() {};
-
 
 		public Data(double x ,double y){
 			this.x = x;
@@ -119,9 +123,8 @@ public class LinearRegression {
 			return "(" + x + "|" + y + ")";
 		}
 
-
 	}
-	
+
 	/**
 	 * A set of parameters -- theta0, theta1.
 	 */
@@ -157,14 +160,6 @@ public class LinearRegression {
 			this.theta1 = theta1;
 		}
 
-		public Params add(Params other){
-			this.theta0 = theta0 + other.theta0;
-			this.theta1 = theta1 + other.theta1;
-			return this;
-		}
-
-
-
 		public Params div(Integer a){
 			this.theta0 = theta0 / a ;
 			this.theta1 = theta1 / a ;
@@ -173,23 +168,38 @@ public class LinearRegression {
 
 	}
 
-    
-    // *************************************************************************
+	// *************************************************************************
 	//     USER FUNCTIONS
 	// *************************************************************************
-	
+
+	/** Converts a Tuple2<Double,Double> into a Data. */
+	public static final class TupleDataConverter extends MapFunction<Tuple2<Double, Double>, Data> {
+
+		@Override
+		public Data map(Tuple2<Double, Double> t) throws Exception {
+			return new Data(t.f0, t.f1);
+		}
+	}
+
+	/** Converts a Tuple2<Double,Double> into a Params. */
+	public static final class TupleParamsConverter extends MapFunction<Tuple2<Double, Double>,Params> {
+
+		@Override
+		public Params map(Tuple2<Double, Double> t)throws Exception {
+			return new Params(t.f0,t.f1);
+		}
+	}
+
 	/**
-	 * Compute a single SGD type update for every parameters.
+	 * Compute a single BGD type update for every parameters.
 	 */
 	public static class SubUpdate extends MapFunction<Data,Tuple2<Params,Integer>>{
-
 
 		private Collection<Params> parameters; 
 
 		private Params parameter;
 
-		private int index = 1;
-
+		private int count = 1;
 
 		/** Reads the parameters from a broadcast variable into a collection. */
 		@Override
@@ -197,23 +207,20 @@ public class LinearRegression {
 			this.parameters = getRuntimeContext().getBroadcastVariable("parameters");
 		}
 
-
 		@Override
 		public Tuple2<Params, Integer> map(Data in) throws Exception {
 
-
 			for(Params p : parameters){
+
 				this.parameter = p; 
 			}
 
-			double theta_0 = parameter.theta0 - 0.1*((parameter.theta0 + (parameter.theta1*in.x)) - in.y);
-			double theta_1 = parameter.theta1 - 0.1*(((parameter.theta0 + (parameter.theta1*in.x)) - in.y) * in.x);
+			double theta_0 = parameter.theta0 - 0.01*((parameter.theta0 + (parameter.theta1*in.x)) - in.y);
+			double theta_1 = parameter.theta1 - 0.01*(((parameter.theta0 + (parameter.theta1*in.x)) - in.y) * in.x);
 
-
-			return new Tuple2<Params,Integer>(new Params(theta_0,theta_1),index);
+			return new Tuple2<Params,Integer>(new Params(theta_0,theta_1),count);
 		}
 	}
-
 
 	/**  
 	 * Accumulator all the update.
@@ -222,11 +229,15 @@ public class LinearRegression {
 
 		@Override
 		public Tuple2<Params, Integer> reduce(Tuple2<Params, Integer> val1, Tuple2<Params, Integer> val2) {
-			return new Tuple2<Params, Integer>( val1.f0.add(val2.f0), val1.f1 + val2.f1);
+
+			double new_theta0 = val1.f0.theta0 + val2.f0.theta0;
+			double new_theta1 = val1.f0.theta1 + val2.f0.theta1;
+			Params result = new Params(new_theta0,new_theta1);
+			return new Tuple2<Params, Integer>( result, val1.f1 + val2.f1);
+
 		}
 	}
 
-	
 	/**
 	 * Compute the final update by average them.
 	 */
@@ -234,13 +245,62 @@ public class LinearRegression {
 
 		@Override
 		public Params map(Tuple2<Params, Integer> arg0) throws Exception {
+
 			return arg0.f0.div(arg0.f1);
+
 		}
 
 	}
+	// *************************************************************************
+	//     UTIL METHODS
+	// *************************************************************************
 
+	private static boolean fileOutput = false;
+	private static String dataPath = null;
+	private static String outputPath = null;
+	private static int numIterations = 10;
 
+	private static boolean parseParameters(String[] programArguments) {
 
+		if(programArguments.length > 0) {
+			// parse input arguments
+			fileOutput = true;
+			if(programArguments.length == 3) {
+				dataPath = programArguments[0];
+				outputPath = programArguments[1];
+				numIterations = Integer.parseInt(programArguments[2]);
+			} else {
+				System.err.println("Usage: LinearRegression <data path> <result path> <num iterations>");
+				return false;
+			}
+		} else {
+			System.out.println("Executing Linear Regression example with default parameters and built-in default data.");
+			System.out.println("  Provide parameters to read input data from files.");
+			System.out.println("  See the documentation for the correct format of input files.");
+			System.out.println("  We provide a data generator to create synthetic input files for this program.");
+			System.out.println("  Usage: LinearRegression <data path> <result path> <num iterations>");
+		}
+		return true;
+	}
+
+	private static DataSet<Data> getDataSet(ExecutionEnvironment env) {
+		if(fileOutput) {
+			// read data from CSV file
+			return env.readCsvFile(dataPath)
+					.fieldDelimiter(' ')
+					.includeFields(true, true)
+					.types(Double.class, Double.class)
+					.map(new TupleDataConverter());
+		} else {
+			return LinearRegressionData.getDefaultDataDataSet(env);
+		}
+	}
+
+	private static DataSet<Params> getParamsDataSet(ExecutionEnvironment env) {
+
+		return LinearRegressionData.getDefaultParamsDataSet(env);
+
+	}
 
 }
 

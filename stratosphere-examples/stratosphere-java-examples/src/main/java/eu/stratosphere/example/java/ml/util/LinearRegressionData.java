@@ -16,9 +16,6 @@ package eu.stratosphere.example.java.ml.util;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.example.java.ml.LinearRegression.Data;
-import eu.stratosphere.example.java.ml.LinearRegression.Params;
-
-
 
 /**
  * Provides the default data sets used for the Linear Regression example program.
@@ -30,20 +27,35 @@ public class LinearRegressionData{
 	public static DataSet<Params> getDefaultParamsDataSet(ExecutionEnvironment env){
 
 		return env.fromElements(
-			new Params(0.5,1.0)
-			);
+				new Params(0.0,0.0)
+				);
 	}
 
 	public static DataSet<Data> getDefaultDataDataSet(ExecutionEnvironment env){
 
 		return env.fromElements(
-			new Data(0.5,1.0),
-			new Data(1.0,2.0),
-			new Data(2.0,4.0),
-			new Data(3.0,6.0),
-			new Data(4.0,8.0),
-			new Data(5.0,10.0)
-			);
+				new Data(0.5,1.0),
+				new Data(1.0,2.0),
+				new Data(2.0,4.0),
+				new Data(3.0,6.0),
+				new Data(4.0,8.0),
+				new Data(5.0,10.0),
+				new Data(6.0,12.0),
+				new Data(7.0,14.0),
+				new Data(8.0,16.0),
+				new Data(9.0,18.0),
+				new Data(10.0,20.0),
+				new Data(-0.08,-0.16),
+				new Data(0.13,0.26),
+				new Data(-1.17,-2.35),
+				new Data(1.72,3.45),
+				new Data(1.70,3.41),
+				new Data(1.20,2.41),
+				new Data(-0.59,-1.18),
+				new Data(0.28,0.57),
+				new Data(1.65,3.30),
+				new Data(-0.55,-1.08)
+				);
 	}
 
 }
