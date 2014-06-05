@@ -24,6 +24,7 @@ import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.example.java.ml.util.LinearRegressionData;
 
 /**
  * This example implements a basic Linear Regression using batch gradient descent algorithm.

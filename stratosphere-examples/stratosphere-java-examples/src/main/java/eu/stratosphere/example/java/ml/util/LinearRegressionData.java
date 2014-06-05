@@ -16,6 +16,7 @@ package eu.stratosphere.example.java.ml.util;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.example.java.ml.LinearRegression.Data;
+import eu.stratosphere.example.java.ml.LinearRegression.Params;
 
 /**
  * Provides the default data sets used for the Linear Regression example program.
