@@ -336,8 +336,6 @@ function updateTable(json) {
 			
 			if(oldstatus.toLowerCase() != newstate.toLowerCase()) {
 				// Update inner progress bar
-				console.log(event.vertexid);
-				console.log($("#"+event.vertexid).text().search("DataSource"));//contains("DataSource").wrap("<span></span>").parent().html());
 				
 				// If the updated state information is a DataSource and is updated to FINISHING. Means it read all data and now forwards the data.
 				if($("#"+event.vertexid).text().search("DataSource") > 0 && event.newstate == "FINISHING") {
