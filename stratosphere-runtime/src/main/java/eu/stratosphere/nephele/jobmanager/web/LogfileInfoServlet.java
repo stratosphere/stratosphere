@@ -56,7 +56,7 @@ public class LogfileInfoServlet extends HttpServlet {
 							) {
 						
 						resp.setStatus(HttpServletResponse.SC_OK);
-						resp.setContentType("text/plain ");
+						resp.setContentType("text/html");
 						writeFile(resp.getOutputStream(), f);
 						break;
 					}
