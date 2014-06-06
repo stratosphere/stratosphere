@@ -29,14 +29,6 @@ function init() {
 // Init once on page load
 $(init());
 
-function pollForDataSourceSink() {
-$.ajax({ url : "jobsInfo", type : "GET", cache: false, success : function(json) {
-
-	updateSourceSink(json);
-
-	}, dataType : "json",
-	});
-}
 
 /*
  * Pools for updates on currently running jobs
@@ -54,7 +46,6 @@ function poll(jobId) {
 		updateTable(json);
 	}, dataType : "json",
 	});
-//pollForDataSourceSink();
 };
 
 /*
