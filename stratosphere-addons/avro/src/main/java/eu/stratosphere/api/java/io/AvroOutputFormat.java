@@ -59,9 +59,9 @@ public class AvroOutputFormat<E> extends FileOutputFormat<E> {
 			try {
 				schema = ((org.apache.avro.specific.SpecificRecordBase)avroValueType.newInstance()).getSchema();
 			} catch (InstantiationException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
 			} catch (IllegalAccessException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
 			}
 		} else {
 			datumWriter = new ReflectDatumWriter<E>(avroValueType);
