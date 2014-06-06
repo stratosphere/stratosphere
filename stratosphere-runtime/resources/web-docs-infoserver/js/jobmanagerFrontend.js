@@ -16,7 +16,7 @@ function init() {
 		
 		// If no job running, poll for new jobs
 		if(json == "")
-			setTimeout(function() {init()}, 2000);
+			setTimeout(init, 2000);
 		
 	    jsonGlobal = json
 	    // Fill Table	
@@ -54,7 +54,7 @@ function poll(jobId) {
 		updateTable(json);
 	}, dataType : "json",
 	});
-pollForDataSourceSink();
+//pollForDataSourceSink();
 };
 
 /*
@@ -303,7 +303,6 @@ function progressBarTwoInOne(firstMaximum, firstInput, secondMaximum, secondInpu
 					+ "0%;\">"
 					+ "</div>" //close class=progress-bar-second progress-bar-success
 					+ "</div>" //close class=progress
-					//+ "</div>" //close progress table 
 					+ "</td>"; //close class=classVal
 					
 	} else {
@@ -356,6 +355,23 @@ function updateTable(json) {
 			var summembers = parseInt($("#sum").children(".nummebembers").html());
 			
 			if(oldstatus.toLowerCase() != newstate.toLowerCase()) {
+				// Update inner progress bar
+				console.log(event.vertexid);
+				console.log($("#"+event.vertexid).text().search("DataSource"));//contains("DataSource").wrap("<span></span>").parent().html());
+				
+				// If the updated state information is a DataSource and is updated to FINISHING. Means it read all data and now forwards the data.
+				if($("#"+event.vertexid).text().search("DataSource") > 0 && event.newstate == "FINISHING") {
+					//Calculate new percentage 
+					var numberOfTasks = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children(".nummembers").text());
+					var progressBarMaximumWidth = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().contents().find(".progress-bar-inner-blue").parent().css("width"),10);
+					var progressBarCurrentWidth = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().contents().find(".progress-bar-inner-blue").css("width"),10);
+					var oldPercentage = (progressBarCurrentWidth/progressBarMaximumWidth)*100;
+					
+					// Write new percentage
+					var newPercentage = oldPercentage+((1/numberOfTasks)*100);
+					$("#"+event.vertexid).parent().parent().parent().parent().parent().prev().contents().find(".progress-bar-inner-blue").css("width", newPercentage+"%");
+				}
+				
 				// adjust groupvertex
 				var oldcount = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+oldstatus.toLowerCase()).attr("val"));
 				var oldcount2 = parseInt($("#"+event.vertexid).parent().parent().parent().parent().parent().prev().children("."+newstate.toLowerCase()).attr("val"));
