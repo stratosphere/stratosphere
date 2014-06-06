@@ -476,4 +476,6 @@ public final class ManagementGroupVertex extends ManagementAttachment implements
 		
 		return json.toString();
 	}
+
+}
 }
