@@ -212,7 +212,6 @@ public class LinearRegression {
 		public Tuple2<Params, Integer> map(Data in) throws Exception {
 
 			for(Params p : parameters){
-
 				this.parameter = p; 
 			}
 
