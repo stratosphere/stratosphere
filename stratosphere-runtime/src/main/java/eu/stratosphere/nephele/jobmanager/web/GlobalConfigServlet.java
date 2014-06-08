@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -31,11 +30,9 @@ import org.codehaus.jettison.json.JSONObject;
 
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
-import eu.stratosphere.nephele.event.job.RecentJobEvent;
 
 /**
  * A Servlet that displays the GlobalConfigruation in the webinterface.
- * @author jonathanhasenburg
  *
  */
 public class GlobalConfigServlet extends HttpServlet {
