@@ -660,9 +660,4 @@ public class PythonExecutor {
 		DataSet op2 = (DataSet) sets.get(otherID);
 		sets.put(childID, op1.union(op2));
 	}
-
-	//====Utilities=====================================================================================================
-	public static Class convertTypeInfo(Object types) {
-		return types.getClass();
-	}
 }
