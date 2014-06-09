@@ -10,19 +10,16 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import TextInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
-import os
-env = get_environment()
-stratosphere_path = os.getenv("STRATOSPHERE_ROOT_DIR")
+from stratosphere.example.triangleenumeration import Edge
 
-data = env.create_input(TextInputFormat(stratosphere_path+"/resources/python/stratosphere/documentation/Functions.py"))
+from stratosphere.functions import Mapper
 
 
-data.map("/test/Map.py", [Types.INT])\
-    .reduce("/test/Reduce.py")\
-    .output(PrintingOutputFormat())
+def function(self, data, context):
+    edge = Edge.Edge(data[0], data[2])
+    if data[1] < data[3]:
+        edge.flip()
+    return edge
 
-env.execute()
+
+Mapper.Mapper().map(function)

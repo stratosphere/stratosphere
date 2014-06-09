@@ -10,17 +10,27 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import CSVInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
+from stratosphere.example.triangleenumeration import Edge
 
-env = get_environment()
-env.set_degree_of_parallelism(4)
+from stratosphere.functions import GroupReducer
 
-data1 = env.create_input(CSVInputFormat("/home/shiren/tuples.txt", [Types.INT, Types.STRING]))
-data2 = env.create_input(CSVInputFormat("/home/shiren/tuples.txt", [Types.INT, Types.STRING]))
 
-data1.union(data2).output(PrintingOutputFormat())
+def function(self, iterator, coll, context):
+    vertices = []
 
-env.execute();
+    y = iterator.next()
+    first_edge = Edge.Edge(y[0], y[1])
+
+    vertices.append(first_edge.f1)
+
+    while iterator.has_next():
+        x = iterator.next()
+        second_edge = Edge.Edge(x[0], x[1])
+        higher_vertex_id = second_edge.f1
+
+        for lowerVertexId in vertices:
+            coll.collect(Edge.Triad(first_edge.f0, lowerVertexId, higher_vertex_id))
+        vertices.append(higher_vertex_id)
+
+
+GroupReducer.GroupReducer().group_reduce(function)

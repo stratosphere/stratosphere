@@ -10,18 +10,16 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import CSVInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
+from stratosphere.example.triangleenumeration import Edge
 
-env = get_environment()
+from stratosphere.functions import FlatMapper
 
-data1 = env.create_input(CSVInputFormat("/home/shiren/tuples.txt", [Types.INT, Types.STRING]))
-data2 = env.create_input(CSVInputFormat("/home/shiren/tuples.txt", [Types.INT, Types.STRING]))
 
-data1.cogroup(data2, Types.STRING).where([0]).equal_to([0])\
-    .using("src/main/python/eu/stratosphere/languagebinding/api/python/stratosphere/test/CoGroup.py")\
-    .output(PrintingOutputFormat())
+def function(self, data, coll, context):
+    edge = Edge.Edge(int(data[0]), int(data[1]))
+    coll.collect(edge)
+    edge.flip()
+    coll.collect(edge)
 
-env.execute();
+
+FlatMapper.FlatMapper().flat_map(function)

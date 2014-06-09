@@ -23,7 +23,7 @@ env = get_environment()
 data = env.create_input(TextInputFormat("/test.txt"))
 
 #3)
-mapped_data = data.map("/stratosphere/test/Map.py", Types.INT)
+mapped_data = data.map("/example/basics/Map.py", Types.INT)
 
 #4)
 mapped_data.output(PrintingOutputFormat())
@@ -41,6 +41,8 @@ A python plan that is supposed to be used by a stratosphere generally consists o
 3) manipulating the data using functions
 4) outputting data using output formats
 5) execute the plan
+
+The path to the scripts has to be relative to the package containing it.
 
 Functions and formats may require you to specify the output type.
 mapped_data = data.map("/stratosphere/test/Map.py", Types.INT)
@@ -76,6 +78,9 @@ The following operations can be executed on the result from a sort operation:
 The python plans are structurally very similar to java plans, as such refer to the official documentation at
 https://www.stratosphere.eu for more information.
 Note that python plans are a subset functionality-wise.
+
+You can submit a python plan by passing the stratosphere-language-binding jar, along with paths to your plan and the
+package containing the functions to stratosphere.
 
 Notes:
 Python IDE's frequently encounter problems with auto-completion after join (or similar) operations. This will be fixed

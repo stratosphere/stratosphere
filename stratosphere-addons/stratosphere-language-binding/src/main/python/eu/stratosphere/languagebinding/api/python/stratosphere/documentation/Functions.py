@@ -34,7 +34,7 @@ A python function that is supposed to be used by a stratosphere plan consists of
 2) an operator function
 3) a call to the corresponding operator class
 
-Basic examples for each function can be found in the test and example folder in the stratosphere package.
+Basic examples for each function can be found in the example folder of the stratosphere package.
 These show the function signatures, and how data can received and returned.
 
 Arguments:
@@ -43,7 +43,7 @@ Several functions receive iterators instead of simple objects, and collectors in
 
 Iterators support the following operations:
 has_next(): returns a boolean value indicating whether another values is available. Note that for CoGroup functions,
-the first call will always return true.
+the first call will always return true. Only the first call is blocking.
 next(): returns the next value. This is a blocking operation.
 all(): returns all values in the iterator as a list. This is a blocking operation.
 
@@ -56,13 +56,8 @@ and Accumulators.
 
 Types:
 
-If the plan was written in python:
-The data input type for the function will be a basic python type (int, float, bool, string) or a tuple containing basic
-python types.
-
-If the plan was written in java:
-The data input type for the function will be a basic type or a tuple containing basic types. Custom types are converted
-to strings (if no converter was supplied), and (may) have to be reconverted in python.
+The data input type for the function will be a basic type or a tuple containing basic types.
+Custom types are generally converted to strings.
 
 Type(flag) conversion table (Java -> Python)
 bool      -> bool

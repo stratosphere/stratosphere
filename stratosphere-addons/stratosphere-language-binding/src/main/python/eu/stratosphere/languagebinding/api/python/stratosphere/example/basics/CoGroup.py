@@ -10,20 +10,15 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import CSVInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
-from stratosphere.plan.Environment import Order
+import logging
 
-env = get_environment()
+from stratosphere.functions import CoGrouper
 
-data = env.create_input(CSVInputFormat("/home/shiren/grtuples.txt", [Types.INT, Types.STRING]))
 
-data\
-    .group_by(0)\
-    .sortgroup(0, Order.ASCENDING)\
-    .groupreduce("src/main/python/eu/stratosphere/languagebinding/api/python/stratosphere/test/GroupReduce.py", Types.STRING)\
-    .output(PrintingOutputFormat())
+def function(self, iterator1, iterator2, coll, context):
+    while iterator1.has_next():
+        base = iterator1.next()[1]
+        while iterator2.has_next():
+            coll.collect(base + iterator2.next()[1])
 
-env.execute();
+CoGrouper.CoGrouper().co_group(function)

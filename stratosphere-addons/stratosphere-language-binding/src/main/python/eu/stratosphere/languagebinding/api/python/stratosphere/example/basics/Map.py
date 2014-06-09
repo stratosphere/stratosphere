@@ -10,17 +10,14 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import TextInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
+import re
 
-env = get_environment()
+from stratosphere.functions import Mapper
 
-data = env.create_input(TextInputFormat("/home/shiren/lines.txt"))
 
-data\
-    .flatmap("src/main/python/eu/stratosphere/languagebinding/api/python/stratosphere/test/FlatMap.py",Types.STRING)\
-    .output(PrintingOutputFormat())
+def input(self, input, context):
+    split_input = re.split("\W+", input.lower())
+    return len(split_input)
 
-env.execute();
+
+Mapper.Mapper().map(input)

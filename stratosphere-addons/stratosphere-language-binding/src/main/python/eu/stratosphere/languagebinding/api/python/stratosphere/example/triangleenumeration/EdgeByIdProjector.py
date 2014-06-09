@@ -10,14 +10,16 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-import re
+from stratosphere.example.triangleenumeration import Edge
 
 from stratosphere.functions import Mapper
 
 
-def input(self, input, context):
-    split_input = re.split("\W+", input.lower())
-    return (len(split_input),)
+def function(self, data, context):
+    edge = Edge.Edge(data[0], data[1])
+    if edge.f0 > edge.f1:
+        edge.flip()
+    return edge
 
 
-Mapper.Mapper().map(input)
+Mapper.Mapper().map(function)

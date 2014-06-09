@@ -10,19 +10,19 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-import logging
+from stratosphere.plan.Environment import get_environment
+from stratosphere.plan.InputFormat import TextInputFormat
+from stratosphere.plan.OutputFormat import PrintingOutputFormat
+from stratosphere.plan.Environment import Types
+import os
+env = get_environment()
+stratosphere_path = os.getenv("STRATOSPHERE_ROOT_DIR")
 
-from stratosphere.functions import CoGrouper
-
-
-def function(self, iterator1, iterator2, coll, context):
-    while iterator1.has_next():
-        logging.debug("loop 1")
-        base = iterator1.next()[1]
-        logging.debug("udf(): base= %s", str(base))
-        while iterator2.has_next():
-            logging.debug("loop 2")
-            coll.collect(base + iterator2.next()[1])
+data = env.create_input(TextInputFormat(stratosphere_path+"/resources/python/stratosphere/documentation/Functions.py"))
 
 
-CoGrouper.CoGrouper().co_group(function)
+data.map("/example/basics/Map.py", Types.INT)\
+    .reduce("/example/basics/Reduce.py")\
+    .output(PrintingOutputFormat())
+
+env.execute()

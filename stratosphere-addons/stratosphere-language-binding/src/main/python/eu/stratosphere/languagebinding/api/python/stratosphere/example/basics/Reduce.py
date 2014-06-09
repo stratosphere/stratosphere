@@ -10,33 +10,12 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 ######################################################################################################################
-from stratosphere.plan.Environment import get_environment
-from stratosphere.plan.InputFormat import TextInputFormat
-from stratosphere.plan.OutputFormat import PrintingOutputFormat
-from stratosphere.plan.Environment import Types
 
-env = get_environment()
+from stratosphere.functions import Reducer
 
-data = env.create_input(TextInputFormat("/home/shiren/Documents/test.txt"))
 
-data.map("src/main/python/eu/stratosphere/languagebinding/api/python/stratosphere/test/Map.py", Types.INT)\
-    .output(PrintingOutputFormat())
+def add(self, input1, input2, context):
+    return input1 + input2
 
-"""
-data2 = data.filter("test.py")
 
-data3 = data.cogroup("test.py")
-
-data4 = data2.map("test.py")
-
-data.cogroup(data2).where(0).equal_to(1).using("path")
-
-data3.output(CSVOutputFormat("/res.txt"))
-"""
-env.execute()
-"""
-print(data._id)
-print(data2._id)
-print(data3._id)
-print(data4._id)
-"""
+Reducer.Reducer().reduce(add)
