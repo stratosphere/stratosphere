@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -45,10 +46,10 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 	private transient FileOutputCommitter fileOutputCommitter;
 	private transient TaskAttemptContext context;
 	
-	public HadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat, org.apache.hadoop.conf.Configuration configuration) {
+	public HadoopOutputFormat(org.apache.hadoop.mapreduce.OutputFormat<K,V> mapreduceOutputFormat, Job job) {
 		super();
 		this.mapreduceOutputFormat = mapreduceOutputFormat;
-		this.configuration = configuration;
+		this.configuration = job.getConfiguration();
 		HadoopUtils.mergeHadoopConf(configuration);
 	}
 	
@@ -159,7 +160,7 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 
 		final Pattern p = Pattern.compile("tmp-(.)-([0-9]+)");
 		
-		if(fs.getFileStatus(outputPath).isDir()) {
+		if(fs.getFileStatus(outputPath).isDirectory()) {
 			FileStatus[] files = fs.listStatus(outputPath);
 			
 			for(FileStatus f : files) {
