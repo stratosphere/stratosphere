@@ -38,9 +38,17 @@ import eu.stratosphere.example.java.ml.util.LinearRegressionData;
  * This is the Wikipedia entry for the <a href = "http://en.wikipedia.org/wiki/Linear_regression">Linear regression</a> and <a href = "http://en.wikipedia.org/wiki/Gradient_descent">Gradient descent algorithm</a>.
  * 
  * <p>
- * This implementation works on two-dimensional data.<br>
+ * This implementation works on one-dimensional data. And find the two-dimensional theta.<br>
  * It find the best Theta parameter to fit the target.
- *
+ * 
+ * <p>
+ * Input files are plain text files and must be formatted as follows:
+ * <ul>
+ * <li>Data points are represented as two double values separated by a blank character. The first one represent the X(the training data) and the second represent the Y(target).
+ * Data points are separated by newline characters.<br>
+ * For example <code>"-0.02 -0.04\n5.3 10.6\n"</code> gives two data points (x=-0.02, y=-0.04) and (x=5.3, y=10.6).
+ * </ul>
+ * 
  * <p>
  * This example shows how to use:
  * <ul>
