@@ -21,6 +21,7 @@ import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.MemorySegment;
 import eu.stratosphere.pact.runtime.hash.MutableHashTable;
+import eu.stratosphere.pact.runtime.hash.ReOpenableMutableHashTable;
 import eu.stratosphere.pact.runtime.task.util.TaskConfig;
 import eu.stratosphere.pact.runtime.util.EmptyMutableObjectIterator;
 import eu.stratosphere.util.Collector;
@@ -72,12 +73,12 @@ public abstract class AbstractCachedBuildSideMatchDriver<IT1, IT2, OT> extends M
 			this.taskContext.getOwningNepheleTask(), numMemoryPages);
 
 		if (buildSideIndex == 0 && probeSideIndex == 1) {
-			MutableHashTable<IT1, IT2> hashJoin = new MutableHashTable<IT1, IT2>(serializer1, serializer2, comparator1, comparator2,
+			ReOpenableMutableHashTable<IT1, IT2> hashJoin = new ReOpenableMutableHashTable<IT1, IT2>(serializer1, serializer2, comparator1, comparator2,
 					pairComparatorFactory.createComparator21(comparator1, comparator2), memSegments, this.taskContext.getIOManager());
 			this.hashJoin = hashJoin;
 			hashJoin.open(input1, EmptyMutableObjectIterator.<IT2>get());
 		} else if (buildSideIndex == 1 && probeSideIndex == 0) {
-			MutableHashTable<IT2, IT1> hashJoin = new MutableHashTable<IT2, IT1>(serializer2, serializer1, comparator2, comparator1,
+			ReOpenableMutableHashTable<IT2, IT1> hashJoin = new ReOpenableMutableHashTable<IT2, IT1>(serializer2, serializer1, comparator2, comparator1,
 					pairComparatorFactory.createComparator12(comparator1, comparator2), memSegments, this.taskContext.getIOManager());
 			this.hashJoin = hashJoin;
 			hashJoin.open(input2, EmptyMutableObjectIterator.<IT1>get());
