@@ -70,7 +70,7 @@ public class WordCount {
 		DataSet<Tuple2<Text, IntWritable>> hadoopResult = result.map(new HadoopDatatypeMapper());
 		
 		// Set up Hadoop Output Format
-		HadoopOutputFormat<Text, IntWritable> hadoopOutputFormat = new HadoopOutputFormat<Text, IntWritable>(new TextOutputFormat<Text, IntWritable>(), job.getConfiguration());
+		HadoopOutputFormat<Text, IntWritable> hadoopOutputFormat = new HadoopOutputFormat<Text, IntWritable>(new TextOutputFormat<Text, IntWritable>(), job);
 		hadoopOutputFormat.getConfiguration().set("mapred.textoutputformat.separator", " ");
 		TextOutputFormat.setOutputPath(job, new Path(outputPath));
 		

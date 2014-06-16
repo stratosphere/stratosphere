@@ -140,6 +140,7 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 	 * commit the task by moving the output file out from the temporary directory.
 	 * @throws IOException
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void close() throws IOException {
 		try {
@@ -160,7 +161,8 @@ public class HadoopOutputFormat<K extends Writable,V extends Writable> implement
 
 		final Pattern p = Pattern.compile("tmp-(.)-([0-9]+)");
 		
-		if(fs.getFileStatus(outputPath).isDirectory()) {
+		// isDirectory does not work in hadoop 1
+		if(fs.getFileStatus(outputPath).isDir()) {
 			FileStatus[] files = fs.listStatus(outputPath);
 			
 			for(FileStatus f : files) {

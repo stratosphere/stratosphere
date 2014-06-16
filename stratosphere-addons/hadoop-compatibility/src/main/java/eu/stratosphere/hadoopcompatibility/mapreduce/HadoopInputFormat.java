@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -46,8 +45,7 @@ import eu.stratosphere.hadoopcompatibility.mapreduce.utils.HadoopUtils;
 import eu.stratosphere.hadoopcompatibility.mapreduce.wrapper.HadoopInputSplit;
 import eu.stratosphere.types.TypeInformation;
 
-@SuppressWarnings("rawtypes")
-public class HadoopInputFormat<K extends WritableComparable, V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
+public class HadoopInputFormat<K extends Writable, V extends Writable> implements InputFormat<Tuple2<K,V>, HadoopInputSplit>, ResultTypeQueryable<Tuple2<K,V>> {
 	
 	private static final long serialVersionUID = 1L;
 	
