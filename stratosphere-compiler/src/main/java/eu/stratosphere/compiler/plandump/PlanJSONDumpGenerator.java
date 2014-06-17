@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import eu.stratosphere.api.common.operators.CompilerHints;
@@ -131,20 +132,22 @@ public class PlanJSONDumpGenerator {
 		writer.println("\n\t]\n}");
 	}
 
-	private void visit(DumpableNode<?> node, PrintWriter writer, boolean first) {
+	private boolean visit(DumpableNode<?> node, PrintWriter writer, boolean first) {
 		// check for duplicate traversal
 		if (this.nodeIds.containsKey(node)) {
-			return;
+			return false;
 		}
 		
 		// assign an id first
 		this.nodeIds.put(node, this.nodeCnt++);
 		
 		// then recurse
-		for (Iterator<? extends DumpableNode<?>> children = node.getPredecessors(); children.hasNext(); ) {
-			final DumpableNode<?> child = children.next();
-			visit(child, writer, first);
-			first = false;
+		for (DumpableNode<?> child : node.getPredecessors()) {
+			//This is important, because when the node was already in the graph it is not allowed
+			//to set first to false!
+			if (visit(child, writer, first)) {
+				first = false;
+			};
 		}
 		
 		// check if this node should be skipped from the dump
@@ -153,7 +156,7 @@ public class PlanJSONDumpGenerator {
 		// ------------------ dump after the ascend ---------------------
 		// start a new node and output node id
 		if (!first) {
-			writer.print(",\n");
+			writer.print(",\n");	
 		}
 		// open the node
 		writer.print("\t{\n");
@@ -253,7 +256,7 @@ public class PlanJSONDumpGenerator {
 				+ (n.getSubtasksPerInstance() >= 1 ? n.getSubtasksPerInstance() : "default") + "\"");
 
 		// output node predecessors
-		Iterator<? extends DumpableConnection<?>> inConns = node.getDumpableInputs();
+		Iterator<? extends DumpableConnection<?>> inConns = node.getDumpableInputs().iterator();
 		String child1name = "", child2name = "";
 
 		if (inConns != null && inConns.hasNext()) {
@@ -269,8 +272,8 @@ public class PlanJSONDumpGenerator {
 				if (conn.getSource() instanceof NAryUnionPlanNode) {
 					inConnsForInput = new ArrayList<DumpableConnection<?>>();
 					
-					for (Iterator<? extends DumpableConnection<?>> inputOfUnion = conn.getSource().getDumpableInputs(); inputOfUnion.hasNext();) {
-						inConnsForInput.add(inputOfUnion.next());
+					for (DumpableConnection<?> inputOfUnion : conn.getSource().getDumpableInputs()) {
+						inConnsForInput.add(inputOfUnion);
 					}
 				}
 				else {
@@ -388,7 +391,7 @@ public class PlanJSONDumpGenerator {
 		if (p == null) {
 			// finish node
 			writer.print("\n\t}");
-			return;
+			return true;
 		}
 		// local strategy
 		String locString = null;
@@ -582,6 +585,7 @@ public class PlanJSONDumpGenerator {
 
 		// finish node
 		writer.print("\n\t}");
+		return true;
 	}
 
 	private void addProperty(PrintWriter writer, String name, String value, boolean first) {
