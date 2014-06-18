@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import eu.stratosphere.api.common.operators.CompilerHints;
@@ -142,9 +141,10 @@ public class PlanJSONDumpGenerator {
 		this.nodeIds.put(node, this.nodeCnt++);
 		
 		// then recurse
-		for (DumpableNode<?> child : node.getPredecessors()) {
+		for (Iterator<? extends DumpableNode<?>> children = node.getPredecessors(); children.hasNext(); ) {
 			//This is important, because when the node was already in the graph it is not allowed
 			//to set first to false!
+			final DumpableNode<?> child = children.next();
 			if (visit(child, writer, first)) {
 				first = false;
 			};
@@ -256,7 +256,7 @@ public class PlanJSONDumpGenerator {
 				+ (n.getSubtasksPerInstance() >= 1 ? n.getSubtasksPerInstance() : "default") + "\"");
 
 		// output node predecessors
-		Iterator<? extends DumpableConnection<?>> inConns = node.getDumpableInputs().iterator();
+		Iterator<? extends DumpableConnection<?>> inConns = node.getDumpableInputs();
 		String child1name = "", child2name = "";
 
 		if (inConns != null && inConns.hasNext()) {
@@ -272,8 +272,8 @@ public class PlanJSONDumpGenerator {
 				if (conn.getSource() instanceof NAryUnionPlanNode) {
 					inConnsForInput = new ArrayList<DumpableConnection<?>>();
 					
-					for (DumpableConnection<?> inputOfUnion : conn.getSource().getDumpableInputs()) {
-						inConnsForInput.add(inputOfUnion);
+					for (Iterator<? extends DumpableConnection<?>> inputOfUnion = conn.getSource().getDumpableInputs(); inputOfUnion.hasNext();) {
+						inConnsForInput.add(inputOfUnion.next());
 					}
 				}
 				else {
