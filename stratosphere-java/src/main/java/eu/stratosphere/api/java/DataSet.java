@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java;
 
+import eu.stratosphere.api.java.operators.CountOperator;
 import org.apache.commons.lang3.Validate;
 
 import eu.stratosphere.api.common.io.FileOutputFormat;
@@ -222,6 +223,17 @@ public abstract class DataSet<T> {
 	 */
 	public AggregateOperator<T> aggregate(Aggregations agg, int field) {
 		return new AggregateOperator<T>(this, agg, field);
+	}
+
+	/**
+	 * Counts the number of elements in the DataSet.
+	 * <p>
+	 * The transformation returns a new data set of type DataSet<Long> with the count of elements.
+	 *
+	 * @return A CountOperator that represents the count of
+	 */
+	public CountOperator<T> count() {
+		return new CountOperator<T>(this);
 	}
 	
 	/**
