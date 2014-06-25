@@ -1,198 +1,23 @@
-# Stratosphere
+# Repository Has Moved
 
-_"Big Data looks tiny from Stratosphere."_
+Stratosphere is now an [Apache incubator](http://incubator.apache.org) project
+and has been renamed to [Apache Flink](http://flink.incubator.apache.org).
 
-Stratosphere is a next-generation Big Data Analytics Platform. It combines the strengths of MapReduce/Hadoop with powerful programming abstractions in Java and Scala, and a high performance runtime. Stratosphere has native support for iterations, delta iterations, and programs consisting of workflows of many operations.
+This repository **will not be maintained** anymore.
 
-Learn more about Stratosphere at http://stratosphere.eu
-
-## Start writing a Stratosphere Job
-If you just want to get started with Stratosphere, use the following command to set up an empty Stratosphere Job
+Please move to the following GitHub repository:
 
 ```
-curl https://raw.github.com/stratosphere/stratosphere-quickstart/master/quickstart.sh | bash
-```
-The quickstart sample contains everything to develop a Stratosphere Job on your computer and run it in a local embedded runtime. No setup needed.
-Further quickstart guides are at http://stratosphere.eu/quickstart/
-
-
-## Build Stratosphere
-Below are three short tutorials that guide you through the first steps: Building, running and developing.
-
-###  Build From Source
-
-This tutorial shows how to build Stratosphere on your own system. Please open a bug report if you have any troubles!
-
-#### Requirements
-* Unix-like environment (We use Linux, Mac OS X, Cygwin)
-* git
-* Maven (at least version 3.0.4)
-* Java 6, 7 or 8
-
-```
-git clone https://github.com/stratosphere/stratosphere.git
-cd stratosphere
-mvn -DskipTests clean package # this will take up to 5 minutes
+git clone https://github.com/apache/incubator-flink.git
 ```
 
-Stratosphere is now installed in `stratosphere-dist/target`
-If you’re a Debian/Ubuntu user, you’ll find a .deb package. We will continue with the generic case.
+Thanks!
 
-	cd stratosphere-dist/target/stratosphere-dist-0.5-SNAPSHOT-bin/stratosphere-0.5-SNAPSHOT/
+---
 
-The directory structure here looks like the contents of the official release distribution.
+If you have an existing clone of the old Stratosphere repository, you can
+update your remote to point to the new repository:
 
-#### Build for different Hadoop Versions
-This section is for advanced users that want to build Stratosphere for a different Hadoop version, for example for Hadoop Yarn support.
-
-We use the profile activation via properties (-D).
-
-##### Build hadoop v1 (default)
-Build the default (currently hadoop 1.2.1)
-```mvn clean package```
-
-Build for a specific hadoop v1 version
-```mvn -Dhadoop-one.version=1.1.2 clean package```
-
-##### Build hadoop v2 (yarn)
-
-Build the yarn using the default version defined in the pom
-```mvn -Dhadoop.profile=2 clean package```
-
-Build for a specific hadoop v1 version
-```mvn -Dhadoop.profile=2 -Dhadoop-two.version=2.1.0-beta clean package```
-
-It is necessary to generate separate POMs if you want to deploy to your local repository (`mvn install`) or somewhere else.
-We have a script in `/tools` that generates POMs for the profiles. Use 
-```mvn -f pom.hadoop2.xml clean install -DskipTests```
-to put a POM file with the right dependencies into your local repository.
-
-
-### Run your first program
-
-We will run a simple “Word Count” example. 
-The easiest way to start Stratosphere on your local machine is so-called "local-mode":
-
-	./bin/start-local.sh
-
-Get some test data:
-
-	 wget -O hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
-
-Start the job:
-
-	./bin/stratosphere run --jarfile ./examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar --arguments 1 file://`pwd`/hamlet.txt file://`pwd`/wordcount-result.txt
-
-You will find a file called `wordcount-result.txt` in your current directory.
-
-#### Alternative Method: Use the webclient interface
-(And get a nice execution plan overview for free!)
-
-	./bin/start-local.sh
-	./bin/start-webclient.sh start
-
-Get some test data:
-	 wget -O ~/hamlet.txt http://www.gutenberg.org/cache/epub/1787/pg1787.txt
-
-* Point your browser to to http://localhost:8080/launch.html. Upload the WordCount.jar using the upload form in the lower right box. The jar is located in `./examples/stratosphere-java-examples-0.5-SNAPSHOT-WordCount.jar`.
-* Select the WordCount jar from the list of available jars (upper left).
-* Enter the argument line in the lower-left box: `1 file://<path to>/hamlet.txt file://<wherever you want the>/wordcount-result.txt`
-
-* Hit “Run Job”
-
-
-### Eclipse Setup and Debugging
-
-To contribute back to the project or develop your own jobs for Stratosphere, you need a working development environment. We use Eclipse and IntelliJ for development. Here we focus on Eclipse.
-
-If you want to work on the scala code you will need the following plugins:
-
-Eclipse 4.x:
-  * scala-ide: http://download.scala-ide.org/sdk/e38/scala210/stable/site
-  * m2eclipse-scala: http://alchim31.free.fr/m2e-scala/update-site
-  * build-helper-maven-plugin: https://repository.sonatype.org/content/repositories/forge-sites/m2e-extras/0.15.0/N/0.15.0.201206251206/
-
-Eclipse 3.7:
-  * scala-ide: http://download.scala-ide.org/sdk/e37/scala210/stable/site
-  * m2eclipse-scala: http://alchim31.free.fr/m2e-scala/update-site
-  * build-helper-maven-plugin: https://repository.sonatype.org/content/repositories/forge-sites/m2e-extras/0.14.0/N/0.14.0.201109282148/
-
-When you don't have the plugins your project will have build errors, you can just close the scala projects and ignore them.
-o
-Import the Stratosphere source code using Maven's Import tool:
-  * Select "Import" from the "File"-menu.
-  * Expand "Maven" node, select "Existing Maven Projects", and click "next" button
-  * Select the root directory by clicking on the "Browse" button and navigate to the top folder of the cloned Stratosphere Git repository.
-  * Ensure that all projects are selected and click the "Finish" button.
-
-Create a new Eclipse Project that requires Stratosphere in its Build Path!
-
-Use this skeleton as an entry point for your own Jobs: It allows you to hit the “Run as” -> “Java Application” feature of Eclipse:
-
-```java
-public class Tutorial implements Program {
-
-    @Override
-    public Plan getPlan(String... args) {
-        // your parallel program goes here
-    }
-
-    public static void main(String[] args) throws Exception {
-        Tutorial tut = new Tutorial();
-        Plan toExecute = tut.getPlan(args);
-        long runtime = LocalExecutor.execute(toExecute);
-        System.out.println("Runime: " + runtime);
-    }
-}
 ```
-
-## Support
-Don’t hesitate to ask!
-
-[Open an issue](https://github.com/stratosphere/stratosphere/issues/new) on Github, if you found a bug or need any help.
-We also have a [mailing list](https://groups.google.com/d/forum/stratosphere-dev) for both users and developers.
-
-Some of our colleagues are also in the #dima irc channel on freenode.
-
-## Documentation
-
-The [Documentation Website](http://stratosphere.eu/docs/0.4/) has comprehensive documentation for users and contributors.
-The [0.5 version documentation page](http://stratosphere.eu/docs/0.5/) describe new features and changes in 0.5 version.
-The [GitHub Wiki](https://github.com/stratosphere/stratosphere/wiki/_pages) has a collection of topics that are in the process of being fleshed out.
-
-Please make edits to the Wiki if you find inconsistencies or [Open an issue](https://github.com/stratosphere/stratosphere/issues/new) 
-
-
-## Fork and Contribute
-
-This is an active open-source project. We are always open to people who want to use the system or contribute to it. 
-Contact us if you are looking for implementation tasks that fit your skills.
-
-We have a list of [starter jobs](https://github.com/stratosphere/stratosphere/wiki/Starter-Jobs) in our wiki.
-
-We use the GitHub Pull Request system for the development of Stratosphere. Just open a request if you want to contribute.
-
-### What to contribute
-* Bug reports
-* Bug fixes
-* Documentation
-* Tools that ease the use and development of Stratosphere
-* Well-written Stratosphere jobs
-
-
-Let us know if you have created a system that uses Stratosphere, so that we can link to you.
-
-## About
-
-[Stratosphere](http://www.stratosphere.eu) is a DFG-founded research project.
-We combine cutting edge research outcomes with a stable and usable codebase.
-Decisions are not made behind closed doors. We discuss all changes and plans on our Mailinglists and on GitHub.
-
-
-<!--- Commented out Travis until we get a reliable report on build status. Currently, out tests are so heavy that a large portion of our Travis builds get killed for taking too long.
-Build Status: [![Build Status](https://travis-ci.org/stratosphere/stratosphere.png)](https://travis-ci.org/stratosphere/stratosphere)
--->
-
-
-
-
+git remote set-url origin https://github.com/apache/incubator-flink.git
+```
