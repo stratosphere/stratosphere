@@ -36,13 +36,13 @@ import eu.stratosphere.runtime.io.network.bufferprovider.GlobalBufferPool;
 import eu.stratosphere.runtime.io.network.bufferprovider.LocalBufferPool;
 import eu.stratosphere.runtime.io.network.bufferprovider.LocalBufferPoolOwner;
 import eu.stratosphere.util.StringUtils;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -108,11 +108,6 @@ public class RuntimeEnvironment implements Environment, BufferProvider, LocalBuf
 	private final AbstractInvokable invokable;
 
 	/**
-	 * The thread executing the task in the environment.
-	 */
-	private volatile Thread executingThread = null;
-
-	/**
 	 * The ID of the job this task belongs to.
 	 */
 	private final JobID jobID;
@@ -136,6 +131,11 @@ public class RuntimeEnvironment implements Environment, BufferProvider, LocalBuf
 	 * The observer object for the task's execution.
 	 */
 	private volatile ExecutionObserver executionObserver = null;
+	
+	/**
+	 * The thread executing the task in the environment.
+	 */
+	private volatile Thread executingThread;
 
 	/**
 	 * The RPC proxy to report accumulators to JobManager
@@ -159,47 +159,23 @@ public class RuntimeEnvironment implements Environment, BufferProvider, LocalBuf
 
 	private LocalBufferPool outputBufferPool;
 
-	private Map<String,FutureTask<Path>> cacheCopyTasks = new HashMap<String, FutureTask<Path>>();
-
-	/**
-	 * Creates a new runtime environment object which contains the runtime information for the encapsulated Nephele
-	 * task.
-	 *
-	 * @param jobID             the ID of the original Nephele job
-	 * @param taskName          the name of task running in this environment
-	 * @param invokableClass    invokableClass the class that should be instantiated as a Nephele task
-	 * @param taskConfiguration the configuration object which was attached to the original JobVertex
-	 * @param jobConfiguration  the configuration object which was attached to the original JobGraph
-	 * @throws Exception thrown if an error occurs while instantiating the invokable class
-	 */
-	public RuntimeEnvironment(final JobID jobID, final String taskName,
-							final Class<? extends AbstractInvokable> invokableClass, final Configuration taskConfiguration,
-							final Configuration jobConfiguration) throws Exception {
-
-		this.jobID = jobID;
-		this.taskName = taskName;
-		this.invokableClass = invokableClass;
-		this.taskConfiguration = taskConfiguration;
-		this.jobConfiguration = jobConfiguration;
-		this.indexInSubtaskGroup = 0;
-		this.currentNumberOfSubtasks = 0;
-		this.memoryManager = null;
-		this.ioManager = null;
-		this.inputSplitProvider = null;
-
-		this.invokable = this.invokableClass.newInstance();
-		this.invokable.setEnvironment(this);
-		this.invokable.registerInputOutput();
-	}
+	private final Map<String,FutureTask<Path>> cacheCopyTasks;
+	
+	private volatile boolean canceled;
 
 	/**
 	 * Constructs a runtime environment from a task deployment description.
-	 *
-	 * @param tdd                the task deployment description
-	 * @param memoryManager      the task manager's memory manager component
-	 * @param ioManager          the task manager's I/O manager component
-	 * @param inputSplitProvider the input split provider for this environment
-	 * @throws Exception thrown if an error occurs while instantiating the invokable class
+	 * 
+	 * @param tdd
+	 *        the task deployment description
+	 * @param memoryManager
+	 *        the task manager's memory manager component
+	 * @param ioManager
+	 *        the task manager's I/O manager component
+	 * @param inputSplitProvider
+	 *        the input split provider for this environment
+	 * @throws Exception
+	 *         thrown if an error occurs while instantiating the invokable class
 	 */
 	public RuntimeEnvironment(final TaskDeploymentDescriptor tdd,
 							final MemoryManager memoryManager, final IOManager ioManager,
@@ -433,6 +409,53 @@ public class RuntimeEnvironment implements Environment, BufferProvider, LocalBuf
 			return this.executingThread;
 		}
 	}
+	
+	public void cancelExecution() {
+		canceled = true;
+
+		LOG.info("Canceling " + getTaskNameWithIndex());
+
+		// Request user code to shut down
+		if (this.invokable != null) {
+			try {
+				this.invokable.cancel();
+			} catch (Throwable e) {
+				LOG.error("Error while cancelling the task.", e);
+			}
+		}
+		
+		// interrupt the running thread and wait for it to die
+		executingThread.interrupt();
+		
+		try {
+			executingThread.join(5000);
+		} catch (InterruptedException e) {}
+		
+		if (!executingThread.isAlive()) {
+			return;
+		}
+		
+		// Continuously interrupt the user thread until it changed to state CANCELED
+		while (executingThread != null && executingThread.isAlive()) {
+			LOG.warn("Task " + getTaskName() + " did not react to cancelling signal. Sending repeated interrupt.");
+
+			if (LOG.isDebugEnabled()) {
+				StringBuilder bld = new StringBuilder("Task ").append(getTaskName()).append(" is stuck in method:\n");
+				
+				StackTraceElement[] stack = executingThread.getStackTrace();
+				for (StackTraceElement e : stack) {
+					bld.append(e).append('\n');
+				}
+				LOG.debug(bld.toString());
+			}
+			
+			executingThread.interrupt();
+			
+			try {
+				executingThread.join(1000);
+			} catch (InterruptedException e) {}
+		}
+	}
 
 	/**
 	 * Blocks until all output channels are closed.
@@ -459,7 +482,7 @@ public class RuntimeEnvironment implements Environment, BufferProvider, LocalBuf
 	 */
 	private void waitForInputChannelsToBeClosed() throws IOException, InterruptedException {
 		// Wait for disconnection of all output gates
-		while (true) {
+		while (!canceled) {
 
 			// Make sure, we leave this method with an InterruptedException when the task has been canceled
 			if (this.executionObserver.isCanceled()) {

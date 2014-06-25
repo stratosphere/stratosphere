@@ -13,11 +13,14 @@
 
 package eu.stratosphere.client.program;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -74,10 +77,7 @@ public class Client {
 		configuration.setString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, jobManagerAddress.getAddress().getHostAddress());
 		configuration.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, jobManagerAddress.getPort());
 		
-		this.compiler = new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), jobManagerAddress);
-		
-		//  Disable Local Execution when using a Client
-		ContextEnvironment.disableLocalExecution();
+		this.compiler = new PactCompiler(new DataStatistics(), new DefaultCostEstimator());
 	}
 
 	/**
@@ -101,11 +101,7 @@ public class Client {
 			throw new CompilerException("Cannot find port to job manager's RPC service in the global configuration.");
 		}
 
-		final InetSocketAddress jobManagerAddress = new InetSocketAddress(address, port);
-		this.compiler = new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), jobManagerAddress);
-		
-		//  Disable Local Execution when using a Client
-		ContextEnvironment.disableLocalExecution();
+		this.compiler = new PactCompiler(new DataStatistics(), new DefaultCostEstimator());
 	}
 	
 	public void setPrintStatusDuringExecution(boolean print) {
@@ -141,7 +137,16 @@ public class Client {
 				env.setDegreeOfParallelism(parallelism);
 			}
 			env.setAsContext();
+			
+			// temporarily write syser and sysout to bytearray.
+			PrintStream originalOut = System.out;
+			PrintStream originalErr = System.err;
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			System.setOut(new PrintStream(baos));
+			ByteArrayOutputStream baes = new ByteArrayOutputStream();
+			System.setErr(new PrintStream(baes));
 			try {
+				ContextEnvironment.disableLocalExecution();
 				prog.invokeInteractiveModeForExecution();
 			}
 			catch (ProgramInvocationException e) {
@@ -154,10 +159,17 @@ public class Client {
 				} else {
 					throw new ProgramInvocationException("The program caused an error: ", t);
 				}
+			} finally {
+				System.setOut(originalOut);
+				System.setErr(originalErr);
+				System.err.println(baes);
+				System.out.println(baos);
 			}
 			
 			throw new ProgramInvocationException(
-					"The program plan could not be fetched. The program silently swallowed the control flow exceptions.");
+					"The program plan could not be fetched. The program silently swallowed the control flow exceptions.\n"
+					+ "System.err: "+StringEscapeUtils.escapeHtml(baes.toString())+" \n"
+					+ "System.out: "+StringEscapeUtils.escapeHtml(baos.toString())+" \n" );
 		}
 		else {
 			throw new RuntimeException();
@@ -214,6 +226,8 @@ public class Client {
 				env.setDegreeOfParallelism(parallelism);
 			}
 			env.setAsContext();
+			
+			ContextEnvironment.disableLocalExecution();
 			
 			if (wait) {
 				// invoke here
@@ -341,7 +355,7 @@ public class Client {
 		}
 	}
 	
-	static final class ProgramAbortException extends Error {
+	public static final class ProgramAbortException extends Error {
 		private static final long serialVersionUID = 1L;
 	}
 }

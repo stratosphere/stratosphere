@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.java.functions.KeySelector;
+import eu.stratosphere.api.java.typeutils.PojoTypeInfo;
 import eu.stratosphere.api.java.typeutils.TupleTypeInfo;
 import eu.stratosphere.api.java.typeutils.TypeExtractor;
 import eu.stratosphere.types.TypeInformation;
@@ -42,7 +43,7 @@ public abstract class Keys<T> {
 	
 	public static class FieldPositionKeys<T> extends Keys<T> {
 		
-		private final int[] groupingFields;
+		private final int[] fieldPositions;
 		private final TypeInformation<?>[] types;
 		
 		public FieldPositionKeys(int[] groupingFields, TypeInformation<T> type) {
@@ -60,18 +61,18 @@ public abstract class Keys<T> {
 			
 			TupleTypeInfo<?> tupleType = (TupleTypeInfo<?>)type;
 	
-			this.groupingFields = makeFields(groupingFields, (TupleTypeInfo<?>) type);
+			this.fieldPositions = makeFields(groupingFields, (TupleTypeInfo<?>) type);
 			
-			types = new TypeInformation[this.groupingFields.length];
-			for(int i = 0; i < this.groupingFields.length; i++) {
-				types[i] = tupleType.getTypeAt(this.groupingFields[i]);
+			types = new TypeInformation[this.fieldPositions.length];
+			for(int i = 0; i < this.fieldPositions.length; i++) {
+				types[i] = tupleType.getTypeAt(this.fieldPositions[i]);
 			}
 			
 		}
 
 		@Override
 		public int getNumberOfKeyFields() {
-			return this.groupingFields.length;
+			return this.fieldPositions.length;
 		}
 
 		@Override
@@ -106,9 +107,13 @@ public abstract class Keys<T> {
 
 		@Override
 		public int[] computeLogicalKeyPositions() {
-			return this.groupingFields;
+			return this.fieldPositions;
 		}
 	
+		@Override
+		public String toString() {
+			return Arrays.toString(fieldPositions);
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -119,6 +124,10 @@ public abstract class Keys<T> {
 		private final TypeInformation<K> keyType;
 		
 		public SelectorFunctionKeys(KeySelector<T, K> keyExtractor, TypeInformation<T> type) {
+			if (keyExtractor == null) {
+				throw new NullPointerException("Key extractor must not be null.");
+			}
+			
 			this.keyExtractor = keyExtractor;
 			this.keyType = TypeExtractor.getKeySelectorTypes(keyExtractor, type);
 		}
@@ -163,28 +172,73 @@ public abstract class Keys<T> {
 		public int[] computeLogicalKeyPositions() {
 			return new int[] {0};
 		}
+		
+		@Override
+		public String toString() {
+			return keyExtractor + " (" + keyType + ")";
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------
 	
 	public static class ExpressionKeys<T> extends Keys<T> {
 
-		public ExpressionKeys(String expression, TypeInformation<T> type) {
+		private int[] logicalPositions;
+
+		private final TypeInformation<?>[] types;
+
+		private PojoTypeInfo<?> type;
+
+		public ExpressionKeys(String[] expressions, TypeInformation<T> type) {
+			if (!(type instanceof PojoTypeInfo<?>)) {
+				throw new UnsupportedOperationException("Key expressions can only be used on POJOs." + " " +
+						"A POCO must have a default constructor without arguments and not have readObject" +
+						" and/or writeObject methods. Also, it can only have nested POJOs or primitive (also boxed)" +
+						" fields.");
+			}
+			PojoTypeInfo<?> pojoType = (PojoTypeInfo<?>) type;
+			this.type = pojoType;
+			logicalPositions = pojoType.getLogicalPositions(expressions);
+			types = pojoType.getTypes(expressions);
+
+			for (int i = 0; i < logicalPositions.length; i++) {
+				if (logicalPositions[i] < 0) {
+					throw new IllegalArgumentException("Expression '" + expressions[i] + "' is not a valid key for POJO" +
+							" type " + type.toString() + ".");
+				}
+			}
+
 		}
 
 		@Override
 		public int getNumberOfKeyFields() {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+			return logicalPositions.length;
 		}
 
 		@Override
 		public boolean areCompatibale(Keys<?> other) {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+
+			if (other instanceof ExpressionKeys) {
+				ExpressionKeys<?> oKey = (ExpressionKeys<?>) other;
+
+				if(oKey.types.length != this.types.length) {
+					return false;
+				}
+				for(int i=0; i<this.types.length; i++) {
+					if(!this.types[i].equals(oKey.types[i])) {
+						return false;
+					}
+				}
+				return true;
+
+			} else {
+				return false;
+			}
 		}
 
 		@Override
 		public int[] computeLogicalKeyPositions() {
-			throw new UnsupportedOperationException("Expression keys not yet implemented");
+			return logicalPositions;
 		}
 	}
 	

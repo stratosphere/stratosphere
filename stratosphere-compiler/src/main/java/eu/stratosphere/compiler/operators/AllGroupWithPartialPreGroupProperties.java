@@ -48,8 +48,7 @@ public final class AllGroupWithPartialPreGroupProperties extends OperatorDescrip
 			// create an input node for combine with same DOP as input node
 			GroupReduceNode combinerNode = ((GroupReduceNode) node).getCombinerUtilityNode();
 			combinerNode.setDegreeOfParallelism(in.getSource().getDegreeOfParallelism());
-			combinerNode.setSubtasksPerInstance(in.getSource().getSubtasksPerInstance());
-			
+
 			SingleInputPlanNode combiner = new SingleInputPlanNode(combinerNode, "Combine ("+node.getPactContract().getName()+")", toCombiner, DriverStrategy.ALL_GROUP_COMBINE);
 			combiner.setCosts(new Costs(0, 0));
 			combiner.initProperties(toCombiner.getGlobalProperties(), toCombiner.getLocalProperties());
@@ -84,7 +83,6 @@ public final class AllGroupWithPartialPreGroupProperties extends OperatorDescrip
 
 	@Override
 	public LocalProperties computeLocalProperties(LocalProperties lProps) {
-		lProps.clearUniqueFieldSets();
-		return lProps;
+		return lProps.clearUniqueFieldSets();
 	}
 }

@@ -14,16 +14,18 @@
 package eu.stratosphere.nephele.jobmanager;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import eu.stratosphere.core.fs.FSDataInputStream;
 import eu.stratosphere.core.fs.FileInputSplit;
 import eu.stratosphere.core.fs.FileSystem;
 import eu.stratosphere.core.io.StringRecord;
+import eu.stratosphere.nephele.template.AbstractInvokable;
+import eu.stratosphere.nephele.template.InputSplitProvider;
 import eu.stratosphere.runtime.io.api.RecordWriter;
-import eu.stratosphere.nephele.template.AbstractFileInputTask;
 import eu.stratosphere.runtime.fs.LineReader;
 
-public class DoubleSourceTask extends AbstractFileInputTask {
+public class DoubleSourceTask extends AbstractInvokable {
 
 	private RecordWriter<StringRecord> output1 = null;
 
@@ -34,7 +36,7 @@ public class DoubleSourceTask extends AbstractFileInputTask {
 		this.output1.initializeSerializers();
 		this.output2.initializeSerializers();
 
-		final Iterator<FileInputSplit> splitIterator = getFileInputSplits();
+		final Iterator<FileInputSplit> splitIterator = getInputSplits();
 
 		while (splitIterator.hasNext()) {
 
@@ -78,4 +80,53 @@ public class DoubleSourceTask extends AbstractFileInputTask {
 		this.output2 = new RecordWriter<StringRecord>(this);
 	}
 
+	private Iterator<FileInputSplit> getInputSplits() {
+
+		final InputSplitProvider provider = getEnvironment().getInputSplitProvider();
+
+		return new Iterator<FileInputSplit>() {
+
+			private FileInputSplit nextSplit;
+			
+			private boolean exhausted;
+
+			@Override
+			public boolean hasNext() {
+				if (exhausted) {
+					return false;
+				}
+				
+				if (nextSplit != null) {
+					return true;
+				}
+				
+				FileInputSplit split = (FileInputSplit) provider.getNextInputSplit();
+				
+				if (split != null) {
+					this.nextSplit = split;
+					return true;
+				}
+				else {
+					exhausted = true;
+					return false;
+				}
+			}
+
+			@Override
+			public FileInputSplit next() {
+				if (this.nextSplit == null && !hasNext()) {
+					throw new NoSuchElementException();
+				}
+
+				final FileInputSplit tmp = this.nextSplit;
+				this.nextSplit = null;
+				return tmp;
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
 }

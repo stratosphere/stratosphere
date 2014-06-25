@@ -20,7 +20,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +28,7 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import eu.stratosphere.api.common.InvalidProgramException;
 import eu.stratosphere.api.common.Plan;
-import eu.stratosphere.api.java.LocalEnvironment;
-import eu.stratosphere.client.LocalExecutor;
 import eu.stratosphere.compiler.DataStatistics;
 import eu.stratosphere.compiler.PactCompiler;
 import eu.stratosphere.compiler.costs.CostEstimator;
@@ -95,7 +91,7 @@ public class ClientTest {
 		when(program.getPlanWithJars()).thenReturn(planWithJarsMock);
 		when(planWithJarsMock.getPlan()).thenReturn(planMock);
 		
-		whenNew(PactCompiler.class).withArguments(any(DataStatistics.class), any(CostEstimator.class), any(InetSocketAddress.class)).thenReturn(this.compilerMock);
+		whenNew(PactCompiler.class).withArguments(any(DataStatistics.class), any(CostEstimator.class)).thenReturn(this.compilerMock);
 		when(compilerMock.compile(planMock)).thenReturn(optimizedPlanMock);
 		
 		whenNew(NepheleJobGraphGenerator.class).withNoArguments().thenReturn(generatorMock);
@@ -135,16 +131,16 @@ public class ClientTest {
 		verify(this.jobClientMock).submitJob();
 	}
 	
-
-	@Test(expected=InvalidProgramException.class)
-	public void tryLocalExecution() throws Exception {
-		new Client(configMock);
-		LocalExecutor.execute(planMock);
-	}
-	
-	@Test(expected=InvalidProgramException.class)
-	public void tryLocalEnvironmentExecution() throws Exception {
-		new Client(configMock);
-		new LocalEnvironment();
-	}
+//
+//	@Test(expected=InvalidProgramException.class)
+//	public void tryLocalExecution() throws Exception {
+//		new Client(configMock);
+//		LocalExecutor.execute(planMock);
+//	}
+//	
+//	@Test(expected=InvalidProgramException.class)
+//	public void tryLocalEnvironmentExecution() throws Exception {
+//		new Client(configMock);
+//		new LocalEnvironment();
+//	}
 }

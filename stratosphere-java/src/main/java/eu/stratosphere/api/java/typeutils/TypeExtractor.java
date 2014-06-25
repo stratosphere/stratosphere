@@ -14,14 +14,20 @@
  **********************************************************************************************************************/
 package eu.stratosphere.api.java.typeutils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import eu.stratosphere.types.TypeInformation;
+
 import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.io.Writable;
 
@@ -38,14 +44,22 @@ import eu.stratosphere.api.java.tuple.Tuple;
 import eu.stratosphere.types.Value;
 
 public class TypeExtractor {
-	
+
+	// We need this to detect recursive types and not get caught
+	// in an endless recursion
+	private Set<Class<?>> alreadySeen;
+
+	private TypeExtractor() {
+		alreadySeen = new HashSet<Class<?>>();
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <IN, OUT> TypeInformation<OUT> getMapReturnTypes(MapFunction<IN, OUT> mapFunction, TypeInformation<IN> inType) {
 		validateInputType(MapFunction.class, mapFunction.getClass(), 0, inType);
 		if(mapFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) mapFunction).getProducedType();
 		}
-		return createTypeInfo(MapFunction.class, mapFunction.getClass(), 1, inType, null);
+		return new TypeExtractor().privateCreateTypeInfo(MapFunction.class, mapFunction.getClass(), 1, inType, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -54,7 +68,7 @@ public class TypeExtractor {
 		if(flatMapFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) flatMapFunction).getProducedType();
 		}
-		return createTypeInfo(FlatMapFunction.class, flatMapFunction.getClass(), 1, inType, null);
+		return new TypeExtractor().privateCreateTypeInfo(FlatMapFunction.class, flatMapFunction.getClass(), 1, inType, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -64,7 +78,7 @@ public class TypeExtractor {
 		if(groupReduceFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) groupReduceFunction).getProducedType();
 		}
-		return createTypeInfo(GroupReduceFunction.class, groupReduceFunction.getClass(), 1, inType, null);
+		return new TypeExtractor().privateCreateTypeInfo(GroupReduceFunction.class, groupReduceFunction.getClass(), 1, inType, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -75,7 +89,7 @@ public class TypeExtractor {
 		if(joinFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) joinFunction).getProducedType();
 		}
-		return createTypeInfo(JoinFunction.class, joinFunction.getClass(), 2, in1Type, in2Type);
+		return new TypeExtractor().privateCreateTypeInfo(JoinFunction.class, joinFunction.getClass(), 2, in1Type, in2Type);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -86,7 +100,7 @@ public class TypeExtractor {
 		if(coGroupFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) coGroupFunction).getProducedType();
 		}
-		return createTypeInfo(CoGroupFunction.class, coGroupFunction.getClass(), 2, in1Type, in2Type);
+		return new TypeExtractor().privateCreateTypeInfo(CoGroupFunction.class, coGroupFunction.getClass(), 2, in1Type, in2Type);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -97,7 +111,7 @@ public class TypeExtractor {
 		if(crossFunction instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) crossFunction).getProducedType();
 		}
-		return createTypeInfo(CrossFunction.class, crossFunction.getClass(), 2, in1Type, in2Type);
+		return new TypeExtractor().privateCreateTypeInfo(CrossFunction.class, crossFunction.getClass(), 2, in1Type, in2Type);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -106,7 +120,7 @@ public class TypeExtractor {
 		if(selector instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<OUT>) selector).getProducedType();
 		}
-		return createTypeInfo(KeySelector.class, selector.getClass(), 1, inType, null);
+		return new TypeExtractor().privateCreateTypeInfo(KeySelector.class, selector.getClass(), 1, inType, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -114,7 +128,7 @@ public class TypeExtractor {
 		if(inputFormat instanceof ResultTypeQueryable) {
 			return ((ResultTypeQueryable<IN>) inputFormat).getProducedType();
 		}
-		return createTypeInfo(InputFormat.class, inputFormat.getClass(), 0, null, null);
+		return new TypeExtractor().privateCreateTypeInfo(InputFormat.class, inputFormat.getClass(), 0, null, null);
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -122,13 +136,22 @@ public class TypeExtractor {
 	// --------------------------------------------------------------------------------------------
 	
 	public static TypeInformation<?> createTypeInfo(Type t) {
+		return new TypeExtractor().privateCreateTypeInfo(t);
+	}
+
+	private TypeInformation<?> privateCreateTypeInfo(Type t) {
 		ArrayList<Type> typeHierarchy = new ArrayList<Type>();
 		typeHierarchy.add(t);
 		return createTypeInfoWithTypeHierarchy(typeHierarchy, t, null, null);
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public static <IN1, IN2, OUT> TypeInformation<OUT> createTypeInfo(Class<?> baseClass, Class<?> clazz, int returnParamPos,
+			TypeInformation<IN1> in1Type, TypeInformation<IN2> in2Type) {
+		return new TypeExtractor().privateCreateTypeInfo(baseClass, clazz, returnParamPos, in1Type, in2Type);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <IN1, IN2, OUT> TypeInformation<OUT> privateCreateTypeInfo(Class<?> baseClass, Class<?> clazz, int returnParamPos,
 			TypeInformation<IN1> in1Type, TypeInformation<IN2> in2Type) {
 		ArrayList<Type> typeHierarchy = new ArrayList<Type>();
 		Type returnType = getParameterType(baseClass, typeHierarchy, clazz, returnParamPos);
@@ -373,7 +396,7 @@ public class TypeExtractor {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static <IN1, IN2, OUT> TypeInformation<OUT> createTypeInfoWithTypeHierarchy(ArrayList<Type> typeHierarchy, Type t,
+	private <IN1, IN2, OUT> TypeInformation<OUT> createTypeInfoWithTypeHierarchy(ArrayList<Type> typeHierarchy, Type t,
 			TypeInformation<IN1> in1Type, TypeInformation<IN2> in2Type) {
 		
 		// check if type is a subclass of tuple
@@ -490,10 +513,33 @@ public class TypeExtractor {
 			}
 		}
 		// arrays with generics 
-		// (due to a Java 6 bug, it is possible that BasicArrayTypes also get classified as ObjectArrayTypes
-		// since the JVM classifies e.g. String[] as GenericArrayType instead of Class)
 		else if (t instanceof GenericArrayType) {
 			GenericArrayType genericArray = (GenericArrayType) t;
+			
+			Type componentType = genericArray.getGenericComponentType();
+			
+			// due to a Java 6 bug, it is possible that the JVM classifies e.g. String[] or int[] as GenericArrayType instead of Class
+			if (componentType instanceof Class) {
+				
+				Class<?> componentClass = (Class<?>) componentType;
+				String className;
+				// for int[], double[] etc.
+				if(componentClass.isPrimitive()) {
+					className = encodePrimitiveClass(componentClass);
+				}
+				// for String[], Integer[] etc.
+				else {
+					className = "L" + componentClass.getName() + ";";
+				}
+				
+				Class<OUT> classArray = null;
+				try {
+					classArray = (Class<OUT>) Class.forName("[" + className);
+				} catch (ClassNotFoundException e) {
+					throw new InvalidTypesException("Could not convert GenericArrayType to Class.");
+				}
+				return getForClass(classArray);
+			}
 			
 			TypeInformation<?> componentInfo = createTypeInfoWithTypeHierarchy(typeHierarchy, genericArray.getGenericComponentType(),
 					in1Type, in2Type);
@@ -501,14 +547,43 @@ public class TypeExtractor {
 		}
 		// objects with generics are treated as raw type
 		else if (t instanceof ParameterizedType) {
-			return getForClass((Class<OUT>) ((ParameterizedType) t).getRawType());
+			return privateGetForClass((Class<OUT>) ((ParameterizedType) t).getRawType());
 		}
 		// no tuple, no TypeVariable, no generic type
 		else if (t instanceof Class) {
-			return getForClass((Class<OUT>) t);
+			return privateGetForClass((Class<OUT>) t);
 		}
 		
 		throw new InvalidTypesException("Type Information could not be created.");
+	}
+	
+	private static String encodePrimitiveClass(Class<?> primitiveClass) {
+		final String name = primitiveClass.getName();
+		if (name.equals("boolean")) {
+			return "Z";
+		}
+		else if (name.equals("byte")) {
+			return "B";
+		}
+		else if (name.equals("char")) {
+			return "C";
+		}
+		else if (name.equals("double")) {
+			return "D";
+		}
+		else if (name.equals("float")) {
+			return "F";
+		}
+		else if (name.equals("int")) {
+			return "I";
+		}
+		else if (name.equals("long")) {
+			return "J";
+		}
+		else if (name.equals("short")) {
+			return "S";
+		}
+		throw new InvalidTypesException();
 	}
 	
 	private static <IN1, IN2> TypeInformation<?> createTypeInfoWithImmediateBaseChildInput(ParameterizedType baseChild,
@@ -586,14 +661,25 @@ public class TypeExtractor {
 		// can not be materialized, most likely due to type erasure
 		return null;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public static <X> TypeInformation<X> getForClass(Class<X> clazz) {
+		return new TypeExtractor().privateGetForClass(clazz);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <X> TypeInformation<X> privateGetForClass(Class<X> clazz) {
 		Validate.notNull(clazz);
 		
 		// check for abstract classes or interfaces
-		if (Modifier.isInterface(clazz.getModifiers()) || (Modifier.isAbstract(clazz.getModifiers()) && !clazz.isArray())) {
-			throw new InvalidTypesException("Interfaces and abstract classes are not valid types.");
+		if (!clazz.isPrimitive() && (Modifier.isInterface(clazz.getModifiers()) || (Modifier.isAbstract(clazz.getModifiers()) && !clazz.isArray()))) {
+			throw new InvalidTypesException("Interfaces and abstract classes are not valid types: " + clazz);
+		}
+
+		if (clazz.equals(Object.class)) {
+			// this will occur when trying to analyze POJOs that have generic, this
+			// exception will be caught and a GenericTypeInfo will be created for the type.
+			// at some point we might support this using Kryo
+			throw new InvalidTypesException("Object is not a valid type.");
 		}
 		
 		// check for arrays
@@ -638,13 +724,106 @@ public class TypeExtractor {
 		if (Tuple.class.isAssignableFrom(clazz)) {
 			throw new InvalidTypesException("Type information extraction for tuples cannot be done based on the class.");
 		}
-		
+
+
+		if (alreadySeen.contains(clazz)) {
+			return new GenericTypeInfo<X>(clazz);
+		}
+
+		alreadySeen.add(clazz);
+
+		if (clazz.equals(Class.class)) {
+			// special case handling for Class, this should not be handled by the POJO logic
+			return new GenericTypeInfo<X>(clazz);
+		}
+		TypeInformation<X> pojoType =  analyzePojo(clazz);
+		if (pojoType != null) {
+			return pojoType;
+		}
+
+
 		// return a generic type
 		return new GenericTypeInfo<X>(clazz);
 	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+
+	private <X> TypeInformation<X> analyzePojo(Class<X> clazz) {
+		List<Field> fields = getAllDeclaredFields(clazz);
+		List<PojoField> pojoFields = new ArrayList<PojoField>();
+		for (Field field : fields) {
+			try {
+				if (!Modifier.isTransient(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
+					pojoFields.add(new PojoField(field, privateCreateTypeInfo(field.getType())));
+				}
+			} catch (InvalidTypesException e) {
+				// If some of the fields cannot be analyzed, just return a generic type info
+				// right now this happens when a field is an interface (collections are the prominent case here) or
+				// when the POJO is generic, in which case the fields will have type Object.
+				// We might fix that in the future when we use Kryo.
+				return new GenericTypeInfo<X>(clazz);
+			}
+		}
+
+		PojoTypeInfo<X> pojoType = new PojoTypeInfo<X>(clazz, pojoFields);
+
+		List<Method> methods = getAllDeclaredMethods(clazz);
+		boolean containsReadObjectOrWriteObject = false;
+		for (Method method : methods) {
+			if (method.getName().equals("readObject") || method.getName().equals("writeObject")) {
+				containsReadObjectOrWriteObject = true;
+				break;
+			}
+		}
+
+		// Try retrieving the default constructor, if it does not have one
+		// we cannot use this because the serializer uses it.
+		boolean hasDefaultCtor = true;
+		try {
+			clazz.getDeclaredConstructor();
+		} catch (NoSuchMethodException e) {
+			hasDefaultCtor = false;
+		}
+
+
+		if (!containsReadObjectOrWriteObject && hasDefaultCtor) {
+			return pojoType;
+		}
+
+		return null;
+	}
+
+	// recursively determine all declared fields
+	private static List<Field> getAllDeclaredFields(Class<?> clazz) {
+		List<Field> result = new ArrayList<Field>();
+		while (clazz != null) {
+			Field[] fields = clazz.getDeclaredFields();
+			for (Field field : fields) {
+				result.add(field);
+			}
+			clazz = clazz.getSuperclass();
+		}
+		return result;
+	}
+
+	// recursively determine all declared methods
+	private static List<Method> getAllDeclaredMethods(Class<?> clazz) {
+		List<Method> result = new ArrayList<Method>();
+		while (clazz != null) {
+			Method[] methods = clazz.getDeclaredMethods();
+			for (Method method : methods) {
+				result.add(method);
+			}
+			clazz = clazz.getSuperclass();
+		}
+		return result;
+	}
+
+
 	public static <X> TypeInformation<X> getForObject(X value) {
+		return new TypeExtractor().privateGetForObject(value);
+
+	}
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <X> TypeInformation<X> privateGetForObject(X value) {
 		Validate.notNull(value);
 		
 		// check if we can extract the types from tuples, otherwise work with the class
@@ -661,15 +840,12 @@ public class TypeExtractor {
 							+ "Please specify the types directly.");
 				}
 				
-				infos[i] = getForObject(field);
+				infos[i] = privateGetForObject(field);
 			}
 			
 			return (TypeInformation<X>) new TupleTypeInfo(value.getClass(), infos);
 		} else {
-			return getForClass((Class<X>) value.getClass());
+			return privateGetForClass((Class<X>) value.getClass());
 		}
-	}
-	
-	private TypeExtractor() {
 	}
 }

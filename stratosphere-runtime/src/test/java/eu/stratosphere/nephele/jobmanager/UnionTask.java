@@ -14,15 +14,15 @@
 package eu.stratosphere.nephele.jobmanager;
 
 import eu.stratosphere.core.io.StringRecord;
+import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.runtime.io.api.MutableRecordReader;
 import eu.stratosphere.runtime.io.api.RecordWriter;
 import eu.stratosphere.runtime.io.api.UnionRecordReader;
-import eu.stratosphere.nephele.template.AbstractTask;
 
 /**
  * A simple implementation of a task using a {@link UnionRecordReader}.
  */
-public class UnionTask extends AbstractTask {
+public class UnionTask extends AbstractInvokable {
 
 	/**
 	 * The union record reader to be used during the tests.

@@ -192,7 +192,7 @@ public class DeltaIteration<ST, WT> {
 	 * 
 	 * @return The DeltaIteration itself, to allow chaining function calls.
 	 */
-	public DeltaIteration<ST, WT> registerAggregator(String name, Class<? extends Aggregator<?>> aggregator) {
+	public DeltaIteration<ST, WT> registerAggregator(String name, Aggregator<?> aggregator) {
 		this.aggregators.registerAggregator(name, aggregator);
 		return this;
 	}
@@ -223,7 +223,7 @@ public class DeltaIteration<ST, WT> {
 		public void checkJoinKeyFields(int[] keyFields) {
 			int[] ssKeys = deltaIteration.keys.computeLogicalKeyPositions();
 			if (!Arrays.equals(ssKeys, keyFields)) {
-				throw new InvalidProgramException("The solution set must be joind with using the keys with which elements are identified.");
+				throw new InvalidProgramException("The solution can only be joined/co-grouped with the same keys as the elements are identified with (here: " + Arrays.toString(ssKeys) + ").");
 			}
 		}
 	}

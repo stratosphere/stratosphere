@@ -223,6 +223,39 @@ public abstract class DataSet<T> {
 	public AggregateOperator<T> aggregate(Aggregations agg, int field) {
 		return new AggregateOperator<T>(this, agg, field);
 	}
+
+	/**
+	 * Syntactic sugar for aggregate (SUM, field)
+	 * @param field The index of the Tuple field on which the aggregation function is applied.
+	 * @return An AggregateOperator that represents the summed DataSet.
+	 *
+	 * @see eu.stratosphere.api.java.operators.AggregateOperator
+	 */
+	public AggregateOperator<T> sum (int field) {
+		return this.aggregate (Aggregations.SUM, field);
+	}
+
+	/**
+	 * Syntactic sugar for aggregate (MAX, field)
+	 * @param field The index of the Tuple field on which the aggregation function is applied.
+	 * @return An AggregateOperator that represents the max'ed DataSet.
+	 *
+	 * @see eu.stratosphere.api.java.operators.AggregateOperator
+	 */
+	public AggregateOperator<T> max (int field) {
+		return this.aggregate (Aggregations.MAX, field);
+	}
+
+	/**
+	 * Syntactic sugar for aggregate (MIN, field)
+	 * @param field The index of the Tuple field on which the aggregation function is applied.
+	 * @return An AggregateOperator that represents the min'ed DataSet.
+	 *
+	 * @see eu.stratosphere.api.java.operators.AggregateOperator
+	 */
+	public AggregateOperator<T> min (int field) {
+		return this.aggregate (Aggregations.MIN, field);
+	}
 	
 	/**
 	 * Applies a Reduce transformation on a non-grouped {@link DataSet}.<br/>
@@ -302,7 +335,7 @@ public abstract class DataSet<T> {
 	 * @see SortedGrouping
 	 * @see AggregateOperator
 	 * @see ReduceOperator
-	 * @see GroupReduceOperator
+	 * @see ReduceGroupOperator
 	 * @see DataSet
 	 */
 	public <K extends Comparable<K>> UnsortedGrouping<T> groupBy(KeySelector<T, K> keyExtractor) {
@@ -331,11 +364,40 @@ public abstract class DataSet<T> {
 	 * @see SortedGrouping
 	 * @see AggregateOperator
 	 * @see ReduceOperator
-	 * @see GroupReduceOperator
+	 * @see ReduceGroupOperator
 	 * @see DataSet
 	 */
 	public UnsortedGrouping<T> groupBy(int... fields) {
 		return new UnsortedGrouping<T>(this, new Keys.FieldPositionKeys<T>(fields, getType(), false));
+	}
+
+	/**
+	 * Groups a {@link DataSet} using field expressions. A field expression is either the name of a public field
+	 * or a getter method with parentheses of the {@link DataSet}S underlying type. A dot can be used to drill down
+	 * into objects, as in {@code "field1.getInnerField2()" }.
+	 * This method returns an {@link UnsortedGrouping} on which one of the following grouping transformation
+	 *   can be applied.
+	 * <ul>
+	 *   <li>{@link UnsortedGrouping#sortGroup(int, eu.stratosphere.api.common.operators.Order)} to get a {@link SortedGrouping}.
+	 *   <li>{@link Grouping#aggregate(Aggregations, int)} to apply an Aggregate transformation.
+	 *   <li>{@link Grouping#reduce(ReduceFunction)} to apply a Reduce transformation.
+	 *   <li>{@link Grouping#reduceGroup(GroupReduceFunction)} to apply a GroupReduce transformation.
+	 * </ul>
+	 *
+	 * @param fields One or more field expressions on which the DataSet will be grouped.
+	 * @return A Grouping on which a transformation needs to be applied to obtain a transformed DataSet.
+	 *
+	 * @see Tuple
+	 * @see Grouping
+	 * @see UnsortedGrouping
+	 * @see SortedGrouping
+	 * @see AggregateOperator
+	 * @see ReduceOperator
+	 * @see ReduceGroupOperator
+	 * @see DataSet
+	 */
+	public UnsortedGrouping<T> groupBy(String... fields) {
+		return new UnsortedGrouping<T>(this, new Keys.ExpressionKeys<T>(fields, getType()));
 	}
 	
 	// --------------------------------------------------------------------------------------------

@@ -72,6 +72,8 @@ public class WordCount {
 	 */
 	public static final class Tokenizer extends FlatMapFunction<String, Tuple2<String, Integer>> {
 
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void flatMap(String value, Collector<Tuple2<String, Integer>> out) {
 			// normalize and split the line

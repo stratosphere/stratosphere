@@ -34,15 +34,20 @@ public class PackagedProgramEndToEndITCase {
 	
 	@Test
 	public void testEverything() {
+		final int PORT = 6498;
+		
 		NepheleMiniCluster cluster = new NepheleMiniCluster();
+		
+		File points = null;
+		File clusters = null;
+		File outFile = null;
+		
 		try {
 			// set up the files
-			File points = File.createTempFile("kmeans_points", ".in");
-			File clusters = File.createTempFile("kmeans_clusters", ".in");
-			File outFile = File.createTempFile("kmeans_result", ".out");
-			points.deleteOnExit();
-			clusters.deleteOnExit();
-			outFile.deleteOnExit();
+			points = File.createTempFile("kmeans_points", ".in");
+			clusters = File.createTempFile("kmeans_clusters", ".in");
+			outFile = File.createTempFile("kmeans_result", ".out");
+			
 			outFile.delete();
 
 			FileWriter fwPoints = new FileWriter(points);
@@ -56,10 +61,13 @@ public class PackagedProgramEndToEndITCase {
 			String jarPath = "target/maven-test-jar.jar";
 
 			// run KMeans
-			cluster.setNumTaskManager(2);
+			cluster.setNumTaskTracker(2);
+			cluster.setTaskManagerNumSlots(2);
+			cluster.setJobManagerRpcPort(PORT);
 			cluster.start();
-			RemoteExecutor ex = new RemoteExecutor("localhost", 6498);
 			
+			RemoteExecutor ex = new RemoteExecutor("localhost", PORT);
+
 			ex.executeJar(jarPath,
 					"eu.stratosphere.test.util.testjar.KMeansForTest",
 					new String[] {
@@ -68,14 +76,21 @@ public class PackagedProgramEndToEndITCase {
 							outFile.toURI().toString(),
 							"25"});
 
-			points.delete();
-			clusters.delete();
-			outFile.delete();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
-		} finally {
+		}
+		finally {
+			if (points != null) {
+				points.delete();
+			}
+			if (cluster != null) {
+				clusters.delete();
+			}
+			if (outFile != null) {
+				outFile.delete();
+			}
+			
 			try {
 				cluster.stop();
 			} catch (Exception e) {

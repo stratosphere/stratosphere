@@ -14,11 +14,11 @@
 package eu.stratosphere.nephele.jobmanager;
 
 import eu.stratosphere.core.io.StringRecord;
+import eu.stratosphere.nephele.template.AbstractInvokable;
 import eu.stratosphere.runtime.io.api.RecordReader;
 import eu.stratosphere.runtime.io.api.RecordWriter;
-import eu.stratosphere.nephele.template.AbstractTask;
 
-public class ForwardTask extends AbstractTask {
+public class ForwardTask extends AbstractInvokable {
 
 	private RecordReader<StringRecord> input = null;
 	private RecordWriter<StringRecord> output = null;

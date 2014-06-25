@@ -51,7 +51,6 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.runtime.shipping.ShipStrategyType;
 import eu.stratosphere.pact.runtime.task.DamBehavior;
 import eu.stratosphere.pact.runtime.task.DriverStrategy;
-import eu.stratosphere.pact.runtime.task.util.LocalStrategy;
 import eu.stratosphere.util.Visitor;
 
 /**
@@ -252,22 +251,6 @@ public abstract class TwoInputNode extends OptimizerNode {
 	}
 	
 	protected abstract List<OperatorDescriptorDual> getPossibleProperties();
-	
-	@Override
-	public boolean isMemoryConsumer() {
-		for (OperatorDescriptorDual dpd : this.possibleProperties) {
-			if (dpd.getStrategy().firstDam().isMaterializing() ||
-				dpd.getStrategy().secondDam().isMaterializing()) {
-				return true;
-			}
-			for (LocalPropertiesPair prp : dpd.getPossibleLocalProperties()) {
-				if (!(prp.getProperties1().isTrivial() && prp.getProperties2().isTrivial())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 
 	@Override
 	public void computeInterestingPropertiesForInputs(CostEstimator estimator) {
@@ -349,20 +332,12 @@ public abstract class TwoInputNode extends OptimizerNode {
 		final ArrayList<PlanNode> outputPlans = new ArrayList<PlanNode>();
 		
 		final int dop = getDegreeOfParallelism();
-		final int subPerInstance = getSubtasksPerInstance();
-		final int numInstances = dop / subPerInstance + (dop % subPerInstance == 0 ? 0 : 1);
 		final int inDop1 = getFirstPredecessorNode().getDegreeOfParallelism();
-		final int inSubPerInstance1 = getFirstPredecessorNode().getSubtasksPerInstance();
-		final int inNumInstances1 = inDop1 / inSubPerInstance1 + (inDop1 % inSubPerInstance1 == 0 ? 0 : 1);
 		final int inDop2 = getSecondPredecessorNode().getDegreeOfParallelism();
-		final int inSubPerInstance2 = getSecondPredecessorNode().getSubtasksPerInstance();
-		final int inNumInstances2 = inDop2 / inSubPerInstance2 + (inDop2 % inSubPerInstance2 == 0 ? 0 : 1);
-		
-		final boolean globalDopChange1 = numInstances != inNumInstances1;
-		final boolean globalDopChange2 = numInstances != inNumInstances2;
-		final boolean localDopChange1 = numInstances == inNumInstances1 & subPerInstance != inSubPerInstance1;
-		final boolean localDopChange2 = numInstances == inNumInstances2 & subPerInstance != inSubPerInstance2;
-		
+
+		final boolean dopChange1 = dop != inDop1;
+		final boolean dopChange2 = dop != inDop2;
+
 		// enumerate all pairwise combination of the children's plans together with
 		// all possible operator strategy combination
 		
@@ -381,15 +356,11 @@ public abstract class TwoInputNode extends OptimizerNode {
 					final Channel c1 = new Channel(child1, this.input1.getMaterializationMode());
 					if (this.input1.getShipStrategy() == null) {
 						// free to choose the ship strategy
-						igps1.parameterizeChannel(c1, globalDopChange1, localDopChange1);
+						igps1.parameterizeChannel(c1, dopChange1);
 						
 						// if the DOP changed, make sure that we cancel out properties, unless the
 						// ship strategy preserves/establishes them even under changing DOPs
-						if (globalDopChange1 && !c1.getShipStrategy().isNetworkStrategy()) {
-							c1.getGlobalProperties().reset();
-						}
-						if (localDopChange1 && !(c1.getShipStrategy().isNetworkStrategy() || 
-									c1.getShipStrategy().compensatesForLocalDOPChanges())) {
+						if (dopChange1 && !c1.getShipStrategy().isNetworkStrategy()) {
 							c1.getGlobalProperties().reset();
 						}
 					} else {
@@ -400,10 +371,8 @@ public abstract class TwoInputNode extends OptimizerNode {
 							c1.setShipStrategy(this.input1.getShipStrategy());
 						}
 						
-						if (globalDopChange1) {
+						if (dopChange1) {
 							c1.adjustGlobalPropertiesForFullParallelismChange();
-						} else if (localDopChange1) {
-							c1.adjustGlobalPropertiesForLocalParallelismChange();
 						}
 					}
 					
@@ -412,15 +381,11 @@ public abstract class TwoInputNode extends OptimizerNode {
 						final Channel c2 = new Channel(child2, this.input2.getMaterializationMode());
 						if (this.input2.getShipStrategy() == null) {
 							// free to choose the ship strategy
-							igps2.parameterizeChannel(c2, globalDopChange2, localDopChange2);
+							igps2.parameterizeChannel(c2, dopChange2);
 							
 							// if the DOP changed, make sure that we cancel out properties, unless the
 							// ship strategy preserves/establishes them even under changing DOPs
-							if (globalDopChange2 && !c2.getShipStrategy().isNetworkStrategy()) {
-								c2.getGlobalProperties().reset();
-							}
-							if (localDopChange2 && !(c2.getShipStrategy().isNetworkStrategy() || 
-										c2.getShipStrategy().compensatesForLocalDOPChanges())) {
+							if (dopChange2 && !c2.getShipStrategy().isNetworkStrategy()) {
 								c2.getGlobalProperties().reset();
 							}
 						} else {
@@ -431,10 +396,8 @@ public abstract class TwoInputNode extends OptimizerNode {
 								c2.setShipStrategy(this.input2.getShipStrategy());
 							}
 							
-							if (globalDopChange2) {
+							if (dopChange2) {
 								c2.adjustGlobalPropertiesForFullParallelismChange();
-							} else if (localDopChange2) {
-								c2.adjustGlobalPropertiesForLocalParallelismChange();
 							}
 						}
 						
@@ -448,9 +411,13 @@ public abstract class TwoInputNode extends OptimizerNode {
 							if (gpp.getProperties1().isMetBy(c1.getGlobalProperties()) && 
 								gpp.getProperties2().isMetBy(c2.getGlobalProperties()) )
 							{
+								Channel c1Clone = c1.clone();
+								c1Clone.setRequiredGlobalProps(gpp.getProperties1());
+								c2.setRequiredGlobalProps(gpp.getProperties2());
+								
 								// we form a valid combination, so create the local candidates
 								// for this
-								addLocalCandidates(c1, c2, broadcastPlanChannels, igps1, igps2, outputPlans, allLocalPairs, estimator);
+								addLocalCandidates(c1Clone, c2, broadcastPlanChannels, igps1, igps2, outputPlans, allLocalPairs, estimator);
 								break;
 							}
 						}
@@ -488,26 +455,14 @@ public abstract class TwoInputNode extends OptimizerNode {
 			RequestedGlobalProperties rgps1, RequestedGlobalProperties rgps2,
 			List<PlanNode> target, LocalPropertiesPair[] validLocalCombinations, CostEstimator estimator)
 	{
-		final LocalProperties lp1 = template1.getLocalPropertiesAfterShippingOnly();
-		final LocalProperties lp2 = template2.getLocalPropertiesAfterShippingOnly();
-		
 		for (RequestedLocalProperties ilp1 : this.input1.getInterestingProperties().getLocalProperties()) {
 			final Channel in1 = template1.clone();
-			if (ilp1.isMetBy(lp1)) {
-				in1.setLocalStrategy(LocalStrategy.NONE);
-			} else {
-				ilp1.parameterizeChannel(in1);
-			}
+			ilp1.parameterizeChannel(in1);
 			
 			for (RequestedLocalProperties ilp2 : this.input2.getInterestingProperties().getLocalProperties()) {
 				final Channel in2 = template2.clone();
-				if (ilp2.isMetBy(lp2)) {
-					in2.setLocalStrategy(LocalStrategy.NONE);
-				} else {
-					ilp2.parameterizeChannel(in2);
-				}
+				ilp2.parameterizeChannel(in2);
 				
-				allPossibleLoop:
 				for (OperatorDescriptorDual dps: this.possibleProperties) {
 					for (LocalPropertiesPair lpp : dps.getPossibleLocalProperties()) {
 						if (lpp.getProperties1().isMetBy(in1.getLocalProperties()) &&
@@ -519,12 +474,16 @@ public abstract class TwoInputNode extends OptimizerNode {
 							if (dps.areCoFulfilled(lpp.getProperties1(), lpp.getProperties2(), 
 								in1.getLocalProperties(), in2.getLocalProperties()))
 							{
+								Channel in1Copy = in1.clone();
+								in1Copy.setRequiredLocalProps(lpp.getProperties1());
+								in2.setRequiredLocalProps(lpp.getProperties2());
+								
 								// all right, co compatible
-								instantiate(dps, in1, in2, broadcastPlanChannels, target, estimator, rgps1, rgps2, ilp1, ilp2);
-								break allPossibleLoop;
+								instantiate(dps, in1Copy, in2, broadcastPlanChannels, target, estimator, rgps1, rgps2, ilp1, ilp2);
+								break;
 							} else {
 								// meet, but not co-compatible
-								throw new CompilerException("Implements to adjust one side to the other!");
+//								throw new CompilerException("Implements to adjust one side to the other!");
 							}
 						}
 					}

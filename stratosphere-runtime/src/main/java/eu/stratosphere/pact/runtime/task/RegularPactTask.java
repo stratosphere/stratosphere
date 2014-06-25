@@ -36,9 +36,7 @@ import eu.stratosphere.runtime.io.api.BufferWriter;
 import eu.stratosphere.nephele.services.accumulators.AccumulatorEvent;
 import eu.stratosphere.nephele.services.iomanager.IOManager;
 import eu.stratosphere.nephele.services.memorymanager.MemoryManager;
-import eu.stratosphere.nephele.template.AbstractInputTask;
 import eu.stratosphere.nephele.template.AbstractInvokable;
-import eu.stratosphere.nephele.template.AbstractTask;
 import eu.stratosphere.pact.runtime.plugable.DeserializationDelegate;
 import eu.stratosphere.pact.runtime.plugable.SerializationDelegate;
 import eu.stratosphere.pact.runtime.resettable.SpillingResettableMutableObjectIterator;
@@ -73,7 +71,7 @@ import java.util.Map;
  * The abstract base class for all tasks. Encapsulated common behavior and implements the main life-cycle
  * of the user code.
  */
-public class RegularPactTask<S extends Function, OT> extends AbstractTask implements PactTaskContext<S, OT> {
+public class RegularPactTask<S extends Function, OT> extends AbstractInvokable implements PactTaskContext<S, OT> {
 
 	protected static final Log LOG = LogFactory.getLog(RegularPactTask.class);
 
@@ -840,7 +838,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			this.inputIsCached[i] = cached;
 
 			if (async || cached) {
-				memoryPages = memMan.computeNumberOfPages(this.config.getInputMaterializationMemory(i));
+				memoryPages = memMan.computeNumberOfPages(this.config.getRelativeInputMaterializationMemory(i));
 				if (memoryPages <= 0) {
 					throw new Exception("Input marked as materialized/cached, but no memory for materialization provided.");
 				}
@@ -946,7 +944,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				@SuppressWarnings({ "rawtypes", "unchecked" })
 				UnilateralSortMerger<?> sorter = new UnilateralSortMerger(getMemoryManager(), getIOManager(),
 					this.inputIterators[inputNum], this, this.inputSerializers[inputNum], getLocalStrategyComparator(inputNum),
-					this.config.getMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
+					this.config.getRelativeMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
 					this.config.getSpillingThresholdInput(inputNum));
 				// set the input to null such that it will be lazily fetched from the input strategy
 				this.inputs[inputNum] = null;
@@ -982,7 +980,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 				CombiningUnilateralSortMerger<?> cSorter = new CombiningUnilateralSortMerger(
 					(GenericCombine) localStub, getMemoryManager(), getIOManager(), this.inputIterators[inputNum], 
 					this, this.inputSerializers[inputNum], getLocalStrategyComparator(inputNum),
-					this.config.getMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
+					this.config.getRelativeMemoryInput(inputNum), this.config.getFilehandlesInput(inputNum),
 					this.config.getSpillingThresholdInput(inputNum));
 				cSorter.setUdfConfiguration(this.config.getStubParameters());
 
@@ -1022,12 +1020,6 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 			final MutableObjectIterator<?> iter = new ReaderIterator(reader, serializerFactory.getSerializer());
 			return iter;
 		}
-//		// generic data type serialization
-//		@SuppressWarnings("unchecked")
-//		MutableReader<DeserializationDelegate<?>> reader = (MutableReader<DeserializationDelegate<?>>) inputReader;
-//		@SuppressWarnings({ "unchecked", "rawtypes" })
-//		final MutableObjectIterator<?> iter = new ReaderIterator(reader, serializer);
-//		return iter;
 	}
 
 	protected int getNumTaskInputs() {
@@ -1257,11 +1249,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 					oe = new RecordOutputEmitter(strategy, comparator, distribution);
 				}
 
-				if (task instanceof AbstractTask) {
-					writers.add(new RecordWriter<Record>((AbstractTask) task, oe));
-				} else if (task instanceof AbstractInputTask<?>) {
-					writers.add(new RecordWriter<Record>((AbstractInputTask<?>) task, oe));
-				}
+				writers.add(new RecordWriter<Record>(task, oe));
 			}
 			if (eventualOutputs != null) {
 				eventualOutputs.addAll(writers);
@@ -1294,11 +1282,7 @@ public class RegularPactTask<S extends Function, OT> extends AbstractTask implem
 					oe = new OutputEmitter<T>(strategy, comparator, dataDist);
 				}
 
-				if (task instanceof AbstractTask) {
-					writers.add(new RecordWriter<SerializationDelegate<T>>((AbstractTask) task, oe));
-				} else if (task instanceof AbstractInputTask<?>) {
-					writers.add(new RecordWriter<SerializationDelegate<T>>((AbstractInputTask<?>) task, oe));
-				}
+				writers.add(new RecordWriter<SerializationDelegate<T>>(task, oe));
 			}
 			if (eventualOutputs != null) {
 				eventualOutputs.addAll(writers);
