@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+
+        <parent>
+                <groupId>eu.stratosphere</groupId>
+                <artifactId>stratosphere-addons</artifactId>
+                <version>0.6-SNAPSHOT</version>
+                <relativePath>..</relativePath>
+        </parent>
+	
+        <artifactId>stratosphere-language-binding</artifactId>
+        <name>stratosphere-language-binding</name>
+        <packaging>jar</packaging>
+
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-jar-plugin</artifactId>
+                                <configuration>
+                                        <archive>
+                                                <manifest>
+                                                        <addClasspath>true</addClasspath>
+                                                        <mainClass>eu.stratosphere.languagebinding.api.java.python.PythonExecutor</mainClass>
+                                                </manifest>
+                                        </archive>
+                                </configuration>
+                        </plugin>
+                </plugins>
+        </build>
+
+        <dependencies>
+                <dependency>
+                        <groupId>eu.stratosphere</groupId>
+                        <artifactId>stratosphere-core</artifactId>
+                        <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                        <groupId>eu.stratosphere</groupId>
+                        <artifactId>stratosphere-java</artifactId>
+                        <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                        <groupId>eu.stratosphere</groupId>
+                        <artifactId>stratosphere-clients</artifactId>
+                        <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                        <version>2.5.0</version>
+                </dependency>
+                <dependency>
+                        <groupId>eu.stratosphere</groupId>
+                        <artifactId>jdbc</artifactId>
+                        <version>${project.version}</version>
+                </dependency>
+        </dependencies>
+</project>

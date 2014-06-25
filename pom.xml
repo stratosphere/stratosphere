@@ -368,6 +368,8 @@
 						<exclude>**/*.iml</exclude>
 						<!-- Generated content -->
 						<exclude>**/target/**</exclude>
+                                                <!-- python interface related -->
+                                                <exclude>**/python/google/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
