@@ -218,7 +218,7 @@ public abstract class DualInputOperator<IN1, IN2, OUT, FT extends Function> exte
 	@Deprecated
 	@SuppressWarnings("unchecked")
 	public void addFirstInputs(List<Operator<IN1>> inputs) {
-		this.input1 = Operator.createUnionCascade(this.input1, inputs.toArray(new Operator[inputs.size()]));
+		this.input1 = Operator.<IN1>createUnionCascade(this.input1, inputs.toArray(new Operator[inputs.size()]));
 	}
 
 	/**
@@ -230,7 +230,7 @@ public abstract class DualInputOperator<IN1, IN2, OUT, FT extends Function> exte
 	@Deprecated
 	@SuppressWarnings("unchecked")
 	public void addSecondInputs(List<Operator<IN2>> inputs) {
-		this.input2 = Operator.createUnionCascade(this.input2, inputs.toArray(new Operator[inputs.size()]));
+		this.input2 = Operator.<IN2>createUnionCascade(this.input2, inputs.toArray(new Operator[inputs.size()]));
 	}
 	
 	// --------------------------------------------------------------------------------------------

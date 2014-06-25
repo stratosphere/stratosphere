@@ -125,7 +125,7 @@ public abstract class SingleInputOperator<IN, OUT, FT extends Function> extends 
 	@Deprecated
 	@SuppressWarnings("unchecked")
 	public void setInputs(List<Operator<IN>> inputs) {
-		this.input = Operator.createUnionCascade(null, inputs.toArray(new Operator[inputs.size()]));
+		this.input = Operator.<IN>createUnionCascade(null, inputs.toArray(new Operator[inputs.size()]));
 	}
 
 	/**
@@ -148,7 +148,7 @@ public abstract class SingleInputOperator<IN, OUT, FT extends Function> extends 
 	@Deprecated
 	@SuppressWarnings("unchecked")
 	public void addInput(List<Operator<IN>> inputs) {
-		this.input = Operator.createUnionCascade(this.input, inputs.toArray(new Operator[inputs.size()]));
+		this.input = Operator.<IN>createUnionCascade(this.input, inputs.toArray(new Operator[inputs.size()]));
 	}
 
 	// --------------------------------------------------------------------------------------------

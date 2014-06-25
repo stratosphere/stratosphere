@@ -67,11 +67,11 @@ public class ValueTypeInfo<T extends Value> extends TypeInformation<T> implement
 		return Comparable.class.isAssignableFrom(type);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	@SuppressWarnings("unchecked")
 	public TypeSerializer<T> createSerializer() {
 		if (CopyableValue.class.isAssignableFrom(type)) {
-			return (TypeSerializer<T>) createCopyableValueSerializer(type.asSubclass(CopyableValue.class));
+			return (TypeSerializer<T>) createCopyableValueSerializer(type.<CopyableValue>asSubclass(CopyableValue.class));
 		}
 		else {
 			return new ValueSerializer<T>(type);

@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.MapFunction;
+import eu.stratosphere.api.java.operators.CustomUnaryOperation;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.spargel.java.VertexCentricIteration;
 import eu.stratosphere.spargel.java.examples.SpargelConnectedComponents.CCMessager;
@@ -53,7 +54,7 @@ public class SpargelConnectedComponentsITCase extends JavaProgramTestBase {
 		DataSet<Tuple2<Long, Long>> edges = edgeString.map(new EdgeParser());
 		
 		DataSet<Tuple2<Long, Long>> initialVertices = vertexIds.map(new IdAssigner());
-		DataSet<Tuple2<Long, Long>> result = initialVertices.runOperation(VertexCentricIteration.withPlainEdges(edges, new CCUpdater(), new CCMessager(), 100));
+		DataSet<Tuple2<Long, Long>> result = initialVertices.runOperation((CustomUnaryOperation<Tuple2<Long, Long>, Tuple2<Long, Long>>) VertexCentricIteration.withPlainEdges(edges, new CCUpdater(), new CCMessager(), 100));
 		
 		result.writeAsCsv(resultPath, "\n", " ");
 		env.execute("Spargel Connected Components");
