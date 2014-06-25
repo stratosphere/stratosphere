@@ -201,7 +201,28 @@
 							</includes>
 						</configuration>
 					</execution>
-		
+			<!-- EffectiveCloseness-->
+					<execution>
+						<id>EffectiveCloseness</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>EffectiveCloseness</classifier>
+
+							<archive>
+								<manifestEntries>
+									<program-class>eu.stratosphere.example.java.graph.centrality.EffectiveCloseness</program-class>
+								</manifestEntries>
+							</archive>
+
+							<includes>
+								<include>eu/stratosphere/example/java/graph/centrality/EffectiveCloseness.class</include>
+								<include>eu/stratosphere/example/java/graph/centrality/EffectiveCloseness$*.class</include>
+							</includes>
+						</configuration>
+					</execution>
 					<!-- WebLogAnalysis -->
 					<execution>
 						<id>WebLogAnalysis</id>
