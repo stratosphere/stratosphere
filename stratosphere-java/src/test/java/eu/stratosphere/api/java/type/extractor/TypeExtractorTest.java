@@ -51,8 +51,10 @@ import eu.stratosphere.types.StringValue;
 import eu.stratosphere.types.TypeInformation;
 import eu.stratosphere.types.Value;
 import eu.stratosphere.util.Collector;
+
 import org.apache.hadoop.io.Writable;
 
+@SuppressWarnings("serial")
 public class TypeExtractorTest {
 
 	
@@ -1347,5 +1349,21 @@ public class TypeExtractorTest {
 	public void testResultTypeQueryable() {
 		TypeInformation<?> ti = TypeExtractor.getMapReturnTypes(new MyQueryableMapper<Integer>(), BasicTypeInfo.STRING_TYPE_INFO);
 		Assert.assertEquals(BasicTypeInfo.INT_TYPE_INFO, ti);
+	}
+	
+	
+	/**
+	 * Test for issue #910
+	 */
+	@Test
+	public void testTupleWithPrimitiveArray() {
+		MapFunction<Integer, Tuple2<Integer, double[]>> function = new MapFunction<Integer, Tuple2<Integer,double[]>>() {
+			@Override
+			public Tuple2<Integer, double[]> map(Integer value) {
+				return new Tuple2<Integer, double[]>(value, new double[] {1, 2, 3, 4, 5});
+			}
+		};
+		
+		TypeExtractor.getMapReturnTypes(function, BasicTypeInfo.INT_TYPE_INFO);
 	}
 }
