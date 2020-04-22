@@ -285,7 +285,7 @@ public final class StringUtils {
 	 * @param maxValue The maximum character value to occur.
 	 * @return A random String.
 	 */
-	public static String getRandomString(Random rnd, int minLength, int maxLength, char minValue, char maxValue) {
+	public static String getRandomString(Random rnd, int minLength, int maxLength, char minValue, char maxValue) throws IllegalArgumentException{
 		int len = rnd.nextInt(maxLength - minLength + 1) + minLength;
 		
 		char[] data = new char[len];
